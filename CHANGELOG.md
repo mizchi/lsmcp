@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2025-01-30
+
+### Fixed
+- Fixed flaky test in `typescript-lsp.test.ts` by using direct node_modules path instead of npx to avoid overhead in CI environments
+- Fixed CI workflow step names and restored proper checks
+- Improved test performance with proper categorization (unit vs integration tests)
+- Made integration tests more robust with better timeout handling
+
+### Changed
+- Updated CI workflows to separate unit and integration tests for better performance
+- Improved test categorization with separate Vitest projects for unit and integration tests
+
 ## [0.5.0] - 2025-01-28
 
 ### Added
