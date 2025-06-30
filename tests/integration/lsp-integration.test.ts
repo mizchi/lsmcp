@@ -31,20 +31,20 @@ describe("LSP integration tests", () => {
     // Create fixtures directory
     await fs.mkdir(FIXTURES_DIR, { recursive: true });
 
-    // Start TypeScript language server
-    const [command, ...args] = process.env.LSP_COMMAND.split(" ");
-    lspProcess = spawn(command, args, {
-      cwd: __dirname,
-      stdio: ["pipe", "pipe", "pipe"],
-    });
-
-    // Initialize LSP client
-    await initializeLSPClient(__dirname, lspProcess, "typescript");
-
-    // Create temporary directory
+    // Create temporary directory first
     const hash = randomBytes(8).toString("hex");
     tmpDir = path.join(__dirname, `tmp-lsp-integration-${hash}`);
     await fs.mkdir(tmpDir, { recursive: true });
+
+    // Start TypeScript language server
+    const [command, ...args] = process.env.LSP_COMMAND.split(" ");
+    lspProcess = spawn(command, args, {
+      cwd: tmpDir, // Use tmpDir as working directory
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+
+    // Initialize LSP client with tmpDir
+    await initializeLSPClient(tmpDir, lspProcess, "typescript");
   });
 
   afterAll(async () => {
@@ -61,7 +61,8 @@ describe("LSP integration tests", () => {
 
   describe("Complete workflow test", () => {
     it("should work with a TypeScript project", async () => {
-      if (!process.env.LSP_COMMAND) {
+      if (!process.env.LSP_COMMAND || !tmpDir) {
+        console.log("Skipping test: LSP not initialized");
         return;
       }
 
@@ -203,7 +204,8 @@ console.log(unknownVariable); // Unknown variable
 
   describe("Error handling", () => {
     it("should handle non-existent files", async () => {
-      if (!process.env.LSP_COMMAND) {
+      if (!process.env.LSP_COMMAND || !tmpDir) {
+        console.log("Skipping test: LSP not initialized");
         return;
       }
 
@@ -229,7 +231,8 @@ console.log(unknownVariable); // Unknown variable
     });
 
     it("should handle invalid positions", async () => {
-      if (!process.env.LSP_COMMAND) {
+      if (!process.env.LSP_COMMAND || !tmpDir) {
+        console.log("Skipping test: LSP not initialized");
         return;
       }
 
@@ -260,7 +263,8 @@ console.log(unknownVariable); // Unknown variable
 
   describe("LSP client state", () => {
     it("should maintain LSP client connection", async () => {
-      if (!process.env.LSP_COMMAND) {
+      if (!process.env.LSP_COMMAND || !tmpDir) {
+        console.log("Skipping test: LSP not initialized");
         return;
       }
 

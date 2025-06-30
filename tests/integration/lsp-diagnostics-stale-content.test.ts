@@ -61,13 +61,13 @@ function foo(): string {
     // Wait for file to be written
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    const result = await client.callTool({
+    const result = (await client.callTool({
       name: "lsmcp_get_diagnostics",
       arguments: {
         root: tmpDir,
         filePath: testFile,
       },
-    });
+    })) as any;
 
     const text = result.content[0].text;
     // LSP may report errors differently, so check for presence of errors
@@ -87,13 +87,13 @@ function foo(): string {
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     // First check - should have error
-    let result = await client.callTool({
+    let result = (await client.callTool({
       name: "lsmcp_get_diagnostics",
       arguments: {
         root: tmpDir,
         filePath: testFile,
       },
-    });
+    })) as any;
 
     expect(result.content[0].text).toContain("1 error");
 
@@ -104,13 +104,13 @@ function foo(): string {
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Second check - should have no errors
-    result = await client.callTool({
+    result = (await client.callTool({
       name: "lsmcp_get_diagnostics",
       arguments: {
         root: tmpDir,
         filePath: testFile,
       },
-    });
+    })) as any;
 
     expect(result.content[0].text).toContain("0 errors and 0 warnings");
   });
@@ -129,13 +129,13 @@ function foo(): string {
     for (const change of changes) {
       await fs.writeFile(filePath, change.content);
 
-      const result = await client.callTool({
+      const result = (await client.callTool({
         name: "lsmcp_get_diagnostics",
         arguments: {
           root: tmpDir,
           filePath: testFile,
         },
-      });
+      })) as any;
 
       const text = result.content[0].text;
       if (change.hasError) {
@@ -161,7 +161,7 @@ function foo(): string {
     );
 
     // Get diagnostics concurrently
-    const results = await Promise.all(
+    const results = (await Promise.all(
       files.map((file) =>
         client.callTool({
           name: "lsmcp_get_diagnostics",
@@ -171,7 +171,7 @@ function foo(): string {
           },
         })
       ),
-    );
+    )) as any;
 
     // Check results
     expect(results[0].content[0].text).toContain("1 error"); // concurrent1.ts
@@ -187,14 +187,14 @@ function foo(): string {
     await fs.writeFile(filePath, `const x: string = "hello";`);
 
     // But use virtualContent with errors
-    const result = await client.callTool({
+    const result = (await client.callTool({
       name: "lsmcp_get_diagnostics",
       arguments: {
         root: tmpDir,
         filePath: testFile,
         virtualContent: `const x: string = 123; // Error in virtual content`,
       },
-    });
+    })) as any;
 
     expect(result.content[0].text).toContain("1 error");
     expect(result.content[0].text).toContain(
@@ -213,24 +213,24 @@ function foo(): string {
     await fs.writeFile(path.join(tmpDir, jsFile), `const x = 123;`);
 
     // Check TypeScript file - should have error
-    const tsResult = await client.callTool({
+    const tsResult = (await client.callTool({
       name: "lsmcp_get_diagnostics",
       arguments: {
         root: tmpDir,
         filePath: tsFile,
       },
-    });
+    })) as any;
 
     expect(tsResult.content[0].text).toContain("1 error");
 
     // Check JavaScript file - should have no errors
-    const jsResult = await client.callTool({
+    const jsResult = (await client.callTool({
       name: "lsmcp_get_diagnostics",
       arguments: {
         root: tmpDir,
         filePath: jsFile,
       },
-    });
+    })) as any;
 
     expect(jsResult.content[0].text).toContain("0 errors");
   });

@@ -3,8 +3,8 @@ import { ChildProcess, spawn } from "child_process";
 import {
   initialize as initializeLSPClient,
   shutdown as shutdownLSPClient,
-} from "../src/lsp/lspClient.ts";
-import { lspGetDocumentSymbolsTool } from "../src/lsp/tools/lspGetDocumentSymbols.ts";
+} from "../../src/lsp/lspClient.ts";
+import { lspGetDocumentSymbolsTool } from "../../src/lsp/tools/lspGetDocumentSymbols.ts";
 import path from "path";
 
 const FIXTURES_DIR = path.join(__dirname, "fixtures");

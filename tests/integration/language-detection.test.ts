@@ -6,7 +6,7 @@ import fs from "fs/promises";
 import { randomBytes } from "crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const LSMCP_PATH = path.join(__dirname, "../dist/lsmcp.js");
+const LSMCP_PATH = path.join(__dirname, "../../dist/lsmcp.js");
 
 describe("Language Detection with lsmcp", () => {
   let tmpDir: string;

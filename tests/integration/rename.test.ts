@@ -3,14 +3,14 @@ import {
   addSourceFile,
   createProject,
   renameSymbol,
-} from "../src/ts/commands/renameSymbol.ts";
+} from "../../src/ts/commands/renameSymbol.ts";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
-import { parseRenameComments } from "./helpers/extract-ops.ts";
+import { parseRenameComments } from "../helpers/extract-ops.ts";
 import { globSync } from "fs";
 
-const FIXTURES_DIR = path.join(__dirname, "fixtures/00-rename");
+const FIXTURES_DIR = path.join(__dirname, "../fixtures/00-rename");
 
 describe("rename", () => {
   let tmpDir: string;

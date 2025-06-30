@@ -27,14 +27,15 @@ describe("list_tools functionality", () => {
         });
       });
 
-      const SERVER_PATH = path.join(__dirname, "../dist/typescript-mcp.js");
+      const SERVER_PATH = path.join(__dirname, "../../dist/typescript-mcp.js");
       await fs.access(SERVER_PATH);
 
       transport = new StdioClientTransport({
         command: "node",
         args: [SERVER_PATH],
+        // @ts-ignore
         env: process.env,
-      });
+      }) as any;
 
       client = new Client({
         name: "test-client",
@@ -49,10 +50,10 @@ describe("list_tools functionality", () => {
     });
 
     it("should list TypeScript tools", async () => {
-      const result = await client.callTool({
+      const result = (await client.callTool({
         name: "list_tools",
         arguments: { category: "typescript" },
-      });
+      })) as any;
 
       expect(result.content[0].text).toContain("TypeScript Tools");
       expect(result.content[0].text).toContain("move_file");
@@ -61,10 +62,10 @@ describe("list_tools functionality", () => {
     });
 
     it("should list all tools including LSP", async () => {
-      const result = await client.callTool({
+      const result = (await client.callTool({
         name: "list_tools",
         arguments: { category: "all" },
-      });
+      })) as any;
 
       expect(result.content[0].text).toContain("TypeScript Tools");
       expect(result.content[0].text).toContain("LSP Tools");
@@ -77,13 +78,13 @@ describe("list_tools functionality", () => {
     let transport: StdioClientTransport;
 
     beforeAll(async () => {
-      const SERVER_PATH = path.join(__dirname, "../dist/generic-lsp-mcp.js");
+      const SERVER_PATH = path.join(__dirname, "../../dist/generic-lsp-mcp.js");
       await fs.access(SERVER_PATH);
 
       // Use typescript-language-server from node_modules to avoid npx overhead
       const tsLangServerPath = path.join(
         __dirname,
-        "../node_modules/.bin/typescript-language-server",
+        "../../node_modules/.bin/typescript-language-server",
       );
       transport = new StdioClientTransport({
         command: "node",
@@ -107,10 +108,10 @@ describe("list_tools functionality", () => {
     });
 
     it("should only list LSP tools, not TypeScript tools", async () => {
-      const result = await client.callTool({
+      const result = (await client.callTool({
         name: "list_tools",
         arguments: {},
-      });
+      })) as any;
 
       expect(result.content[0].text).toContain("LSP Tools");
       expect(result.content[0].text).toContain("lsp_find_references");
@@ -125,10 +126,10 @@ describe("list_tools functionality", () => {
 
     it("should ignore category parameter for LSP-only server", async () => {
       // Even with category "all", should only show LSP tools
-      const result = await client.callTool({
+      const result = (await client.callTool({
         name: "list_tools",
         arguments: { category: "all" },
-      });
+      })) as any;
 
       expect(result.content[0].text).toContain("LSP Tools");
       expect(result.content[0].text).not.toContain("TypeScript Tools");

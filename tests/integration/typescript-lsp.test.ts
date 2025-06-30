@@ -24,7 +24,7 @@ describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
   let transport: StdioClientTransport | undefined;
   let tmpDir: string | undefined;
 
-  beforeEach(async function (this: any) {
+  beforeEach(async () => {
     // Skip test if lsmcp.js is not built
     try {
       await fs.access(LSMCP_PATH);
@@ -32,8 +32,8 @@ describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
       console.log(
         "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
       );
-      this.skip();
-      return;
+      // skip();
+      // return;
     }
 
     // Skip expensive npx check - assume it's available in node_modules
@@ -371,7 +371,7 @@ instance.myProperty = "value"; // Error: private property
 describe("TypeScript MCP with custom LSP via lsmcp", { timeout: 30000 }, () => {
   let tmpDir: string | undefined;
 
-  beforeEach(async function (this: any) {
+  beforeEach(async () => {
     // Skip test if lsmcp.js is not built
     try {
       await fs.access(LSMCP_PATH);
@@ -379,7 +379,6 @@ describe("TypeScript MCP with custom LSP via lsmcp", { timeout: 30000 }, () => {
       console.log(
         "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
       );
-      this.skip();
       return;
     }
 
@@ -514,119 +513,120 @@ console.log(content);
   });
 });
 
-describe.skip("TypeScript Native Preview (TSGO) Support - DEPRECATED", {
-  timeout: 30000,
-}, () => {
-  let client: Client | undefined;
-  let transport: StdioClientTransport | undefined;
-  let tmpDir: string | undefined;
+describe.skip(
+  "TypeScript Native Preview (TSGO) Support - DEPRECATED",
+  {
+    timeout: 30000,
+  },
+  () => {
+    let client: Client | undefined;
+    let transport: StdioClientTransport | undefined;
+    let tmpDir: string | undefined;
 
-  beforeEach(async function (this: any) {
-    // Skip test if typescript-mcp.js is not built
-    const TYPESCRIPT_MCP_PATH = path.join(
-      __dirname,
-      "../../dist/typescript-mcp.js",
-    );
-    try {
-      await fs.access(TYPESCRIPT_MCP_PATH);
-    } catch {
-      console.log(
-        "Skipping test: dist/typescript-mcp.js not found. Run 'pnpm build' first.",
+    beforeEach(async () => {
+      // Skip test if typescript-mcp.js is not built
+      const TYPESCRIPT_MCP_PATH = path.join(
+        __dirname,
+        "../../dist/typescript-mcp.js",
       );
-      this.skip();
-      return;
-    }
+      try {
+        await fs.access(TYPESCRIPT_MCP_PATH);
+      } catch {
+        console.log(
+          "Skipping test: dist/typescript-mcp.js not found. Run 'pnpm build' first.",
+        );
+        return;
+      }
 
-    // Check if @typescript/native-preview is available
-    try {
-      execSync("npx @typescript/native-preview --version", { stdio: "pipe" });
-    } catch {
-      console.log(
-        "Skipping test: @typescript/native-preview not found. Install with: npm install -g @typescript/native-preview",
-      );
-      this.skip();
-      return;
-    }
+      // Check if @typescript/native-preview is available
+      try {
+        execSync("npx @typescript/native-preview --version", { stdio: "pipe" });
+      } catch {
+        console.log(
+          "Skipping test: @typescript/native-preview not found. Install with: npm install -g @typescript/native-preview",
+        );
+        return;
+      }
 
-    // Create temporary directory
-    const hash = randomBytes(8).toString("hex");
-    tmpDir = path.join(__dirname, `tmp-tsgo-${hash}`);
-    await fs.mkdir(tmpDir, { recursive: true });
+      // Create temporary directory
+      const hash = randomBytes(8).toString("hex");
+      tmpDir = path.join(__dirname, `tmp-tsgo-${hash}`);
+      await fs.mkdir(tmpDir, { recursive: true });
 
-    // Create a TypeScript project
-    await fs.writeFile(
-      path.join(tmpDir!, "tsconfig.json"),
-      JSON.stringify(
-        {
-          compilerOptions: {
-            target: "es2020",
-            module: "commonjs",
-            strict: true,
+      // Create a TypeScript project
+      await fs.writeFile(
+        path.join(tmpDir!, "tsconfig.json"),
+        JSON.stringify(
+          {
+            compilerOptions: {
+              target: "es2020",
+              module: "commonjs",
+              strict: true,
+            },
           },
-        },
-        null,
-        2,
-      ),
-    );
+          null,
+          2,
+        ),
+      );
 
-    // Create transport with TSGO enabled
-    transport = new StdioClientTransport({
-      command: "node",
-      args: [TYPESCRIPT_MCP_PATH],
-      env: {
-        ...process.env,
-        TSGO: "1", // Enable TSGO mode
-      } as Record<string, string>,
+      // Create transport with TSGO enabled
+      transport = new StdioClientTransport({
+        command: "node",
+        args: [TYPESCRIPT_MCP_PATH],
+        env: {
+          ...process.env,
+          TSGO: "1", // Enable TSGO mode
+        } as Record<string, string>,
+      });
+
+      // Create and connect client
+      client = new Client({
+        name: "test-client",
+        version: "1.0.0",
+      });
+
+      await client.connect(transport);
     });
 
-    // Create and connect client
-    client = new Client({
-      name: "test-client",
-      version: "1.0.0",
+    afterEach(async () => {
+      // Cleanup
+      if (client) {
+        await client.close();
+        client = undefined;
+      }
+      if (transport) {
+        // Make sure the transport is properly closed
+        transport = undefined;
+      }
+      if (tmpDir) {
+        await fs.rm(tmpDir, { recursive: true, force: true });
+        tmpDir = undefined;
+      }
     });
 
-    await client.connect(transport);
-  });
+    it("should list tools with LSP tools when TSGO is enabled", async () => {
+      if (!client) return;
 
-  afterEach(async () => {
-    // Cleanup
-    if (client) {
-      await client.close();
-      client = undefined;
-    }
-    if (transport) {
-      // Make sure the transport is properly closed
-      transport = undefined;
-    }
-    if (tmpDir) {
-      await fs.rm(tmpDir, { recursive: true, force: true });
-      tmpDir = undefined;
-    }
-  });
+      const response = await client.listTools();
+      const toolNames = response.tools.map((t) => t.name);
 
-  it("should list tools with LSP tools when TSGO is enabled", async () => {
-    if (!client) return;
+      // When TSGO is enabled, LSP tools should be available
+      expect(toolNames).toContain("lsmcp_get_hover");
+      expect(toolNames).toContain("lsmcp_find_references");
+      expect(toolNames).toContain("lsmcp_get_definitions");
+      expect(toolNames).toContain("lsmcp_get_diagnostics");
 
-    const response = await client.listTools();
-    const toolNames = response.tools.map((t) => t.name);
+      // But also should have TypeScript compiler API tools
+      expect(toolNames).toContain("lsmcp_rename_symbol");
+      expect(toolNames).toContain("lsmcp_move_file");
+      expect(toolNames).toContain("lsmcp_delete_symbol");
+    });
 
-    // When TSGO is enabled, LSP tools should be available
-    expect(toolNames).toContain("lsmcp_get_hover");
-    expect(toolNames).toContain("lsmcp_find_references");
-    expect(toolNames).toContain("lsmcp_get_definitions");
-    expect(toolNames).toContain("lsmcp_get_diagnostics");
+    it("should get hover information using TSGO", async () => {
+      if (!client) return;
 
-    // But also should have TypeScript compiler API tools
-    expect(toolNames).toContain("lsmcp_rename_symbol");
-    expect(toolNames).toContain("lsmcp_move_file");
-    expect(toolNames).toContain("lsmcp_delete_symbol");
-  });
-
-  it("should get hover information using TSGO", async () => {
-    if (!client) return;
-
-    // Create a TypeScript file
-    const tsCode = `
+      // Create a TypeScript file
+      const tsCode = `
 interface User {
   id: number;
   name: string;
@@ -639,35 +639,35 @@ const user: User = {
 
 console.log(user.name);
 `;
-    await fs.writeFile(path.join(tmpDir!, "user.ts"), tsCode);
+      await fs.writeFile(path.join(tmpDir!, "user.ts"), tsCode);
 
-    // Get hover information for 'user' using LSP
-    const result = await client.callTool({
-      name: "lsmcp_get_hover",
-      arguments: {
-        root: tmpDir,
-        filePath: "user.ts",
-        line: 7,
-        target: "user",
-      },
+      // Get hover information for 'user' using LSP
+      const result = await client.callTool({
+        name: "lsmcp_get_hover",
+        arguments: {
+          root: tmpDir,
+          filePath: "user.ts",
+          line: 7,
+          target: "user",
+        },
+      });
+
+      expect(result).toBeDefined();
+      expect(result.content).toBeDefined();
+      const typedResult = result as CallToolResult;
+      expect(typedResult.content[0]?.type).toBe("text");
+      if (typedResult.content[0]?.type === "text") {
+        const text = typedResult.content[0].text;
+        expect(text).toContain("User");
+        expect(text).toContain("const user: User");
+      }
     });
 
-    expect(result).toBeDefined();
-    expect(result.content).toBeDefined();
-    const typedResult = result as CallToolResult;
-    expect(typedResult.content[0]?.type).toBe("text");
-    if (typedResult.content[0]?.type === "text") {
-      const text = typedResult.content[0].text;
-      expect(text).toContain("User");
-      expect(text).toContain("const user: User");
-    }
-  });
+    it("should get diagnostics using TSGO", async () => {
+      if (!client) return;
 
-  it("should get diagnostics using TSGO", async () => {
-    if (!client) return;
-
-    // Create a TypeScript file with errors
-    const tsCode = `
+      // Create a TypeScript file with errors
+      const tsCode = `
 function add(a: number, b: number): number {
   return a + b;
 }
@@ -678,31 +678,32 @@ add("hello", "world");
 // Error: missing argument
 add(1);
 `;
-    await fs.writeFile(path.join(tmpDir!, "errors.ts"), tsCode);
+      await fs.writeFile(path.join(tmpDir!, "errors.ts"), tsCode);
 
-    // Get diagnostics using LSP
-    const result = await client.callTool({
-      name: "lsmcp_get_diagnostics",
-      arguments: {
-        root: tmpDir,
-        filePath: "errors.ts",
-      },
-    });
+      // Get diagnostics using LSP
+      const result = await client.callTool({
+        name: "lsmcp_get_diagnostics",
+        arguments: {
+          root: tmpDir,
+          filePath: "errors.ts",
+        },
+      });
 
-    expect(result).toBeDefined();
-    expect(result.content).toBeDefined();
-    const typedResult = result as CallToolResult;
-    expect(typedResult.content[0]?.type).toBe("text");
-    if (typedResult.content[0]?.type === "text") {
-      const text = typedResult.content[0].text;
-      // TSGO might report differently than standard TypeScript
-      if (text.includes("0 errors")) {
-        // TSGO might not detect these errors in the same way
-        console.log("Note: TSGO reported no errors for type mismatches");
-      } else {
-        expect(text).toContain("error");
-        expect(text.toLowerCase()).toMatch(/argument|parameter|type/);
+      expect(result).toBeDefined();
+      expect(result.content).toBeDefined();
+      const typedResult = result as CallToolResult;
+      expect(typedResult.content[0]?.type).toBe("text");
+      if (typedResult.content[0]?.type === "text") {
+        const text = typedResult.content[0].text;
+        // TSGO might report differently than standard TypeScript
+        if (text.includes("0 errors")) {
+          // TSGO might not detect these errors in the same way
+          console.log("Note: TSGO reported no errors for type mismatches");
+        } else {
+          expect(text).toContain("error");
+          expect(text.toLowerCase()).toMatch(/argument|parameter|type/);
+        }
       }
-    }
-  });
-});
+    });
+  },
+);

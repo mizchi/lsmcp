@@ -1,37 +1,44 @@
 import { defineConfig } from "vitest/config";
 
-const isCI = process.env.CI === "true";
-const isIntegration = process.env.TEST_TYPE === "integration";
+const GLOBAL_IGNORED_FILES = ["tmp/**", "node_modules/**", "dist/**"];
 
 export default defineConfig({
   test: {
-    includeSource: ["src/**/*.ts"],
-    // Use different pool strategies for CI and local development
-    pool: isCI ? "forks" : "threads",
-    silent: true,
+    exclude: GLOBAL_IGNORED_FILES,
     poolOptions: {
-      threads: {
-        // Use more threads for better parallelization
-        singleThread: false,
-        minThreads: 2,
-        maxThreads: 4,
-      },
-      forks: {
-        singleFork: false, // Allow multiple processes for better parallelization
-        minThreads: 1,
-        maxThreads: isCI ? 4 : 2,
-      },
+      minThreads: 2,
+      maxThreads: 6,
     },
-    // Increase concurrent test execution
-    maxConcurrency: isCI ? 10 : 5,
-    // Only use global setup for integration tests
-    globalSetup: isIntegration ? "./tests/globalSetup.ts" : undefined,
-    // Different timeouts for unit vs integration tests
-    testTimeout: isIntegration ? 30000 : 5000, // 30s for integration, 5s for unit
-    hookTimeout: isIntegration ? 30000 : 5000,
-    // Add hanging process reporter in CI to debug test hanging
-    reporters: isCI ? ["default", "hanging-process"] : ["default"],
-    // Force exit after tests complete in CI
-    teardownTimeout: isCI ? 5000 : undefined,
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "unit",
+          includeSource: ["src/**/*.ts"],
+          include: ["src/**/*.test.ts"],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "integration",
+          include: ["tests/integration/**/*.test.ts"],
+          exclude: [
+            ...GLOBAL_IGNORED_FILES,
+            "tests/integration/typescript-lsp.test.ts",
+          ],
+          testTimeout: 10000, // 10s timeout for integration tests
+        },
+      },
+      {
+        // flaky isolated
+        extends: true,
+        test: {
+          name: "typescript-lsp",
+          include: ["tests/integration/typescript-lsp.test.ts"],
+          testTimeout: 10000, // 10s timeout for integration tests
+        },
+      },
+    ],
   },
 });

@@ -3,12 +3,12 @@ import { ChildProcess, spawn } from "child_process";
 import {
   initialize as initializeLSPClient,
   shutdown as shutdownLSPClient,
-} from "../src/lsp/lspClient.ts";
-import { lspGetHoverTool } from "../src/lsp/tools/lspGetHover.ts";
-import { lspFindReferencesTool } from "../src/lsp/tools/lspFindReferences.ts";
-import { lspGetDefinitionsTool } from "../src/lsp/tools/lspGetDefinitions.ts";
-import { lspRenameSymbolTool } from "../src/lsp/tools/lspRenameSymbol.ts";
-import { lspGetDocumentSymbolsTool } from "../src/lsp/tools/lspGetDocumentSymbols.ts";
+} from "../../src/lsp/lspClient.ts";
+import { lspGetHoverTool } from "../../src/lsp/tools/lspGetHover.ts";
+import { lspFindReferencesTool } from "../../src/lsp/tools/lspFindReferences.ts";
+import { lspGetDefinitionsTool } from "../../src/lsp/tools/lspGetDefinitions.ts";
+import { lspRenameSymbolTool } from "../../src/lsp/tools/lspRenameSymbol.ts";
+import { lspGetDocumentSymbolsTool } from "../../src/lsp/tools/lspGetDocumentSymbols.ts";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
@@ -356,7 +356,7 @@ const z = 3;`;
       }
 
       // Create a binary file
-      const binaryData = Buffer.from([0x00, 0x01, 0x02, 0xFF, 0xFE, 0xFD]);
+      const binaryData = Buffer.from([0x00, 0x01, 0x02, 0xff, 0xfe, 0xfd]);
       const binaryFile = path.join(tmpDir, "binary.ts");
       await fs.writeFile(binaryFile, binaryData);
 
