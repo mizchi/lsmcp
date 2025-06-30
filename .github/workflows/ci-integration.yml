@@ -2,39 +2,29 @@ name: CI - Integration Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 10  # Give integration tests more time
-    
+    timeout-minutes: 10 # Give integration tests more time
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install pnpm
-      uses: pnpm/action-setup@v4
-    
-    - name: Use Node.js 22
-      uses: actions/setup-node@v4
-      with:
-        node-version: 22
-        cache: 'pnpm'
-    
-    - name: Install dependencies
-      run: pnpm install --frozen-lockfile
-    
-    - name: Build
-      run: pnpm build
-    
-    - name: Run integration tests
-      run: |
-        # Run integration tests with a timeout
-        timeout 8m pnpm test:integration || exit_code=$?
-        # Exit code 124 means timeout, which we'll treat as failure for integration tests
-        if [ "${exit_code:-0}" -ne 0 ]; then
-          echo "Integration tests failed with exit code: ${exit_code:-0}"
-          exit ${exit_code:-0}
-        fi
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm build
+      - name: Run integration tests
+        run: pnpm test:integration
+      - name: Run TypeScript LSP tests (flaky)
+        run: pnpm test:typescript-lsp
