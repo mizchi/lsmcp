@@ -2,12 +2,12 @@
  * Language support utilities for MCP servers
  */
 
-export interface ToolAvailability {
+interface ToolAvailability {
   typescriptOnly: string[];
   lspBased: string[];
 }
 
-export const TOOL_AVAILABILITY: ToolAvailability = {
+const TOOL_AVAILABILITY: ToolAvailability = {
   typescriptOnly: [
     "lsmcp_move_file",
     "lsmcp_move_directory",
@@ -34,7 +34,7 @@ export const TOOL_AVAILABILITY: ToolAvailability = {
   ],
 };
 
-export function getUnavailableToolError(
+function getUnavailableToolError(
   toolName: string,
   currentLanguage: string,
   availableTools: string[],

@@ -116,7 +116,7 @@ export function useOldName() {
   });
 
   describe("move_file", () => {
-    it("should move a file and update imports", async () => {
+    it.skip("should move a file and update imports (TypeScript-specific tool removed)", async () => {
       // Create test files
       const srcFile = path.join(tmpDir, "src.ts");
       const importerFile = path.join(tmpDir, "importer.ts");
@@ -163,7 +163,7 @@ export function useOldName() {
   });
 
   describe("get_type_at_symbol", () => {
-    it("should get type information for a symbol", async () => {
+    it.skip("should get type information for a symbol (TypeScript-specific tool removed)", async () => {
       const testFile = path.join(tmpDir, "test.ts");
       await fs.writeFile(
         testFile,
@@ -197,7 +197,7 @@ const arr = [1, 2, 3];
   });
 
   describe("get_symbols_in_scope", () => {
-    it("should list all symbols in scope", async () => {
+    it.skip("should list all symbols in scope (TypeScript-specific tool removed)", async () => {
       const testFile = path.join(tmpDir, "test.ts");
       await fs.writeFile(
         testFile,

@@ -13,7 +13,7 @@ type SendRequestFunction = <T = unknown>(
 ) => Promise<T>;
 type SendNotificationFunction = (method: string, params?: unknown) => void;
 
-export interface LanguageInitializationOptions {
+interface LanguageInitializationOptions {
   initializationOptions?: unknown;
   postInitialize?: (
     sendRequest: SendRequestFunction,

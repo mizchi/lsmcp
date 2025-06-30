@@ -1,7 +1,7 @@
 import micromatch from "micromatch";
 import path from "path";
 
-export interface LanguageMapping {
+interface LanguageMapping {
   pattern: string; // Glob pattern like "*.rs", "**/*.{ts,tsx}", "src/**/*.py"
   languageId: string; // VSCode language ID
 }

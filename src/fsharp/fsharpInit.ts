@@ -12,7 +12,7 @@ type SendNotificationFunction = (method: string, params?: unknown) => void;
 /**
  * Find F# project files in a directory
  */
-export async function findFSharpProjectFiles(dir: string): Promise<string[]> {
+async function findFSharpProjectFiles(dir: string): Promise<string[]> {
   const projectFiles: string[] = [];
 
   async function search(currentDir: string, depth: number = 0): Promise<void> {

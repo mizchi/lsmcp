@@ -3,7 +3,7 @@ import { findLinesContaining } from "./findLinesContaining.ts";
 /**
  * Result type for line resolution operations
  */
-export type LineResolutionResult =
+type LineResolutionResult =
   | { success: true; lineIndex: number }
   | { success: false; error: string };
 

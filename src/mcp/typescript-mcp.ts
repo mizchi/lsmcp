@@ -7,14 +7,6 @@ import {
   StdioServerTransport,
   type ToolDef,
 } from "./_mcplib.ts";
-import { moveFileTool } from "../ts/tools/tsMoveFile.ts";
-import { moveDirectoryTool } from "../ts/tools/tsMoveDirectory.ts";
-import { getModuleSymbolsTool } from "../ts/tools/tsGetModuleSymbols.ts";
-import { getTypeInModuleTool } from "../ts/tools/tsGetTypeInModule.ts";
-import { getTypeAtSymbolTool } from "../ts/tools/tsGetTypeAtSymbol.ts";
-import { getSymbolsInScopeTool } from "../ts/tools/tsGetSymbolsInScope.ts";
-import { searchSymbolsTool } from "../ts/tools/tsSearchSymbols.ts";
-import { findImportCandidatesTool } from "../ts/tools/tsFindImportCandidates.ts";
 import { lspGetHoverTool } from "../lsp/tools/lspGetHover.ts";
 import { lspFindReferencesTool } from "../lsp/tools/lspFindReferences.ts";
 import { lspGetDefinitionsTool } from "../lsp/tools/lspGetDefinitions.ts";
@@ -27,6 +19,9 @@ import { lspGetSignatureHelpTool } from "../lsp/tools/lspGetSignatureHelp.ts";
 import { lspFormatDocumentTool } from "../lsp/tools/lspFormatDocument.ts";
 import { lspGetCodeActionsTool } from "../lsp/tools/lspGetCodeActions.ts";
 import { listToolsTool } from "./tools/listTools.ts";
+import { extractTypeTool } from "../ts/tools/tsExtractType.ts";
+import { generateAccessorsTool } from "../ts/tools/tsGenerateAccessors.ts";
+import { callHierarchyTool } from "../ts/tools/tsCallHierarchy.ts";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { spawn } from "child_process";
@@ -51,17 +46,9 @@ const tools: ToolDef<any>[] = [
   // Only include TypeScript-specific tools when not in forced LSP mode
   ...(process.env.FORCE_LSP !== "true"
     ? [
-      moveFileTool,
-      moveDirectoryTool,
-      getModuleSymbolsTool,
-      getTypeInModuleTool,
-      getTypeAtSymbolTool,
-      getSymbolsInScopeTool,
-      searchSymbolsTool,
-      findImportCandidatesTool,
-      // WIP: does not work yet correctly
-      // getModuleGraphTool,
-      // getRelatedModulesTool,
+      extractTypeTool,
+      generateAccessorsTool,
+      callHierarchyTool,
     ]
     : []),
 

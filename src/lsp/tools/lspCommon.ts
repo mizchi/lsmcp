@@ -1,32 +1,9 @@
-import { z } from "zod";
 import path from "path";
 import fs from "fs/promises";
 import { pathToFileURL } from "url";
 import { getLSPClient } from "../lspClient.ts";
 import { resolveLineParameter } from "../../textUtils/resolveLineParameter.ts";
 import { ErrorContext, formatError } from "../../mcp/utils/errorHandler.ts";
-
-// Common schema shapes for LSP tools
-export const filePathShape = {
-  root: z.string().describe("Root directory for resolving relative paths"),
-  filePath: z
-    .string()
-    .describe("File path (relative to root)"),
-};
-
-export const lineParameterShape = {
-  line: z
-    .union([z.number(), z.string()])
-    .describe("Line number (1-based) or string to match in the line"),
-};
-
-export const symbolNameShape = {
-  symbolName: z.string().describe("Name of the symbol"),
-};
-
-export const characterShape = {
-  character: z.number().describe("Character position in the line (0-based)"),
-};
 
 // Common file operations
 export async function prepareFileContext(

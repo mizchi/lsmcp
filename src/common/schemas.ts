@@ -39,33 +39,3 @@ export const fileLocationSchema = z.object({
   root: commonSchemas.root,
   filePath: commonSchemas.filePath,
 });
-
-export const fileLineLocationSchema = z.object({
-  root: commonSchemas.root,
-  filePath: commonSchemas.filePath,
-  line: commonSchemas.line,
-});
-
-export const symbolLocationSchema = z.object({
-  root: commonSchemas.root,
-  filePath: commonSchemas.filePath,
-  line: commonSchemas.line,
-  symbolName: commonSchemas.symbolName,
-});
-
-export const symbolLocationWithIndexSchema = z.object({
-  root: commonSchemas.root,
-  filePath: commonSchemas.filePath,
-  line: commonSchemas.line,
-  symbolName: commonSchemas.symbolName,
-  symbolIndex: commonSchemas.symbolIndex,
-});
-
-export const definitionContextSchema = z.object({
-  root: commonSchemas.root,
-  filePath: commonSchemas.filePath,
-  line: commonSchemas.line,
-  symbolName: commonSchemas.symbolName,
-  before: commonSchemas.before,
-  after: commonSchemas.after,
-});

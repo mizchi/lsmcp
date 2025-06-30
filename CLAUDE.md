@@ -238,6 +238,21 @@ These tools work with any language that has an LSP server:
 
 Note: When using `--language typescript`, both LSP and TypeScript-specific tools are available.
 
+## Recent Changes (2025-01-30)
+
+1. **New TypeScript Language Server Features**
+   - Added `lsmcp_extract_type` - Extract type expressions to type alias or interface
+   - Added `lsmcp_generate_accessors` - Generate get/set accessor methods for properties
+   - Added `lsmcp_call_hierarchy` - View incoming/outgoing call hierarchy for functions
+   - These tools wrap advanced TypeScript Language Server capabilities
+
+2. **Removed ts-morph Dependency**
+   - Deleted all ts-morph based implementations
+   - Removed TypeScript Compiler API based tools
+   - All functionality now uses LSP-based implementations
+   - Use `lsp_get_document_symbols` instead of `lsmcp_get_type_in_module`
+   - Use `lsp_get_workspace_symbols` or `lsp_get_completion` instead of `lsmcp_find_import_candidates`
+
 ## Recent Changes (2025-01-29)
 
 1. **TypeScript Tool Consolidation**

@@ -11,7 +11,7 @@ import {
 /**
  * Language configuration
  */
-export interface LanguageConfig {
+interface LanguageConfig {
   name: string;
   lspCommand: string;
   extensions: string[];
@@ -53,7 +53,7 @@ const languageConfigs: Record<string, LanguageConfig> = {
 /**
  * Get language configuration
  */
-export function getLanguageConfig(
+function getLanguageConfig(
   language: string,
 ): LanguageConfig | undefined {
   return languageConfigs[language.toLowerCase()];
