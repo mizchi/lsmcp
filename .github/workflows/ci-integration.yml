@@ -26,5 +26,5 @@ jobs:
         run: pnpm build
       - name: Run integration tests
         run: pnpm test:integration
-      - name: Run TypeScript LSP tests (flaky)
+      - name: Run TypeScript LSP tests
         run: pnpm test:typescript-lsp

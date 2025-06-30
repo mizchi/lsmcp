@@ -28,3 +28,9 @@ jobs:
         run: pnpm build
       - name: Run unit tests
         run: pnpm test:unit
+      
+      - name: Type check
+        run: pnpm typecheck
+      
+      - name: Lint
+        run: pnpm lint
