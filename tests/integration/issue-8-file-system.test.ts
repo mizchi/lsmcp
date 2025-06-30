@@ -237,8 +237,8 @@ const num: number = "not a number";
       await fs.writeFile(
         unicodeFilePath,
         `
-// 日本語のコメント 🚀
-const 変数: string = 123; // エラー
+// Japanese comment 🚀
+const variable: string = 123; // Error
 const emoji = "😊";
 const value: number = "wrong"; // Another error
 `,

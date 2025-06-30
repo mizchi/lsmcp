@@ -29,7 +29,7 @@ export interface RenameSuccess {
 }
 
 /**
- * プロジェクトを作成または取得
+ * Create or get a project
  */
 export function createProject(tsConfigPath?: string): Project {
   if (tsConfigPath) {
@@ -60,20 +60,20 @@ export function createProject(tsConfigPath?: string): Project {
 }
 
 /**
- * ファイルパスと行番号、シンボル名を指定してシンボルのリネームを実行
+ * Execute symbol rename by specifying file path, line number, and symbol name
  */
 export async function renameSymbol(
   project: Project,
   request: RenameRequest,
 ): Promise<Result<RenameSuccess, string>> {
   try {
-    // ソースファイルを取得
+    // Get source file
     const sourceFile = project.getSourceFile(request.filePath);
     if (!sourceFile) {
       return err(`File not found: ${request.filePath}`);
     }
 
-    // 指定された行のシンボルを探す
+    // Find symbol at specified line
     let node: Node | undefined;
     try {
       node = findSymbolAtLine(sourceFile, request.line, request.symbolName);
@@ -91,10 +91,10 @@ export async function renameSymbol(
       );
     }
 
-    // リネーム前の状態を記録
+    // Record state before rename
     const beforeStates = captureFileStates(project);
 
-    // リネームを実行
+    // Execute rename
     if (Node.isIdentifier(node)) {
       node.rename(request.newName, {
         renameInComments: request.renameInComments || false,
@@ -115,10 +115,10 @@ export async function renameSymbol(
       return err(`Cannot rename node of type ${node.getKindName()}`);
     }
 
-    // 変更を検出
+    // Detect changes
     const changedFiles = detectChanges(project, beforeStates);
 
-    // プロジェクトを保存
+    // Save project
     await project.save();
 
     return ok({
@@ -132,7 +132,7 @@ export async function renameSymbol(
 }
 
 /**
- * 指定された行とシンボル名に一致するノードを探す
+ * Find a node that matches the specified line and symbol name
  */
 function findSymbolAtLine(
   sourceFile: SourceFile,
@@ -144,30 +144,30 @@ function findSymbolAtLine(
   sourceFile.forEachDescendant((node) => {
     const startLine = sourceFile.getLineAndColumnAtPos(node.getStart()).line;
 
-    // 指定された行から始まるノードのみをチェック
+    // Check only nodes starting from the specified line
     if (line === startLine) {
-      // 識別子の場合
+      // For identifiers
       if (Node.isIdentifier(node) && node.getText() === symbolName) {
-        // 親が名前付きノードの場合は、親ノードを優先
+        // Prioritize parent node if it's a named node
         const parent = node.getParent();
         if (hasGetNameMethod(parent)) {
           try {
             const namedParent = parent as Node & { getName: () => string };
             if (namedParent.getName() === symbolName) {
-              // 親ノードを使用（重複を避けるため）
+              // Use parent node (to avoid duplicates)
               if (!candidateNodes.some((n) => n === parent)) {
                 candidateNodes.push(parent);
               }
-              return; // 識別子自体は追加しない
+              return; // Don't add the identifier itself
             }
           } catch {
-            // getName()が使えない場合は識別子を使用
+            // Use identifier if getName() is not available
           }
         }
         candidateNodes.push(node);
       }
 
-      // 名前付きノードの場合（クラス、関数、変数など）
+      // For named nodes (classes, functions, variables, etc.)
       if (hasGetNameMethod(node)) {
         try {
           const namedNode = node as Node & { getName: () => string };
@@ -175,28 +175,28 @@ function findSymbolAtLine(
             candidateNodes.push(node);
           }
         } catch {
-          // getName()が使えないノードは無視
+          // Ignore nodes where getName() is not available
         }
       }
 
-      // 変数宣言の場合
+      // For variable declarations
       if (Node.isVariableDeclaration(node)) {
         const nameNode = node.getNameNode();
         if (Node.isIdentifier(nameNode) && nameNode.getText() === symbolName) {
-          candidateNodes.push(node); // 変数宣言ノードを使用
+          candidateNodes.push(node); // Use variable declaration node
         }
       }
     }
   });
 
-  // 重複を除去（同じシンボルを表す異なるノードタイプを統合）
+  // Remove duplicates (merge different node types representing the same symbol)
   const uniqueNodes = candidateNodes.filter((node) => {
-    // 同じ位置から始まる他のノードがある場合、より具体的なノードを優先
+    // If there are other nodes starting from the same position, prioritize more specific nodes
     const nodeStart = node.getStart();
     const duplicates = candidateNodes.filter((n) => n.getStart() === nodeStart);
 
     if (duplicates.length > 1) {
-      // 名前付きノード（クラス、関数など）を優先
+      // Prioritize named nodes (classes, functions, etc.)
       const namedNodes = duplicates.filter(
         (n) => hasGetNameMethod(n) || Node.isVariableDeclaration(n),
       );
@@ -208,9 +208,9 @@ function findSymbolAtLine(
     return true;
   });
 
-  // まだ複数の候補がある場合、同じ行の異なる位置にある可能性
+  // If there are still multiple candidates, they might be at different positions on the same line
   if (uniqueNodes.length > 1) {
-    // 列位置でソートして、同じ列位置のものだけをチェック
+    // Sort by column position and check only those at the same column
     const firstNodeCol = sourceFile.getLineAndColumnAtPos(
       uniqueNodes[0].getStart(),
     ).column;
@@ -229,7 +229,7 @@ function findSymbolAtLine(
       );
     }
 
-    // 異なる列位置の場合は最初の出現を使用
+    // Use the first occurrence if at different column positions
     return uniqueNodes[0];
   }
 
@@ -237,7 +237,7 @@ function findSymbolAtLine(
 }
 
 /**
- * 全ソースファイルの現在の状態をキャプチャ
+ * Capture current state of all source files
  */
 function captureFileStates(project: Project): Map<string, string> {
   const states = new Map<string, string>();
@@ -248,7 +248,7 @@ function captureFileStates(project: Project): Map<string, string> {
 }
 
 /**
- * ファイルの変更を検出して詳細を返す
+ * Detect file changes and return details
  */
 function detectChanges(
   project: Project,
@@ -276,7 +276,7 @@ function detectChanges(
 }
 
 /**
- * テキストの差分を検出（簡易版）
+ * Detect text differences (simplified version)
  */
 function diffTexts(
   _sourceFile: SourceFile,
@@ -298,7 +298,7 @@ function diffTexts(
     const afterLine = afterLines[i] || "";
 
     if (beforeLine !== afterLine) {
-      // 簡易的に行全体を変更として記録
+      // Simply record the entire line as a change
       changes.push({
         line: i + 1,
         column: 1,
@@ -312,7 +312,7 @@ function diffTexts(
 }
 
 /**
- * ノードがrename()メソッドを持っているかチェック
+ * Check if a node has the rename() method
  */
 function hasRenameMethod(node: Node): boolean {
   return (
@@ -331,7 +331,7 @@ function hasRenameMethod(node: Node): boolean {
 }
 
 /**
- * ノードがgetName()メソッドを持っているかチェック
+ * Check if a node has the getName() method
  */
 function hasGetNameMethod(node: Node): boolean {
   return (
@@ -348,14 +348,14 @@ function hasGetNameMethod(node: Node): boolean {
 }
 
 /**
- * プロジェクトにソースファイルを追加
+ * Add a source file to the project
  */
 export function addSourceFile(project: Project, filePath: string): SourceFile {
   return project.addSourceFileAtPath(filePath);
 }
 
 /**
- * プロジェクトに複数のソースファイルを追加
+ * Add multiple source files to the project
  */
 export function addSourceFiles(project: Project, glob: string): SourceFile[] {
   return project.addSourceFilesAtPaths(glob);

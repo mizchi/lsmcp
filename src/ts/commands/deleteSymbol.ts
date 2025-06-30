@@ -84,7 +84,7 @@ function removeDeclaration(declaration: Node): Result<void, string> {
 }
 
 /**
- * ファイルパスと行番号、シンボル名を指定してシンボルを削除
+ * Delete a symbol specified by file path, line number, and symbol name
  */
 export async function deleteSymbol(
   project: Project,
@@ -254,7 +254,7 @@ function checkNodeAtLine(
 }
 
 /**
- * 指定された行とシンボル名に一致するノードを探す
+ * Find a node that matches the specified line and symbol name
  */
 function findSymbolAtLine(
   sourceFile: SourceFile,
