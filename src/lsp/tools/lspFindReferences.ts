@@ -159,7 +159,7 @@ async function findReferencesWithLSP(
 }
 
 export const lspFindReferencesTool: ToolDef<typeof schema> = {
-  name: "lsmcp_find_references",
+  name: "find_references",
   description: "Find all references to symbol across the codebase using LSP",
   schema,
   execute: async (args: z.infer<typeof schema>) => {
@@ -204,7 +204,7 @@ if (import.meta.vitest) {
     });
 
     it("should have correct tool definition", () => {
-      expect(lspFindReferencesTool.name).toBe("lsmcp_find_references");
+      expect(lspFindReferencesTool.name).toBe("find_references");
       expect(lspFindReferencesTool.description).toContain("references");
       expect(lspFindReferencesTool.schema.shape).toBeDefined();
       expect(lspFindReferencesTool.schema.shape.root).toBeDefined();

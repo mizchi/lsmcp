@@ -224,7 +224,7 @@ function formatDeleteSymbolResult(result: DeleteSymbolResult): string {
 }
 
 export const lspDeleteSymbolTool: ToolDef<typeof schema> = {
-  name: "lsmcp_delete_symbol",
+  name: "delete_symbol",
   description:
     "Delete a symbol (variable, function, class, etc.) and optionally all its references using LSP",
   schema,

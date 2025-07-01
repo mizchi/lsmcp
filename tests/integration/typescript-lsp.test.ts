@@ -109,15 +109,15 @@ describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
     const toolNames = response.tools.map((t) => t.name);
 
     // Check for LSP tools
-    expect(toolNames).toContain("lsmcp_get_hover");
-    expect(toolNames).toContain("lsmcp_find_references");
-    expect(toolNames).toContain("lsmcp_get_definitions");
-    expect(toolNames).toContain("lsmcp_get_diagnostics");
-    expect(toolNames).toContain("lsmcp_rename_symbol");
-    expect(toolNames).toContain("lsmcp_get_document_symbols");
-    expect(toolNames).toContain("lsmcp_get_completion");
-    expect(toolNames).toContain("lsmcp_get_signature_help");
-    expect(toolNames).toContain("lsmcp_format_document");
+    expect(toolNames).toContain("get_hover");
+    expect(toolNames).toContain("find_references");
+    expect(toolNames).toContain("get_definitions");
+    expect(toolNames).toContain("get_diagnostics");
+    expect(toolNames).toContain("rename_symbol");
+    expect(toolNames).toContain("get_document_symbols");
+    expect(toolNames).toContain("get_completion");
+    expect(toolNames).toContain("get_signature_help");
+    expect(toolNames).toContain("format_document");
   });
 
   it("should get hover information for TypeScript code", async () => {
@@ -141,7 +141,7 @@ console.log(person.name);
 
     // Get hover information for 'person'
     const result = await client.callTool({
-      name: "lsmcp_get_hover",
+      name: "get_hover",
       arguments: {
         root: tmpDir,
         filePath: "test.ts",
@@ -173,7 +173,7 @@ console.log(message.);
 
     // Get completions after 'message.'
     const result = await client.callTool({
-      name: "lsmcp_get_completion",
+      name: "get_completion",
       arguments: {
         root: tmpDir,
         filePath: "completion.ts",
@@ -211,7 +211,7 @@ greet("Alice", );
 
     // Get signature help inside greet call
     const result = await client.callTool({
-      name: "lsmcp_get_signature_help",
+      name: "get_signature_help",
       arguments: {
         root: tmpDir,
         filePath: "signature.ts",
@@ -246,7 +246,7 @@ console.log("Hello"  )  ;
 
     // Format the document
     const result = await client.callTool({
-      name: "lsmcp_format_document",
+      name: "format_document",
       arguments: {
         root: tmpDir,
         filePath: "format.ts",
@@ -289,7 +289,7 @@ const total = calculateSum(10, 20);
 
     // Rename 'calculateSum' to 'addNumbers'
     const result = await client.callTool({
-      name: "lsmcp_rename_symbol",
+      name: "rename_symbol",
       arguments: {
         root: tmpDir,
         filePath: "math.ts",
@@ -347,7 +347,7 @@ instance.myProperty = "value"; // Error: private property
 
     // Get code actions for the error line
     const result = await client.callTool({
-      name: "lsmcp_get_code_actions",
+      name: "get_code_actions",
       arguments: {
         root: tmpDir,
         filePath: "codeaction.ts",
@@ -451,7 +451,7 @@ console.log(greeting);
 
       // Test hover
       const result = await client.callTool({
-        name: "lsmcp_get_hover",
+        name: "get_hover",
         arguments: {
           root: tmpDir,
           filePath: "test.ts",
@@ -502,7 +502,7 @@ console.log(content);
 
       // Test diagnostics
       const result = await client.callTool({
-        name: "lsmcp_get_diagnostics",
+        name: "get_diagnostics",
         arguments: {
           root: tmpDir,
           filePath: "deno_test.ts",

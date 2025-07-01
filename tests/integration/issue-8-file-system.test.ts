@@ -70,7 +70,7 @@ console.log(undefinedVariable);
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       let result = (await client.callTool({
-        name: "lsmcp_get_diagnostics",
+        name: "get_diagnostics",
         arguments: {
           root: tmpDir,
           filePath: testFile,
@@ -100,7 +100,7 @@ console.log(undefinedVariable);
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       result = (await client.callTool({
-        name: "lsmcp_get_diagnostics",
+        name: "get_diagnostics",
         arguments: {
           root: tmpDir,
           filePath: testFile,
@@ -120,7 +120,7 @@ const num: number = "not a number";
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       result = (await client.callTool({
-        name: "lsmcp_get_diagnostics",
+        name: "get_diagnostics",
         arguments: {
           root: tmpDir,
           filePath: testFile,
@@ -174,7 +174,7 @@ const num: number = "not a number";
 
       // Get diagnostics via symlink
       const result = (await client.callTool({
-        name: "lsmcp_get_diagnostics",
+        name: "get_diagnostics",
         arguments: {
           root: tmpDir,
           filePath: symlinkFile,
@@ -190,7 +190,7 @@ const num: number = "not a number";
 
       // Check again via symlink
       const result2 = (await client.callTool({
-        name: "lsmcp_get_diagnostics",
+        name: "get_diagnostics",
         arguments: {
           root: tmpDir,
           filePath: symlinkFile,
@@ -248,7 +248,7 @@ const value: number = "wrong"; // Another error
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       const result = (await client.callTool({
-        name: "lsmcp_get_diagnostics",
+        name: "get_diagnostics",
         arguments: {
           root: tmpDir,
           filePath: unicodeFile,

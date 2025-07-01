@@ -216,7 +216,7 @@ async function handleGetCompletion({
 }
 
 export const lspGetCompletionTool: ToolDef<typeof schema> = {
-  name: "lsmcp_get_completion",
+  name: "get_completion",
   description:
     "Get code completion suggestions at a specific position in a file using LSP",
   schema,

@@ -134,7 +134,7 @@ async function handleGetWorkspaceSymbols({
 }
 
 export const lspGetWorkspaceSymbolsTool: ToolDef<typeof schema> = {
-  name: "lsmcp_get_workspace_symbols",
+  name: "get_workspace_symbols",
   description:
     "Search for symbols (classes, functions, variables, etc.) across the entire workspace using LSP",
   schema,

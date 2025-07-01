@@ -62,7 +62,7 @@ function foo(): string {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     const result = (await client.callTool({
-      name: "lsmcp_get_diagnostics",
+      name: "get_diagnostics",
       arguments: {
         root: tmpDir,
         filePath: testFile,
@@ -88,7 +88,7 @@ function foo(): string {
 
     // First check - should have error
     let result = (await client.callTool({
-      name: "lsmcp_get_diagnostics",
+      name: "get_diagnostics",
       arguments: {
         root: tmpDir,
         filePath: testFile,
@@ -105,7 +105,7 @@ function foo(): string {
 
     // Second check - should have no errors
     result = (await client.callTool({
-      name: "lsmcp_get_diagnostics",
+      name: "get_diagnostics",
       arguments: {
         root: tmpDir,
         filePath: testFile,
@@ -130,7 +130,7 @@ function foo(): string {
       await fs.writeFile(filePath, change.content);
 
       const result = (await client.callTool({
-        name: "lsmcp_get_diagnostics",
+        name: "get_diagnostics",
         arguments: {
           root: tmpDir,
           filePath: testFile,
@@ -164,7 +164,7 @@ function foo(): string {
     const results = (await Promise.all(
       files.map((file) =>
         client.callTool({
-          name: "lsmcp_get_diagnostics",
+          name: "get_diagnostics",
           arguments: {
             root: tmpDir,
             filePath: file.name,
@@ -191,7 +191,7 @@ function foo(): string {
 
     // Check TypeScript file - should have error
     const tsResult = (await client.callTool({
-      name: "lsmcp_get_diagnostics",
+      name: "get_diagnostics",
       arguments: {
         root: tmpDir,
         filePath: tsFile,
@@ -202,7 +202,7 @@ function foo(): string {
 
     // Check JavaScript file - should have no errors
     const jsResult = (await client.callTool({
-      name: "lsmcp_get_diagnostics",
+      name: "get_diagnostics",
       arguments: {
         root: tmpDir,
         filePath: jsFile,

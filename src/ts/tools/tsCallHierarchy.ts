@@ -41,7 +41,7 @@ interface Range {
 }
 
 export const callHierarchyTool: ToolDef<typeof schema> = {
-  name: "lsmcp_call_hierarchy",
+  name: "call_hierarchy",
   description:
     "Get call hierarchy (incoming/outgoing calls) for a function or method (TypeScript only)",
   schema,

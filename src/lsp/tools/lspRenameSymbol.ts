@@ -473,7 +473,7 @@ async function findProjectFiles(rootPath: string): Promise<string[]> {
 }
 
 export const lspRenameSymbolTool: ToolDef<typeof schema> = {
-  name: "lsmcp_rename_symbol",
+  name: "rename_symbol",
   description:
     "Rename a symbol across the codebase using Language Server Protocol",
   schema,

@@ -94,7 +94,7 @@ export function useOldName() {
       );
 
       const result = await client.callTool({
-        name: "lsmcp_rename_symbol",
+        name: "rename_symbol",
         arguments: {
           root: tmpDir,
           filePath: "test.ts",
@@ -132,7 +132,7 @@ export function useOldName() {
       await expect(fs.access(importerFile)).resolves.toBeUndefined();
 
       const result = await client.callTool({
-        name: "lsmcp_move_file",
+        name: "move_file",
         arguments: {
           root: tmpDir,
           oldPath: "src.ts",
@@ -175,7 +175,7 @@ const arr = [1, 2, 3];
       );
 
       const result = await client.callTool({
-        name: "lsmcp_get_type_at_symbol",
+        name: "get_type_at_symbol",
         arguments: {
           root: tmpDir,
           filePath: "test.ts",
@@ -215,7 +215,7 @@ function testFunction() {
       );
 
       const result = await client.callTool({
-        name: "lsmcp_get_symbols_in_scope",
+        name: "get_symbols_in_scope",
         arguments: {
           root: tmpDir,
           filePath: "test.ts",
@@ -252,7 +252,7 @@ export const keepThis = "keep";
       );
 
       const result = await client.callTool({
-        name: "lsmcp_delete_symbol",
+        name: "delete_symbol",
         arguments: {
           root: tmpDir,
           filePath: "test.ts",

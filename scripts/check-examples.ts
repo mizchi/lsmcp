@@ -111,7 +111,7 @@ async function testProjectDiagnostics(
 
       try {
         const result = (await client.callTool({
-          name: "lsmcp_get_diagnostics",
+          name: "get_diagnostics",
           arguments: {
             root: projectPath,
             filePath: testFile,

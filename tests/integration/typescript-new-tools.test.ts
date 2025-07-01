@@ -83,7 +83,7 @@ describe.skip("TypeScript New Tools Integration (Experimental - TypeScript LSP l
     }
   }, 10000);
 
-  describe("lsmcp_extract_type", () => {
+  describe("extract_type", () => {
     it("should extract type expression to type alias", async () => {
       // Create test file
       const testFile = path.join(tmpDir, "extract.ts");
@@ -99,7 +99,7 @@ describe.skip("TypeScript New Tools Integration (Experimental - TypeScript LSP l
       );
 
       const result = await client.callTool({
-        name: "lsmcp_extract_type",
+        name: "extract_type",
         arguments: {
           root: tmpDir,
           filePath: "extract.ts",
@@ -141,7 +141,7 @@ describe.skip("TypeScript New Tools Integration (Experimental - TypeScript LSP l
       );
 
       const result = await client.callTool({
-        name: "lsmcp_extract_type",
+        name: "extract_type",
         arguments: {
           root: tmpDir,
           filePath: "extract2.ts",
@@ -168,7 +168,7 @@ describe.skip("TypeScript New Tools Integration (Experimental - TypeScript LSP l
     });
   });
 
-  describe("lsmcp_generate_accessors", () => {
+  describe("generate_accessors", () => {
     it("should generate get/set accessors for class property", async () => {
       const testFile = path.join(tmpDir, "class.ts");
       await fs.writeFile(
@@ -185,7 +185,7 @@ describe.skip("TypeScript New Tools Integration (Experimental - TypeScript LSP l
       );
 
       const result = await client.callTool({
-        name: "lsmcp_generate_accessors",
+        name: "generate_accessors",
         arguments: {
           root: tmpDir,
           filePath: "class.ts",
@@ -210,7 +210,7 @@ describe.skip("TypeScript New Tools Integration (Experimental - TypeScript LSP l
     });
   });
 
-  describe("lsmcp_call_hierarchy", () => {
+  describe("call_hierarchy", () => {
     it("should show call hierarchy for functions", async () => {
       // Create multiple files for call hierarchy
       await fs.writeFile(
@@ -260,7 +260,7 @@ function cleanData(data: string) {
 
       // Test incoming calls
       const incomingResult = await client.callTool({
-        name: "lsmcp_call_hierarchy",
+        name: "call_hierarchy",
         arguments: {
           root: tmpDir,
           filePath: "processor.ts",
@@ -283,7 +283,7 @@ function cleanData(data: string) {
 
       // Test outgoing calls
       const outgoingResult = await client.callTool({
-        name: "lsmcp_call_hierarchy",
+        name: "call_hierarchy",
         arguments: {
           root: tmpDir,
           filePath: "main.ts",
@@ -315,7 +315,7 @@ function cleanData(data: string) {
       );
 
       const result = await client.callTool({
-        name: "lsmcp_call_hierarchy",
+        name: "call_hierarchy",
         arguments: {
           root: tmpDir,
           filePath: "isolated.ts",

@@ -89,16 +89,16 @@ describe("TypeScript New Tools Basic Integration", () => {
       const toolNames = response.tools.map((t) => t.name);
 
       // Check that the new tools are available
-      expect(toolNames).toContain("lsmcp_extract_type");
-      expect(toolNames).toContain("lsmcp_generate_accessors");
-      expect(toolNames).toContain("lsmcp_call_hierarchy");
+      expect(toolNames).toContain("extract_type");
+      expect(toolNames).toContain("generate_accessors");
+      expect(toolNames).toContain("call_hierarchy");
     });
   });
 
   describe("Tool error handling", () => {
     it("should handle non-existent file gracefully for extract_type", async () => {
       const result = await client.callTool({
-        name: "lsmcp_extract_type",
+        name: "extract_type",
         arguments: {
           root: tmpDir,
           filePath: "non-existent.ts",
@@ -121,7 +121,7 @@ describe("TypeScript New Tools Basic Integration", () => {
 
     it("should handle non-existent file gracefully for generate_accessors", async () => {
       const result = await client.callTool({
-        name: "lsmcp_generate_accessors",
+        name: "generate_accessors",
         arguments: {
           root: tmpDir,
           filePath: "non-existent.ts",
@@ -143,7 +143,7 @@ describe("TypeScript New Tools Basic Integration", () => {
 
     it("should handle non-existent file gracefully for call_hierarchy", async () => {
       const result = await client.callTool({
-        name: "lsmcp_call_hierarchy",
+        name: "call_hierarchy",
         arguments: {
           root: tmpDir,
           filePath: "non-existent.ts",
@@ -181,7 +181,7 @@ function caller() {
 
       // Try to get call hierarchy - even if it returns no results, it shouldn't crash
       const result = await client.callTool({
-        name: "lsmcp_call_hierarchy",
+        name: "call_hierarchy",
         arguments: {
           root: tmpDir,
           filePath: "simple.ts",

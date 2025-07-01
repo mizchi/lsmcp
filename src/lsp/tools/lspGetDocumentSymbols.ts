@@ -155,7 +155,7 @@ async function handleGetDocumentSymbols({
 }
 
 export const lspGetDocumentSymbolsTool: ToolDef<typeof schema> = {
-  name: "lsmcp_get_document_symbols",
+  name: "get_document_symbols",
   description:
     "Get all symbols (functions, classes, variables, etc.) in a document using LSP",
   schema,

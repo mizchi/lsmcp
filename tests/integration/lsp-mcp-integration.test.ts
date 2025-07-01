@@ -105,12 +105,12 @@ describe.skip("LSP MCP integration tests", () => {
 
     // Verify all LSP tools are available
     const toolNames = tools.tools.map((t) => t.name);
-    expect(toolNames).toContain("lsmcp_get_hover");
-    expect(toolNames).toContain("lsmcp_find_references");
-    expect(toolNames).toContain("lsmcp_get_definitions");
-    expect(toolNames).toContain("lsmcp_get_diagnostics");
-    expect(toolNames).toContain("lsmcp_rename_symbol");
-    expect(toolNames).toContain("lsmcp_get_document_symbols");
+    expect(toolNames).toContain("get_hover");
+    expect(toolNames).toContain("find_references");
+    expect(toolNames).toContain("get_definitions");
+    expect(toolNames).toContain("get_diagnostics");
+    expect(toolNames).toContain("rename_symbol");
+    expect(toolNames).toContain("get_document_symbols");
   });
 
   it("should execute hover tool via MCP", async () => {
@@ -126,7 +126,7 @@ console.log(message);
 
     // Execute hover tool
     const result = await client.callTool({
-      name: "lsmcp_get_hover",
+      name: "get_hover",
       arguments: {
         root: tmpDir,
         filePath: "hover-test.ts",
@@ -164,7 +164,7 @@ const greeting = greet("Bob");
 
     // Find references to 'greet' function
     const result = await client.callTool({
-      name: "lsmcp_find_references",
+      name: "find_references",
       arguments: {
         root: tmpDir,
         filePath: "module.ts",
@@ -198,7 +198,7 @@ console.log(calculateSum(10, 20));
 
     // Rename 'calculateSum' to 'computeSum'
     const result = await client.callTool({
-      name: "lsmcp_rename_symbol",
+      name: "rename_symbol",
       arguments: {
         root: tmpDir,
         filePath: "rename-test.ts",
@@ -251,7 +251,7 @@ function addEmployee(emp: Employee): void {
 
     // Get document symbols
     const result = await client.callTool({
-      name: "lsmcp_get_document_symbols",
+      name: "get_document_symbols",
       arguments: {
         root: tmpDir,
         filePath: "symbols-test.ts",
@@ -274,7 +274,7 @@ function addEmployee(emp: Employee): void {
 
     // Try to get hover on non-existent file
     const result = await client.callTool({
-      name: "lsmcp_get_hover",
+      name: "get_hover",
       arguments: {
         root: tmpDir,
         filePath: "non-existent.ts",

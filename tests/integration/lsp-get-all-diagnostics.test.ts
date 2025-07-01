@@ -101,14 +101,14 @@ describe("lsp get all diagnostics", () => {
     const result = await client.request({
       method: "tools/call",
       params: {
-        name: "lsmcp_get_all_diagnostics",
+        name: "get_all_diagnostics",
         arguments: {
           root: projectDir,
           include: "**/*.ts",
           severityFilter: "all",
         },
       },
-    });
+    }) as any;
 
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();
@@ -127,14 +127,14 @@ describe("lsp get all diagnostics", () => {
     const result = await client.request({
       method: "tools/call",
       params: {
-        name: "lsmcp_get_all_diagnostics",
+        name: "get_all_diagnostics",
         arguments: {
           root: projectDir,
           include: "**/*.ts",
           severityFilter: "error",
         },
       },
-    });
+    }) as any;
 
     const text = result.content[0].text;
     expect(text).toContain("error");
@@ -145,13 +145,13 @@ describe("lsp get all diagnostics", () => {
     const result = await client.request({
       method: "tools/call",
       params: {
-        name: "lsmcp_get_all_diagnostics",
+        name: "get_all_diagnostics",
         arguments: {
           root: projectDir,
           include: "**/file1.ts",
         },
       },
-    });
+    }) as any;
 
     const text = result.content[0].text;
     expect(text).toContain("file1.ts");

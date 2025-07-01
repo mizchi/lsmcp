@@ -21,7 +21,7 @@ const schema = z.object({
 });
 
 export const extractTypeTool: ToolDef<typeof schema> = {
-  name: "lsmcp_extract_type",
+  name: "extract_type",
   description:
     "Extract selected type expression into a type alias or interface (TypeScript only)",
   schema,

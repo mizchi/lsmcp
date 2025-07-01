@@ -184,7 +184,7 @@ async function handleGetSignatureHelp({
 }
 
 export const lspGetSignatureHelpTool: ToolDef<typeof schema> = {
-  name: "lsmcp_get_signature_help",
+  name: "get_signature_help",
   description:
     "Get signature help (parameter hints) for function calls at a specific position using LSP",
   schema,

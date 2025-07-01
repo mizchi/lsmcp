@@ -332,7 +332,7 @@ async function getAllDiagnosticsWithLSP(
 }
 
 export const lspGetAllDiagnosticsTool: ToolDef<typeof schema> = {
-  name: "lsmcp_get_all_diagnostics",
+  name: "get_all_diagnostics",
   description:
     "Get diagnostics (errors, warnings) for all files in the project. Requires a glob pattern to specify which files to check (e.g., '**/*.ts', '**/*.{js,jsx}', 'src/**/*.py')",
   schema,

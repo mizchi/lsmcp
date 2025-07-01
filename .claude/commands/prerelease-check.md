@@ -245,9 +245,26 @@ Expected: Appropriate error handling
 - Execute multiple MCP tools in parallel
 - Verify response times
 
-## 8. Integration Testing
+## 8. Example Projects Testing
 
-### 8.1 Real Development Workflow
+### 8.1 Multi-Language Examples
+
+```bash
+# Run the check-examples.ts script to test all example projects
+pnpm tsx scripts/check-examples.ts
+```
+
+Expected output:
+- TypeScript: Should detect errors in test-diagnostics.ts
+- Rust: Should run rust-analyzer on test_diagnostics.rs
+- MoonBit: Should detect errors in test_diagnostics.mbt
+- F#: Should run fsautocomplete on TestDiagnostics.fs
+
+All language servers should start successfully and provide diagnostics.
+
+## 9. Integration Testing
+
+### 9.1 Real Development Workflow
 
 1. Add a new function
 2. Check for type errors with diagnostics
@@ -272,6 +289,7 @@ Expected: Appropriate error handling
 - [ ] Signature help is displayed
 - [ ] Error cases are handled appropriately
 - [ ] Performance is within acceptable range
+- [ ] Example projects testing with check-examples.ts
 
 ### Known Issues ❌
 - [ ] Go to definition - **Does not work with `typescript-language-server`** (returns 0 definitions)
@@ -293,10 +311,13 @@ Expected: Appropriate error handling
 
 ## Recent Test Results
 
-Last tested: 2025-01-30
+Last tested: 2025-07-01
 
 ### Summary
 - ✅ 11/12 core features working with `typescript-language-server` (symbol deletion now works!)
 - ✅ 12/12 core features working with `tsgo`
 - ❌ Definition jump only works with `tsgo`, not with `typescript-language-server`
-- ✅ NEW: Project-wide diagnostics with `lsmcp_get_all_diagnostics` tool
+- ✅ NEW: Project-wide diagnostics with `get_all_diagnostics` tool
+- ✅ NEW: Tool names simplified - removed `lsmcp_` prefix from all tools
+- ✅ NEW: Multi-language support improved (F#, Rust, MoonBit)
+- ✅ NEW: Example projects testing with `scripts/check-examples.ts`

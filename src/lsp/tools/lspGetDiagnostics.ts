@@ -196,7 +196,7 @@ async function getDiagnosticsWithLSP(
 }
 
 export const lspGetDiagnosticsTool: ToolDef<typeof schema> = {
-  name: "lsmcp_get_diagnostics",
+  name: "get_diagnostics",
   description: "Get diagnostics (errors, warnings) for a file using LSP",
   schema,
   execute: async (args: z.infer<typeof schema>) => {
@@ -241,7 +241,7 @@ if (import.meta.vitest) {
     });
 
     it("should have correct tool definition", () => {
-      expect(lspGetDiagnosticsTool.name).toBe("lsmcp_get_diagnostics");
+      expect(lspGetDiagnosticsTool.name).toBe("get_diagnostics");
       expect(lspGetDiagnosticsTool.description).toContain("diagnostics");
     });
 

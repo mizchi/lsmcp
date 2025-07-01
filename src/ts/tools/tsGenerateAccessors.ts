@@ -19,7 +19,7 @@ const schema = z.object({
 });
 
 export const generateAccessorsTool: ToolDef<typeof schema> = {
-  name: "lsmcp_generate_accessors",
+  name: "generate_accessors",
   description:
     "Generate get/set accessor methods for a class property (TypeScript only)",
   schema,
