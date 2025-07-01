@@ -49,7 +49,10 @@ This project provides AI with functionality equivalent to Language Server Protoc
 ### 2. Add MCP Server
 
 ```bash
-# TypeScript/JavaScript
+# TypeScript/JavaScript (recommended: use tsgo for full functionality)
+claude mcp add typescript npx -- -y @mizchi/lsmcp --language=typescript --bin="npx tsgo --lsp --stdio"
+
+# Alternative: typescript-language-server (some features may not work)
 claude mcp add typescript npx -- -y @mizchi/lsmcp --language=typescript
 
 # Other languages (use --bin with LSP command)
@@ -57,6 +60,8 @@ claude mcp add rust npx -- -y @mizchi/lsmcp --bin="rust-analyzer" # Rust
 claude mcp add python npx -- -y @mizchi/lsmcp --bin="pylsp"       # Python
 claude mcp add go npx -- -y @mizchi/lsmcp --bin="gopls"           # Go
 ```
+
+> **Note**: For TypeScript/JavaScript, we recommend using `tsgo` as the LSP server for full functionality. The default `typescript-language-server` has known issues with the "Go to Definition" feature.
 
 ### 3. Start Claude
 

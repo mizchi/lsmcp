@@ -1,4 +1,6 @@
 import { EventEmitter } from "events";
+import { promises as fs } from "fs";
+import { fileURLToPath } from "url";
 import {
   CodeAction,
   Command,
@@ -509,9 +511,20 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       textDocument: { uri },
       position,
     };
+
+    debug(
+      "[lspClient] Sending textDocument/definition request:",
+      JSON.stringify(params, null, 2),
+    );
+
     const result = await sendRequest<DefinitionResult>(
       "textDocument/definition",
       params,
+    );
+
+    debug(
+      "[lspClient] Received definition response:",
+      JSON.stringify(result, null, 2),
     );
 
     if (!result) {
@@ -735,17 +748,100 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     edit: WorkspaceEdit,
     label?: string,
   ): Promise<ApplyWorkspaceEditResponse> {
-    const params: ApplyWorkspaceEditParams = {
-      edit,
-      label,
-    };
-    const result = await sendRequest<ApplyWorkspaceEditResponse>(
-      "workspace/applyEdit",
-      params,
-    );
-    return (
-      result ?? { applied: false, failureReason: "No response from server" }
-    );
+    try {
+      // First, try to use the LSP server's workspace/applyEdit if supported
+      const params: ApplyWorkspaceEditParams = {
+        edit,
+        label,
+      };
+      const result = await sendRequest<ApplyWorkspaceEditResponse>(
+        "workspace/applyEdit",
+        params,
+      );
+      return (
+        result ?? { applied: false, failureReason: "No response from server" }
+      );
+    } catch (error: any) {
+      // If the server doesn't support workspace/applyEdit, apply the edits manually
+      if (
+        error.message?.includes("Unhandled method") ||
+        error.message?.includes("Method not found") ||
+        error.code === -32601
+      ) {
+        debug(
+          "LSP server doesn't support workspace/applyEdit, applying edits manually",
+        );
+
+        try {
+          // Apply text edits manually
+          if (edit.changes) {
+            for (const [uri, edits] of Object.entries(edit.changes)) {
+              const filePath = fileURLToPath(uri);
+
+              // Read the file
+              const content = await fs.readFile(filePath, "utf-8");
+              const lines = content.split("\n");
+
+              // Sort edits in reverse order to apply from end to start
+              const sortedEdits = [...edits].sort((a, b) => {
+                const lineComp = b.range.start.line - a.range.start.line;
+                if (lineComp !== 0) return lineComp;
+                return b.range.start.character - a.range.start.character;
+              });
+
+              // Apply each edit
+              for (const textEdit of sortedEdits) {
+                const { range, newText } = textEdit;
+
+                // Handle full line deletion
+                if (
+                  range.start.character === 0 &&
+                  range.end.line > range.start.line &&
+                  range.end.character === 0 &&
+                  newText === ""
+                ) {
+                  // Delete entire lines
+                  lines.splice(
+                    range.start.line,
+                    range.end.line - range.start.line,
+                  );
+                } else {
+                  // Handle partial line edit
+                  const startLine = lines[range.start.line] || "";
+                  const endLine = lines[range.end.line] || "";
+
+                  const before = startLine.substring(0, range.start.character);
+                  const after = endLine.substring(range.end.character);
+
+                  // Replace the affected lines
+                  const newLines = (before + newText + after).split("\n");
+                  lines.splice(
+                    range.start.line,
+                    range.end.line - range.start.line + 1,
+                    ...newLines,
+                  );
+                }
+              }
+
+              // Write the modified content back
+              await fs.writeFile(filePath, lines.join("\n"), "utf-8");
+            }
+          }
+
+          return { applied: true };
+        } catch (err) {
+          return {
+            applied: false,
+            failureReason: `Failed to apply edits manually: ${
+              err instanceof Error ? err.message : String(err)
+            }`,
+          };
+        }
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
   }
 
   async function stop(): Promise<void> {

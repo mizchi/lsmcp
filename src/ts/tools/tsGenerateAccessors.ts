@@ -7,6 +7,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { MCPToolError } from "../../common/mcpErrors.ts";
 import { spawn } from "child_process";
+import { findTypescriptLanguageServer } from "../utils/findTypescriptLanguageServer.ts";
 
 const schema = z.object({
   root: commonSchemas.root,
@@ -23,9 +24,32 @@ export const generateAccessorsTool: ToolDef<typeof schema> = {
     "Generate get/set accessor methods for a class property (TypeScript only)",
   schema,
   execute: async ({ root, filePath, line, propertyName }) => {
+    const absolutePath = join(root, filePath);
+    const fileUri = `file://${absolutePath}`;
+
+    // Check if file exists before starting LSP
+    let content: string;
+    try {
+      content = readFileSync(absolutePath, "utf-8");
+    } catch (error: any) {
+      if (error.code === "ENOENT") {
+        throw new MCPToolError(
+          `File not found: ${filePath}`,
+          "FILE_NOT_FOUND",
+          [
+            "Check that the file path is correct",
+            "Ensure the file exists in the project",
+          ],
+        );
+      }
+      throw error;
+    }
+
     // Create a dedicated LSP client for this operation
     // Use the TypeScript Language Server path set by typescript-mcp.ts
     const tsServerPath = process.env.TYPESCRIPT_LANGUAGE_SERVER_PATH ||
+      findTypescriptLanguageServer(root) ||
+      process.env.LSP_COMMAND?.split(" ")[0] ||
       "typescript-language-server";
     const lspProcess = spawn(
       tsServerPath,
@@ -43,27 +67,6 @@ export const generateAccessorsTool: ToolDef<typeof schema> = {
     });
 
     try {
-      const absolutePath = join(root, filePath);
-      const fileUri = `file://${absolutePath}`;
-
-      // Check if file exists
-      let content: string;
-      try {
-        content = readFileSync(absolutePath, "utf-8");
-      } catch (error: any) {
-        if (error.code === "ENOENT") {
-          throw new MCPToolError(
-            `File not found: ${filePath}`,
-            "FILE_NOT_FOUND",
-            [
-              "Check that the file path is correct",
-              "Ensure the file exists in the project",
-            ],
-          );
-        }
-        throw error;
-      }
-
       const lines = content.split("\n");
 
       // Find line number
@@ -345,8 +348,13 @@ The property has been converted to use accessor methods. The original property i
         await client.stop();
       }
     } catch (error) {
-      if (lspProcess && !lspProcess.killed) {
-        lspProcess.kill();
+      // Only try to kill the process if it was created
+      try {
+        if (lspProcess && !lspProcess.killed) {
+          lspProcess.kill();
+        }
+      } catch (killError) {
+        // Ignore errors during cleanup
       }
       throw error;
     }

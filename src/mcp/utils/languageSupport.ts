@@ -85,6 +85,15 @@ export function getLanguageFromLSPCommand(lspCommand: string): string {
     "fsharp-language-server": "F#",
   };
 
+  // Check the entire command for matches, not just the base name
+  // This handles cases like "npx typescript-language-server"
+  for (const [key, value] of Object.entries(lspMap)) {
+    if (lspCommand.includes(key)) {
+      return value;
+    }
+  }
+
+  // Fallback to checking just the command name
   const command = lspCommand.split(" ")[0];
   const baseName = command.split("/").pop() || command;
 
