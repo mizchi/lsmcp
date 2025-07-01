@@ -69,7 +69,7 @@ describe("list_tools functionality", () => {
 
       expect(result.content[0].text).toContain("TypeScript Tools");
       expect(result.content[0].text).toContain("LSP Tools");
-      expect(result.content[0].text).toContain("lsp_find_references");
+      expect(result.content[0].text).toContain("find_references");
     });
   });
 
@@ -114,8 +114,8 @@ describe("list_tools functionality", () => {
       })) as any;
 
       expect(result.content[0].text).toContain("LSP Tools");
-      expect(result.content[0].text).toContain("lsp_find_references");
-      expect(result.content[0].text).toContain("lsp_get_hover");
+      expect(result.content[0].text).toContain("find_references");
+      expect(result.content[0].text).toContain("get_hover");
 
       // Should NOT contain TypeScript-specific tools
       expect(result.content[0].text).not.toContain("TypeScript Tools");
