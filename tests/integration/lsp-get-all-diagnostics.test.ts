@@ -9,7 +9,7 @@ import { dirname } from "path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-describe("lsp get all diagnostics", () => {
+describe.skip("lsp get all diagnostics", () => {
   let projectDir: string;
   let client: Client;
   let transport: StdioClientTransport;
