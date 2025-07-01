@@ -64,17 +64,20 @@ const SEVERITY_MAP: Record<
 };
 
 /**
- * Get all project files using git ls-files or file system traversal
+ * Get all project files using combination of git ls-files and glob
+ * This respects .gitignore while also including untracked files
  */
 async function getProjectFiles(
   root: string,
   include?: string,
   exclude?: string,
 ): Promise<string[]> {
+  const fileSet = new Set<string>();
+
+  // First, try to get tracked files from git
   try {
-    // Try using git ls-files first
     const { stdout } = await execAsync("git ls-files", { cwd: root });
-    let files = stdout
+    const gitFiles = stdout
       .split("\n")
       .filter((f: string) => f.trim().length > 0)
       .filter((f: string) => {
@@ -90,48 +93,77 @@ async function getProjectFiles(
         );
       });
 
-    // Apply include pattern if provided
-    if (include) {
-      files = files.filter((f: string) => minimatch(f, include));
-    }
-
-    // Apply exclude pattern if provided
-    if (exclude) {
-      files = files.filter((f: string) => !minimatch(f, exclude));
-    }
-
-    // Also exclude common directories
-    files = files.filter((f: string) =>
-      !f.includes("node_modules/") && !f.includes(".git/")
+    gitFiles.forEach((f) => fileSet.add(f));
+    debug(
+      `[lspGetAllDiagnostics] Found ${gitFiles.length} tracked files from git`,
     );
-
-    return files;
   } catch (error) {
-    debug("Failed to use git ls-files:", error);
+    debug("Not a git repository or git ls-files failed:", error);
+  }
 
-    // Fallback: use glob to find files
+  // Then, use glob to find all files (including untracked ones)
+  try {
     const { glob } = await import("glob");
     const pattern = include || "**/*.{ts,tsx,js,jsx,mjs,cjs}";
 
+    // Read .gitignore patterns if it exists
+    let gitignorePatterns: string[] = ["**/node_modules/**", "**/.git/**"];
     try {
-      const files = await glob(pattern, {
-        cwd: root,
-        ignore: exclude
-          ? [exclude, "**/node_modules/**", "**/.git/**"]
-          : ["**/node_modules/**", "**/.git/**"],
-        nodir: true,
-      });
+      const gitignorePath = join(root, ".gitignore");
+      const gitignoreContent = await readFile(gitignorePath, "utf-8");
+      const patterns = gitignoreContent
+        .split("\n")
+        .filter((line) => line.trim() && !line.startsWith("#"))
+        .map((line) => line.trim());
+      gitignorePatterns = [...gitignorePatterns, ...patterns];
+    } catch {
+      // .gitignore doesn't exist or can't be read
+    }
 
-      return files;
-    } catch (globError) {
-      debug("Failed to use glob:", globError);
+    if (exclude) {
+      gitignorePatterns.push(exclude);
+    }
+
+    const globFiles = await glob(pattern, {
+      cwd: root,
+      ignore: gitignorePatterns,
+      nodir: true,
+    });
+
+    globFiles.forEach((f) => fileSet.add(f));
+    debug(`[lspGetAllDiagnostics] Found ${globFiles.length} files from glob`);
+  } catch (globError) {
+    debug("Failed to use glob:", globError);
+    // If glob fails but we have git files, continue with those
+    if (fileSet.size === 0) {
       throw new Error(
         `Failed to list project files: ${
-          error instanceof Error ? error.message : String(error)
+          globError instanceof Error ? globError.message : String(globError)
         }`,
       );
     }
   }
+
+  // Convert set to array and apply filters
+  let files = Array.from(fileSet);
+
+  // Apply include pattern if provided
+  if (include) {
+    files = files.filter((f: string) => minimatch(f, include));
+  }
+
+  // Apply exclude pattern if provided
+  if (exclude) {
+    files = files.filter((f: string) => !minimatch(f, exclude));
+  }
+
+  // Final filter to exclude common directories (redundant but safe)
+  files = files.filter((f: string) =>
+    !f.includes("node_modules/") && !f.includes(".git/")
+  );
+
+  debug(`[lspGetAllDiagnostics] Total unique files to check: ${files.length}`);
+  return files;
 }
 
 /**
@@ -160,7 +192,7 @@ async function getAllDiagnosticsWithLSP(
   let totalWarnings = 0;
 
   // Process files in batches to avoid overwhelming the LSP server
-  const BATCH_SIZE = 10;
+  const BATCH_SIZE = 5; // Reduced batch size for stability
   for (let i = 0; i < files.length; i += BATCH_SIZE) {
     const batch = files.slice(i, i + BATCH_SIZE);
 
@@ -171,13 +203,22 @@ async function getAllDiagnosticsWithLSP(
           const fileUri = pathToFileURL(absolutePath).toString();
 
           // Read file content
-          const fileContent = await readFile(absolutePath, "utf-8");
+          let fileContent: string;
+          try {
+            fileContent = await readFile(absolutePath, "utf-8");
+          } catch (readError) {
+            debug(
+              `[lspGetAllDiagnostics] Failed to read file ${filePath}:`,
+              readError,
+            );
+            return; // Skip this file
+          }
 
           // Open document in LSP
           client.openDocument(fileUri, fileContent);
 
           // Wait a bit for LSP to process
-          await new Promise((resolve) => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 50)); // Reduced wait time
 
           // Get diagnostics
           const diagnostics = client.getDiagnostics(fileUri);
@@ -271,15 +312,49 @@ export const lspGetAllDiagnosticsTool: ToolDef<typeof schema> = {
 
     if (result.files.length > 0) {
       messages.push("");
-      for (const file of result.files) {
+
+      // If there are too many files with diagnostics, show a summary
+      const MAX_FILES_TO_SHOW = 20;
+      if (result.files.length > MAX_FILES_TO_SHOW) {
+        messages.push(
+          `Showing first ${MAX_FILES_TO_SHOW} files with diagnostics (${result.files.length} total):`,
+        );
+        messages.push("");
+      }
+
+      const filesToShow = result.files.slice(0, MAX_FILES_TO_SHOW);
+
+      for (const file of filesToShow) {
         messages.push(`${file.filePath}:`);
-        for (const diag of file.diagnostics) {
+
+        // Limit diagnostics per file to avoid extremely long output
+        const MAX_DIAGS_PER_FILE = 10;
+        const diagsToShow = file.diagnostics.slice(0, MAX_DIAGS_PER_FILE);
+
+        for (const diag of diagsToShow) {
           const prefix = diag.severity === "error" ? "  ❌" : "  ⚠️";
           messages.push(
             `${prefix} [${diag.severity}] Line ${diag.line}:${diag.column} - ${diag.message}`,
           );
         }
+
+        if (file.diagnostics.length > MAX_DIAGS_PER_FILE) {
+          messages.push(
+            `  ... and ${
+              file.diagnostics.length - MAX_DIAGS_PER_FILE
+            } more diagnostics`,
+          );
+        }
+
         messages.push("");
+      }
+
+      if (result.files.length > MAX_FILES_TO_SHOW) {
+        messages.push(
+          `... and ${
+            result.files.length - MAX_FILES_TO_SHOW
+          } more files with diagnostics`,
+        );
       }
     }
 

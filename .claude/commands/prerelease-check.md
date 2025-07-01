@@ -80,7 +80,32 @@ filePath: <target file>
 
 Expected: Detailed error and warning information if any exist
 
-### 2.5 Document Symbols
+### 2.5 Get All Diagnostics
+
+```
+# Use mcp__lsmcp-dev__lsmcp_get_all_diagnostics
+# Get errors and warnings for all files in the project
+root: /home/mizchi/mizchi/lsmcp
+severityFilter: all
+```
+
+Expected: Summary of all errors and warnings across the project
+
+You can also test with filters:
+
+```
+# Filter by severity (error/warning/all)
+root: /home/mizchi/mizchi/lsmcp
+severityFilter: error
+
+# Filter by file pattern
+root: /home/mizchi/mizchi/lsmcp
+include: src/**/*.ts
+```
+
+Expected: Filtered results based on severity or file pattern
+
+### 2.6 Document Symbols
 
 ```
 # Use mcp__lsmcp-dev__lsmcp_get_document_symbols
@@ -239,6 +264,7 @@ Expected: Appropriate error handling
 - [ ] Go to definition works
 - [ ] Find references works
 - [ ] Diagnostics can be retrieved
+- [ ] All diagnostics across project can be retrieved
 - [ ] Document symbols are displayed
 - [ ] Rename works correctly
 - [ ] Symbol deletion works
@@ -270,6 +296,7 @@ Expected: Appropriate error handling
 Last tested: 2025-01-30
 
 ### Summary
-- ✅ 10/11 core features working with `typescript-language-server` (symbol deletion now works!)
-- ✅ 11/11 core features working with `tsgo`
+- ✅ 11/12 core features working with `typescript-language-server` (symbol deletion now works!)
+- ✅ 12/12 core features working with `tsgo`
 - ❌ Definition jump only works with `tsgo`, not with `typescript-language-server`
+- ✅ NEW: Project-wide diagnostics with `lsmcp_get_all_diagnostics` tool
