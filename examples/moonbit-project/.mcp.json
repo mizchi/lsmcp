@@ -7,7 +7,7 @@
         "-l",
         "moonbit",
         "--bin",
-        "npx -y @moonbit/moonbit-lsp"
+        "npx moonbit-lsp"
       ]
     }
   }

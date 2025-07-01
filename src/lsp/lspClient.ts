@@ -566,6 +566,31 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     return state.diagnostics.get(uri) || [];
   }
 
+  async function pullDiagnostics(uri: string): Promise<Diagnostic[]> {
+    // Try the newer textDocument/diagnostic request (LSP 3.17+)
+    try {
+      const params = {
+        textDocument: { uri },
+      };
+      const result = await sendRequest<{
+        kind: string;
+        items: Diagnostic[];
+      }>("textDocument/diagnostic", params);
+
+      if (result && result.items) {
+        // Store the diagnostics
+        state.diagnostics.set(uri, result.items);
+        return result.items;
+      }
+    } catch (error: any) {
+      // If the server doesn't support pull diagnostics, fall back to push model
+      debugLog("Pull diagnostics not supported:", error.message);
+    }
+
+    // Fall back to getting stored diagnostics
+    return getDiagnostics(uri);
+  }
+
   async function getDocumentSymbols(
     uri: string,
   ): Promise<DocumentSymbol[] | SymbolInformation[]> {
@@ -907,6 +932,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     getDefinition,
     getHover,
     getDiagnostics,
+    pullDiagnostics,
     getDocumentSymbols,
     getWorkspaceSymbols,
     getCompletion,

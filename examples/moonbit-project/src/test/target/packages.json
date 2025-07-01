@@ -1,0 +1,39 @@
+{
+  "source_dir": "/home/mizchi/mizchi/lsmcp/examples/moonbit-project/src/test",
+  "name": "moon/test",
+  "packages": [
+    {
+      "is-main": false,
+      "is-third-party": false,
+      "root-path": "/home/mizchi/mizchi/lsmcp/examples/moonbit-project/src/test",
+      "root": "moon/test",
+      "rel": "single",
+      "files": {},
+      "wbtest-files": {},
+      "test-files": {
+        "/home/mizchi/mizchi/lsmcp/examples/moonbit-project/src/test/error.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Debug",
+            "Release"
+          ]
+        }
+      },
+      "mbt-md-files": {},
+      "deps": [],
+      "wbtest-deps": [],
+      "test-deps": [],
+      "artifact": "/home/mizchi/mizchi/lsmcp/examples/moonbit-project/src/test/target/wasm-gc/release/check/single/single.mi"
+    }
+  ],
+  "deps": [],
+  "backend": "wasm-gc",
+  "opt_level": "release",
+  "source": null
+}

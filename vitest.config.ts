@@ -22,7 +22,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: "integration",
-          include: ["tests/integration/**/*.test.ts"],
+          include: ["tests/integration/**/*.test.ts", "tests/*.test.ts"],
           exclude: [
             ...GLOBAL_IGNORED_FILES,
             "tests/integration/typescript-lsp.test.ts",

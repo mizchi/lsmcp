@@ -48,14 +48,17 @@ const languageConfigs: Record<string, LanguageConfig> = {
     lspCommand: "omnisharp",
     extensions: [".cs", ".csx"],
   },
+  moonbit: {
+    name: "MoonBit",
+    lspCommand: "npx moonbit-lsp",
+    extensions: [".mbt"],
+  },
 };
 
 /**
  * Get language configuration
  */
-function getLanguageConfig(
-  language: string,
-): LanguageConfig | undefined {
+function getLanguageConfig(language: string): LanguageConfig | undefined {
   return languageConfigs[language.toLowerCase()];
 }
 

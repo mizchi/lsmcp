@@ -75,7 +75,7 @@ Supported Languages:
   - Any language via LSP server with --bin option
 
 Environment Variables:
-  FORCE_LANGUAGE        Force a specific language (same as -l)
+  LSP_COMMAND           Custom LSP server command (overrides default)
 `);
 }
 
@@ -315,9 +315,9 @@ async function main() {
   // for use with lsp_get_all_diagnostics tool
 
   // Require either --language or --bin option
-  const language = values.language || process.env.FORCE_LANGUAGE;
+  const language = values.language;
   debug(
-    `[lsmcp] Resolved language: ${language}, env.FORCE_LANGUAGE: ${process.env.FORCE_LANGUAGE}`,
+    `[lsmcp] Resolved language: ${language}`,
   );
 
   if (!language && !values.bin) {

@@ -4,16 +4,13 @@ import { readFileSync } from "fs";
 import path from "path";
 import { getActiveClient } from "../lspClient.ts";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
+import { getLanguageIdFromPath } from "../languageDetection.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
   filePath: z
     .string()
     .describe("File path to check for diagnostics (relative to root)"),
-  virtualContent: z
-    .string()
-    .optional()
-    .describe("Virtual content to use for diagnostics instead of file content"),
 });
 
 type GetDiagnosticsRequest = z.infer<typeof schema>;
@@ -62,10 +59,9 @@ async function getDiagnosticsWithLSP(
   try {
     const client = getActiveClient();
 
-    // Read file content or use virtual content
+    // Read file content
     const absolutePath = path.resolve(request.root, request.filePath);
-    const fileContent = request.virtualContent ||
-      readFileSync(absolutePath, "utf-8");
+    const fileContent = readFileSync(absolutePath, "utf-8");
     const fileUri = `file://${absolutePath}`;
 
     // Check if document is already open and close it to force refresh
@@ -76,13 +72,20 @@ async function getDiagnosticsWithLSP(
       await new Promise<void>((resolve) => setTimeout(resolve, 50));
     }
 
-    // Open document in LSP with current content
-    client.openDocument(fileUri, fileContent);
+    // Detect language from file extension
+    const languageId = getLanguageIdFromPath(request.filePath);
+    const isMoonBit = languageId === "moonbit";
 
-    // If not using virtual content, send a document update to ensure LSP has latest content
-    if (!request.virtualContent) {
-      // Force LSP to re-read the file by sending an update
-      client.updateDocument(fileUri, fileContent, 2);
+    // Open document in LSP with current content
+    client.openDocument(fileUri, fileContent, languageId);
+
+    // Force LSP to re-read the file by sending an update
+    client.updateDocument(fileUri, fileContent, 2);
+
+    // For MoonBit, give extra time for the LSP to process
+    if (isMoonBit) {
+      // MoonBit LSP might need more time to compile and analyze
+      await new Promise<void>((resolve) => setTimeout(resolve, 1000));
     }
 
     // Try event-driven approach first
@@ -92,7 +95,12 @@ async function getDiagnosticsWithLSP(
     // Determine if this is a large file that might need more time
     const lineCount = fileContent.split("\n").length;
     const isLargeFile = lineCount > 100;
-    const eventTimeout = isLargeFile ? 3000 : 1000; // Give more time for diagnostics in CI
+    // MoonBit needs more time to compile and produce diagnostics
+    const eventTimeout = isMoonBit ? 5000 : (isLargeFile ? 3000 : 1000);
+
+    // Check if pull diagnostics should be enabled
+    const enablePullDiagnostics =
+      process.env.ENABLE_PULL_DIAGNOSTICS === "true";
 
     try {
       // Wait for diagnostics with event-driven approach (shorter timeout for faster fallback)
@@ -112,26 +120,44 @@ async function getDiagnosticsWithLSP(
       (lspDiagnostics.length === 0 && !client.waitForDiagnostics)
     ) {
       // Initial wait for LSP to process the document (important for CI)
-      const initialWait = isLargeFile ? 500 : 200; // Give more initial processing time
+      // MoonBit needs more time to compile
+      const initialWait = isMoonBit ? 1000 : (isLargeFile ? 500 : 200);
       await new Promise<void>((resolve) => setTimeout(resolve, initialWait));
 
-      // Poll for diagnostics
-      const maxPolls = isLargeFile ? 100 : 60; // Max 5 seconds for large files, 3 seconds for normal
-      const pollInterval = 50; // Poll every 50ms
-      const minPollsForNoError = isLargeFile ? 60 : 40; // More polls for all files
-
-      for (let poll = 0; poll < maxPolls; poll++) {
-        await new Promise<void>((resolve) => setTimeout(resolve, pollInterval));
-        lspDiagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
-
-        // Break early if we have diagnostics or after minimum polls for no-error files
-        if (lspDiagnostics.length > 0 || poll >= minPollsForNoError) {
-          break;
+      // Try pull diagnostics first (LSP 3.17+) if explicitly enabled
+      if (enablePullDiagnostics && client.pullDiagnostics) {
+        try {
+          lspDiagnostics = await client.pullDiagnostics(
+            fileUri,
+          ) as LSPDiagnostic[];
+        } catch {
+          // Fall back to polling if pull diagnostics is not supported
         }
+      }
 
-        // Try updating document again after a few polls
-        if ((poll === 5 || poll === 10) && !request.virtualContent) {
-          client.updateDocument(fileUri, fileContent, poll + 1);
+      // If still no diagnostics, poll for them
+      if (lspDiagnostics.length === 0) {
+        // Poll for diagnostics
+        // MoonBit might need more time to compile and produce diagnostics
+        const maxPolls = isMoonBit ? 200 : (isLargeFile ? 100 : 60); // Max 10 seconds for MoonBit
+        const pollInterval = 50; // Poll every 50ms
+        const minPollsForNoError = isMoonBit ? 100 : (isLargeFile ? 60 : 40); // More polls for MoonBit
+
+        for (let poll = 0; poll < maxPolls; poll++) {
+          await new Promise<void>((resolve) =>
+            setTimeout(resolve, pollInterval)
+          );
+          lspDiagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
+
+          // Break early if we have diagnostics or after minimum polls for no-error files
+          if (lspDiagnostics.length > 0 || poll >= minPollsForNoError) {
+            break;
+          }
+
+          // Try updating document again after a few polls
+          if (poll === 5 || poll === 10) {
+            client.updateDocument(fileUri, fileContent, poll + 1);
+          }
         }
       }
     }

@@ -21,6 +21,7 @@
     "test:typescript-lsp": "vitest run tests/integration/typescript-lsp.test.ts",
     "test:all": "vitest --run",
     "test:watch": "vitest",
+    "test:examples": "tsx scripts/check-examples.ts",
     "coverage": "vitest run --coverage",
     "format": "deno fmt src/ tests/",
     "format:check": "deno fmt --check src/ tests/",
@@ -50,6 +51,7 @@
     "zod": "^3.25.56"
   },
   "devDependencies": {
+    "@moonbit/moonbit-lsp": "^0.1.202506241",
     "@types/node": "^22.15.30",
     "@types/ws": "^8.18.1",
     "@typescript/native-preview": "7.0.0-dev.20250629.1",

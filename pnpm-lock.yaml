@@ -39,6 +39,9 @@ importers:
         specifier: ^3.25.56
         version: 3.25.56
     devDependencies:
+      '@moonbit/moonbit-lsp':
+        specifier: ^0.1.202506241
+        version: 0.1.202506241
       '@types/node':
         specifier: ^22.15.30
         version: 22.15.30
@@ -383,6 +386,10 @@ packages:
   '@modelcontextprotocol/sdk@1.12.1':
     resolution: {integrity: sha512-KG1CZhZfWg+u8pxeM/mByJDScJSrjjxLc8fwQqbsS8xCjBmQfMNEBTotYdNanKekepnfRI85GtgQlctLFpcYPw==}
     engines: {node: '>=18'}
+
+  '@moonbit/moonbit-lsp@0.1.202506241':
+    resolution: {integrity: sha512-/aYw31vfLzjEkfhpOqQhVI/47nB5N0BdEUKrlw3LAJc+DbLoGNZdN/VQ7q0b/VtGsITSE+v8a2RXEHw+LlpQJg==}
+    hasBin: true
 
   '@napi-rs/wasm-runtime@0.2.10':
     resolution: {integrity: sha512-bCsCyeZEwVErsGmyPNSzwfwFn4OdxBj0mmv6hOFucB/k81Ojdu68RbZdxYsRQUPc9l6SU5F/cG+bXgWs3oUgsQ==}
@@ -2491,6 +2498,8 @@ snapshots:
       zod-to-json-schema: 3.24.5(zod@3.25.56)
     transitivePeerDependencies:
       - supports-color
+
+  '@moonbit/moonbit-lsp@0.1.202506241': {}
 
   '@napi-rs/wasm-runtime@0.2.10':
     dependencies:

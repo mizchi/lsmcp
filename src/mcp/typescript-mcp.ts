@@ -34,18 +34,22 @@ import {
   setGlobalLanguageMapping,
 } from "../lsp/languageMapping.ts";
 
-// Use LSP mode when LSP_COMMAND is provided or FORCE_LSP is set
-const USE_LSP: boolean = process.env.LSP_COMMAND != null ||
-  process.env.FORCE_LSP === "true";
+// Always use LSP mode for TypeScript
+// LSP_COMMAND will be automatically set if not provided
+const USE_LSP: boolean = true;
+
+// Check if TypeScript Language Server is available for advanced tools
+const tsServerPath = findTypescriptLanguageServer(process.cwd());
+const tsServerAvailable = tsServerPath !== null;
+
+// If LSP_COMMAND is not set but TypeScript Language Server is available, set it
+if (!process.env.LSP_COMMAND && tsServerPath) {
+  process.env.LSP_COMMAND = `${tsServerPath} --stdio`;
+}
+
 debug(
   `[typescript-mcp] Starting TypeScript MCP server, USE_LSP: ${USE_LSP}, LSP_COMMAND: ${process.env.LSP_COMMAND}`,
 );
-
-// Check if TypeScript Language Server is available for advanced tools
-const tsServerPath = USE_LSP
-  ? findTypescriptLanguageServer(process.cwd())
-  : null;
-const tsServerAvailable = tsServerPath !== null;
 
 if (USE_LSP && !tsServerAvailable) {
   debug(
@@ -74,7 +78,7 @@ const tools: ToolDef<any>[] = [
     ]
     : []),
 
-  // LSP tools (only when LSP_COMMAND is set or FORCE_LSP is true)
+  // LSP tools (always included for TypeScript)
   ...(USE_LSP
     ? [
       lspGetHoverTool,

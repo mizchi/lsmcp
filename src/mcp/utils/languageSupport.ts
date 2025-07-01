@@ -83,6 +83,8 @@ export function getLanguageFromLSPCommand(lspCommand: string): string {
     "omnisharp": "C#",
     "fsautocomplete": "F#",
     "fsharp-language-server": "F#",
+    "moonbit-lsp": "MoonBit",
+    "@moonbit/moonbit-lsp": "MoonBit",
   };
 
   // Check the entire command for matches, not just the base name

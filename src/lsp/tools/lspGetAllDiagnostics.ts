@@ -16,8 +16,9 @@ const schema = z.object({
   root: z.string().describe("Root directory for the project"),
   include: z
     .string()
-    .optional()
-    .describe("Glob pattern for files to include (e.g., 'src/**/*.ts')"),
+    .describe(
+      "Glob pattern for files to include (e.g., '**/*.ts' for TypeScript, '**/*.fs' for F#, '**/*.py' for Python)",
+    ),
   exclude: z
     .string()
     .optional()
@@ -69,9 +70,12 @@ const SEVERITY_MAP: Record<
  */
 async function getProjectFiles(
   root: string,
-  include?: string,
+  include: string,
   exclude?: string,
 ): Promise<string[]> {
+  debug(
+    `[lspGetAllDiagnostics] getProjectFiles called with root=${root}, include=${include}, exclude=${exclude}`,
+  );
   const fileSet = new Set<string>();
 
   // First, try to get tracked files from git
@@ -80,18 +84,7 @@ async function getProjectFiles(
     const gitFiles = stdout
       .split("\n")
       .filter((f: string) => f.trim().length > 0)
-      .filter((f: string) => {
-        // Filter by common source file extensions
-        const ext = f.toLowerCase();
-        return (
-          ext.endsWith(".ts") ||
-          ext.endsWith(".tsx") ||
-          ext.endsWith(".js") ||
-          ext.endsWith(".jsx") ||
-          ext.endsWith(".mjs") ||
-          ext.endsWith(".cjs")
-        );
-      });
+      .filter((f: string) => minimatch(f, include));
 
     gitFiles.forEach((f) => fileSet.add(f));
     debug(
@@ -104,7 +97,7 @@ async function getProjectFiles(
   // Then, use glob to find all files (including untracked ones)
   try {
     const { glob } = await import("glob");
-    const pattern = include || "**/*.{ts,tsx,js,jsx,mjs,cjs}";
+    const pattern = include;
 
     // Read .gitignore patterns if it exists
     let gitignorePatterns: string[] = ["**/node_modules/**", "**/.git/**"];
@@ -147,10 +140,13 @@ async function getProjectFiles(
   // Convert set to array and apply filters
   let files = Array.from(fileSet);
 
-  // Apply include pattern if provided
-  if (include) {
-    files = files.filter((f: string) => minimatch(f, include));
-  }
+  debug(`[lspGetAllDiagnostics] Files before filtering: ${files.length}`);
+  debug(`[lspGetAllDiagnostics] Sample files: ${files.slice(0, 5).join(", ")}`);
+
+  // Include pattern is already applied in git files and glob,
+  // but we apply it again to the combined results for consistency
+  debug(`[lspGetAllDiagnostics] Applying include pattern: ${include}`);
+  files = files.filter((f: string) => minimatch(f, include));
 
   // Apply exclude pattern if provided
   if (exclude) {
@@ -159,10 +155,25 @@ async function getProjectFiles(
 
   // Final filter to exclude common directories (redundant but safe)
   files = files.filter((f: string) =>
-    !f.includes("node_modules/") && !f.includes(".git/")
+    !f.includes("node_modules/") &&
+    !f.includes(".git/") &&
+    !f.includes("/obj/") && // Exclude build artifacts
+    !f.includes("/bin/") // Exclude build outputs
   );
 
   debug(`[lspGetAllDiagnostics] Total unique files to check: ${files.length}`);
+  if (files.length > 0) {
+    debug(
+      `[lspGetAllDiagnostics] File extensions found: ${
+        [
+          ...new Set(files.map((f) => {
+            const ext = f.lastIndexOf(".");
+            return ext > 0 ? f.substring(ext) : "no-ext";
+          })),
+        ].join(", ")
+      }`,
+    );
+  }
   return files;
 }
 
@@ -179,11 +190,20 @@ async function getAllDiagnosticsWithLSP(
   }
 
   // Get all project files
-  const files = await getProjectFiles(
-    request.root,
-    request.include,
-    request.exclude,
-  );
+  let files: string[];
+  try {
+    files = await getProjectFiles(
+      request.root,
+      request.include,
+      request.exclude,
+    );
+    debug(
+      `[lspGetAllDiagnostics] getProjectFiles returned ${files.length} files`,
+    );
+  } catch (error) {
+    debug(`[lspGetAllDiagnostics] Error in getProjectFiles:`, error);
+    throw error;
+  }
 
   debug(`[lspGetAllDiagnostics] Found ${files.length} files to check`);
 
@@ -220,8 +240,19 @@ async function getAllDiagnosticsWithLSP(
           // Wait a bit for LSP to process
           await new Promise((resolve) => setTimeout(resolve, 50)); // Reduced wait time
 
-          // Get diagnostics
-          const diagnostics = client.getDiagnostics(fileUri);
+          // Try pull diagnostics first if available
+          let diagnostics;
+          if (client.pullDiagnostics) {
+            try {
+              diagnostics = await client.pullDiagnostics(fileUri);
+            } catch {
+              // Fall back to stored diagnostics
+              diagnostics = client.getDiagnostics(fileUri);
+            }
+          } else {
+            // Get stored diagnostics
+            diagnostics = client.getDiagnostics(fileUri);
+          }
 
           if (diagnostics && diagnostics.length > 0) {
             const mappedDiagnostics = diagnostics
@@ -303,7 +334,7 @@ async function getAllDiagnosticsWithLSP(
 export const lspGetAllDiagnosticsTool: ToolDef<typeof schema> = {
   name: "lsmcp_get_all_diagnostics",
   description:
-    "Get diagnostics (errors, warnings) for all files in the project",
+    "Get diagnostics (errors, warnings) for all files in the project. Requires a glob pattern to specify which files to check (e.g., '**/*.ts', '**/*.{js,jsx}', 'src/**/*.py')",
   schema,
   execute: async (args: z.infer<typeof schema>) => {
     const result = await getAllDiagnosticsWithLSP(args);

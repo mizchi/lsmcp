@@ -139,6 +139,9 @@ export function getLanguageIdFromPath(filePath: string): string {
     // Svelte
     ".svelte": "svelte",
 
+    // MoonBit
+    ".mbt": "moonbit",
+
     // Others
     ".sql": "sql",
     ".graphql": "graphql",

@@ -5,8 +5,13 @@
       "args": [
         "../../dist/lsmcp.js",
         "--language",
-        "fsharp"
-      ]
+        "fsharp",
+        "--bin",
+        "fsautocomplete"
+      ],
+      "env": {
+        "MCP_DEBUG": "1"
+      }
     }
   }
 }
