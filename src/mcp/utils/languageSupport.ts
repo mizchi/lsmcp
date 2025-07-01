@@ -34,6 +34,8 @@ const TOOL_AVAILABILITY: ToolAvailability = {
   ],
 };
 
+// Currently unused but may be useful in the future
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getUnavailableToolError(
   toolName: string,
   currentLanguage: string,

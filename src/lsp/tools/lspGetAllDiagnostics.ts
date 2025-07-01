@@ -7,7 +7,7 @@ import type { ToolDef } from "../../mcp/_mcplib.ts";
 import { getActiveClient } from "../lspClient.ts";
 import { debug } from "../../mcp/_mcplib.ts";
 import { pathToFileURL } from "url";
-
+import { Diagnostic } from "vscode-languageserver-types";
 import { exec } from "child_process";
 
 const execAsync = promisify(exec);
@@ -256,8 +256,8 @@ async function getAllDiagnosticsWithLSP(
 
           if (diagnostics && diagnostics.length > 0) {
             const mappedDiagnostics = diagnostics
-              .filter((d) => d && d.range) // Filter out invalid diagnostics
-              .map((d) => ({
+              .filter((d: Diagnostic) => d && d.range) // Filter out invalid diagnostics
+              .map((d: Diagnostic) => ({
                 severity: SEVERITY_MAP[d.severity || 2] || "warning",
                 line: d.range.start.line + 1, // Convert to 1-based
                 column: d.range.start.character + 1, // Convert to 1-based
@@ -267,7 +267,7 @@ async function getAllDiagnosticsWithLSP(
                 source: d.source,
                 code: d.code,
               }))
-              .filter((d) => {
+              .filter((d: any) => {
                 // Apply severity filter
                 if (
                   request.severityFilter === "error" && d.severity !== "error"

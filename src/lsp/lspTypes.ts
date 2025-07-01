@@ -221,6 +221,7 @@ export type LSPClient = {
   ) => Promise<Location | Location[]>;
   getHover: (uri: string, position: Position) => Promise<HoverResult>;
   getDiagnostics: (uri: string) => Diagnostic[];
+  pullDiagnostics?: (uri: string) => Promise<Diagnostic[]>;
   getDocumentSymbols: (
     uri: string,
   ) => Promise<DocumentSymbol[] | SymbolInformation[]>;

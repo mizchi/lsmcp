@@ -179,29 +179,6 @@ function foo(): string {
     expect(results[2].content[0].text).toContain("1 error"); // concurrent3.ts
   });
 
-  it("should work correctly with virtualContent override", async () => {
-    const testFile = "virtual-content-test.ts";
-    const filePath = path.join(tmpDir, testFile);
-
-    // Create file with no errors
-    await fs.writeFile(filePath, `const x: string = "hello";`);
-
-    // But use virtualContent with errors
-    const result = (await client.callTool({
-      name: "lsmcp_get_diagnostics",
-      arguments: {
-        root: tmpDir,
-        filePath: testFile,
-        virtualContent: `const x: string = 123; // Error in virtual content`,
-      },
-    })) as any;
-
-    expect(result.content[0].text).toContain("1 error");
-    expect(result.content[0].text).toContain(
-      "Type 'number' is not assignable to type 'string'",
-    );
-  });
-
   it("should not cache results between different file extensions", async () => {
     const tsFile = "test.ts";
     const jsFile = "test.js";

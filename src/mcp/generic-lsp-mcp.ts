@@ -73,7 +73,10 @@ async function main() {
     // TODO: When MCP adds client cwd support, use that
     const projectRoot = process.cwd();
 
-    const lspCommand = values["lsp-command"] || process.env.LSP_COMMAND;
+    const lspCommandValue = values["lsp-command"] || process.env.LSP_COMMAND;
+    const lspCommand = typeof lspCommandValue === "string"
+      ? lspCommandValue
+      : undefined;
 
     if (!lspCommand) {
       const context: ErrorContext = {
@@ -107,8 +110,9 @@ async function main() {
     server.registerTools(tools);
 
     // Set include pattern as environment variable for tools to access
-    if (values.include) {
-      process.env.INCLUDE_PATTERN = values.include;
+    const includePattern = values.include;
+    if (typeof includePattern === "string") {
+      process.env.INCLUDE_PATTERN = includePattern;
     }
 
     // Initialize LSP client

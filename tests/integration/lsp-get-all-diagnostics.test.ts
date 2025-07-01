@@ -104,6 +104,7 @@ describe("lsp get all diagnostics", () => {
         name: "lsmcp_get_all_diagnostics",
         arguments: {
           root: projectDir,
+          include: "**/*.ts",
           severityFilter: "all",
         },
       },
@@ -129,6 +130,7 @@ describe("lsp get all diagnostics", () => {
         name: "lsmcp_get_all_diagnostics",
         arguments: {
           root: projectDir,
+          include: "**/*.ts",
           severityFilter: "error",
         },
       },

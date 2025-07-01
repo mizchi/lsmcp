@@ -17,6 +17,15 @@ import {
   WorkspaceEdit,
 } from "vscode-languageserver-types";
 import { ChildProcess } from "child_process";
+
+// Type definitions for LSP 3.17+ pull diagnostics
+// These are not yet in vscode-languageserver-protocol types
+interface DocumentDiagnosticReport {
+  kind: "full" | "unchanged";
+  items?: Diagnostic[];
+  resultId?: string;
+}
+
 import {
   ApplyWorkspaceEditParams,
   ApplyWorkspaceEditResponse,
@@ -572,10 +581,10 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       const params = {
         textDocument: { uri },
       };
-      const result = await sendRequest<{
-        kind: string;
-        items: Diagnostic[];
-      }>("textDocument/diagnostic", params);
+      const result = await sendRequest<DocumentDiagnosticReport>(
+        "textDocument/diagnostic",
+        params,
+      );
 
       if (result && result.items) {
         // Store the diagnostics
