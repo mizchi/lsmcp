@@ -14,19 +14,6 @@ describe("list_tools functionality", () => {
     let transport: StdioClientTransport;
 
     beforeAll(async () => {
-      // Build the server first
-      await new Promise<void>((resolve, reject) => {
-        const buildProcess = spawn("pnpm", ["build"], {
-          cwd: path.join(__dirname, ".."),
-          shell: true,
-        });
-
-        buildProcess.on("close", (code) => {
-          if (code === 0) resolve();
-          else reject(new Error(`Build failed with code ${code}`));
-        });
-      });
-
       const SERVER_PATH = path.join(__dirname, "../../dist/typescript-mcp.js");
       await fs.access(SERVER_PATH);
 
