@@ -1,13 +1,17 @@
 import { z } from "zod";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
 import { commonSchemas } from "../../common/schemas.ts";
-import { createLSPClient } from "../../lsp/lspClient.ts";
-import { spawn } from "child_process";
-import { readFileSync } from "fs";
-import { join, relative } from "path";
+import { relative } from "path";
 import { MCPToolError } from "../../common/mcpErrors.ts";
 import { Position } from "vscode-languageserver-types";
-import { findTypescriptLanguageServer } from "../utils/findTypescriptLanguageServer.ts";
+import { readFileWithMetadata } from "../../common/fileOperations.ts";
+import {
+  createTypescriptLSPClient,
+  openDocument,
+  stopLSPClient,
+  waitForLSP,
+} from "../../common/lspClientFactory.ts";
+import { validateLineAndSymbol } from "../../common/validation.ts";
 
 const schema = z.object({
   root: commonSchemas.root,
@@ -53,159 +57,97 @@ export const callHierarchyTool: ToolDef<typeof schema> = {
     direction,
     maxDepth,
   }) => {
-    const absolutePath = join(root, filePath);
-    const fileUri = `file://${absolutePath}`;
+    // Read file content with metadata
+    const { absolutePath, fileContent: content, fileUri } =
+      readFileWithMetadata(
+        root,
+        filePath,
+      );
 
-    // Check if file exists before starting LSP
-    let content: string;
-    try {
-      content = readFileSync(absolutePath, "utf-8");
-    } catch (error: any) {
-      if (error.code === "ENOENT") {
-        throw new MCPToolError(
-          `File not found: ${filePath}`,
-          "FILE_NOT_FOUND",
-          [
-            "Check that the file path is correct",
-            "Ensure the file exists in the project",
-          ],
-        );
-      }
-      throw error;
-    }
-
-    // Create a dedicated LSP client for this operation
-    // Use the TypeScript Language Server path set by typescript-mcp.ts
-    const tsServerPath = process.env.TYPESCRIPT_LANGUAGE_SERVER_PATH ||
-      findTypescriptLanguageServer(root) ||
-      process.env.LSP_COMMAND?.split(" ")[0] ||
-      "typescript-language-server";
-    const lspProcess = spawn(
-      tsServerPath,
-      ["--stdio"],
-      {
-        cwd: root,
-        stdio: ["pipe", "pipe", "pipe"],
-      },
-    );
-
-    const client = createLSPClient({
-      rootPath: root,
-      process: lspProcess,
-      languageId: "typescript",
-    });
+    // Create TypeScript LSP client
+    const clientInstance = await createTypescriptLSPClient(root);
+    const { client } = clientInstance;
 
     try {
-      const lines = content.split("\n");
-
-      // Find line and character position
-      const lineIndex = typeof line === "string"
-        ? lines.findIndex((l) => l.includes(line))
-        : line - 1;
-
-      if (lineIndex < 0) {
-        throw new MCPToolError(
-          "Could not find specified line in file",
-          "LINE_NOT_FOUND",
-        );
-      }
-
-      const lineContent = lines[lineIndex];
-      const symbolIndex = lineContent.indexOf(symbolName);
-
-      if (symbolIndex < 0) {
-        throw new MCPToolError(
-          `Symbol "${symbolName}" not found on line ${lineIndex + 1}`,
-          "SYMBOL_NOT_FOUND",
-        );
-      }
+      // Validate line and symbol
+      const { lineIndex, symbolIndex } = validateLineAndSymbol(
+        content,
+        line,
+        symbolName,
+        filePath,
+      );
 
       const position: Position = {
         line: lineIndex,
         character: symbolIndex,
       };
 
-      try {
-        // Start the client
-        await client.start();
+      // Open the document
+      openDocument(client, fileUri, content);
 
-        // Open the document
-        client.openDocument(fileUri, content, "typescript");
+      // Wait for LSP to process the document
+      await waitForLSP();
 
-        // Wait for LSP to process the document
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Prepare call hierarchy
+      const prepareParams = {
+        textDocument: { uri: fileUri },
+        position,
+      };
 
-        // Prepare call hierarchy
-        const prepareParams = {
-          textDocument: { uri: fileUri },
-          position,
-        };
+      const items = await client.sendRequest<CallHierarchyItem[] | null>(
+        "textDocument/prepareCallHierarchy",
+        prepareParams,
+      );
 
-        const items = await client.sendRequest<CallHierarchyItem[] | null>(
-          "textDocument/prepareCallHierarchy",
-          prepareParams,
+      if (!items || items.length === 0) {
+        throw new MCPToolError(
+          `No call hierarchy available for "${symbolName}"`,
+          "NO_CALL_HIERARCHY",
+          [
+            "Ensure the symbol is a function or method",
+            "The cursor must be on the function/method name",
+          ],
         );
-
-        if (!items || items.length === 0) {
-          throw new MCPToolError(
-            `No call hierarchy available for "${symbolName}"`,
-            "NO_CALL_HIERARCHY",
-            [
-              "Ensure the symbol is a function or method",
-              "The cursor must be on the function/method name",
-            ],
-          );
-        }
-
-        const item = items[0];
-        let output = `# Call Hierarchy for ${item.name}\n\n`;
-        output += `📍 ${relative(root, item.uri.replace("file://", ""))}:${
-          item.range.start.line + 1
-        }\n\n`;
-
-        // Get incoming calls
-        if (direction === "incoming" || direction === "both") {
-          output += "## 📥 Incoming Calls (who calls this function)\n\n";
-          const incomingCalls = await getIncomingCalls(
-            client,
-            item,
-            new Set(),
-            0,
-            maxDepth,
-            root,
-          );
-          output += formatCallTree(incomingCalls, "incoming");
-          output += "\n";
-        }
-
-        // Get outgoing calls
-        if (direction === "outgoing" || direction === "both") {
-          output += "## 📤 Outgoing Calls (what this function calls)\n\n";
-          const outgoingCalls = await getOutgoingCalls(
-            client,
-            item,
-            new Set(),
-            0,
-            maxDepth,
-            root,
-          );
-          output += formatCallTree(outgoingCalls, "outgoing");
-        }
-
-        return output.trim();
-      } finally {
-        await client.stop();
       }
-    } catch (error) {
-      // Only try to kill the process if it was created
-      try {
-        if (lspProcess && !lspProcess.killed) {
-          lspProcess.kill();
-        }
-      } catch (killError) {
-        // Ignore errors during cleanup
+
+      const item = items[0];
+      let output = `# Call Hierarchy for ${item.name}\n\n`;
+      output += `📍 ${relative(root, item.uri.replace("file://", ""))}:${
+        item.range.start.line + 1
+      }\n\n`;
+
+      // Get incoming calls
+      if (direction === "incoming" || direction === "both") {
+        output += "## 📥 Incoming Calls (who calls this function)\n\n";
+        const incomingCalls = await getIncomingCalls(
+          client,
+          item,
+          new Set(),
+          0,
+          maxDepth,
+          root,
+        );
+        output += formatCallTree(incomingCalls, "incoming");
+        output += "\n";
       }
-      throw error;
+
+      // Get outgoing calls
+      if (direction === "outgoing" || direction === "both") {
+        output += "## 📤 Outgoing Calls (what this function calls)\n\n";
+        const outgoingCalls = await getOutgoingCalls(
+          client,
+          item,
+          new Set(),
+          0,
+          maxDepth,
+          root,
+        );
+        output += formatCallTree(outgoingCalls, "outgoing");
+      }
+
+      return output.trim();
+    } finally {
+      await stopLSPClient(clientInstance);
     }
   },
 };

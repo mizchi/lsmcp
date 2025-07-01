@@ -3,10 +3,10 @@ import { err, ok, type Result } from "neverthrow";
 import { readFileSync } from "fs";
 import path from "path";
 import { getActiveClient } from "../lspClient.ts";
-import { parseLineNumber } from "../../textUtils/parseLineNumber.ts";
-import { findSymbolInLine } from "../../textUtils/findSymbolInLine.ts";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
 import { debug } from "../../mcp/_mcplib.ts";
+import { readFileWithMetadata } from "../../common/fileOperations.ts";
+import { validateLineAndSymbol } from "../../common/validation.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -62,28 +62,20 @@ async function getDefinitionsWithLSP(
   try {
     const client = getActiveClient();
 
-    // Read file content
-    const absolutePath = path.resolve(request.root, request.filePath);
-    const fileContent = readFileSync(absolutePath, "utf-8");
-    const fileUri = `file://${absolutePath}`;
+    // Read file content with metadata
+    const { fileContent, fileUri } = readFileWithMetadata(
+      request.root,
+      request.filePath,
+    );
 
-    // Parse line number
-    const lines = fileContent.split("\n");
-    const lineResult = parseLineNumber(fileContent, request.line);
-    if ("error" in lineResult) {
-      return err(`${lineResult.error} in ${request.filePath}`);
-    }
-
-    const targetLine = lineResult.lineIndex;
-
-    // Find symbol position in line
-    const lineText = lines[targetLine];
-    const symbolResult = findSymbolInLine(lineText, request.symbolName);
-    if ("error" in symbolResult) {
-      return err(`${symbolResult.error} on line ${targetLine + 1}`);
-    }
-
-    const symbolPosition = symbolResult.characterIndex;
+    // Validate line and symbol
+    const { lineIndex: targetLine, symbolIndex: symbolPosition } =
+      validateLineAndSymbol(
+        fileContent,
+        request.line,
+        request.symbolName,
+        request.filePath,
+      );
 
     // Open document in LSP
     client.openDocument(fileUri, fileContent);

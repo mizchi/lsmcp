@@ -1,4 +1,5 @@
 import type { SymbolPositionResult } from "./findSymbolPosition.ts";
+import { findSymbolInLine } from "./findSymbolInLine.ts";
 
 /**
  * Finds the first occurrence of target text in the file
@@ -13,12 +14,12 @@ export function findTextInFile(
   const lines = fullText.split("\n");
 
   for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-    const charIndex = lines[lineIndex].indexOf(target);
-    if (charIndex !== -1) {
+    const symbolResult = findSymbolInLine(lines[lineIndex], target);
+    if (!("error" in symbolResult)) {
       return {
         success: true,
         lineIndex,
-        characterIndex: charIndex,
+        characterIndex: symbolResult.characterIndex,
       };
     }
   }

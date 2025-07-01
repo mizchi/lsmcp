@@ -3,10 +3,10 @@ import { err, ok, type Result } from "neverthrow";
 import { readFileSync } from "fs";
 import path from "path";
 import { getActiveClient } from "../lspClient.ts";
-import { parseLineNumber } from "../../textUtils/parseLineNumber.ts";
-import { findSymbolInLine } from "../../textUtils/findSymbolInLine.ts";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
 import { ErrorContext, formatError } from "../../mcp/utils/errorHandler.ts";
+import { readFileWithMetadata } from "../../common/fileOperations.ts";
+import { validateLineAndSymbol } from "../../common/validation.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -43,11 +43,13 @@ async function findReferencesWithLSP(
   try {
     const client = getActiveClient();
 
-    // Read file content
-    const absolutePath = path.resolve(request.root, request.filePath);
+    // Read file content with metadata
     let fileContent: string;
+    let fileUri: string;
     try {
-      fileContent = readFileSync(absolutePath, "utf-8");
+      const result = readFileWithMetadata(request.root, request.filePath);
+      fileContent = result.fileContent;
+      fileUri = result.fileUri;
     } catch (error) {
       const context: ErrorContext = {
         operation: "find references",
@@ -56,36 +58,28 @@ async function findReferencesWithLSP(
       };
       return err(formatError(error, context));
     }
-    const fileUri = `file://${absolutePath}`;
 
-    // Parse line number
-    const lines = fileContent.split("\n");
-    const lineResult = parseLineNumber(fileContent, request.line);
-    if ("error" in lineResult) {
+    // Validate line and symbol
+    let targetLine: number;
+    let symbolPosition: number;
+    try {
+      const result = validateLineAndSymbol(
+        fileContent,
+        request.line,
+        request.symbolName,
+        request.filePath,
+      );
+      targetLine = result.lineIndex;
+      symbolPosition = result.symbolIndex;
+    } catch (error) {
       const context: ErrorContext = {
-        operation: "line resolution",
-        filePath: request.filePath,
-        details: { line: request.line },
-      };
-      return err(formatError(new Error(lineResult.error), context));
-    }
-
-    const targetLine = lineResult.lineIndex;
-
-    // Find symbol position in line
-    const lineText = lines[targetLine];
-    const symbolResult = findSymbolInLine(lineText, request.symbolName);
-    if ("error" in symbolResult) {
-      const context: ErrorContext = {
-        operation: "symbol location",
+        operation: "symbol validation",
         filePath: request.filePath,
         symbolName: request.symbolName,
-        details: { line: targetLine + 1 },
+        details: { line: request.line },
       };
-      return err(formatError(new Error(symbolResult.error), context));
+      return err(formatError(error, context));
     }
-
-    const symbolPosition = symbolResult.characterIndex;
 
     // Open document in LSP
     client.openDocument(fileUri, fileContent);

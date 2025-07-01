@@ -100,11 +100,10 @@ async function performRenameWithLine(
       );
     }
 
-    const targetLine = lineResult.lineIndex;
-    const line = lines[targetLine];
+    const { targetLine, lineText } = lineResult;
 
     // Find symbol position in line
-    const symbolResult = findSymbolInLine(line, request.target);
+    const symbolResult = findSymbolInLine(lineText, request.target);
     if ("error" in symbolResult) {
       return err(
         `Symbol "${request.target}" not found on line ${

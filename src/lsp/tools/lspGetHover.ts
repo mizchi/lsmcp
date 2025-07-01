@@ -1,12 +1,13 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
 import { getActiveClient } from "../lspClient.ts";
-import { parseLineNumber } from "../../textUtils/parseLineNumber.ts";
-import { findSymbolInLine } from "../../textUtils/findSymbolInLine.ts";
 import { findTargetInFile } from "../../textUtils/findTargetInFile.ts";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
-import { readFileSync } from "fs";
-import path from "path";
+import { readFileWithMetadata } from "../../common/fileOperations.ts";
+import {
+  validateLine,
+  validateLineAndSymbol,
+} from "../../common/validation.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -65,10 +66,11 @@ async function getHoverWithoutLine(
   try {
     const client = getActiveClient();
 
-    // Read file content
-    const absolutePath = path.resolve(request.root, request.filePath);
-    const fileContent = readFileSync(absolutePath, "utf-8");
-    const fileUri = `file://${absolutePath}`;
+    // Read file content with metadata
+    const { fileContent, fileUri } = readFileWithMetadata(
+      request.root,
+      request.filePath,
+    );
     const lines = fileContent.split("\n");
 
     // Find target text in file
@@ -132,8 +134,10 @@ function formatHoverResult(
     };
   } else {
     // If range is null, specify all lines
-    const absolutePath = path.resolve(request.root, request.filePath);
-    const fileContent = readFileSync(absolutePath, "utf-8");
+    const { fileContent } = readFileWithMetadata(
+      request.root,
+      request.filePath,
+    );
     const lines = fileContent.split("\n");
     range = {
       start: {
@@ -172,35 +176,45 @@ async function getHover(
   try {
     const client = getActiveClient();
 
-    // Read file content
-    const absolutePath = path.resolve(request.root, request.filePath);
-    const fileContent = readFileSync(absolutePath, "utf-8");
-    const fileUri = `file://${absolutePath}`;
+    // Read file content with metadata
+    const { absolutePath, fileContent, fileUri } = readFileWithMetadata(
+      request.root,
+      request.filePath,
+    );
 
     // Parse line number
     const lines = fileContent.split("\n");
-    const lineResult = parseLineNumber(fileContent, request.line);
-    if ("error" in lineResult) {
-      return err(`${lineResult.error} in ${request.filePath}`);
-    }
-
-    const targetLine = lineResult.lineIndex;
+    let targetLine: number;
+    let symbolPosition: number;
 
     // Determine character position
-    let symbolPosition: number;
     if (request.character !== undefined) {
       // Use provided character position
+      const { lineIndex } = validateLine(
+        fileContent,
+        request.line,
+        request.filePath,
+      );
+      targetLine = lineIndex;
       symbolPosition = request.character;
     } else if (request.target) {
       // Find symbol position in line
-      const lineText = lines[targetLine];
-      const symbolResult = findSymbolInLine(lineText, request.target);
-      if ("error" in symbolResult) {
-        return err(`${symbolResult.error} on line ${targetLine + 1}`);
-      }
-      symbolPosition = symbolResult.characterIndex;
+      const { lineIndex, symbolIndex } = validateLineAndSymbol(
+        fileContent,
+        request.line,
+        request.target,
+        request.filePath,
+      );
+      targetLine = lineIndex;
+      symbolPosition = symbolIndex;
     } else {
       // Default to beginning of line if neither character nor target is provided
+      const { lineIndex } = validateLine(
+        fileContent,
+        request.line,
+        request.filePath,
+      );
+      targetLine = lineIndex;
       symbolPosition = 0;
     }
 
@@ -358,7 +372,7 @@ if (import.meta.vitest) {
           line: 1,
           target: "something",
         }),
-      ).rejects.toThrow("ENOENT");
+      ).rejects.toThrow("File not found");
     });
 
     it("should handle line string not found error", async () => {
