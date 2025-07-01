@@ -15,7 +15,7 @@ export type SymbolPositionResult =
  * @param symbolIndex Occurrence index (0-based, default: 0)
  * @returns Symbol position result
  */
-export function findSymbolPosition(
+function findSymbolPosition(
   fullText: string,
   lineIndex: number,
   symbolName: string,

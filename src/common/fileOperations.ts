@@ -2,7 +2,7 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 import { MCPToolError } from "./mcpErrors.ts";
 
-export interface FileReadResult {
+interface FileReadResult {
   absolutePath: string;
   fileContent: string;
   fileUri: string;
@@ -47,20 +47,4 @@ export function readFileWithMetadata(
     fileContent,
     fileUri,
   };
-}
-
-/**
- * Check if a file exists and is readable
- * @param root Root directory path
- * @param filePath Relative file path
- * @returns true if file exists and is readable
- */
-export function fileExists(root: string, filePath: string): boolean {
-  try {
-    const absolutePath = resolve(root, filePath);
-    readFileSync(absolutePath, "utf-8");
-    return true;
-  } catch {
-    return false;
-  }
 }

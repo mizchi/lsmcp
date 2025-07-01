@@ -2,7 +2,7 @@ import { parseLineNumber } from "../textUtils/parseLineNumber.ts";
 import { findSymbolInLine } from "../textUtils/findSymbolInLine.ts";
 import { MCPToolError } from "./mcpErrors.ts";
 
-export interface LineAndSymbolResult {
+interface LineAndSymbolResult {
   lineIndex: number;
   lineContent: string;
   symbolIndex: number;
@@ -84,7 +84,7 @@ export function validateLine(
  * @returns Line index and symbol index
  * @throws MCPToolError if symbol not found
  */
-export function findSymbolPosition(
+function findSymbolPosition(
   fileContent: string,
   symbolName: string,
 ): { lineIndex: number; symbolIndex: number } {
