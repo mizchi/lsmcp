@@ -317,10 +317,12 @@ claude mcp add npx -- -y @mizchi/lsmcp --bin="pylsp"          # Python
 - [ ] Extract function refactoring
 - [ ] Add Java MCP tests
 - [ ] Enhanced error recovery for LSP communication
+- [ ] Implement dead code detection tool (TSR-like) - [Issue #21](https://github.com/mizchi/lsmcp/issues/21)
 - [x] Fix MCP client tests for move_file and delete_symbol ✅ 2025-01-13
 - [x] Add Python MCP tests ✅ 2025-01-26
 - [x] Refactor code duplication ✅ 2025-01-26
 - [x] Unified lsmcp CLI for all languages ✅ 2025-01-27
+- [x] Remove ts-morph dependency ✅ 2025-01-30
 
 ## LICENSE
 

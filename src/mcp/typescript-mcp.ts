@@ -22,6 +22,7 @@ import { listToolsTool } from "./tools/listTools.ts";
 import { extractTypeTool } from "../ts/tools/tsExtractType.ts";
 import { generateAccessorsTool } from "../ts/tools/tsGenerateAccessors.ts";
 import { callHierarchyTool } from "../ts/tools/tsCallHierarchy.ts";
+import { findTypescriptLanguageServer } from "../ts/utils/findTypescriptLanguageServer.ts";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { spawn } from "child_process";
@@ -39,12 +40,32 @@ debug(
   `[typescript-mcp] Starting TypeScript MCP server, USE_LSP: ${USE_LSP}, LSP_COMMAND: ${process.env.LSP_COMMAND}`,
 );
 
+// Check if TypeScript Language Server is available for advanced tools
+const tsServerPath = USE_LSP
+  ? findTypescriptLanguageServer(process.cwd())
+  : null;
+const tsServerAvailable = tsServerPath !== null;
+
+if (USE_LSP && !tsServerAvailable) {
+  debug(
+    "[typescript-mcp] TypeScript Language Server not found. Advanced refactoring tools will not be available.",
+  );
+  debug(
+    "[typescript-mcp] Install it with: npm install -D typescript-language-server",
+  );
+}
+
+// Set TypeScript Language Server path as environment variable for tools to use
+if (tsServerPath) {
+  process.env.TYPESCRIPT_LANGUAGE_SERVER_PATH = tsServerPath;
+}
+
 // Define tools based on configuration
 const tools: ToolDef<any>[] = [
   listToolsTool, // Help tool to list all available tools
 
-  // Only include TypeScript-specific tools when not in forced LSP mode
-  ...(process.env.FORCE_LSP !== "true"
+  // Include TypeScript-specific tools that require TypeScript Language Server
+  ...(tsServerAvailable
     ? [
       extractTypeTool,
       generateAccessorsTool,

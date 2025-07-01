@@ -8,6 +8,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { type z, ZodObject, ZodType } from "zod";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { MCPToolError } from "../common/mcpErrors.ts";
 
 /**
  * Debug logging for MCP servers.
@@ -179,14 +180,17 @@ export function toMcpToolHandler<T>(
       );
 
       // Create detailed error message
-      let errorMessage = "Error: ";
-      if (error instanceof Error) {
-        errorMessage += error.message;
+      let errorMessage = "";
+      if (error instanceof MCPToolError) {
+        // Use the formatted error message for MCPToolError
+        errorMessage = error.format();
+      } else if (error instanceof Error) {
+        errorMessage = "Error: " + error.message;
         if (process.env.DEBUG && error.stack) {
           errorMessage += `\n\nStack trace:\n${error.stack}`;
         }
       } else {
-        errorMessage += String(error);
+        errorMessage = "Error: " + String(error);
       }
 
       return {

@@ -1,0 +1,203 @@
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { fileURLToPath } from "url";
+import path from "path";
+import fs from "fs/promises";
+import { randomBytes } from "crypto";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SERVER_PATH = path.join(__dirname, "../../dist/typescript-mcp.js");
+
+describe("TypeScript New Tools Basic Integration", () => {
+  let client: Client;
+  let transport: StdioClientTransport;
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    // Create temporary directory
+    const hash = randomBytes(8).toString("hex");
+    tmpDir = path.join(__dirname, `tmp-ts-new-tools-basic-${hash}`);
+    await fs.mkdir(tmpDir, { recursive: true });
+
+    // Create a minimal tsconfig.json
+    await fs.writeFile(
+      path.join(tmpDir, "tsconfig.json"),
+      JSON.stringify(
+        {
+          compilerOptions: {
+            target: "es2020",
+            module: "commonjs",
+            strict: true,
+            esModuleInterop: true,
+            skipLibCheck: true,
+            forceConsistentCasingInFileNames: true,
+          },
+        },
+        null,
+        2,
+      ),
+    );
+
+    // Get TypeScript language server path
+    const tsLangServerPath = path.join(
+      __dirname,
+      "../../node_modules/.bin/typescript-language-server",
+    );
+
+    // Create transport with LSP configuration
+    const cleanEnv = { ...process.env } as Record<string, string>;
+    // Set FORCE_LSP and LSP_COMMAND to enable LSP initialization
+    cleanEnv.FORCE_LSP = "true";
+    cleanEnv.LSP_COMMAND = `${tsLangServerPath} --stdio`;
+
+    transport = new StdioClientTransport({
+      command: "node",
+      args: [SERVER_PATH],
+      env: cleanEnv,
+      cwd: tmpDir,
+    });
+
+    // Create and connect client
+    client = new Client({
+      name: "test-client",
+      version: "1.0.0",
+    });
+
+    await client.connect(transport);
+  }, 20000);
+
+  afterEach(async () => {
+    try {
+      if (client) {
+        await client.close();
+      }
+    } catch (error) {
+      console.error("Error during client cleanup:", error);
+    }
+
+    try {
+      await fs.rm(tmpDir, { recursive: true, force: true });
+    } catch (error) {
+      console.error("Error during temp directory cleanup:", error);
+    }
+  }, 10000);
+
+  describe("Tool availability", () => {
+    it("should list the new TypeScript tools", async () => {
+      const response = await client.listTools();
+      const toolNames = response.tools.map((t) => t.name);
+
+      // Check that the new tools are available
+      expect(toolNames).toContain("lsmcp_extract_type");
+      expect(toolNames).toContain("lsmcp_generate_accessors");
+      expect(toolNames).toContain("lsmcp_call_hierarchy");
+    });
+  });
+
+  describe("Tool error handling", () => {
+    it("should handle non-existent file gracefully for extract_type", async () => {
+      const result = await client.callTool({
+        name: "lsmcp_extract_type",
+        arguments: {
+          root: tmpDir,
+          filePath: "non-existent.ts",
+          startLine: 1,
+          extractType: "type",
+          typeName: "Test",
+        },
+      });
+
+      expect(result).toBeDefined();
+      expect(result.content).toBeDefined();
+      const contents = result.content as Array<{ type: string; text?: string }>;
+      expect(contents.length).toBeGreaterThan(0);
+      if (contents[0].type === "text") {
+        expect(contents[0].text).toMatch(
+          /Error:|ENOENT|not found|does not exist/i,
+        );
+      }
+    });
+
+    it("should handle non-existent file gracefully for generate_accessors", async () => {
+      const result = await client.callTool({
+        name: "lsmcp_generate_accessors",
+        arguments: {
+          root: tmpDir,
+          filePath: "non-existent.ts",
+          line: 1,
+          propertyName: "test",
+        },
+      });
+
+      expect(result).toBeDefined();
+      expect(result.content).toBeDefined();
+      const contents = result.content as Array<{ type: string; text?: string }>;
+      expect(contents.length).toBeGreaterThan(0);
+      if (contents[0].type === "text") {
+        expect(contents[0].text).toMatch(
+          /Error:|ENOENT|not found|does not exist/i,
+        );
+      }
+    });
+
+    it("should handle non-existent file gracefully for call_hierarchy", async () => {
+      const result = await client.callTool({
+        name: "lsmcp_call_hierarchy",
+        arguments: {
+          root: tmpDir,
+          filePath: "non-existent.ts",
+          line: 1,
+          symbolName: "test",
+        },
+      });
+
+      expect(result).toBeDefined();
+      expect(result.content).toBeDefined();
+      const contents = result.content as Array<{ type: string; text?: string }>;
+      expect(contents.length).toBeGreaterThan(0);
+      if (contents[0].type === "text") {
+        expect(contents[0].text).toMatch(
+          /Error:|ENOENT|not found|does not exist/i,
+        );
+      }
+    });
+  });
+
+  describe("Basic functionality", () => {
+    it("should handle simple TypeScript file for call_hierarchy", async () => {
+      // Create a simple TypeScript file
+      const testFile = path.join(tmpDir, "simple.ts");
+      await fs.writeFile(
+        testFile,
+        `function simpleFunction() {
+  return 42;
+}
+
+function caller() {
+  return simpleFunction();
+}`,
+      );
+
+      // Try to get call hierarchy - even if it returns no results, it shouldn't crash
+      const result = await client.callTool({
+        name: "lsmcp_call_hierarchy",
+        arguments: {
+          root: tmpDir,
+          filePath: "simple.ts",
+          line: "function simpleFunction",
+          symbolName: "simpleFunction",
+          direction: "incoming",
+        },
+      });
+
+      expect(result).toBeDefined();
+      expect(result.content).toBeDefined();
+      const contents = result.content as Array<{ type: string; text?: string }>;
+      if (contents.length > 0 && contents[0].type === "text") {
+        // Should at least contain the function name
+        expect(contents[0].text).toContain("simpleFunction");
+      }
+    });
+  });
+});

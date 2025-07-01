@@ -175,14 +175,9 @@ These tools understand the semantic structure of your code and will update all r
 
 When using `--language typescript`, these TypeScript-specific tools are available:
 
-- **lsmcp_move_file** - Move files and update all import statements
-- **lsmcp_move_directory** - Move directories and update all imports
-- **lsmcp_delete_symbol** - Delete symbols and all their references (using TypeScript Compiler API)
-- **lsmcp_rename_symbol** - Rename across entire codebase (using TypeScript Compiler API)
-- **lsmcp_get_type_at_symbol** - Get detailed type information
-- **lsmcp_get_module_symbols** - List all exports from a module
-- **lsmcp_search_symbols** - Fast project-wide symbol search
-- **lsmcp_find_import_candidates** - Find and suggest imports
+- **lsmcp_extract_type** - Extract type expressions to type alias or interface
+- **lsmcp_generate_accessors** - Generate get/set accessor methods for properties
+- **lsmcp_call_hierarchy** - View incoming/outgoing call hierarchy for functions
 
 ### Standard LSP Tools
 

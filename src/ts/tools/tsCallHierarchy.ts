@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
 import { commonSchemas } from "../../common/schemas.ts";
 import { createLSPClient } from "../../lsp/lspClient.ts";
+import { spawn } from "child_process";
 import { readFileSync } from "fs";
 import { join, relative } from "path";
 import { MCPToolError } from "../../common/mcpErrors.ts";
@@ -51,15 +52,47 @@ export const callHierarchyTool: ToolDef<typeof schema> = {
     direction,
     maxDepth,
   }) => {
-    const client = await createLSPClient({
+    // Create a dedicated LSP client for this operation
+    // Use the TypeScript Language Server path set by typescript-mcp.ts
+    const tsServerPath = process.env.TYPESCRIPT_LANGUAGE_SERVER_PATH ||
+      "typescript-language-server";
+    const lspProcess = spawn(
+      tsServerPath,
+      ["--stdio"],
+      {
+        cwd: root,
+        stdio: ["pipe", "pipe", "pipe"],
+      },
+    );
+
+    const client = createLSPClient({
       rootPath: root,
+      process: lspProcess,
       languageId: "typescript",
     });
 
     try {
       const absolutePath = join(root, filePath);
       const fileUri = `file://${absolutePath}`;
-      const content = readFileSync(absolutePath, "utf-8");
+
+      // Check if file exists
+      let content: string;
+      try {
+        content = readFileSync(absolutePath, "utf-8");
+      } catch (error: any) {
+        if (error.code === "ENOENT") {
+          throw new MCPToolError(
+            `File not found: ${filePath}`,
+            "FILE_NOT_FOUND",
+            [
+              "Check that the file path is correct",
+              "Ensure the file exists in the project",
+            ],
+          );
+        }
+        throw error;
+      }
+
       const lines = content.split("\n");
 
       // Find line and character position
@@ -89,70 +122,81 @@ export const callHierarchyTool: ToolDef<typeof schema> = {
         character: symbolIndex,
       };
 
-      // Open the document
-      await client.openDocument(fileUri, "typescript", content);
+      try {
+        // Start the client
+        await client.start();
 
-      // Prepare call hierarchy
-      const prepareParams = {
-        textDocument: { uri: fileUri },
-        position,
-      };
+        // Open the document
+        client.openDocument(fileUri, content, "typescript");
 
-      const items = await client.sendRequest<CallHierarchyItem[] | null>(
-        "textDocument/prepareCallHierarchy",
-        prepareParams,
-      );
+        // Wait for LSP to process the document
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      if (!items || items.length === 0) {
-        throw new MCPToolError(
-          `No call hierarchy available for "${symbolName}"`,
-          "NO_CALL_HIERARCHY",
-          [
-            "Ensure the symbol is a function or method",
-            "The cursor must be on the function/method name",
-          ],
+        // Prepare call hierarchy
+        const prepareParams = {
+          textDocument: { uri: fileUri },
+          position,
+        };
+
+        const items = await client.sendRequest<CallHierarchyItem[] | null>(
+          "textDocument/prepareCallHierarchy",
+          prepareParams,
         );
+
+        if (!items || items.length === 0) {
+          throw new MCPToolError(
+            `No call hierarchy available for "${symbolName}"`,
+            "NO_CALL_HIERARCHY",
+            [
+              "Ensure the symbol is a function or method",
+              "The cursor must be on the function/method name",
+            ],
+          );
+        }
+
+        const item = items[0];
+        let output = `# Call Hierarchy for ${item.name}\n\n`;
+        output += `📍 ${relative(root, item.uri.replace("file://", ""))}:${
+          item.range.start.line + 1
+        }\n\n`;
+
+        // Get incoming calls
+        if (direction === "incoming" || direction === "both") {
+          output += "## 📥 Incoming Calls (who calls this function)\n\n";
+          const incomingCalls = await getIncomingCalls(
+            client,
+            item,
+            new Set(),
+            0,
+            maxDepth,
+            root,
+          );
+          output += formatCallTree(incomingCalls, "incoming");
+          output += "\n";
+        }
+
+        // Get outgoing calls
+        if (direction === "outgoing" || direction === "both") {
+          output += "## 📤 Outgoing Calls (what this function calls)\n\n";
+          const outgoingCalls = await getOutgoingCalls(
+            client,
+            item,
+            new Set(),
+            0,
+            maxDepth,
+            root,
+          );
+          output += formatCallTree(outgoingCalls, "outgoing");
+        }
+
+        return output.trim();
+      } finally {
+        await client.stop();
       }
-
-      const item = items[0];
-      let output = `# Call Hierarchy for ${item.name}\n\n`;
-      output += `📍 ${relative(root, item.uri.replace("file://", ""))}:${
-        item.range.start.line + 1
-      }\n\n`;
-
-      // Get incoming calls
-      if (direction === "incoming" || direction === "both") {
-        output += "## 📥 Incoming Calls (who calls this function)\n\n";
-        const incomingCalls = await getIncomingCalls(
-          client,
-          item,
-          new Set(),
-          0,
-          maxDepth,
-          root,
-        );
-        output += formatCallTree(incomingCalls, "incoming");
-        output += "\n";
-      }
-
-      // Get outgoing calls
-      if (direction === "outgoing" || direction === "both") {
-        output += "## 📤 Outgoing Calls (what this function calls)\n\n";
-        const outgoingCalls = await getOutgoingCalls(
-          client,
-          item,
-          new Set(),
-          0,
-          maxDepth,
-          root,
-        );
-        output += formatCallTree(outgoingCalls, "outgoing");
-      }
-
-      await client.stop();
-      return output.trim();
     } catch (error) {
-      await client.stop();
+      if (lspProcess && !lspProcess.killed) {
+        lspProcess.kill();
+      }
       throw error;
     }
   },

@@ -115,6 +115,52 @@ Uses the same automatically maintained index as `lsmcp_search_symbols`, with fil
 Find import candidates for "Logger" from src/app.ts
 ```
 
+### lsmcp_extract_type
+Extract selected type expression into a type alias or interface (TypeScript only).
+
+**Arguments:**
+- `root`: Root directory
+- `filePath`: File path
+- `startLine`: Start line of the type expression
+- `endLine`: End line of the type expression (optional)
+- `extractType`: Extract as "type" or "interface"
+- `typeName`: Name for the extracted type
+
+**Example:**
+```
+Extract { name: string; age: number } to type alias "Person"
+```
+
+### lsmcp_generate_accessors
+Generate get/set accessor methods for a class property (TypeScript only).
+
+**Arguments:**
+- `root`: Root directory
+- `filePath`: File path
+- `line`: Line containing the property
+- `propertyName`: Name of the property
+
+**Example:**
+```
+Generate accessors for property "name" in class User
+```
+
+### lsmcp_call_hierarchy
+View incoming/outgoing call hierarchy for functions (TypeScript only).
+
+**Arguments:**
+- `root`: Root directory
+- `filePath`: File path
+- `line`: Line containing the function
+- `symbolName`: Function name
+- `direction`: "incoming" | "outgoing" | "both" (default: "both")
+- `maxDepth`: Maximum depth to traverse (default: 3)
+
+**Example:**
+```
+Show all functions that call handleRequest() and what it calls
+```
+
 ## LSP-common Tools
 
 These tools are available for all languages with LSP support:
