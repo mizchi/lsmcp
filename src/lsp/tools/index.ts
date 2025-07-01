@@ -1,6 +1,7 @@
 export * from "./lspFindReferences.ts";
 export * from "./lspGetDefinitions.ts";
 export * from "./lspGetDiagnostics.ts";
+export * from "./lspGetAllDiagnostics.ts";
 export * from "./lspGetHover.ts";
 export * from "./lspRenameSymbol.ts";
 export * from "./lspDeleteSymbol.ts";

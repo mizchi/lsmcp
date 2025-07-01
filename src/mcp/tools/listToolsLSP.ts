@@ -41,6 +41,13 @@ const LSP_TOOLS_REGISTRY: ToolInfo[] = [
     requiresLSP: true,
   },
   {
+    name: "lsp_get_all_diagnostics",
+    description:
+      "Get diagnostics (errors, warnings) for all files in the project",
+    category: "lsp",
+    requiresLSP: true,
+  },
+  {
     name: "lsp_rename_symbol",
     description:
       "Rename a symbol across the codebase using Language Server Protocol",

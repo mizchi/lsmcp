@@ -18,6 +18,7 @@ import { lspGetHoverTool } from "../lsp/tools/lspGetHover.ts";
 import { lspFindReferencesTool } from "../lsp/tools/lspFindReferences.ts";
 import { lspGetDefinitionsTool } from "../lsp/tools/lspGetDefinitions.ts";
 import { lspGetDiagnosticsTool } from "../lsp/tools/lspGetDiagnostics.ts";
+import { lspGetAllDiagnosticsTool } from "../lsp/tools/lspGetAllDiagnostics.ts";
 import { lspRenameSymbolTool } from "../lsp/tools/lspRenameSymbol.ts";
 import { lspDeleteSymbolTool } from "../lsp/tools/lspDeleteSymbol.ts";
 import { lspGetDocumentSymbolsTool } from "../lsp/tools/lspGetDocumentSymbols.ts";
@@ -40,6 +41,7 @@ const tools: ToolDef<any>[] = [
   lspFindReferencesTool,
   lspGetDefinitionsTool,
   lspGetDiagnosticsTool,
+  lspGetAllDiagnosticsTool,
   lspRenameSymbolTool,
   lspDeleteSymbolTool,
   lspGetDocumentSymbolsTool,
@@ -58,8 +60,12 @@ async function main() {
         "lsp-command": {
           type: "string",
         },
+        "include": {
+          type: "string",
+          description: "Glob pattern for files to include in all diagnostics",
+        },
       },
-      strict: true,
+      strict: false,
       allowPositionals: false,
     });
 
@@ -99,6 +105,11 @@ async function main() {
 
     server.setDefaultRoot(projectRoot);
     server.registerTools(tools);
+
+    // Set include pattern as environment variable for tools to access
+    if (values.include) {
+      process.env.INCLUDE_PATTERN = values.include;
+    }
 
     // Initialize LSP client
     const parts = lspCommand.split(" ");

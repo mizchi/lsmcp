@@ -83,6 +83,7 @@ async function runLanguageServer(
   language: string,
   args: string[] = [],
   customEnv?: Record<string, string | undefined>,
+  includePattern?: string,
 ) {
   debug(
     `[lsmcp] runLanguageServer called with language: ${language}, args: ${
@@ -182,7 +183,16 @@ async function runLanguageServer(
   debug(`[lsmcp] Starting ${language} MCP server: ${serverPath}`);
 
   // Forward all arguments to the specific server
-  const serverProcess = spawn("node", [serverPath, ...args], {
+  const serverArgs = [serverPath];
+
+  // Add include pattern if provided
+  if (includePattern) {
+    serverArgs.push(`--include=${includePattern}`);
+  }
+
+  serverArgs.push(...args);
+
+  const serverProcess = spawn("node", serverArgs, {
     stdio: "inherit",
     env,
   });
@@ -268,11 +278,19 @@ async function main() {
     debug(`Starting generic LSP MCP server: ${genericServerPath}`);
 
     // Forward to generic LSP server
-    const serverProcess = spawn("node", [
+    const serverArgs = [
       genericServerPath,
       `--lsp-command=${values.bin}`,
-      ...positionals,
-    ], {
+    ];
+
+    // Forward include option if provided
+    if (values.include) {
+      serverArgs.push(`--include=${values.include}`);
+    }
+
+    serverArgs.push(...positionals);
+
+    const serverProcess = spawn("node", serverArgs, {
       stdio: "inherit",
       env,
     });
@@ -293,14 +311,8 @@ async function main() {
     return;
   }
 
-  // Check if --include option is provided for diagnostics
-  if (values.include) {
-    console.error(
-      "--include option for batch diagnostics is no longer supported.",
-    );
-    console.error("Please use LSP-based diagnostics tools instead.");
-    process.exit(1);
-  }
+  // Note: --include option is now passed through to the language servers
+  // for use with lsp_get_all_diagnostics tool
 
   // Require either --language or --bin option
   const language = values.language || process.env.FORCE_LANGUAGE;
@@ -320,7 +332,7 @@ async function main() {
   if (language) {
     debug(`[lsmcp] Running with language: ${language}`);
     // Run the appropriate language server
-    await runLanguageServer(language, positionals);
+    await runLanguageServer(language, positionals, undefined, values.include);
   }
 }
 
