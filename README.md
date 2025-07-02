@@ -30,14 +30,6 @@ These tools work with any language that has an LSP server:
 - **get_code_actions** - Get available code actions (quick fixes, refactorings, etc.) using LSP
 - **format_document** - Format an entire document using the language server's formatting provider
 
-> **Note**: TypeScript tools use the TypeScript Compiler API directly and don't require an LSP server. LSP tools require a running Language Server for your target language.
-
-See [Tool Reference](docs/TOOL_REFERENCE.md) for detailed documentation.
-
-Note: When using `--language typescript`, both LSP tools and TypeScript-specific tools are available.
-
-See [Language Support Matrix](docs/LANGUAGE_SUPPORT_MATRIX.md) for detailed information about available tools for each language.
-
 See [examples/](examples/) for working examples of each supported language configuration.
 
 ## Quick Start
@@ -194,18 +186,6 @@ lsmcp supports any language with an LSP server. Here are some common configurati
 # Go
 go install golang.org/x/tools/gopls@latest
 claude mcp add go npx -- -y @mizchi/lsmcp --bin="gopls"
-
-# C/C++
-apt install clangd  # Ubuntu/Debian
-brew install llvm   # macOS
-claude mcp add cpp npx -- -y @mizchi/lsmcp --bin="clangd"
-
-# Java (download eclipse.jdt.ls from https://download.eclipse.org/jdtls/)
-claude mcp add java npx -- -y @mizchi/lsmcp --bin="jdtls"
-
-# Ruby
-gem install solargraph
-claude mcp add ruby npx -- -y @mizchi/lsmcp --bin="solargraph stdio"
 ```
 
 </details>
@@ -216,17 +196,7 @@ claude mcp add ruby npx -- -y @mizchi/lsmcp --bin="solargraph stdio"
 
 ```bash
 # TypeScript/JavaScript (built-in support)
-npx @mizchi/lsmcp --language typescript
-
-# Other languages via LSP server
-npx @mizchi/lsmcp --bin rust-analyzer
-npx @mizchi/lsmcp --bin "deno lsp"  # Multi-word commands
-
-# Specify project root
-npx @mizchi/lsmcp --project-root /path/to/project
-
-# Debug mode
-npx @mizchi/lsmcp --verbose
+npx @mizchi/lsmcp --language <language> --bin '...'
 ```
 
 ## Development
@@ -283,33 +253,8 @@ If `get_diagnostics` returns empty results:
 2. Check for tsconfig.json or equivalent config file
 3. Try opening the file first with `get_hover`
 
-### Debugging
-
-Enable verbose logging:
-
-```bash
-npx @mizchi/lsmcp --verbose
-```
-
-Check language server output:
-
-```bash
-# Run language server directly
-typescript-language-server --stdio
-```
-
 </details>
 
 ## License
 
 MIT - See [LICENSE](LICENSE) file for details.
-
-## Recent Updates
-
-- **v0.5.2** (2025-01-29) - Consolidated TypeScript tools, removed duplicates in favor of LSP implementations
-- **v0.5.1** - Added F# language support with dedicated initialization
-- **v0.5.0** - Unified lsmcp CLI for all languages
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for version history and updates.
