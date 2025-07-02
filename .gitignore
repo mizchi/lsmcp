@@ -152,4 +152,4 @@ tmp/
 
 # .NET / F#
 bin/
-obj/
+obj/tests/integration/tmp-*

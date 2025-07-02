@@ -25,7 +25,7 @@ claude --mcp-config=.mcp.json
       "args": [
         "../../dist/lsmcp.js",
         "--bin",
-        "fsautocomplete --adaptive-lsp-server-enabled"
+        "fsautocomplete"
       ]
     }
   }

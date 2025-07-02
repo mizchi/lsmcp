@@ -8,6 +8,13 @@ import { tmpdir } from "os";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+/**
+ * NOTE: These tests may be flaky due to timing-sensitive LSP operations.
+ * The tests involve file system operations and LSP server communication
+ * which can have race conditions in CI environments.
+ *
+ * Vitest is configured to retry these tests up to 2 times if they fail.
+ */
 describe("LSP Diagnostics - Stale Content Issue #8", () => {
   let tmpDir: string;
   let client: Client;

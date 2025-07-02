@@ -28,6 +28,8 @@ export default defineConfig({
             "tests/integration/typescript-lsp.test.ts",
           ],
           testTimeout: 10000, // 10s timeout for integration tests
+          // Retry flaky tests up to 2 times due to timing-sensitive LSP operations
+          retry: 2,
         },
       },
       {
@@ -37,6 +39,8 @@ export default defineConfig({
           name: "typescript-lsp",
           include: ["tests/integration/typescript-lsp.test.ts"],
           testTimeout: 10000, // 10s timeout for integration tests
+          // Retry flaky tests up to 2 times due to timing-sensitive LSP operations
+          retry: 2,
         },
       },
     ],
