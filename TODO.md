@@ -12,6 +12,14 @@
 
 ## In Progress 🚧
 
+### Bug Fixes
+
+- [ ] **Workspace Symbols Search** (Priority: High)
+  - Currently fails with "No Project" error in tsserver
+  - Feature is temporarily disabled in lspGetWorkspaceSymbols.ts
+  - Requires proper project initialization implementation
+  - Consider alternative approaches (e.g., using tsconfig.json path)
+
 ### Performance Optimization
 
 - [ ] **File Cache Implementation** (Priority: Medium)
