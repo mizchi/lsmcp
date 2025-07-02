@@ -61,6 +61,9 @@ export interface LspAdapter extends BaseLspConfig {
   /** Description of what makes this adapter different */
   description: string;
 
+  /** Language-specific MCP tools */
+  customTools?: ToolDef<any>[];
+
   /** Check if the language server is available and properly configured */
   doctor?: () => Promise<{ ok: boolean; message?: string }>;
 }

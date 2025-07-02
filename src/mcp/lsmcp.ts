@@ -32,7 +32,7 @@ import { lspGetCompletionTool } from "../lsp/tools/lspGetCompletion.ts";
 import { lspGetSignatureHelpTool } from "../lsp/tools/lspGetSignatureHelp.ts";
 import { lspFormatDocumentTool } from "../lsp/tools/lspFormatDocument.ts";
 import { lspGetCodeActionsTool } from "../lsp/tools/lspGetCodeActions.ts";
-import { listToolsLSPTool } from "./tools/listToolsLSP.ts";
+import { createListToolsTool } from "./tools/listToolsDynamic.ts";
 
 // Import all adapters
 import { typescriptAdapter } from "../adapters/typescript-language-server.ts";
@@ -45,8 +45,7 @@ import { fsacAdapter } from "../adapters/fsac.ts";
 import { moonbitLanguageServerAdapter } from "../adapters/moonbit.ts";
 
 // Define LSP-only tools
-const tools: ToolDef<any>[] = [
-  listToolsLSPTool,
+const lspTools: ToolDef<any>[] = [
   lspGetHoverTool,
   lspFindReferencesTool,
   lspGetDefinitionsTool,
@@ -271,8 +270,18 @@ async function runLanguageServer(
       version: "0.1.0",
     });
 
-    // Register tools
-    server.registerTools(tools);
+    // Create dynamic list_tools with all available tools
+    const listToolsTool = createListToolsTool(
+      lspTools,
+      adapter?.customTools || [],
+    );
+
+    // Register all tools
+    const allTools = [listToolsTool, ...lspTools];
+    if (adapter?.customTools) {
+      allTools.push(...adapter.customTools);
+    }
+    server.registerTools(allTools);
 
     // Start the server
     await server.start();
@@ -376,8 +385,12 @@ async function main() {
         version: "0.1.0",
       });
 
-      // Register tools
-      server.registerTools(tools);
+      // Create dynamic list_tools with LSP tools only (no custom tools for generic LSP)
+      const listToolsTool = createListToolsTool(lspTools, []);
+
+      // Register all tools
+      const allTools = [listToolsTool, ...lspTools];
+      server.registerTools(allTools);
 
       // Start the server
       await server.start();

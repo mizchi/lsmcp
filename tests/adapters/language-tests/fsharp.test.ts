@@ -15,7 +15,27 @@ describe("F# Adapter", () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "connected": true,
-        "diagnostics": [],
+        "diagnostics": [
+          {
+            "file": "Program.fs",
+            "line": 18,
+            "message": "This expression was expected to have type
+          'int'    
+      but here has type
+          's...",
+            "severity": 1,
+            "source": "F# Compiler",
+          },
+          {
+            "file": "Program.fs",
+            "line": 21,
+            "message": "Type constraint mismatch. The type 
+          'string'    
+      is not compatible with type...",
+            "severity": 1,
+            "source": "F# Compiler",
+          },
+        ],
       }
     `);
     // TODO: F# LSP may require additional initialization or project loading for diagnostics
