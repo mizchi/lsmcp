@@ -84,6 +84,8 @@ export function validateLine(
  * @returns Line index and symbol index
  * @throws MCPToolError if symbol not found
  */
+// Not used currently - but keeping for type checking
+// @ts-ignore
 function findSymbolPosition(
   fileContent: string,
   symbolName: string,

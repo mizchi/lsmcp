@@ -3,8 +3,8 @@ import { err, ok, type Result } from "neverthrow";
 import { readFileSync } from "fs";
 import path from "path";
 import { getActiveClient } from "../lspClient.ts";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
-import { debug } from "../../mcp/_mcplib.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
+import { debug } from "../../mcp/utils/mcpHelpers.ts";
 import { readFileWithMetadata } from "../../common/fileOperations.ts";
 import { validateLineAndSymbol } from "../../common/validation.ts";
 
@@ -42,8 +42,8 @@ interface GetDefinitionsSuccess {
   definitions: Definition[];
 }
 
-// Import Location type from vscode-languageserver-types via lspTypes
-import type { Location } from "../lspTypes.ts";
+// Import Location and LocationLink types from vscode-languageserver-types via lspTypes
+import type { Location, LocationLink } from "../lspTypes.ts";
 
 /**
  * Gets definitions for a TypeScript symbol using LSP
@@ -112,7 +112,21 @@ async function getDefinitionsWithLSP(
       });
     }
 
-    for (const location of locations) {
+    for (const loc of locations) {
+      // Handle LocationLink vs Location
+      let location: Location;
+      if ("targetUri" in loc) {
+        // This is a LocationLink
+        const link = loc as LocationLink;
+        location = {
+          uri: link.targetUri,
+          range: link.targetSelectionRange || link.targetRange,
+        };
+      } else {
+        // This is already a Location
+        location = loc as Location;
+      }
+
       // Handle different URI formats
       let defPath = "";
       if (location.uri) {

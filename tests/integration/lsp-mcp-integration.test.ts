@@ -64,9 +64,9 @@ describe.skip("LSP MCP integration tests", () => {
         path.join(__dirname, "../../dist/lsmcp.js"),
         "--bin=typescript-language-server",
       ],
-      env: {
-        ...process.env,
-      },
+      env: Object.fromEntries(
+        Object.entries(process.env).filter(([_, v]) => v !== undefined),
+      ) as Record<string, string>,
     });
 
     client = new Client(

@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { spawn } from "child_process";
 import { fileURLToPath } from "url";
 import path from "path";
 import fs from "fs/promises";
@@ -20,9 +19,10 @@ describe("list_tools functionality", () => {
       transport = new StdioClientTransport({
         command: "node",
         args: [SERVER_PATH, "--language=typescript"],
-        // @ts-ignore
-        env: process.env,
-      }) as any;
+        env: Object.fromEntries(
+          Object.entries(process.env).filter(([_, v]) => v !== undefined),
+        ) as Record<string, string>,
+      });
 
       client = new Client({
         name: "test-client",
@@ -76,9 +76,9 @@ describe("list_tools functionality", () => {
       transport = new StdioClientTransport({
         command: "node",
         args: [SERVER_PATH, `--bin=${tsLangServerPath}`],
-        env: {
-          ...process.env,
-        },
+        env: Object.fromEntries(
+          Object.entries(process.env).filter(([_, v]) => v !== undefined),
+        ) as Record<string, string>,
       });
 
       client = new Client({

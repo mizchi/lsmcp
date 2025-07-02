@@ -31,7 +31,9 @@ describe("LSP Diagnostics - Stale Content Issue #8", () => {
         path.join(__dirname, "../../dist/lsmcp.js"),
         "--language=typescript",
       ],
-      env: { ...process.env },
+      env: Object.fromEntries(
+        Object.entries(process.env).filter(([_, v]) => v !== undefined),
+      ) as Record<string, string>,
     });
 
     client = new Client(

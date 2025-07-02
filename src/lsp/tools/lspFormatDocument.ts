@@ -3,19 +3,14 @@ import path from "path";
 import fs from "fs/promises";
 import { pathToFileURL } from "url";
 import { FormattingOptions, TextEdit } from "vscode-languageserver-types";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { getLSPClient } from "../lspClient.ts";
 import { applyTextEdits } from "../../textUtils/applyTextEdits.ts";
 
 const schemaShape = {
   root: z.string().describe("Root directory for resolving relative paths"),
-  filePath: z
-    .string()
-    .describe("File path to format (relative to root)"),
-  tabSize: z
-    .number()
-    .default(2)
-    .describe("Number of spaces for indentation"),
+  filePath: z.string().describe("File path to format (relative to root)"),
+  tabSize: z.number().default(2).describe("Number of spaces for indentation"),
   insertSpaces: z
     .boolean()
     .default(true)
@@ -28,10 +23,7 @@ const schemaShape = {
     .boolean()
     .default(true)
     .describe("Insert final newline"),
-  trimFinalNewlines: z
-    .boolean()
-    .default(true)
-    .describe("Trim final newlines"),
+  trimFinalNewlines: z.boolean().default(true).describe("Trim final newlines"),
   applyChanges: z
     .boolean()
     .default(false)

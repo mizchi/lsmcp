@@ -1,4 +1,4 @@
-import { debug } from "../_mcplib.ts";
+import { debug } from "./mcpHelpers.ts";
 
 export interface ErrorContext {
   operation: string;
@@ -56,12 +56,15 @@ export function formatError(error: unknown, context?: ErrorContext): string {
 
     // Unknown error
     const debugInfo = process.env.DEBUG ? error.stack : undefined;
-    return new MCPError({
-      title: `Error: ${error.message}`,
-      reason: "An unexpected error occurred",
-      solution: "Check the error message for details",
-      debugInfo,
-    }, context).toString();
+    return new MCPError(
+      {
+        title: `Error: ${error.message}`,
+        reason: "An unexpected error occurred",
+        solution: "Check the error message for details",
+        debugInfo,
+      },
+      context,
+    ).toString();
   }
 
   return String(error);
@@ -88,7 +91,8 @@ function handleKnownError(
 
   // LSP server startup failed
   if (
-    message.includes("lsp server exited") || message.includes("failed to start")
+    message.includes("lsp server exited") ||
+    message.includes("failed to start")
   ) {
     return {
       title: "LSP server failed to start",
@@ -100,7 +104,8 @@ function handleKnownError(
 
   // File not found
   if (
-    message.includes("enoent") || message.includes("no such file") ||
+    message.includes("enoent") ||
+    message.includes("no such file") ||
     message.includes("file not found")
   ) {
     const filePath = context?.filePath || "unknown";
@@ -128,7 +133,8 @@ function handleKnownError(
 
   // TypeScript project errors
   if (
-    message.includes("no tsconfig") || message.includes("typescript project")
+    message.includes("no tsconfig") ||
+    message.includes("typescript project")
   ) {
     return {
       title: "TypeScript project configuration error",

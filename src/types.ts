@@ -1,4 +1,4 @@
-import type { ToolDef } from "./mcp/_mcplib.ts";
+import type { ToolDef } from "./mcp/utils/mcpHelpers.ts";
 
 /**
  * Common LSP configuration fields
@@ -30,17 +30,8 @@ export interface LanguageConfig extends BaseLspConfig {
   /** Pre-initialization hook (before LSP server starts) */
   preInitialize?: (projectRoot: string) => Promise<void>;
 
-  /** Post-initialization hook (after LSP connection established) */
-  postInitialize?: (
-    client: {
-      sendRequest: (method: string, params?: unknown) => Promise<unknown>;
-      sendNotification: (method: string, params?: unknown) => void;
-    },
-    projectRoot: string,
-  ) => Promise<void>;
-
   /** Language-specific MCP tools */
-  customTools?: ToolDef<any>[];
+  customTools?: ToolDef<import("zod").ZodType>[];
 
   /** Check if the language server is available and properly configured */
   doctor?: () => Promise<{ ok: boolean; message?: string }>;
@@ -62,7 +53,7 @@ export interface LspAdapter extends BaseLspConfig {
   description: string;
 
   /** Language-specific MCP tools */
-  customTools?: ToolDef<any>[];
+  customTools?: ToolDef<import("zod").ZodType>[];
 
   /** Check if the language server is available and properly configured */
   doctor?: () => Promise<{ ok: boolean; message?: string }>;

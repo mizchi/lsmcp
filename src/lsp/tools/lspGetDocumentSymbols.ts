@@ -4,7 +4,7 @@ import {
   SymbolInformation,
   SymbolKind,
 } from "vscode-languageserver-types";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { prepareFileContext, withLSPDocument } from "../utils/lspCommon.ts";
 import { fileLocationSchema } from "../../common/schemas.ts";
 import { formatLocation, formatRange } from "../../common/formatting.ts";
@@ -128,7 +128,8 @@ async function handleGetDocumentSymbols({
           result += formatSymbolInformation(symbol as SymbolInformation) +
             "\n\n";
         } else if (
-          "range" in symbol || "children" in symbol ||
+          "range" in symbol ||
+          "children" in symbol ||
           "selectionRange" in symbol
         ) {
           // This is a DocumentSymbol

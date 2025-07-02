@@ -1,6 +1,6 @@
 import { z, type ZodType } from "zod";
 import type { Result } from "neverthrow";
-import type { ToolDef } from "../mcp/_mcplib.ts";
+import type { ToolDef } from "../mcp/utils/mcpHelpers.ts";
 import { errors } from "./errors/index.ts";
 
 /**

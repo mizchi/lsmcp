@@ -1,12 +1,7 @@
 import { EventEmitter } from "events";
 import { promises as fs } from "fs";
 import { fileURLToPath } from "url";
-import {
-  getErrorMessage,
-  hasProperty,
-  isErrorWithCode,
-  isObject,
-} from "../common/types.ts";
+import { getErrorMessage, isErrorWithCode, isObject } from "../common/types.ts";
 import {
   CodeAction,
   Command,
@@ -15,6 +10,7 @@ import {
   DocumentSymbol,
   FormattingOptions,
   Location,
+  LocationLink,
   Position,
   Range,
   SignatureHelp,
@@ -58,10 +54,15 @@ import {
   HoverResult,
   InitializeParams,
   InitializeResult,
+  isLSPNotification,
+  isLSPRequest,
+  isLSPResponse,
   LSPClient,
   LSPClientConfig,
   LSPClientState,
   LSPMessage,
+  LSPNotification,
+  LSPRequest,
   PublishDiagnosticsParams,
   ReferenceParams,
   ReferencesResult,
@@ -69,7 +70,7 @@ import {
   TextDocumentPositionParams,
   WorkspaceSymbolResult,
 } from "./lspTypes.ts";
-import { debug } from "../mcp/_mcplib.ts";
+import { debug } from "../mcp/utils/mcpHelpers.ts";
 import {
   debugLog,
   ErrorContext,
@@ -216,17 +217,14 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   }
 
   function handleMessage(message: LSPMessage): void {
-    if (
-      message.id !== undefined &&
-      (message.result !== undefined || message.error !== undefined)
-    ) {
+    if (isLSPResponse(message)) {
       // This is a response
       const handler = state.responseHandlers.get(message.id);
       if (handler) {
         handler(message);
         state.responseHandlers.delete(message.id);
       }
-    } else if (message.method) {
+    } else if (isLSPNotification(message) || isLSPRequest(message)) {
       // This is a notification or request from server
       if (
         message.method === "textDocument/publishDiagnostics" &&
@@ -265,11 +263,11 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     params?: unknown,
   ): Promise<T> {
     const id = ++state.messageId;
-    const message: LSPMessage = {
+    const message: LSPRequest = {
       jsonrpc: "2.0",
       id,
       method,
-      params,
+      params: params as Record<string, unknown> | undefined,
     };
 
     return new Promise<T>((resolve, reject) => {
@@ -317,10 +315,10 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   }
 
   function sendNotification(method: string, params?: unknown): void {
-    const message: LSPMessage = {
+    const message: LSPNotification = {
       jsonrpc: "2.0",
       method,
-      params,
+      params: params as Record<string, unknown> | undefined,
     };
     sendMessage(message);
   }
@@ -373,7 +371,9 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
         },
       },
       // Add language-specific initialization options
-      initializationOptions: config.initializationOptions,
+      initializationOptions: config.initializationOptions as
+        | Record<string, unknown>
+        | undefined,
     };
 
     debugLog(`Language ID: ${state.languageId}`);
@@ -390,16 +390,9 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       `LSP initialized for ${state.languageId}:`,
       JSON.stringify(initResult, null, 2),
     );
-
     // Send initialized notification
     sendNotification("initialized", {});
-
     debugLog(`After initialization - Language ID: "${state.languageId}"`);
-
-    // Call post-initialization hook if provided
-    if (config.postInitialize) {
-      await config.postInitialize(client);
-    }
   }
 
   async function start(): Promise<void> {
@@ -522,7 +515,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   async function getDefinition(
     uri: string,
     position: Position,
-  ): Promise<Location | Location[]> {
+  ): Promise<Location | Location[] | LocationLink[]> {
     const params: TextDocumentPositionParams = {
       textDocument: { uri },
       position,
@@ -944,8 +937,8 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     });
   }
 
-  return {
-    ...state,
+  const lspClient: LSPClient = {
+    languageId: state.languageId,
     start,
     stop,
     openDocument,
@@ -969,10 +962,16 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     rename,
     applyEdit,
     sendRequest,
-    on: (event: string, listener: (...args: unknown[]) => void) =>
-      state.eventEmitter.on(event, listener),
+    on: ((
+      event: "diagnostics",
+      listener: (params: PublishDiagnosticsParams) => void,
+    ) => {
+      state.eventEmitter.on(event, listener);
+    }) as LSPClient["on"],
     emit: (event: string, ...args: unknown[]) =>
       state.eventEmitter.emit(event, ...args),
     waitForDiagnostics,
   };
+
+  return lspClient;
 }

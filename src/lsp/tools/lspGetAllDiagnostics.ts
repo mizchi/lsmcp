@@ -3,9 +3,9 @@ import { promisify } from "util";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { minimatch } from "minimatch";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { getActiveClient } from "../lspClient.ts";
-import { debug } from "../../mcp/_mcplib.ts";
+import { debug } from "../../mcp/utils/mcpHelpers.ts";
 import { pathToFileURL } from "url";
 import { Diagnostic } from "vscode-languageserver-types";
 import { exec } from "child_process";
@@ -154,11 +154,12 @@ async function getProjectFiles(
   }
 
   // Final filter to exclude common directories (redundant but safe)
-  files = files.filter((f: string) =>
-    !f.includes("node_modules/") &&
-    !f.includes(".git/") &&
-    !f.includes("/obj/") && // Exclude build artifacts
-    !f.includes("/bin/") // Exclude build outputs
+  files = files.filter(
+    (f: string) =>
+      !f.includes("node_modules/") &&
+      !f.includes(".git/") &&
+      !f.includes("/obj/") && // Exclude build artifacts
+      !f.includes("/bin/"), // Exclude build outputs
   );
 
   debug(`[lspGetAllDiagnostics] Total unique files to check: ${files.length}`);
@@ -166,10 +167,12 @@ async function getProjectFiles(
     debug(
       `[lspGetAllDiagnostics] File extensions found: ${
         [
-          ...new Set(files.map((f) => {
-            const ext = f.lastIndexOf(".");
-            return ext > 0 ? f.substring(ext) : "no-ext";
-          })),
+          ...new Set(
+            files.map((f) => {
+              const ext = f.lastIndexOf(".");
+              return ext > 0 ? f.substring(ext) : "no-ext";
+            }),
+          ),
         ].join(", ")
       }`,
     );
@@ -270,7 +273,8 @@ async function getAllDiagnosticsWithLSP(
               .filter((d: any) => {
                 // Apply severity filter
                 if (
-                  request.severityFilter === "error" && d.severity !== "error"
+                  request.severityFilter === "error" &&
+                  d.severity !== "error"
                 ) {
                   return false;
                 }

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { commonSchemas } from "../../common/schemas.ts";
 import { relative } from "path";
 import { errors } from "../../common/errors/index.ts";
@@ -58,11 +58,10 @@ export const callHierarchyTool: ToolDef<typeof schema> = {
     maxDepth,
   }) => {
     // Read file content with metadata
-    const { absolutePath, fileContent: content, fileUri } =
-      readFileWithMetadata(
-        root,
-        filePath,
-      );
+    const {
+      fileContent: content,
+      fileUri,
+    } = readFileWithMetadata(root, filePath);
 
     // Create TypeScript LSP client
     const clientInstance = await createTypescriptLSPClient(root);

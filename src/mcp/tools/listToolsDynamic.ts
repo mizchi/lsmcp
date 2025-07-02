@@ -1,8 +1,11 @@
 import { z } from "zod";
-import type { ToolDef } from "../_mcplib.ts";
+import type { ToolDef } from "../utils/mcpHelpers.ts";
 
 const schema = z.object({
-  category: z.enum(["lsp", "typescript", "all"]).optional().default("all")
+  category: z
+    .enum(["lsp", "typescript", "all"])
+    .optional()
+    .default("all")
     .describe("Filter tools by category"),
 });
 
@@ -50,11 +53,11 @@ export function createListToolsTool(
       // Format the output
       let result = `# Available MCP Tools\n\n`;
 
-      const lspToolsFiltered = filteredTools.filter((t) =>
-        t.category === "lsp"
+      const lspToolsFiltered = filteredTools.filter(
+        (t) => t.category === "lsp",
       );
-      const tsToolsFiltered = filteredTools.filter((t) =>
-        t.category === "typescript"
+      const tsToolsFiltered = filteredTools.filter(
+        (t) => t.category === "typescript",
       );
 
       if (lspToolsFiltered.length > 0) {

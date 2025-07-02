@@ -7,11 +7,8 @@
  */
 
 import { parseArgs } from "node:util";
-import { existsSync } from "fs";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
-import { ChildProcess, spawn } from "child_process";
-import { BaseMcpServer, debug, type ToolDef } from "./_mcplib.ts";
+import { spawn } from "child_process";
+import { BaseMcpServer, debug, type ToolDef } from "./utils/mcpHelpers.ts";
 import { ErrorContext, formatError } from "./utils/errorHandler.ts";
 import { readFile } from "fs/promises";
 import type { LanguageConfig, LspAdapter } from "../types.ts";
@@ -32,7 +29,6 @@ import { lspGetCompletionTool } from "../lsp/tools/lspGetCompletion.ts";
 import { lspGetSignatureHelpTool } from "../lsp/tools/lspGetSignatureHelp.ts";
 import { lspFormatDocumentTool } from "../lsp/tools/lspFormatDocument.ts";
 import { lspGetCodeActionsTool } from "../lsp/tools/lspGetCodeActions.ts";
-import { createListToolsTool } from "./tools/listToolsDynamic.ts";
 
 // Import all adapters
 import { typescriptAdapter } from "../adapters/typescript-language-server.ts";
@@ -158,33 +154,24 @@ function showHelp() {
 🌍 LSMCP - Language Service MCP for Multi-Language Support
 
 Usage:
-  lsmcp --language <lang> [options]
-  lsmcp --preset <preset> [options]
-  lsmcp --bin <command> [options]
+  lsmcp -p <preset> [options]
+  lsmcp --bin <command> --extensions=<extensions> [options]
 
 Options:
   -l, --language <lang>     Language to use (required unless --preset or --bin is provided)
   -p, --preset <preset>     Language adapter to use (e.g., tsgo, deno, pyright)
   --config <path>           Load language configuration from JSON file
   --bin <command>           Custom LSP server command (e.g., "deno lsp", "rust-analyzer")
-  --include <pattern>       Glob pattern for files to get diagnostics
   --list                    List all supported languages and presets
   -h, --help               Show this help message
 
 Examples:
-  lsmcp -l typescript          Use TypeScript MCP server
+  lsmcp -p typescript          Use TypeScript MCP server
   lsmcp -p tsgo                Use tsgo TypeScript preset
   lsmcp -p deno                Use Deno language server
-  lsmcp -l rust                Use Rust MCP server
+  lsmcp -p rust                Use Rust MCP server
   lsmcp --bin "deno lsp"       Use custom LSP server
-  lsmcp --include "src/**/*.ts" -l typescript  Get diagnostics for TypeScript files
-
-Supported Languages:
-  - TypeScript/JavaScript (built-in support)
-  - Any language via LSP server with --bin option
-
-Environment Variables:
-  LSP_COMMAND           Custom LSP server command (overrides default)
+  lsmcp --include "src/**/*.ts" -p typescript  Get diagnostics for TypeScript files
 `);
 }
 
@@ -260,24 +247,14 @@ async function runLanguageServer(
     const initOptions = adapter?.initializationOptions || undefined;
     await initializeLSPClient(projectRoot, lspProcess, language, initOptions);
 
-    // Check if --include option was passed
-    const includePattern = args.find((arg) => arg.startsWith("--include="))
-      ?.split("=")[1];
-
     // Start MCP server
     const server = new BaseMcpServer({
       name: `lsmcp (${language})`,
       version: "0.1.0",
     });
 
-    // Create dynamic list_tools with all available tools
-    const listToolsTool = createListToolsTool(
-      lspTools,
-      adapter?.customTools || [],
-    );
-
     // Register all tools
-    const allTools = [listToolsTool, ...lspTools];
+    const allTools: ToolDef<import("zod").ZodType>[] = [...lspTools];
     if (adapter?.customTools) {
       allTools.push(...adapter.customTools);
     }
@@ -385,12 +362,8 @@ async function main() {
         version: "0.1.0",
       });
 
-      // Create dynamic list_tools with LSP tools only (no custom tools for generic LSP)
-      const listToolsTool = createListToolsTool(lspTools, []);
-
-      // Register all tools
-      const allTools = [listToolsTool, ...lspTools];
-      server.registerTools(allTools);
+      // Register all LSP tools
+      server.registerTools(lspTools);
 
       // Start the server
       await server.start();
@@ -481,7 +454,7 @@ async function main() {
   if (language) {
     debug(`[lsmcp] Running with language: ${language}`);
     // Run the appropriate language server
-    await runLanguageServer(language, positionals, undefined, values.include);
+    await runLanguageServer(language, positionals, undefined);
   }
 }
 

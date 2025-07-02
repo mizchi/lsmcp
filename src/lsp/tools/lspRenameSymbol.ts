@@ -4,7 +4,7 @@ import { getActiveClient } from "../lspClient.ts";
 import { parseLineNumber } from "../../textUtils/parseLineNumber.ts";
 import { findSymbolInLine } from "../../textUtils/findSymbolInLine.ts";
 import { findTargetInFile } from "../../textUtils/findTargetInFile.ts";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import path from "path";
 import {
@@ -13,7 +13,7 @@ import {
   TextEdit,
   WorkspaceEdit,
 } from "vscode-languageserver-types";
-import { debug } from "../../mcp/_mcplib.ts";
+import { debug } from "../../mcp/utils/mcpHelpers.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -88,7 +88,6 @@ async function performRenameWithLine(
     const absolutePath = path.resolve(request.root, request.filePath);
     const fileContent = readFileSync(absolutePath, "utf-8");
     const fileUri = `file://${absolutePath}`;
-    const lines = fileContent.split("\n");
 
     // Parse line parameter
     const lineResult = parseLineNumber(fileContent, request.line!);
@@ -107,7 +106,9 @@ async function performRenameWithLine(
     if ("error" in symbolResult) {
       return err(
         `Symbol "${request.target}" not found on line ${
-          String(targetLine + 1)
+          String(
+            targetLine + 1,
+          )
         }: ${symbolResult.error}`,
       );
     }
@@ -180,11 +181,7 @@ async function performRenameAtPosition(
 
     try {
       // Use the client's rename method which handles errors properly
-      workspaceEdit = await client.rename(
-        fileUri,
-        position,
-        request.newName,
-      );
+      workspaceEdit = await client.rename(fileUri, position, request.newName);
     } catch (error: any) {
       // Check if LSP doesn't support rename (e.g., TypeScript Native Preview)
       if (
@@ -292,8 +289,8 @@ async function applyWorkspaceEdit(
 
         if (fileChanges.changes.length > 0) {
           // Check if we already processed this file
-          const existingFile = changedFiles.find((f) =>
-            f.filePath === filePath
+          const existingFile = changedFiles.find(
+            (f) => f.filePath === filePath,
           );
           if (existingFile) {
             existingFile.changes.push(...fileChanges.changes);

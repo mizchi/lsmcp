@@ -1,8 +1,11 @@
 import { z } from "zod";
-import type { ToolDef } from "../_mcplib.ts";
+import type { ToolDef } from "../utils/mcpHelpers.ts";
 
 const schema = z.object({
-  category: z.enum(["typescript", "lsp", "all"]).optional().default("all")
+  category: z
+    .enum(["typescript", "lsp", "all"])
+    .optional()
+    .default("all")
     .describe("Filter tools by category (typescript, lsp, or all)"),
 });
 
@@ -170,7 +173,8 @@ function formatToolsList(tools: ToolInfo[], category: string): string {
   const lsp = filteredTools.filter((t) => t.category === "lsp");
 
   if (
-    typescript.length > 0 && (category === "all" || category === "typescript")
+    typescript.length > 0 &&
+    (category === "all" || category === "typescript")
   ) {
     result += "## 🔧 TypeScript Tools (Compiler API)\n";
     result +=

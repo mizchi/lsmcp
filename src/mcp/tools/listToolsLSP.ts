@@ -1,8 +1,11 @@
 import { z } from "zod";
-import type { ToolDef } from "../_mcplib.ts";
+import type { ToolDef } from "../utils/mcpHelpers.ts";
 
 const schema = z.object({
-  category: z.enum(["lsp", "all"]).optional().default("all")
+  category: z
+    .enum(["lsp", "all"])
+    .optional()
+    .default("all")
     .describe("Filter tools by category (lsp or all)"),
 });
 

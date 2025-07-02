@@ -7,7 +7,7 @@ import {
   CodeActionKind,
   Command,
 } from "vscode-languageserver-types";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { getLSPClient } from "../lspClient.ts";
 import { resolveLineParameter } from "../../textUtils/resolveLineParameter.ts";
 
@@ -180,8 +180,9 @@ async function handleGetCodeActions({
           // Commands don't have kinds, so exclude them when filtering
           return false;
         }
-        return action.kind &&
-          includeKinds.some((k) => action.kind?.startsWith(k));
+        return (
+          action.kind && includeKinds.some((k) => action.kind?.startsWith(k))
+        );
       });
     }
 
@@ -194,7 +195,7 @@ async function handleGetCodeActions({
     // Group actions by kind
     const grouped = new Map<string, (Command | CodeAction)[]>();
     for (const action of filteredActions) {
-      const kind = isCommand(action) ? "command" : (action.kind || "general");
+      const kind = isCommand(action) ? "command" : action.kind || "general";
       if (!grouped.has(kind)) {
         grouped.set(kind, []);
       }

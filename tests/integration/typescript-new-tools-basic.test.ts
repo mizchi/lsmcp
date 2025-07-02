@@ -39,12 +39,6 @@ describe("TypeScript New Tools Basic Integration", () => {
       ),
     );
 
-    // Get TypeScript language server path
-    const tsLangServerPath = path.join(
-      __dirname,
-      "../../node_modules/.bin/typescript-language-server",
-    );
-
     // Create transport with LSP configuration
     const cleanEnv = { ...process.env } as Record<string, string>;
 

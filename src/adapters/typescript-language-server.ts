@@ -35,9 +35,15 @@ export const typescriptAdapter: LspAdapter = {
     },
   },
   customTools: [
-    extractTypeTool,
-    generateAccessorsTool,
-    callHierarchyTool,
+    extractTypeTool as unknown as import("../mcp/utils/mcpHelpers.ts").ToolDef<
+      import("zod").ZodType
+    >,
+    generateAccessorsTool as unknown as import("../mcp/utils/mcpHelpers.ts").ToolDef<
+      import("zod").ZodType
+    >,
+    callHierarchyTool as unknown as import("../mcp/utils/mcpHelpers.ts").ToolDef<
+      import("zod").ZodType
+    >,
   ],
   doctor: async () => {
     try {

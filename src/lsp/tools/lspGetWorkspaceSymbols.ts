@@ -1,14 +1,16 @@
 import { z } from "zod";
 import { SymbolInformation, SymbolKind } from "vscode-languageserver-types";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { getLSPClient } from "../lspClient.ts";
 import { fileURLToPath } from "url";
 
 const schemaShape = {
-  query: z.string().describe(
-    "Search query for symbols (e.g., class name, function name)",
-  ),
-  root: z.string().describe("Root directory for resolving relative paths")
+  query: z
+    .string()
+    .describe("Search query for symbols (e.g., class name, function name)"),
+  root: z
+    .string()
+    .describe("Root directory for resolving relative paths")
     .optional(),
 };
 

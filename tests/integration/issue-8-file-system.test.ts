@@ -38,9 +38,9 @@ describe("Issue #8 - Real File System Tests", () => {
         path.join(__dirname, "../../dist/lsmcp.js"),
         "--language=typescript",
       ],
-      env: {
-        ...process.env,
-      },
+      env: Object.fromEntries(
+        Object.entries(process.env).filter(([_, v]) => v !== undefined),
+      ) as Record<string, string>,
     });
 
     const client = new Client(
@@ -140,9 +140,9 @@ const num: number = "not a number";
         path.join(__dirname, "../../dist/lsmcp.js"),
         "--language=typescript",
       ],
-      env: {
-        ...process.env,
-      },
+      env: Object.fromEntries(
+        Object.entries(process.env).filter(([_, v]) => v !== undefined),
+      ) as Record<string, string>,
     });
 
     const client = new Client(
@@ -208,9 +208,9 @@ const num: number = "not a number";
         path.join(__dirname, "../../dist/lsmcp.js"),
         "--language=typescript",
       ],
-      env: {
-        ...process.env,
-      },
+      env: Object.fromEntries(
+        Object.entries(process.env).filter(([_, v]) => v !== undefined),
+      ) as Record<string, string>,
     });
 
     const client = new Client(
