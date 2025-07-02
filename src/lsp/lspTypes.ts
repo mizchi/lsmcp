@@ -239,6 +239,8 @@ export interface LSPClientConfig {
   languageId?: string; // Default: "typescript"
   clientName?: string; // Default: "lsp-client"
   clientVersion?: string; // Default: "0.1.0"
+  initializationOptions?: unknown; // Language-specific initialization options
+  postInitialize?: (client: LSPClient) => Promise<void>; // Post-initialization hook
 }
 
 export type LSPClient = {

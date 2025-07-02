@@ -43,6 +43,21 @@ export default defineConfig({
           retry: 2,
         },
       },
+      {
+        extends: true,
+        test: {
+          name: "adapters",
+          pool: "forks",
+          poolOptions: {
+            // minThreads: 1, // Minimum threads for adapter tests
+            // maxThreads: 1
+          },
+          include: ["tests/adapters/**/*.test.ts"],
+          exclude: [...GLOBAL_IGNORED_FILES],
+          testTimeout: 15000, // 15s timeout for adapter initialization tests
+          retry: 0, // No retry for adapter tests
+        },
+      },
     ],
   },
 });

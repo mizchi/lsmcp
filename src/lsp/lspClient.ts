@@ -74,7 +74,6 @@ import {
   formatError,
 } from "../mcp/utils/errorHandler.ts";
 import { getLanguageIdFromPath } from "./languageDetection.ts";
-import { getLanguageInitialization } from "./languageInitialization.ts";
 
 // Re-export types for backward compatibility
 export type {
@@ -110,12 +109,14 @@ export function getLSPClient(): LSPClient | undefined {
  * @param rootPath The root path of the project
  * @param process The LSP server process
  * @param languageId The language ID (default: "typescript")
+ * @param initializationOptions Language-specific initialization options
  * @returns The initialized LSP client
  */
 export async function initialize(
   rootPath: string,
   process: ChildProcess,
   languageId?: string,
+  initializationOptions?: unknown,
 ): Promise<LSPClient> {
   // Stop existing client if any
   if (activeClient) {
@@ -127,6 +128,7 @@ export async function initialize(
     rootPath,
     process,
     languageId,
+    initializationOptions,
   });
 
   // Start the client
@@ -379,8 +381,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
         },
       },
       // Add language-specific initialization options
-      initializationOptions:
-        getLanguageInitialization(state.languageId).initializationOptions,
+      initializationOptions: config.initializationOptions,
     };
 
     debugLog(`Language ID: ${state.languageId}`);
@@ -403,14 +404,9 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
 
     debugLog(`After initialization - Language ID: "${state.languageId}"`);
 
-    // Execute language-specific post-initialization
-    const langInit = getLanguageInitialization(state.languageId);
-    if (langInit.postInitialize) {
-      await langInit.postInitialize(
-        sendRequest,
-        sendNotification,
-        state.rootPath,
-      );
+    // Call post-initialization hook if provided
+    if (config.postInitialize) {
+      await config.postInitialize(client);
     }
   }
 

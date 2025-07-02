@@ -32,7 +32,8 @@ import { spawn } from "child_process";
 import { initialize as initializeLSPClient } from "../lsp/lspClient.ts";
 import { getLanguageFromLSPCommand } from "./utils/languageSupport.ts";
 import { ErrorContext, formatError } from "./utils/errorHandler.ts";
-import { initializeLanguage } from "./utils/languageInit.ts";
+import type { LanguageConfig } from "../types.ts";
+import { fsharp, go, moonbit, python, rust, typescript } from "../types.ts";
 
 // Define LSP-only tools
 const tools: ToolDef<any>[] = [
@@ -92,9 +93,23 @@ async function main() {
     }
 
     const detectedLanguage = getLanguageFromLSPCommand(lspCommand);
+    let config: LanguageConfig | undefined;
 
-    // Language-specific initialization
-    await initializeLanguage(detectedLanguage.toLowerCase(), projectRoot);
+    // Try to find language configuration
+    for (const lang of listLanguages(globalRegistry)) {
+      const langLspCommand = typeof lang.lspCommand === "function"
+        ? lang.lspCommand()
+        : lang.lspCommand;
+      if (lspCommand.includes(langLspCommand)) {
+        config = lang;
+        break;
+      }
+    }
+
+    // Language-specific pre-initialization
+    if (config?.preInitialize) {
+      await config.preInitialize(projectRoot);
+    }
 
     // Start MCP server
     const server = new BaseMcpServer({
@@ -141,10 +156,29 @@ async function main() {
         /#/g,
         "sharp",
       );
-      await initializeLSPClient(projectRoot, lspProcess, normalizedLanguage);
+
+      // Get initialization options from config if available
+      const initOptions = config?.initializationOptions
+        ? config.initializationOptions()
+        : undefined;
+
+      const client = await initializeLSPClient(
+        projectRoot,
+        lspProcess,
+        normalizedLanguage,
+        initOptions,
+      );
       debug(
         `[lsp] Initialized LSP client: ${lspCommand} with language: ${normalizedLanguage}`,
       );
+
+      // Language-specific post-initialization
+      if (config?.postInitialize) {
+        await config.postInitialize({
+          sendRequest: client.sendRequest.bind(client),
+          sendNotification: client.sendNotification.bind(client),
+        }, projectRoot);
+      }
     } catch (error) {
       const context: ErrorContext = {
         operation: "LSP client initialization",

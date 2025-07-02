@@ -1,0 +1,10 @@
+[tool.pyright]
+pythonVersion = "3.8"
+typeCheckingMode = "strict"
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
