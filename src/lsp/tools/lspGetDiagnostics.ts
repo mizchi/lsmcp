@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
 import { createLSPTool } from "../../common/toolFactory.ts";
-import { withLSPOperation } from "../../common/lspOperations.ts";
 import { resolveFileAndSymbol } from "../../common/fileSymbolResolver.ts";
 import { DiagnosticResultBuilder } from "../../common/resultBuilders.ts";
 import { getLanguageIdFromPath } from "../languageDetection.ts";
@@ -38,7 +37,7 @@ async function getDiagnosticsWithLSP(
 ): Promise<Result<GetDiagnosticsSuccess, string>> {
   try {
     // Resolve file
-    const { absolutePath, fileContent, fileUri } = resolveFileAndSymbol({
+    const { fileContent, fileUri } = resolveFileAndSymbol({
       root: request.root,
       filePath: request.filePath,
     });

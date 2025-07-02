@@ -15,7 +15,6 @@ import { debug } from "./_mcplib.ts";
 import { ErrorContext, formatError } from "./utils/errorHandler.ts";
 import { readFile } from "fs/promises";
 import type { LanguageConfig, LspAdapter } from "../types.ts";
-import { fsharp, go, moonbit, python, rust, typescript } from "../types.ts";
 
 // Import all adapters
 import { typescriptAdapter } from "../adapters/typescript-language-server.ts";
@@ -31,13 +30,7 @@ import { moonbitLanguageServerAdapter } from "../adapters/moonbit.ts";
 const languages = new Map<string, LanguageConfig>();
 const adapters = new Map<string, LspAdapter>();
 
-// Register built-in languages
-languages.set("typescript", typescript);
-languages.set("fsharp", fsharp);
-languages.set("rust", rust);
-languages.set("python", python);
-languages.set("go", go);
-languages.set("moonbit", moonbit);
+// Languages are now handled through adapters
 
 // Register adapters
 adapters.set("typescript", typescriptAdapter);
@@ -164,7 +157,6 @@ async function runLanguageServer(
   language: string,
   args: string[] = [],
   customEnv?: Record<string, string | undefined>,
-  includePattern?: string,
 ) {
   debug(
     `[lsmcp] runLanguageServer called with language: ${language}, args: ${
