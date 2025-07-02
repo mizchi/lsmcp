@@ -4,7 +4,7 @@ import { commonSchemas } from "../../common/schemas.ts";
 import { CodeAction, Range, WorkspaceEdit } from "vscode-languageserver-types";
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
-import { MCPToolError } from "../../common/mcpErrors.ts";
+import { errors } from "../../common/errors/index.ts";
 import { readFileWithMetadata } from "../../common/fileOperations.ts";
 import {
   createTypescriptLSPClient,
@@ -62,9 +62,9 @@ export const extractTypeTool: ToolDef<typeof schema> = {
         : start;
 
       if (start < 0 || end < 0) {
-        throw new MCPToolError(
-          "Could not find specified lines in file",
-          "LINE_NOT_FOUND",
+        throw errors.lineNotFound(
+          startLine,
+          filePath,
         );
       }
 
@@ -99,13 +99,14 @@ export const extractTypeTool: ToolDef<typeof schema> = {
       const codeActions = await client.getCodeActions(fileUri, range);
 
       if (!codeActions || codeActions.length === 0) {
-        throw new MCPToolError(
+        throw errors.generic(
           "No code actions available for this selection",
-          "NO_CODE_ACTIONS",
-          [
-            "Ensure you've selected a valid type expression",
-            "TypeScript Language Server must support extract type refactoring",
-          ],
+          undefined,
+          {
+            operation: "extract_type",
+            filePath,
+            line: startLine,
+          },
         );
       }
 
@@ -150,16 +151,14 @@ export const extractTypeTool: ToolDef<typeof schema> = {
           );
         }
 
-        throw new MCPToolError(
+        throw errors.generic(
           `No ${extractType} extraction action available`,
-          "EXTRACT_NOT_AVAILABLE",
-          [
-            "The selected code may not be a valid type expression",
-            `Try extracting as ${
-              extractType === "type" ? "interface" : "type"
-            } instead`,
-            "Ensure you've selected a complete type expression",
-          ],
+          undefined,
+          {
+            operation: "extract_type",
+            filePath,
+            line: startLine,
+          },
         );
       }
 
@@ -197,20 +196,24 @@ export const extractTypeTool: ToolDef<typeof schema> = {
           }
         }
 
-        throw new MCPToolError(
-          "This TypeScript Language Server returns commands instead of direct edits. This is not yet fully supported.",
-          "COMMAND_NOT_SUPPORTED",
-          [
-            "Try using a different TypeScript Language Server",
-            "Or use manual extraction for now",
-          ],
+        throw errors.operationNotSupported(
+          "extract_type_command",
+          "typescript",
+          {
+            operation: "extract_type",
+            filePath,
+          },
         );
       }
 
       if (!action.edit) {
-        throw new MCPToolError(
+        throw errors.generic(
           "No workspace edit provided by the server",
-          "NO_EDIT_PROVIDED",
+          undefined,
+          {
+            operation: "extract_type",
+            filePath,
+          },
         );
       }
 

@@ -1,13 +1,12 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
-import { getActiveClient } from "../lspClient.ts";
-import { findTargetInFile } from "../../textUtils/findTargetInFile.ts";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
-import { readFileWithMetadata } from "../../common/fileOperations.ts";
+import { createLSPTool } from "../../common/toolFactory.ts";
+import { withLSPOperation } from "../../common/lspOperations.ts";
 import {
-  validateLine,
-  validateLineAndSymbol,
-} from "../../common/validation.ts";
+  hasSymbolResolution,
+  resolveFileAndSymbol,
+} from "../../common/fileSymbolResolver.ts";
+import { errors } from "../../common/errors/index.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -58,47 +57,6 @@ interface GetHoverSuccess {
 }
 
 /**
- * Helper to handle hover request when line is not provided
- */
-async function getHoverWithoutLine(
-  request: GetHoverRequest,
-): Promise<Result<GetHoverSuccess, string>> {
-  try {
-    const client = getActiveClient();
-
-    // Read file content with metadata
-    const { fileContent, fileUri } = readFileWithMetadata(
-      request.root,
-      request.filePath,
-    );
-    const lines = fileContent.split("\n");
-
-    // Find target text in file
-    const targetResult = findTargetInFile(lines, request.target || "");
-    if ("error" in targetResult) {
-      return err(`${targetResult.error} in ${request.filePath}`);
-    }
-
-    const { lineIndex: targetLine, characterIndex: symbolPosition } =
-      targetResult;
-
-    // Open document in LSP
-    client.openDocument(fileUri, fileContent);
-    await new Promise<void>((resolve) => setTimeout(resolve, 1000));
-
-    // Get hover info
-    const result = (await client.getHover(fileUri, {
-      line: targetLine,
-      character: symbolPosition,
-    })) as HoverResult | null;
-
-    return formatHoverResult(result, request, targetLine, symbolPosition);
-  } catch (error) {
-    return err(error instanceof Error ? error.message : String(error));
-  }
-}
-
-/**
  * Format hover result into GetHoverSuccess
  */
 function formatHoverResult(
@@ -134,11 +92,11 @@ function formatHoverResult(
     };
   } else {
     // If range is null, specify all lines
-    const { fileContent } = readFileWithMetadata(
-      request.root,
-      request.filePath,
-    );
-    const lines = fileContent.split("\n");
+    const resolution = resolveFileAndSymbol({
+      root: request.root,
+      filePath: request.filePath,
+    });
+    const lines = resolution.lines;
     range = {
       start: {
         line: 1,
@@ -168,66 +126,75 @@ function formatHoverResult(
 async function getHover(
   request: GetHoverRequest,
 ): Promise<Result<GetHoverSuccess, string>> {
-  // If line is not provided, we need to find the target text
-  if (request.line === undefined) {
-    return getHoverWithoutLine(request);
-  }
-
   try {
-    const client = getActiveClient();
-
-    // Read file content with metadata
-    const { absolutePath, fileContent, fileUri } = readFileWithMetadata(
-      request.root,
-      request.filePath,
-    );
-
-    // Parse line number
-    const lines = fileContent.split("\n");
+    // Resolve file and position
+    let resolution;
     let targetLine: number;
     let symbolPosition: number;
 
-    // Determine character position
-    if (request.character !== undefined) {
-      // Use provided character position
-      const { lineIndex } = validateLine(
-        fileContent,
-        request.line,
-        request.filePath,
-      );
-      targetLine = lineIndex;
-      symbolPosition = request.character;
-    } else if (request.target) {
-      // Find symbol position in line
-      const { lineIndex, symbolIndex } = validateLineAndSymbol(
-        fileContent,
-        request.line,
-        request.target,
-        request.filePath,
-      );
-      targetLine = lineIndex;
-      symbolPosition = symbolIndex;
+    if (request.line === undefined && request.target) {
+      // Find target without line
+      resolution = resolveFileAndSymbol({
+        root: request.root,
+        filePath: request.filePath,
+        target: request.target,
+      });
+      targetLine = resolution.lineIndex;
+      symbolPosition = resolution.symbolIndex;
+    } else if (request.line !== undefined) {
+      if (request.character !== undefined) {
+        // Use provided character position
+        resolution = resolveFileAndSymbol({
+          root: request.root,
+          filePath: request.filePath,
+          line: request.line,
+        });
+        targetLine = resolution.lineIndex;
+        symbolPosition = request.character;
+      } else if (request.target) {
+        // Find symbol in line
+        resolution = resolveFileAndSymbol({
+          root: request.root,
+          filePath: request.filePath,
+          line: request.line,
+          symbolName: request.target,
+        });
+        targetLine = resolution.lineIndex;
+        symbolPosition = resolution.symbolIndex;
+      } else {
+        // Default to beginning of line
+        resolution = resolveFileAndSymbol({
+          root: request.root,
+          filePath: request.filePath,
+          line: request.line,
+        });
+        targetLine = resolution.lineIndex;
+        symbolPosition = 0;
+      }
     } else {
-      // Default to beginning of line if neither character nor target is provided
-      const { lineIndex } = validateLine(
-        fileContent,
-        request.line,
-        request.filePath,
-      );
-      targetLine = lineIndex;
-      symbolPosition = 0;
+      // No line or target provided
+      return err("Either line or target must be provided");
     }
 
-    // Open document in LSP
-    client.openDocument(fileUri, fileContent);
+    const { fileUri, fileContent } = resolution;
 
-    // Give LSP server time to process the document
-    await new Promise<void>((resolve) => setTimeout(resolve, 1000));
-    // Get hover info
-    const result = (await client.getHover(fileUri, {
-      line: targetLine,
-      character: symbolPosition,
-    })) as HoverResult | null;
+    // Get hover info using LSP operation wrapper
+    const result = await withLSPOperation({
+      fileUri,
+      fileContent,
+      operation: async (client) => {
+        return (await client.getHover(fileUri, {
+          line: targetLine,
+          character: symbolPosition,
+        })) as HoverResult | null;
+      },
+      errorContext: {
+        operation: "get_hover",
+        filePath: request.filePath,
+        symbolName: request.target,
+        line: request.line,
+      },
+    });
 
     return formatHoverResult(result, request, targetLine, symbolPosition);
   } catch (error) {
@@ -259,24 +226,21 @@ function formatHoverContents(
   return "";
 }
 
-export const lspGetHoverTool: ToolDef<typeof schema> = {
+export const lspGetHoverTool = createLSPTool({
   name: "get_hover",
   description:
     "Get hover information (type signature, documentation) for a symbol using LSP",
   schema,
-  execute: async (args: z.infer<typeof schema>) => {
-    const result = await getHover(args);
-    if (result.isOk()) {
-      const messages = [result.value.message];
-      if (result.value.hover) {
-        messages.push(result.value.hover.contents);
-      }
-      return messages.join("\n\n");
-    } else {
-      throw new Error(result.error);
+  language: "lsp",
+  handler: getHover,
+  formatSuccess: (result) => {
+    const messages = [result.message];
+    if (result.hover) {
+      messages.push(result.hover.contents);
     }
+    return messages.join("\n\n");
   },
-};
+});
 
 if (import.meta.vitest) {
   const { describe, it, expect, beforeAll, afterAll } = import.meta.vitest;

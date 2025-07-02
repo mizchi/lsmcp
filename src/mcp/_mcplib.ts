@@ -36,9 +36,11 @@ export { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
  * Tool result format for MCP
  */
 export interface ToolResult {
-  content: { type: "text"; text: string; [x: string]: unknown }[];
+  content: Array<{
+    type: "text";
+    text: string;
+  }>;
   isError?: boolean;
-  [x: string]: unknown;
 }
 
 /**
@@ -70,7 +72,7 @@ export interface McpServerOptions {
  */
 export class BaseMcpServer {
   protected server: McpServer;
-  protected tools: Map<string, ToolDef<any>> = new Map();
+  protected tools: Map<string, ToolDef<ZodType>> = new Map();
   protected defaultRoot?: string;
 
   constructor(options: McpServerOptions) {
@@ -98,7 +100,7 @@ export class BaseMcpServer {
   /**
    * Register multiple tools at once
    */
-  registerTools(tools: ToolDef<any>[]): void {
+  registerTools(tools: ToolDef<ZodType>[]): void {
     for (const tool of tools) {
       this.registerTool(tool);
     }
@@ -133,7 +135,9 @@ export class BaseMcpServer {
           // If root is not provided in args, use the default
           const argsWithRoot = {
             ...args,
-            root: (args as Record<string, unknown>).root || this.defaultRoot,
+            root: (typeof args === "object" && args !== null && "root" in args
+              ? (args as Record<string, unknown>).root
+              : undefined) || this.defaultRoot,
           } as z.infer<S>;
           return tool.execute(argsWithRoot);
         }
@@ -283,7 +287,7 @@ export function mergeArrays<T>(
  */
 export function generatePermissions(
   serverName: string,
-  tools: ToolDef<any>[],
+  tools: ToolDef<ZodType>[],
 ): string[] {
   return tools.map((tool) => `mcp__${serverName}__${tool.name}`);
 }
@@ -351,7 +355,7 @@ if (import.meta.vitest) {
 
   describe("generatePermissions", () => {
     it("should generate permission names from tool definitions", () => {
-      const tools: ToolDef<any>[] = [
+      const tools: ToolDef<ZodType>[] = [
         {
           name: "test_tool",
           description: "Test tool",
@@ -424,7 +428,7 @@ if (import.meta.vitest) {
         version: "1.0.0",
       });
 
-      const tools: ToolDef<any>[] = [
+      const tools: ToolDef<ZodType>[] = [
         {
           name: "tool1",
           description: "Tool 1",

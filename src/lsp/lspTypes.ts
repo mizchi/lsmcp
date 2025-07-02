@@ -24,17 +24,45 @@ import { ChildProcess } from "child_process";
 import { EventEmitter } from "events";
 
 // LSP Message types
-export interface LSPMessage {
+export interface LSPRequest {
   jsonrpc: "2.0";
-  id?: number | string;
-  method?: string;
-  params?: unknown;
+  id: number | string;
+  method: string;
+  params?: Record<string, unknown>;
+}
+
+export interface LSPResponse {
+  jsonrpc: "2.0";
+  id: number | string;
   result?: unknown;
   error?: {
     code: number;
     message: string;
     data?: unknown;
   };
+}
+
+export interface LSPNotification {
+  jsonrpc: "2.0";
+  method: string;
+  params?: Record<string, unknown>;
+}
+
+export type LSPMessage = LSPRequest | LSPResponse | LSPNotification;
+
+// Type guards
+export function isLSPRequest(message: LSPMessage): message is LSPRequest {
+  return "method" in message && "id" in message;
+}
+
+export function isLSPResponse(message: LSPMessage): message is LSPResponse {
+  return "id" in message && ("result" in message || "error" in message);
+}
+
+export function isLSPNotification(
+  message: LSPMessage,
+): message is LSPNotification {
+  return "method" in message && !("id" in message);
 }
 
 // LSP Protocol types
@@ -103,7 +131,7 @@ export interface InitializeParams {
   rootUri: DocumentUri | null;
   workspaceFolders?: WorkspaceFolder[] | null;
   capabilities: ClientCapabilities;
-  initializationOptions?: any;
+  initializationOptions?: Record<string, unknown>;
 }
 
 export interface WorkspaceFolder {
@@ -190,7 +218,7 @@ export type HoverContents =
 export interface LSPClientState {
   process: ChildProcess | null;
   messageId: number;
-  responseHandlers: Map<number | string, (response: LSPMessage) => void>;
+  responseHandlers: Map<number | string, (response: LSPResponse) => void>;
   buffer: string;
   contentLength: number;
   diagnostics: Map<string, Diagnostic[]>;
@@ -256,8 +284,16 @@ export type LSPClient = {
     edit: WorkspaceEdit,
     label?: string,
   ) => Promise<ApplyWorkspaceEditResponse>;
-  sendRequest: <T = unknown>(method: string, params?: unknown) => Promise<T>;
+  sendRequest: <T = unknown>(
+    method: string,
+    params?: Record<string, unknown>,
+  ) => Promise<T>;
+  on: (
+    event: "diagnostics",
+    listener: (params: PublishDiagnosticsParams) => void,
+  ) => void;
   on: (event: string, listener: (...args: unknown[]) => void) => void;
+  emit: (event: "diagnostics", params: PublishDiagnosticsParams) => boolean;
   emit: (event: string, ...args: unknown[]) => boolean;
   waitForDiagnostics: (
     fileUri: string,

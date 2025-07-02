@@ -5,7 +5,7 @@ import {
   SymbolKind,
 } from "vscode-languageserver-types";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
-import { prepareFileContext, withLSPDocument } from "./lspCommon.ts";
+import { prepareFileContext, withLSPDocument } from "../utils/lspCommon.ts";
 import { fileLocationSchema } from "../../common/schemas.ts";
 import { formatLocation, formatRange } from "../../common/formatting.ts";
 import { getLSPClient } from "../lspClient.ts";

@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
-import { readFileSync } from "fs";
-import path from "path";
-import { getActiveClient } from "../lspClient.ts";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
+import { createLSPTool } from "../../common/toolFactory.ts";
+import { withLSPOperation } from "../../common/lspOperations.ts";
+import { resolveFileAndSymbol } from "../../common/fileSymbolResolver.ts";
+import { DiagnosticResultBuilder } from "../../common/resultBuilders.ts";
 import { getLanguageIdFromPath } from "../languageDetection.ts";
+import { getActiveClient } from "../lspClient.ts";
+import type { Diagnostic as LSPDiagnostic } from "../lspTypes.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -15,39 +17,17 @@ const schema = z.object({
 
 type GetDiagnosticsRequest = z.infer<typeof schema>;
 
-interface Diagnostic {
-  severity: "error" | "warning" | "information" | "hint";
-  line: number;
-  column: number;
-  endLine: number;
-  endColumn: number;
-  message: string;
-  source?: string;
-  code?: string | number;
-}
-
 interface GetDiagnosticsSuccess {
   message: string;
-  diagnostics: Diagnostic[];
-}
-
-// LSP Diagnostic severity mapping
-const SEVERITY_MAP: Record<number, Diagnostic["severity"]> = {
-  1: "error",
-  2: "warning",
-  3: "information",
-  4: "hint",
-};
-
-interface LSPDiagnostic {
-  range: {
-    start: { line: number; character: number };
-    end: { line: number; character: number };
-  };
-  severity?: number;
-  code?: string | number;
-  source?: string;
-  message: string;
+  diagnostics: Array<{
+    severity: "error" | "warning" | "info" | "hint";
+    line: number;
+    column: number;
+    endLine?: number;
+    endColumn?: number;
+    message: string;
+    source?: string;
+  }>;
 }
 
 /**
@@ -57,12 +37,13 @@ async function getDiagnosticsWithLSP(
   request: GetDiagnosticsRequest,
 ): Promise<Result<GetDiagnosticsSuccess, string>> {
   try {
-    const client = getActiveClient();
+    // Resolve file
+    const { absolutePath, fileContent, fileUri } = resolveFileAndSymbol({
+      root: request.root,
+      filePath: request.filePath,
+    });
 
-    // Read file content
-    const absolutePath = path.resolve(request.root, request.filePath);
-    const fileContent = readFileSync(absolutePath, "utf-8");
-    const fileUri = `file://${absolutePath}`;
+    const client = getActiveClient();
 
     // Check if document is already open and close it to force refresh
     const isAlreadyOpen = client.isDocumentOpen(fileUri);
@@ -162,65 +143,41 @@ async function getDiagnosticsWithLSP(
       }
     }
 
-    // Convert LSP diagnostics to our format
-    const diagnostics: Diagnostic[] = lspDiagnostics.map((diag) => ({
-      severity: SEVERITY_MAP[diag.severity ?? 1] ?? "error",
-      line: diag.range.start.line + 1, // Convert to 1-based
-      column: diag.range.start.character + 1,
-      endLine: diag.range.end.line + 1,
-      endColumn: diag.range.end.character + 1,
-      message: diag.message,
-      source: diag.source,
-      code: diag.code,
-    }));
-
-    const errorCount = diagnostics.filter((d) => d.severity === "error").length;
-    const warningCount = diagnostics.filter(
-      (d) => d.severity === "warning",
-    ).length;
+    // Build diagnostics result
+    const builder = new DiagnosticResultBuilder(request.root, request.filePath);
+    builder.addLSPDiagnostics(lspDiagnostics);
 
     // Always close the document to avoid caching issues
     client.closeDocument(fileUri);
 
-    return ok({
-      message: `Found ${errorCount} error${
-        errorCount !== 1 ? "s" : ""
-      } and ${warningCount} warning${
-        warningCount !== 1 ? "s" : ""
-      } in ${request.filePath}`,
-      diagnostics,
-    });
+    return ok(builder.build());
   } catch (error) {
     return err(error instanceof Error ? error.message : String(error));
   }
 }
 
-export const lspGetDiagnosticsTool: ToolDef<typeof schema> = {
+export const lspGetDiagnosticsTool = createLSPTool({
   name: "get_diagnostics",
   description: "Get diagnostics (errors, warnings) for a file using LSP",
   schema,
-  execute: async (args: z.infer<typeof schema>) => {
-    const result = await getDiagnosticsWithLSP(args);
-    if (result.isOk()) {
-      const messages = [result.value.message];
+  language: "lsp",
+  handler: getDiagnosticsWithLSP,
+  formatSuccess: (result) => {
+    const messages = [result.message];
 
-      if (result.value.diagnostics.length > 0) {
-        for (const diag of result.value.diagnostics) {
-          const codeInfo = diag.code ? ` [${diag.code}]` : "";
-          const sourceInfo = diag.source ? ` (${diag.source})` : "";
-          messages.push(
-            `\n${diag.severity.toUpperCase()}: ${diag.message}${codeInfo}${sourceInfo}\n` +
-              `  at ${args.filePath}:${diag.line}:${diag.column}`,
-          );
-        }
+    if (result.diagnostics.length > 0) {
+      for (const diag of result.diagnostics) {
+        const sourceInfo = diag.source ? ` (${diag.source})` : "";
+        messages.push(
+          `\n${diag.severity.toUpperCase()}: ${diag.message}${sourceInfo}\n` +
+            `  at ${diag.line}:${diag.column}`,
+        );
       }
-
-      return messages.join("\n\n");
-    } else {
-      throw new Error(result.error);
     }
+
+    return messages.join("\n\n");
   },
-};
+});
 
 if (import.meta.vitest) {
   const { describe, it, expect, beforeAll, afterAll } = import.meta.vitest;
@@ -251,7 +208,7 @@ if (import.meta.vitest) {
           root,
           filePath: "non-existent-file-12345.ts",
         }),
-      ).rejects.toThrow("ENOENT");
+      ).rejects.toThrow("File not found");
     });
   });
 }

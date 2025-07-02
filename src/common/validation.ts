@@ -1,6 +1,6 @@
 import { parseLineNumber } from "../textUtils/parseLineNumber.ts";
 import { findSymbolInLine } from "../textUtils/findSymbolInLine.ts";
-import { MCPToolError } from "./mcpErrors.ts";
+import { errors } from "./errors/index.ts";
 
 interface LineAndSymbolResult {
   lineIndex: number;
@@ -26,9 +26,9 @@ export function validateLineAndSymbol(
   // Parse line number
   const lineResult = parseLineNumber(fileContent, line);
   if ("error" in lineResult) {
-    throw new MCPToolError(
-      `${lineResult.error} in ${filePath}`,
-      "LINE_NOT_FOUND",
+    throw errors.lineNotFound(
+      line,
+      filePath,
     );
   }
 
@@ -37,9 +37,9 @@ export function validateLineAndSymbol(
   // Find symbol in line
   const symbolResult = findSymbolInLine(lineText, symbolName);
   if ("error" in symbolResult) {
-    throw new MCPToolError(
-      `${symbolResult.error} on line ${targetLine + 1}`,
-      "SYMBOL_NOT_FOUND",
+    throw errors.symbolNotFound(
+      symbolName,
+      targetLine + 1,
     );
   }
 
@@ -65,9 +65,9 @@ export function validateLine(
 ): { lineIndex: number; lineContent: string } {
   const lineResult = parseLineNumber(fileContent, line);
   if ("error" in lineResult) {
-    throw new MCPToolError(
-      `${lineResult.error} in ${filePath}`,
-      "LINE_NOT_FOUND",
+    throw errors.lineNotFound(
+      line,
+      filePath,
     );
   }
 
@@ -97,8 +97,8 @@ function findSymbolPosition(
     }
   }
 
-  throw new MCPToolError(
-    `Symbol "${symbolName}" not found in file`,
-    "SYMBOL_NOT_FOUND",
+  throw errors.symbolNotFound(
+    symbolName,
+    undefined,
   );
 }

@@ -9,7 +9,7 @@ import {
   prepareFileContext,
   resolveLineOrThrow,
   withLSPDocument,
-} from "./lspCommon.ts";
+} from "../utils/lspCommon.ts";
 import { commonSchemas } from "../../common/schemas.ts";
 
 const schema = z.object({

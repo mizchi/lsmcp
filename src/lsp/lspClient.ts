@@ -2,6 +2,12 @@ import { EventEmitter } from "events";
 import { promises as fs } from "fs";
 import { fileURLToPath } from "url";
 import {
+  getErrorMessage,
+  hasProperty,
+  isErrorWithCode,
+  isObject,
+} from "../common/types.ts";
+import {
   CodeAction,
   Command,
   CompletionItem,
@@ -24,6 +30,15 @@ interface DocumentDiagnosticReport {
   kind: "full" | "unchanged";
   items?: Diagnostic[];
   resultId?: string;
+}
+
+// Type guard for PublishDiagnosticsParams
+function isPublishDiagnosticsParams(
+  params: unknown,
+): params is PublishDiagnosticsParams {
+  return isObject(params) &&
+    typeof params.uri === "string" &&
+    Array.isArray(params.diagnostics);
 }
 
 import {
@@ -213,16 +228,20 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
         message.method === "textDocument/publishDiagnostics" &&
         message.params
       ) {
-        // Store diagnostics for the file
-        const params = message.params as PublishDiagnosticsParams;
-        // Filter out diagnostics with invalid ranges
-        const validDiagnostics = params.diagnostics.filter((d) => d && d.range);
-        state.diagnostics.set(params.uri, validDiagnostics);
-        // Emit specific diagnostics event
-        state.eventEmitter.emit("diagnostics", {
-          ...params,
-          diagnostics: validDiagnostics,
-        });
+        // Type guard for PublishDiagnosticsParams
+        if (isPublishDiagnosticsParams(message.params)) {
+          const params = message.params;
+          // Filter out diagnostics with invalid ranges
+          const validDiagnostics = params.diagnostics.filter((d) =>
+            d && d.range
+          );
+          state.diagnostics.set(params.uri, validDiagnostics);
+          // Emit specific diagnostics event
+          state.eventEmitter.emit("diagnostics", {
+            ...params,
+            diagnostics: validDiagnostics,
+          });
+        }
       }
       state.eventEmitter.emit("message", message);
     }
@@ -591,9 +610,9 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
         state.diagnostics.set(uri, result.items);
         return result.items;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // If the server doesn't support pull diagnostics, fall back to push model
-      debugLog("Pull diagnostics not supported:", error.message);
+      debugLog("Pull diagnostics not supported:", getErrorMessage(error));
     }
 
     // Fall back to getting stored diagnostics
@@ -764,12 +783,12 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
         params,
       );
       return result ?? null;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Check if this is a TypeScript Native Preview LSP that doesn't support rename
       if (
-        error.message?.includes("Unhandled method") ||
-        error.message?.includes("Method not found") ||
-        error.code === -32601
+        getErrorMessage(error).includes("Unhandled method") ||
+        getErrorMessage(error).includes("Method not found") ||
+        (isErrorWithCode(error) && error.code === -32601)
       ) {
         debug("LSP server doesn't support rename, will use fallback");
         return null;
@@ -795,12 +814,12 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       return (
         result ?? { applied: false, failureReason: "No response from server" }
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       // If the server doesn't support workspace/applyEdit, apply the edits manually
       if (
-        error.message?.includes("Unhandled method") ||
-        error.message?.includes("Method not found") ||
-        error.code === -32601
+        getErrorMessage(error).includes("Unhandled method") ||
+        getErrorMessage(error).includes("Method not found") ||
+        (isErrorWithCode(error) && error.code === -32601)
       ) {
         debug(
           "LSP server doesn't support workspace/applyEdit, applying edits manually",

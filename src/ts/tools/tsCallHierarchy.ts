@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
 import { commonSchemas } from "../../common/schemas.ts";
 import { relative } from "path";
-import { MCPToolError } from "../../common/mcpErrors.ts";
+import { errors } from "../../common/errors/index.ts";
 import { Position } from "vscode-languageserver-types";
 import { readFileWithMetadata } from "../../common/fileOperations.ts";
 import {
@@ -100,13 +100,15 @@ export const callHierarchyTool: ToolDef<typeof schema> = {
       );
 
       if (!items || items.length === 0) {
-        throw new MCPToolError(
+        throw errors.generic(
           `No call hierarchy available for "${symbolName}"`,
-          "NO_CALL_HIERARCHY",
-          [
-            "Ensure the symbol is a function or method",
-            "The cursor must be on the function/method name",
-          ],
+          undefined,
+          {
+            operation: "call_hierarchy",
+            filePath,
+            symbolName,
+            line,
+          },
         );
       }
 

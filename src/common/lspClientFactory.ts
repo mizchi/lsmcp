@@ -1,10 +1,11 @@
 import { ChildProcess, spawn } from "child_process";
 import { createLSPClient } from "../lsp/lspClient.ts";
+import type { LSPClient } from "../lsp/lspTypes.ts";
 import { findTypescriptLanguageServer } from "../ts/utils/findTypescriptLanguageServer.ts";
-import { MCPToolError } from "./mcpErrors.ts";
+import { errors } from "./errors/index.ts";
 
 export interface LSPClientInstance {
-  client: any; // LSP client type
+  client: LSPClient;
   process: ChildProcess;
 }
 
@@ -44,10 +45,7 @@ export async function createTypescriptLSPClient(
     if (!lspProcess.killed) {
       lspProcess.kill();
     }
-    throw new MCPToolError(
-      `Failed to start TypeScript language server: ${error}`,
-      "LSP_START_ERROR",
-    );
+    throw errors.lspStartError("typescript", String(error));
   }
 }
 
@@ -82,7 +80,7 @@ export async function stopLSPClient(
  * @param languageId The language ID (default: "typescript")
  */
 export function openDocument(
-  client: any,
+  client: LSPClient,
   fileUri: string,
   content: string,
   languageId: string = "typescript",

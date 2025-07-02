@@ -3,7 +3,7 @@ import type { ToolDef } from "../../mcp/_mcplib.ts";
 import { commonSchemas } from "../../common/schemas.ts";
 import { CodeAction, Range, WorkspaceEdit } from "vscode-languageserver-types";
 import { readFileSync, writeFileSync } from "fs";
-import { MCPToolError } from "../../common/mcpErrors.ts";
+import { errors } from "../../common/errors/index.ts";
 import { readFileWithMetadata } from "../../common/fileOperations.ts";
 import {
   createTypescriptLSPClient,
@@ -186,13 +186,15 @@ The property has been converted to use accessor methods.`;
       }
 
       if (!codeActions || codeActions.length === 0) {
-        throw new MCPToolError(
+        throw errors.generic(
           "No code actions available for this property",
-          "NO_CODE_ACTIONS",
-          [
-            "Ensure the property is a class member",
-            "The property must be in a TypeScript class",
-          ],
+          undefined,
+          {
+            operation: "generate_accessors",
+            filePath,
+            symbolName: propertyName,
+            line,
+          },
         );
       }
 
@@ -208,13 +210,15 @@ The property has been converted to use accessor methods.`;
       );
 
       if (accessorActions.length === 0) {
-        throw new MCPToolError(
+        throw errors.generic(
           "No generate accessor action available",
-          "ACCESSORS_NOT_AVAILABLE",
-          [
-            "The selected property may already have accessors",
-            "Ensure this is a simple property declaration",
-          ],
+          undefined,
+          {
+            operation: "generate_accessors",
+            filePath,
+            symbolName: propertyName,
+            line,
+          },
         );
       }
 
@@ -226,16 +230,24 @@ The property has been converted to use accessor methods.`;
         workspaceEdit = action.edit;
       } else if (action.command) {
         // Some servers return a command that needs to be executed
-        throw new MCPToolError(
-          "Server returned command instead of edit. Command execution not yet supported.",
-          "COMMAND_NOT_SUPPORTED",
+        throw errors.operationNotSupported(
+          "generate_accessors_command",
+          "typescript",
+          {
+            operation: "generate_accessors",
+            filePath,
+          },
         );
       }
 
       if (!workspaceEdit) {
-        throw new MCPToolError(
+        throw errors.generic(
           "No workspace edit provided by the server",
-          "NO_EDIT_PROVIDED",
+          undefined,
+          {
+            operation: "generate_accessors",
+            filePath,
+          },
         );
       }
 

@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { MCPToolError } from "./mcpErrors.ts";
+import { ErrorCode, errors } from "./errors/index.ts";
 
 interface FileReadResult {
   absolutePath: string;
@@ -27,18 +27,12 @@ export function readFileWithMetadata(
     fileContent = readFileSync(absolutePath, "utf-8");
   } catch (error: any) {
     if (error.code === "ENOENT") {
-      throw new MCPToolError(
-        `File not found: ${filePath}`,
-        "FILE_NOT_FOUND",
-        [
-          "Check that the file path is correct",
-          "Ensure the file exists in the project",
-        ],
-      );
+      throw errors.fileNotFound(filePath);
     }
-    throw new MCPToolError(
+    throw errors.generic(
       `Failed to read file: ${error.message}`,
-      "FILE_READ_ERROR",
+      ErrorCode.FILE_READ_ERROR,
+      { filePath },
     );
   }
 
