@@ -13,7 +13,7 @@
     "watch": "tsdown --watch",
     "typecheck": "tsgo check",
     "typecheck:tsc": "tsc --noEmit -p tsconfig.json",
-    "lint": "oxlint --quiet",
+    "lint": "oxlint --quiet --ignore-path=.oxlintignore",
     "lint:refactor": "oxlint",
     "test": "pnpm test:unit && pnpm test:integration && pnpm test:typescript-lsp && pnpm test:adapters",
     "test:unit": "vitest --run --project unit",

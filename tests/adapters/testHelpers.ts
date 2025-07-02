@@ -4,6 +4,10 @@ import { readFileSync } from "fs";
 import { createLSPClient } from "../../src/lsp/lspClient.ts";
 import type { LanguageConfig, LspAdapter } from "../../src/types.ts";
 import { resolveAdapterCommand } from "../../src/adapters/utils.ts";
+import {
+  processDefaultDiagnostics,
+  processTsgoDiagnostics,
+} from "../../src/adapters/diagnosticProcessors.ts";
 
 // Helper to convert adapter to language config
 function adapterToLanguageConfig(adapter: LspAdapter): LanguageConfig {
@@ -184,18 +188,26 @@ export async function testLspConnection(
         }
 
         // Filter to only errors and warnings
-        const filteredDiagnostics = diagnostics
-          .filter((d: any) => d.severity === 1 || d.severity === 2)
-          .map((d: any) => ({
-            file: checkFile,
-            severity: d.severity,
-            message: d.message.substring(0, 80) +
-              (d.message.length > 80 ? "..." : ""),
-            line: d.range.start.line,
-            source: d.source,
-          }));
+        const errorAndWarningDiagnostics = diagnostics
+          .filter((d: any) => d.severity === 1 || d.severity === 2);
 
-        allDiagnostics.push(...filteredDiagnostics);
+        // Use adapter-specific diagnostic processor if needed
+        let processedDiagnostics;
+        if (adapter.id === "tsgo") {
+          processedDiagnostics = processTsgoDiagnostics(
+            errorAndWarningDiagnostics,
+            checkFile,
+            fileContent,
+          );
+        } else {
+          processedDiagnostics = processDefaultDiagnostics(
+            errorAndWarningDiagnostics,
+            checkFile,
+            fileContent,
+          );
+        }
+
+        allDiagnostics.push(...processedDiagnostics);
 
         // Always close the document to avoid caching issues
         client.closeDocument(fileUri);

@@ -1,0 +1,2 @@
+# Ignore test fixtures that intentionally contain errors
+tests/adapters/fixtures/

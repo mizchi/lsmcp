@@ -4,6 +4,11 @@ import { getNodeModulesBin } from "../common/nodeModulesUtils.ts";
 
 /**
  * tsgo adapter - Fast TypeScript language server
+ *
+ * Known issues:
+ * - May report duplicate diagnostics
+ * - May report diagnostics for non-existent lines
+ * - Diagnostics are deduplicated and filtered by the test helper
  */
 export const tsgoAdapter: LspAdapter = {
   id: "tsgo",
@@ -26,6 +31,22 @@ export const tsgoAdapter: LspAdapter = {
 
   lspCommand: "tsgo",
   lspArgs: ["--lsp", "--stdio"],
+
+  // Initialize with TypeScript preferences
+  initializationOptions: {
+    preferences: {
+      includeInlayParameterNameHints: "none",
+      includeInlayParameterNameHintsWhenArgumentMatchesName: false,
+      includeInlayFunctionParameterTypeHints: false,
+      includeInlayVariableTypeHints: false,
+      includeInlayPropertyDeclarationTypeHints: false,
+      includeInlayFunctionLikeReturnTypeHints: false,
+      includeInlayEnumMemberValueHints: false,
+    },
+    // Disable some features that might cause issues
+    maxTsServerMemory: 4096,
+  },
+
   doctor: async () => {
     try {
       const binPath = getNodeModulesBin("tsgo");
