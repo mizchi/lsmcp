@@ -17,10 +17,11 @@ const testUser: User = {
 console.log(greetUser(testUser));
 
 // This should cause a type error
-const invalidUser = {
+const invalidUser: User = {
   id: "not-a-number", // Type error: string is not assignable to number
   name: "Invalid User",
+  email: "invalid@example.com",
 };
 
-// @ts-expect-error - Missing email property
-greetUser(invalidUser);
+// This will also cause a type error
+const result: number = greetUser(testUser); // Type error: string is not assignable to number

@@ -15,6 +15,7 @@ import { debug } from "./_mcplib.ts";
 import { ErrorContext, formatError } from "./utils/errorHandler.ts";
 import { readFile } from "fs/promises";
 import type { LanguageConfig, LspAdapter } from "../types.ts";
+import { resolveAdapterCommand } from "../adapters/utils.ts";
 
 // Import all adapters
 import { typescriptAdapter } from "../adapters/typescript-language-server.ts";
@@ -178,11 +179,23 @@ async function runLanguageServer(
     process.exit(1);
   }
 
-  // Use generic LSP server
-  const lspCommand = typeof config.lspCommand === "function"
-    ? config.lspCommand()
-    : config.lspCommand;
-  const lspArgs = config.lspArgs || [];
+  // Check if this came from an adapter
+  const adapter = adapters.get(language);
+  let lspCommand: string;
+  let lspArgs: string[];
+
+  if (adapter) {
+    // Use the adapter resolution for node_modules binaries
+    const resolved = resolveAdapterCommand(adapter, process.cwd());
+    lspCommand = resolved.command;
+    lspArgs = resolved.args;
+  } else {
+    // Use the config directly
+    lspCommand = typeof config.lspCommand === "function"
+      ? config.lspCommand()
+      : config.lspCommand;
+    lspArgs = config.lspArgs || [];
+  }
 
   if (!lspCommand) {
     console.error(

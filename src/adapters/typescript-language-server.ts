@@ -1,5 +1,6 @@
 import type { LspAdapter } from "../types.ts";
 import { execSync } from "child_process";
+import { getNodeModulesBin } from "../common/nodeModulesUtils.ts";
 
 /**
  * TypeScript Language Server adapter (default)
@@ -22,8 +23,8 @@ export const typescriptAdapter: LspAdapter = {
     ".d.mts",
     ".d.cts",
   ],
-  lspCommand: "npx",
-  lspArgs: ["typescript-language-server", "--stdio"],
+  lspCommand: "typescript-language-server",
+  lspArgs: ["--stdio"],
   initializationOptions: {
     preferences: {
       includeCompletionsForModuleExports: true,
@@ -32,10 +33,22 @@ export const typescriptAdapter: LspAdapter = {
   },
   doctor: async () => {
     try {
+      const binPath = getNodeModulesBin("typescript-language-server");
+      if (binPath) {
+        return { ok: true };
+      }
+      // Fall back to checking npx
       execSync("which npx", { stdio: "ignore" });
+      execSync("npx -y typescript-language-server --version", {
+        stdio: "ignore",
+      });
       return { ok: true };
     } catch {
-      return { ok: false, message: "npx not found in PATH" };
+      return {
+        ok: false,
+        message:
+          "typescript-language-server not found. Install with: npm install -g typescript-language-server",
+      };
     }
   },
 };

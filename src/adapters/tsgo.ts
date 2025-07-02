@@ -1,5 +1,6 @@
 import type { LspAdapter } from "../types.ts";
 import { execSync } from "child_process";
+import { getNodeModulesBin } from "../common/nodeModulesUtils.ts";
 
 /**
  * tsgo adapter - Fast TypeScript language server
@@ -23,14 +24,23 @@ export const tsgoAdapter: LspAdapter = {
     ".d.cts",
   ],
 
-  lspCommand: "npx",
-  lspArgs: ["tsgo", "--lsp", "--stdio"],
+  lspCommand: "tsgo",
+  lspArgs: ["--lsp", "--stdio"],
   doctor: async () => {
     try {
+      const binPath = getNodeModulesBin("tsgo");
+      if (binPath) {
+        return { ok: true };
+      }
+      // Fall back to checking npx
       execSync("which npx", { stdio: "ignore" });
+      execSync("npx -y tsgo --version", { stdio: "ignore" });
       return { ok: true };
     } catch {
-      return { ok: false, message: "npx not found in PATH" };
+      return {
+        ok: false,
+        message: "tsgo not found. Install with: npm install -g tsgo",
+      };
     }
   },
 };
