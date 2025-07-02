@@ -560,6 +560,14 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     }
 
     if (Array.isArray(result)) {
+      // Check if it's an array of LocationLink objects
+      if (result.length > 0 && "targetUri" in result[0]) {
+        // Convert LocationLink[] to Location[]
+        return result.map((link: any) => ({
+          uri: link.targetUri,
+          range: link.targetSelectionRange || link.targetRange,
+        }));
+      }
       return result;
     }
 

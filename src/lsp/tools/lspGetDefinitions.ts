@@ -42,16 +42,8 @@ interface GetDefinitionsSuccess {
   definitions: Definition[];
 }
 
-// LSP definition/location types
-interface Location {
-  uri: string;
-  range: {
-    start: { line: number; character: number };
-    end: { line: number; character: number };
-  };
-}
-
-type DefinitionResult = Location | Location[] | null;
+// Import Location type from vscode-languageserver-types via lspTypes
+import type { Location } from "../lspTypes.ts";
 
 /**
  * Gets definitions for a TypeScript symbol using LSP
@@ -90,10 +82,10 @@ async function getDefinitionsWithLSP(
     });
 
     // Get definition
-    const result = (await client.getDefinition(fileUri, {
+    const result = await client.getDefinition(fileUri, {
       line: targetLine,
       character: symbolPosition,
-    })) as DefinitionResult;
+    });
 
     // Normalize result to array
     const locations = result ? (Array.isArray(result) ? result : [result]) : [];

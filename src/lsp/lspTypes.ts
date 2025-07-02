@@ -11,6 +11,7 @@ import {
   Hover,
   integer,
   Location,
+  LocationLink,
   MarkedString,
   MarkupContent,
   Position,
@@ -196,7 +197,12 @@ export interface ApplyWorkspaceEditResponse {
 
 // Type aliases
 export type HoverResult = Hover | null;
-export type DefinitionResult = Definition | Location | Location[] | null;
+export type DefinitionResult =
+  | Definition
+  | Location
+  | Location[]
+  | LocationLink[]
+  | null;
 export type ReferencesResult = Location[] | null;
 export type DocumentSymbolResult =
   | DocumentSymbol[]

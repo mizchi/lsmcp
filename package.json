@@ -1,6 +1,6 @@
 {
   "name": "@mizchi/lsmcp",
-  "version": "0.7.0-rc.1",
+  "version": "0.7.0-rc.3",
   "type": "module",
   "license": "MIT",
   "exports": {

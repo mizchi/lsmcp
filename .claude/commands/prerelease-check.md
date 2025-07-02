@@ -262,6 +262,21 @@ Expected output:
 
 All language servers should start successfully and provide diagnostics.
 
+### 8.2 LocationLink Format Verification
+
+```bash
+# Test typescript-language-server capabilities and LocationLink support
+npx tsx scripts/verification/test-typescript-lsp.ts
+
+# Test Rust LSP server with MCP integration
+npx tsx scripts/verification/test-rust-lsp.ts
+
+# Compare location formats across different LSP servers
+npx tsx scripts/verification/test-location-formats.ts
+```
+
+Expected: All scripts should complete successfully, showing proper handling of both Location and LocationLink formats.
+
 ## 9. Integration Testing
 
 ### 9.1 Real Development Workflow
@@ -292,15 +307,16 @@ All language servers should start successfully and provide diagnostics.
 - [ ] Example projects testing with check-examples.ts
 
 ### Known Issues ❌
-- [ ] Go to definition - **Does not work with `typescript-language-server`** (returns 0 definitions)
-  - Works correctly with `tsgo` LSP server (`lsmcp-tsgo-dev`)
-  - Other features (hover, find references) work fine with both servers
-  - This appears to be a `typescript-language-server` specific issue
+- None currently known
 
 ### Fixed Issues ✅
 - [x] Symbol deletion - **Now working with client-side fallback**
   - Implemented automatic fallback when LSP server doesn't support `workspace/applyEdit`
   - Successfully tested with `typescript-language-server`
+- [x] Go to definition - **Now working with all LSP servers**
+  - Added LocationLink format support for typescript-language-server and rust-analyzer
+  - Maintains backward compatibility with Location format (tsgo, older servers)
+  - Automatically converts LocationLink to Location format internally
 
 ## Notes
 
@@ -311,13 +327,15 @@ All language servers should start successfully and provide diagnostics.
 
 ## Recent Test Results
 
-Last tested: 2025-07-01
+Last tested: 2025-07-02
 
 ### Summary
-- ✅ 11/12 core features working with `typescript-language-server` (symbol deletion now works!)
+- ✅ 12/12 core features working with `typescript-language-server`
 - ✅ 12/12 core features working with `tsgo`
-- ❌ Definition jump only works with `tsgo`, not with `typescript-language-server`
+- ✅ NEW: LocationLink format support added - fixes Go to definition for typescript-language-server
+- ✅ NEW: Verified compatibility with rust-analyzer's LocationLink format
 - ✅ NEW: Project-wide diagnostics with `get_all_diagnostics` tool
 - ✅ NEW: Tool names simplified - removed `lsmcp_` prefix from all tools
 - ✅ NEW: Multi-language support improved (F#, Rust, MoonBit)
 - ✅ NEW: Example projects testing with `scripts/check-examples.ts`
+- ✅ NEW: Verification scripts added in `scripts/verification/`

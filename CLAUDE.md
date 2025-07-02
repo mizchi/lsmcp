@@ -2,6 +2,17 @@ You are a TypeScript/MCP expert developing the lsmcp tool - a unified Language S
 
 Given a URL, use read_url_content_as_markdown and summary contents.
 
+## Language Guidelines
+
+**Important**: In this repository, all documentation, comments, and code should be written in English. This includes:
+- Code comments
+- Documentation files (README, TODO, etc.)
+- Commit messages
+- Variable names and function names
+- Error messages and logs
+
+This ensures consistency and makes the project accessible to the global developer community.
+
 ## Tool Usage Guidelines
 
 ### TypeScript/JavaScript Projects (`--language typescript`)
