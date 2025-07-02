@@ -70,7 +70,8 @@
     "vitest": "^3.2.2",
     "vscode-languageserver-protocol": "^3.17.5",
     "vscode-languageserver-types": "^3.17.5",
-    "ws": "^8.18.2"
+    "ws": "^8.18.2",
+    "zx": "^8.6.1"
   },
   "peerDependencies": {
     "typescript": "*"

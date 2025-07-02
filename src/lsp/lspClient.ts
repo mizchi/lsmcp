@@ -36,9 +36,11 @@ interface DocumentDiagnosticReport {
 function isPublishDiagnosticsParams(
   params: unknown,
 ): params is PublishDiagnosticsParams {
-  return isObject(params) &&
+  return (
+    isObject(params) &&
     typeof params.uri === "string" &&
-    Array.isArray(params.diagnostics);
+    Array.isArray(params.diagnostics)
+  );
 }
 
 import {
@@ -234,8 +236,8 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
         if (isPublishDiagnosticsParams(message.params)) {
           const params = message.params;
           // Filter out diagnostics with invalid ranges
-          const validDiagnostics = params.diagnostics.filter((d) =>
-            d && d.range
+          const validDiagnostics = params.diagnostics.filter(
+            (d) => d && d.range,
           );
           state.diagnostics.set(params.uri, validDiagnostics);
           // Emit specific diagnostics event
@@ -253,17 +255,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     if (!state.process) {
       throw new Error("LSP server not started");
     }
-
     const content = JSON.stringify(message);
-
-    // Debug log for F# initialization
-    if (
-      (state.languageId === "fsharp" || state.languageId === "f#") &&
-      message.method === "initialize"
-    ) {
-      debugLog("F# Initialize message being sent:", content);
-    }
-
     const header = `Content-Length: ${Buffer.byteLength(content)}\r\n\r\n`;
     state.process.stdin?.write(header + content);
   }

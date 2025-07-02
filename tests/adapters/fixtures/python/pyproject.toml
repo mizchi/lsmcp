@@ -1,5 +1,14 @@
+[project]
+dependencies = [
+  "pyright>=1.1.402",
+  "nodejs-wheel",
+]
+name = "test"
+requires-python = ">=3.12"
+version = "0.1.0"
+
 [tool.pyright]
-pythonVersion = "3.8"
+pythonVersion = "3.12"
 typeCheckingMode = "strict"
 
 [tool.ruff]

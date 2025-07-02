@@ -96,6 +96,9 @@ importers:
       ws:
         specifier: ^8.18.2
         version: 8.18.2
+      zx:
+        specifier: ^8.6.1
+        version: 8.6.1
 
 packages:
 
@@ -2252,6 +2255,11 @@ packages:
   zod@3.25.56:
     resolution: {integrity: sha512-rd6eEF3BTNvQnR2e2wwolfTmUTnp70aUTqr0oaGbHifzC3BKJsoV+Gat8vxUMR1hwOKBs6El+qWehrHbCpW6SQ==}
 
+  zx@8.6.1:
+    resolution: {integrity: sha512-ig4Gn2e3L9QaQq3OsyDyGKvXFiq7wYvLCPmFJgcneHsr5vTeJefe0SXtDE7qaur9ysv7giAc0CmEtQcS71UA5Q==}
+    engines: {node: '>= 12.17.0'}
+    hasBin: true
+
 snapshots:
 
   '@ai-sdk/provider-utils@2.2.8(zod@3.25.56)':
@@ -4361,3 +4369,5 @@ snapshots:
       zod: 3.25.56
 
   zod@3.25.56: {}
+
+  zx@8.6.1: {}

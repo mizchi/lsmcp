@@ -47,6 +47,11 @@
   - TSR-like functionality implementation
 
 ### Testing Improvements
+- [ ] **Pyright Adapter Tests**
+  - Fix pyright-langserver initialization timeout
+  - Investigate LSP handshake issues
+  - Add proper Python environment detection
+
 - [ ] **Java MCP Tests**
   - Java Language Server test coverage
   - Eclipse JDT Language Server integration tests

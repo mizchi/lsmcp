@@ -11,7 +11,7 @@ export const pyrightAdapter: LspAdapter = {
   description: "Microsoft's Pyright Python language server",
   extensions: [".py", ".pyw", ".pyi", ".ipynb"],
   lspCommand: "uv",
-  lspArgs: ["run", "pyright", "--stdio"],
+  lspArgs: ["run", "pyright-langserver", "--stdio"],
   initializationOptions: {
     python: {
       analysis: {
@@ -22,11 +22,11 @@ export const pyrightAdapter: LspAdapter = {
     },
   },
   doctor: async () => {
-    // First check if pyright is directly available
+    // First check if pyright-langserver is directly available
     try {
-      execSync("which pyright", { stdio: "ignore" });
-      // If pyright is directly available, update the adapter to use it directly
-      pyrightAdapter.lspCommand = "pyright";
+      execSync("which pyright-langserver", { stdio: "ignore" });
+      // If pyright-langserver is directly available, update the adapter to use it directly
+      pyrightAdapter.lspCommand = "pyright-langserver";
       pyrightAdapter.lspArgs = ["--stdio"];
       return { ok: true };
     } catch {
