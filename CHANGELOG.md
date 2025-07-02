@@ -1,3 +1,29 @@
+# [0.7.0](https://github.com/mizchi/typescript-mcp/compare/v0.7.0-rc.1...v0.7.0) (2025-07-02)
+
+
+### Bug Fixes
+
+* remove build step from list-tools test to prevent race conditions ([aa9525c](https://github.com/mizchi/typescript-mcp/commit/aa9525cb08729cd22c1e657c9cef265bc32959c0))
+* update diagnostic message format for consistency ([05a3752](https://github.com/mizchi/typescript-mcp/commit/05a3752782f04f5c8ee7d203178cee98a3e8fc9f))
+* update list-tools test to use new tool names without lsmcp_ prefix ([659fd94](https://github.com/mizchi/typescript-mcp/commit/659fd94994f377aa1ff1b8c0c2dfa6ba72a8e49c))
+
+
+### Code Refactoring
+
+* remove lsmcp_ prefix from all tool names ([f529203](https://github.com/mizchi/typescript-mcp/commit/f529203d442d83c10aa9f0a897cf653be76a9d57))
+
+
+### Features
+
+* add LocationLink format support for modern LSP servers ([8ce97e7](https://github.com/mizchi/typescript-mcp/commit/8ce97e75e3240c6103495117bfb22cda0258922b))
+
+
+### BREAKING CHANGES
+
+* Tool names have changed. Users need to update their tool references.
+
+
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
