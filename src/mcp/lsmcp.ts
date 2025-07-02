@@ -10,12 +10,29 @@ import { parseArgs } from "node:util";
 import { existsSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { spawn } from "child_process";
-import { debug } from "./_mcplib.ts";
+import { ChildProcess, spawn } from "child_process";
+import { BaseMcpServer, debug, type ToolDef } from "./_mcplib.ts";
 import { ErrorContext, formatError } from "./utils/errorHandler.ts";
 import { readFile } from "fs/promises";
 import type { LanguageConfig, LspAdapter } from "../types.ts";
 import { resolveAdapterCommand } from "../adapters/utils.ts";
+import { initialize as initializeLSPClient } from "../lsp/lspClient.ts";
+
+// Import LSP tools
+import { lspGetHoverTool } from "../lsp/tools/lspGetHover.ts";
+import { lspFindReferencesTool } from "../lsp/tools/lspFindReferences.ts";
+import { lspGetDefinitionsTool } from "../lsp/tools/lspGetDefinitions.ts";
+import { lspGetDiagnosticsTool } from "../lsp/tools/lspGetDiagnostics.ts";
+import { lspGetAllDiagnosticsTool } from "../lsp/tools/lspGetAllDiagnostics.ts";
+import { lspRenameSymbolTool } from "../lsp/tools/lspRenameSymbol.ts";
+import { lspDeleteSymbolTool } from "../lsp/tools/lspDeleteSymbol.ts";
+import { lspGetDocumentSymbolsTool } from "../lsp/tools/lspGetDocumentSymbols.ts";
+import { lspGetWorkspaceSymbolsTool } from "../lsp/tools/lspGetWorkspaceSymbols.ts";
+import { lspGetCompletionTool } from "../lsp/tools/lspGetCompletion.ts";
+import { lspGetSignatureHelpTool } from "../lsp/tools/lspGetSignatureHelp.ts";
+import { lspFormatDocumentTool } from "../lsp/tools/lspFormatDocument.ts";
+import { lspGetCodeActionsTool } from "../lsp/tools/lspGetCodeActions.ts";
+import { listToolsLSPTool } from "./tools/listToolsLSP.ts";
 
 // Import all adapters
 import { typescriptAdapter } from "../adapters/typescript-language-server.ts";
@@ -26,6 +43,24 @@ import { ruffAdapter } from "../adapters/ruff.ts";
 import { rustAnalyzerAdapter } from "../adapters/rust-analyzer.ts";
 import { fsacAdapter } from "../adapters/fsac.ts";
 import { moonbitLanguageServerAdapter } from "../adapters/moonbit.ts";
+
+// Define LSP-only tools
+const tools: ToolDef<any>[] = [
+  listToolsLSPTool,
+  lspGetHoverTool,
+  lspFindReferencesTool,
+  lspGetDefinitionsTool,
+  lspGetDiagnosticsTool,
+  lspGetAllDiagnosticsTool,
+  lspRenameSymbolTool,
+  lspDeleteSymbolTool,
+  lspGetDocumentSymbolsTool,
+  lspGetWorkspaceSymbolsTool,
+  lspGetCompletionTool,
+  lspGetSignatureHelpTool,
+  lspFormatDocumentTool,
+  lspGetCodeActionsTool,
+];
 
 // Simple maps for languages and adapters
 const languages = new Map<string, LanguageConfig>();
@@ -205,60 +240,70 @@ async function runLanguageServer(
     process.exit(1);
   }
 
-  // Use generic LSP server with the detected command
+  // Start MCP server directly
   debug(`[lsmcp] Using LSP command '${lspCommand}' for language '${language}'`);
   const fullCommand = lspArgs.length > 0
     ? `${lspCommand} ${lspArgs.join(" ")}`
     : lspCommand;
-  const env: Record<string, string | undefined> = {
-    ...process.env,
-    ...customEnv,
-    LSP_COMMAND: fullCommand,
-  };
 
-  // Get the path to the generic LSP server
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  const genericServerPath = join(__dirname, "generic-lsp-mcp.js");
+  try {
+    // Spawn LSP server process
+    const projectRoot = process.cwd();
+    const lspProcess = spawn(lspCommand, lspArgs, {
+      cwd: projectRoot,
+      env: {
+        ...process.env,
+        ...customEnv,
+      },
+    });
 
-  if (!existsSync(genericServerPath)) {
+    // Initialize LSP client with the spawned process
+    const initOptions = adapter?.initializationOptions || undefined;
+    await initializeLSPClient(projectRoot, lspProcess, language, initOptions);
+
+    // Check if --include option was passed
+    const includePattern = args.find((arg) => arg.startsWith("--include="))
+      ?.split("=")[1];
+
+    // Start MCP server
+    const server = new BaseMcpServer({
+      name: `lsmcp (${language})`,
+      version: "0.1.0",
+    });
+
+    // Register tools
+    server.registerTools(tools);
+
+    // Start the server
+    await server.start();
+    debug(`lsmcp MCP server connected for language: ${language}`);
+
+    // Handle LSP process errors
+    lspProcess.on("error", (error) => {
+      const context: ErrorContext = {
+        operation: "LSP server process",
+        language,
+        details: { command: fullCommand },
+      };
+      console.error(formatError(error, context));
+      process.exit(1);
+    });
+
+    lspProcess.on("exit", (code) => {
+      if (code !== 0) {
+        console.error(`LSP server exited with code ${code}`);
+        process.exit(code || 1);
+      }
+    });
+  } catch (error) {
     const context: ErrorContext = {
-      operation: "Generic LSP MCP server startup",
-      language,
-      details: { path: genericServerPath },
-    };
-    const error = new Error(
-      `Generic LSP MCP server not found at ${genericServerPath}`,
-    );
-    console.error(formatError(error, context));
-    process.exit(1);
-  }
-
-  debug(`Starting generic LSP MCP server: ${genericServerPath}`);
-
-  // Forward to generic LSP server
-  const serverProcess = spawn(
-    "node",
-    [genericServerPath, `--lsp-command=${fullCommand}`, ...args],
-    {
-      stdio: "inherit",
-      env,
-    },
-  );
-
-  serverProcess.on("error", (error) => {
-    const context: ErrorContext = {
-      operation: "Generic LSP MCP server process",
+      operation: "MCP server startup",
       language,
       details: { command: fullCommand },
     };
-    console.error(formatError(error, context));
+    console.error(formatError(error as Error, context));
     process.exit(1);
-  });
-
-  serverProcess.on("exit", (code) => {
-    process.exit(code || 0);
-  });
+  }
 }
 
 async function main() {
@@ -310,58 +355,58 @@ async function main() {
   // Check if custom LSP command is provided
   if (values.bin) {
     debug(`[lsmcp] Using custom LSP command: ${values.bin}`);
-    // Use generic LSP MCP server for non-TypeScript languages
-    const env: Record<string, string | undefined> = {
-      ...process.env,
-      LSP_COMMAND: values.bin,
-    };
 
-    // Get the path to the generic LSP server
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
-    const genericServerPath = join(__dirname, "generic-lsp-mcp.js");
+    try {
+      // Parse the custom command
+      const projectRoot = process.cwd();
+      const [cmd, ...cmdArgs] = values.bin.split(" ");
 
-    if (!existsSync(genericServerPath)) {
+      // Spawn LSP server process
+      const lspProcess = spawn(cmd, cmdArgs, {
+        cwd: projectRoot,
+        env: process.env,
+      });
+
+      // Initialize LSP client with the spawned process
+      await initializeLSPClient(projectRoot, lspProcess);
+
+      // Start MCP server
+      const server = new BaseMcpServer({
+        name: `lsmcp (custom)`,
+        version: "0.1.0",
+      });
+
+      // Register tools
+      server.registerTools(tools);
+
+      // Start the server
+      await server.start();
+      debug(`lsmcp MCP server connected for custom LSP: ${values.bin}`);
+
+      // Handle LSP process errors
+      lspProcess.on("error", (error) => {
+        const context: ErrorContext = {
+          operation: "LSP server process",
+          details: { command: values.bin },
+        };
+        console.error(formatError(error, context));
+        process.exit(1);
+      });
+
+      lspProcess.on("exit", (code) => {
+        if (code !== 0) {
+          console.error(`LSP server exited with code ${code}`);
+          process.exit(code || 1);
+        }
+      });
+    } catch (error) {
       const context: ErrorContext = {
-        operation: "Generic LSP MCP server startup",
-        details: { path: genericServerPath },
-      };
-      const error = new Error(
-        `Generic LSP MCP server not found at ${genericServerPath}`,
-      );
-      console.error(formatError(error, context));
-      process.exit(1);
-    }
-
-    debug(`Starting generic LSP MCP server: ${genericServerPath}`);
-
-    // Forward to generic LSP server
-    const serverArgs = [genericServerPath, `--lsp-command=${values.bin}`];
-
-    // Forward include option if provided
-    if (values.include) {
-      serverArgs.push(`--include=${values.include}`);
-    }
-
-    serverArgs.push(...positionals);
-
-    const serverProcess = spawn("node", serverArgs, {
-      stdio: "inherit",
-      env,
-    });
-
-    serverProcess.on("error", (error) => {
-      const context: ErrorContext = {
-        operation: "Generic LSP MCP server process",
+        operation: "MCP server startup",
         details: { command: values.bin },
       };
-      console.error(formatError(error, context));
+      console.error(formatError(error as Error, context));
       process.exit(1);
-    });
-
-    serverProcess.on("exit", (code) => {
-      process.exit(code || 0);
-    });
+    }
 
     return;
   }

@@ -77,10 +77,24 @@ describe("tsgo Adapter", () => {
       );
     } else {
       console.log(
-        `tsgo reported ${diagnostics.length} diagnostics for index.ts`,
+        `tsgo reported ${diagnostics.length} diagnostics for index.ts:`,
       );
+      // Log all diagnostics for debugging
+      diagnostics.forEach((d, i) => {
+        console.log(`  ${i + 1}. Line ${d.line}: ${d.message}`);
+      });
+
       // If tsgo does report diagnostics, verify they are properly filtered
       expect(diagnostics.every((d) => d.line >= 0 && d.line < 56)).toBe(true);
+
+      // Check that deduplication is working
+      const uniqueKeys = new Set(
+        diagnostics.map((d) => `${d.line}:${d.message}`),
+      );
+      console.log(`  Unique diagnostics: ${uniqueKeys.size}`);
+
+      // Expect reasonable number of diagnostics
+      expect(diagnostics.length).toBeLessThanOrEqual(20);
     }
   }, 30000);
 });

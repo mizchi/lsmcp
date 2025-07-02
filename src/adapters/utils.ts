@@ -58,8 +58,8 @@ export function resolveAdapterCommand(
       adapter.lspArgs || [],
       projectRoot,
     );
-    // Log when we resolve to node_modules
-    if (!resolved.command.includes("npx")) {
+    // Log when we resolve to node_modules (only in debug mode)
+    if (!resolved.command.includes("npx") && process.env.DEBUG_LSP) {
       console.error(
         `[lsmcp] Resolved ${adapter.lspCommand} to: ${resolved.command}`,
       );

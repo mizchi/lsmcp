@@ -14,12 +14,12 @@ describe("list_tools functionality", () => {
     let transport: StdioClientTransport;
 
     beforeAll(async () => {
-      const SERVER_PATH = path.join(__dirname, "../../dist/typescript-mcp.js");
+      const SERVER_PATH = path.join(__dirname, "../../dist/lsmcp.js");
       await fs.access(SERVER_PATH);
 
       transport = new StdioClientTransport({
         command: "node",
-        args: [SERVER_PATH],
+        args: [SERVER_PATH, "--language=typescript"],
         // @ts-ignore
         env: process.env,
       }) as any;
@@ -65,7 +65,7 @@ describe("list_tools functionality", () => {
     let transport: StdioClientTransport;
 
     beforeAll(async () => {
-      const SERVER_PATH = path.join(__dirname, "../../dist/generic-lsp-mcp.js");
+      const SERVER_PATH = path.join(__dirname, "../../dist/lsmcp.js");
       await fs.access(SERVER_PATH);
 
       // Use typescript-language-server from node_modules to avoid npx overhead
@@ -75,10 +75,9 @@ describe("list_tools functionality", () => {
       );
       transport = new StdioClientTransport({
         command: "node",
-        args: [SERVER_PATH, `--lsp-command=${tsLangServerPath} --stdio`],
+        args: [SERVER_PATH, `--bin=${tsLangServerPath}`],
         env: {
           ...process.env,
-          LSP_COMMAND: `${tsLangServerPath} --stdio`,
         },
       });
 

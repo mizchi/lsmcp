@@ -25,14 +25,13 @@ describe("LSP Diagnostics - Stale Content Issue #8", () => {
     tmpDir = await fs.mkdtemp(path.join(tmpdir(), "lsp-diagnostics-test-"));
 
     // Start MCP server with LSP support
-    const lspCommand = path.join(
-      __dirname,
-      "../../node_modules/.bin/typescript-language-server",
-    );
     transport = new StdioClientTransport({
       command: "node",
-      args: [path.join(__dirname, "../../dist/typescript-mcp.js")],
-      env: { ...process.env, LSP_COMMAND: `${lspCommand} --stdio` },
+      args: [
+        path.join(__dirname, "../../dist/lsmcp.js"),
+        "--language=typescript",
+      ],
+      env: { ...process.env },
     });
 
     client = new Client(

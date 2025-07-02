@@ -61,7 +61,7 @@ export class LanguageMappingConfig {
   static createWithDefaults(): LanguageMappingConfig {
     const config = new LanguageMappingConfig();
 
-    // Only include TypeScript/JavaScript by default since this is typescript-mcp
+    // Only include TypeScript/JavaScript by default since this is lsmcp
     config.addMappings([
       { pattern: "**/*.ts", languageId: "typescript" },
       { pattern: "**/*.tsx", languageId: "typescriptreact" },

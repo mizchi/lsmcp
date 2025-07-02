@@ -31,7 +31,6 @@
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md"
   },
   "bin": {
-    "typescript-mcp": "./dist/typescript-mcp.js",
     "lsmcp": "./dist/lsmcp.js"
   },
   "files": [

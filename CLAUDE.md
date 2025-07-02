@@ -16,7 +16,7 @@ This ensures consistency and makes the project accessible to the global develope
 
 ## Project Goal
 
-Provide unified Language Server Protocol (LSP) features as Model Context Protocol (MCP) tools for multiple programming languages, with advanced TypeScript support via Compiler API.
+Provide unified Language Server Protocol (LSP) features as Model Context Protocol (MCP) tools for multiple programming languages.
 
 ## Development Stack
 
