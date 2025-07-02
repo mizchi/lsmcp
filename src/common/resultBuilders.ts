@@ -103,9 +103,16 @@ export class DiagnosticResultBuilder {
     if (counts.info > 0) parts.push(`${counts.info} info`);
     if (counts.hints > 0) parts.push(`${counts.hints} hint(s)`);
 
-    let message = parts.length > 0
-      ? `Found ${parts.join(", ")}`
-      : "No diagnostics found";
+    let message: string;
+
+    if (this.diagnostics.length === 0) {
+      // When no diagnostics, show "0 errors and 0 warnings" format
+      message = `Found 0 errors and 0 warnings`;
+    } else if (parts.length > 0) {
+      message = `Found ${parts.join(", ")}`;
+    } else {
+      message = "No diagnostics found";
+    }
 
     if (this.filePath) {
       message += ` in ${this.filePath}`;
