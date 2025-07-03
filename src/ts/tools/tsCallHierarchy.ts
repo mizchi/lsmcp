@@ -120,12 +120,13 @@ export const callHierarchyTool: ToolDef<typeof schema> = {
       // Get incoming calls
       if (direction === "incoming" || direction === "both") {
         output += "## 📥 Incoming Calls (who calls this function)\n\n";
-        const incomingCalls = await getIncomingCalls(
+        const incomingCalls = await getCallHierarchy(
           client,
           item,
           new Set(),
           0,
           maxDepth,
+          "incoming",
         );
         output += formatCallTree(incomingCalls, "incoming");
         output += "\n";
@@ -134,12 +135,13 @@ export const callHierarchyTool: ToolDef<typeof schema> = {
       // Get outgoing calls
       if (direction === "outgoing" || direction === "both") {
         output += "## 📤 Outgoing Calls (what this function calls)\n\n";
-        const outgoingCalls = await getOutgoingCalls(
+        const outgoingCalls = await getCallHierarchy(
           client,
           item,
           new Set(),
           0,
           maxDepth,
+          "outgoing",
         );
         output += formatCallTree(outgoingCalls, "outgoing");
       }
@@ -151,13 +153,14 @@ export const callHierarchyTool: ToolDef<typeof schema> = {
   },
 };
 
-// Recursive function to get incoming calls
-async function getIncomingCalls(
+// Generic recursive function to get call hierarchy
+async function getCallHierarchy(
   client: any,
   item: CallHierarchyItem,
   visited: Set<string>,
   depth: number,
   maxDepth: number,
+  direction: "incoming" | "outgoing",
 ): Promise<any[]> {
   if (depth >= maxDepth) return [];
 
@@ -166,58 +169,26 @@ async function getIncomingCalls(
   visited.add(key);
 
   const params = { item };
-  const calls = await client.sendRequest("callHierarchy/incomingCalls", params);
+  const method =
+    direction === "incoming"
+      ? "callHierarchy/incomingCalls"
+      : "callHierarchy/outgoingCalls";
+  const calls = await client.sendRequest(method, params);
 
   const results = [];
   for (const call of calls || []) {
-    const subCalls = await getIncomingCalls(
+    const nextItem = direction === "incoming" ? call.from : call.to;
+    const subCalls = await getCallHierarchy(
       client,
-      call.from,
+      nextItem,
       visited,
       depth + 1,
       maxDepth,
+      direction,
     );
 
     results.push({
-      item: call.from,
-      fromRanges: call.fromRanges,
-      children: subCalls,
-      depth,
-    });
-  }
-
-  return results;
-}
-
-// Recursive function to get outgoing calls
-async function getOutgoingCalls(
-  client: any,
-  item: CallHierarchyItem,
-  visited: Set<string>,
-  depth: number,
-  maxDepth: number,
-): Promise<any[]> {
-  if (depth >= maxDepth) return [];
-
-  const key = `${item.uri}:${item.range.start.line}:${item.range.start.character}`;
-  if (visited.has(key)) return [];
-  visited.add(key);
-
-  const params = { item };
-  const calls = await client.sendRequest("callHierarchy/outgoingCalls", params);
-
-  const results = [];
-  for (const call of calls || []) {
-    const subCalls = await getOutgoingCalls(
-      client,
-      call.to,
-      visited,
-      depth + 1,
-      maxDepth,
-    );
-
-    results.push({
-      item: call.to,
+      item: nextItem,
       fromRanges: call.fromRanges,
       children: subCalls,
       depth,
