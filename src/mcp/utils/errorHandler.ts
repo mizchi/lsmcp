@@ -150,8 +150,7 @@ function handleKnownError(
     const operation = context?.operation || "operation";
     return {
       title: `${operation} not supported for ${language}`,
-      reason:
-        `The language server for ${language} does not support this operation`,
+      reason: `The language server for ${language} does not support this operation`,
       solution:
         "Check the language server documentation for supported features",
     };
@@ -192,8 +191,7 @@ function getLSPInstallSolution(language: string): string {
     c: "Install clangd from https://clangd.llvm.org/installation",
     ruby: "gem install solargraph",
     php: "composer global require felixfbecker/language-server",
-    lua:
-      "Install lua-language-server from https://github.com/LuaLS/lua-language-server",
+    lua: "Install lua-language-server from https://github.com/LuaLS/lua-language-server",
     zig: "zig build -Drelease-safe in zls repository",
     haskell: "Install haskell-language-server via ghcup",
     scala: "coursier install metals",

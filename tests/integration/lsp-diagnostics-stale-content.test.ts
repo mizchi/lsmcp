@@ -164,7 +164,7 @@ function foo(): string {
     // Create all files
     await Promise.all(
       files.map((file) =>
-        fs.writeFile(path.join(tmpDir, file.name), file.content)
+        fs.writeFile(path.join(tmpDir, file.name), file.content),
       ),
     );
 
@@ -177,7 +177,7 @@ function foo(): string {
             root: tmpDir,
             filePath: file.name,
           },
-        })
+        }),
       ),
     )) as any;
 

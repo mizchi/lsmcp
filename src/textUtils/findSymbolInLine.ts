@@ -20,8 +20,7 @@ export function findSymbolInLine(
 
   if (symbolIndex < 0 || symbolIndex >= occurrences.length) {
     return {
-      error:
-        `Symbol "${symbolName}" occurrence ${symbolIndex} not found (only ${occurrences.length} occurrences)`,
+      error: `Symbol "${symbolName}" occurrence ${symbolIndex} not found (only ${occurrences.length} occurrences)`,
     };
   }
 

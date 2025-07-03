@@ -437,9 +437,7 @@ describe("TypeScript MCP with custom LSP via lsmcp", { timeout: 30000 }, () => {
       __dirname,
       "../../node_modules/.bin/typescript-language-server",
     );
-    const client = await createMCPClient(
-      `${tsLangServerPath} --stdio`,
-    );
+    const client = await createMCPClient(`${tsLangServerPath} --stdio`);
 
     try {
       // Create a TypeScript file

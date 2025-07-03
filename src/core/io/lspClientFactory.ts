@@ -17,19 +17,16 @@ export interface LSPClientInstance {
 export async function createTypescriptLSPClient(
   root: string,
 ): Promise<LSPClientInstance> {
-  const tsServerPath = process.env.TYPESCRIPT_LANGUAGE_SERVER_PATH ||
+  const tsServerPath =
+    process.env.TYPESCRIPT_LANGUAGE_SERVER_PATH ||
     findTypescriptLanguageServer(root) ||
     process.env.LSP_COMMAND?.split(" ")[0] ||
     "typescript-language-server";
 
-  const lspProcess = spawn(
-    tsServerPath,
-    ["--stdio"],
-    {
-      cwd: root,
-      stdio: ["pipe", "pipe", "pipe"],
-    },
-  );
+  const lspProcess = spawn(tsServerPath, ["--stdio"], {
+    cwd: root,
+    stdio: ["pipe", "pipe", "pipe"],
+  });
 
   const client = createLSPClient({
     rootPath: root,

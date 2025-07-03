@@ -131,7 +131,7 @@ export async function testLspConnection(
         let diagnostics: any[] = [];
         let usePolling = false;
 
-        const eventTimeout = isMoonBit ? 5000 : (isLargeFile ? 3000 : 1000);
+        const eventTimeout = isMoonBit ? 5000 : isLargeFile ? 3000 : 1000;
 
         try {
           // Wait for diagnostics with event-driven approach
@@ -143,12 +143,13 @@ export async function testLspConnection(
 
         // Fallback to polling if event-driven didn't work
         if (
-          usePolling || (diagnostics.length === 0 && !client.waitForDiagnostics)
+          usePolling ||
+          (diagnostics.length === 0 && !client.waitForDiagnostics)
         ) {
           // Initial wait for LSP to process the document
-          const initialWait = isMoonBit ? 1000 : (isLargeFile ? 500 : 200);
+          const initialWait = isMoonBit ? 1000 : isLargeFile ? 500 : 200;
           await new Promise<void>((resolve) =>
-            setTimeout(resolve, initialWait)
+            setTimeout(resolve, initialWait),
           );
 
           // Try pull diagnostics first (LSP 3.17+)
@@ -162,15 +163,13 @@ export async function testLspConnection(
 
           // If still no diagnostics, poll for them
           if (diagnostics.length === 0) {
-            const maxPolls = isMoonBit ? 200 : (isLargeFile ? 100 : 60);
+            const maxPolls = isMoonBit ? 200 : isLargeFile ? 100 : 60;
             const pollInterval = 50;
-            const minPollsForNoError = isMoonBit
-              ? 100
-              : (isLargeFile ? 60 : 40);
+            const minPollsForNoError = isMoonBit ? 100 : isLargeFile ? 60 : 40;
 
             for (let poll = 0; poll < maxPolls; poll++) {
               await new Promise<void>((resolve) =>
-                setTimeout(resolve, pollInterval)
+                setTimeout(resolve, pollInterval),
               );
               diagnostics = client.getDiagnostics(fileUri) || [];
 
@@ -188,8 +187,9 @@ export async function testLspConnection(
         }
 
         // Filter to only errors and warnings
-        const errorAndWarningDiagnostics = diagnostics
-          .filter((d: any) => d.severity === 1 || d.severity === 2);
+        const errorAndWarningDiagnostics = diagnostics.filter(
+          (d: any) => d.severity === 1 || d.severity === 2,
+        );
 
         // Use adapter-specific diagnostic processor if needed
         let processedDiagnostics;

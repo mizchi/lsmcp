@@ -20,11 +20,7 @@ export function adapterToLanguageConfig(
 
   // If it's a known node_modules binary, try to resolve it
   if (nodeModulesBinaries.includes(adapter.bin)) {
-    const resolved = getNodeModulesCommand(
-      adapter.bin,
-      args,
-      projectRoot,
-    );
+    const resolved = getNodeModulesCommand(adapter.bin, args, projectRoot);
     bin = resolved.command;
     args = resolved.args;
   }
@@ -59,9 +55,7 @@ export function resolveAdapterCommand(
     );
     // Log when we resolve to node_modules (only in debug mode)
     if (!resolved.command.includes("npx") && process.env.DEBUG_LSP) {
-      console.error(
-        `[lsmcp] Resolved ${adapter.bin} to: ${resolved.command}`,
-      );
+      console.error(`[lsmcp] Resolved ${adapter.bin} to: ${resolved.command}`);
     }
     return resolved;
   }

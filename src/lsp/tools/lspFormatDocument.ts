@@ -51,8 +51,8 @@ function formatTextEdit(edit: TextEdit, content: string): string {
       if (i === startLine) {
         originalText += (lines[i] || "").substring(edit.range.start.character);
       } else if (i === endLine) {
-        originalText += "\n" +
-          (lines[i] || "").substring(0, edit.range.end.character);
+        originalText +=
+          "\n" + (lines[i] || "").substring(0, edit.range.end.character);
       } else {
         originalText += "\n" + (lines[i] || "");
       }

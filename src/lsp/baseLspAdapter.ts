@@ -1,5 +1,5 @@
 import { ChildProcess, spawn } from "child_process";
-import { LSPValidator, LSPValidationResult } from "./lspValidator.ts";
+import { LSPValidationResult, LSPValidator } from "./lspValidator.ts";
 import { LspAdapter } from "../types.ts";
 import { debugLog } from "../mcp/utils/errorHandler.ts";
 
@@ -43,9 +43,9 @@ export abstract class BaseLspAdapter {
       }
 
       // Default availability check - try to run the binary with --help
-      const process = spawn(this.config.bin, ['--help'], { 
-        stdio: 'pipe',
-        timeout: 5000 
+      const process = spawn(this.config.bin, ["--help"], {
+        stdio: "pipe",
+        timeout: 5000,
       });
 
       return new Promise((resolve) => {
@@ -63,27 +63,29 @@ export abstract class BaseLspAdapter {
           resolve({ available: false, message: "Binary check timeout" });
         }, 5000);
 
-        process.on('exit', (code) => {
+        process.on("exit", (code) => {
           cleanup();
-          resolve({ 
+          resolve({
             available: code === 0 || code === 1, // Help might return 1
-            message: code === 0 ? "Binary available" : `Binary exit code: ${code}`
+            message:
+              code === 0 ? "Binary available" : `Binary exit code: ${code}`,
           });
         });
 
-        process.on('error', (error: Error) => {
+        process.on("error", (error: Error) => {
           cleanup();
-          resolve({ 
-            available: false, 
-            message: `Binary not found: ${error.message}`
+          resolve({
+            available: false,
+            message: `Binary not found: ${error.message}`,
           });
         });
       });
-
     } catch (error) {
-      return { 
-        available: false, 
-        message: `Availability check failed: ${error instanceof Error ? error.message : String(error)}`
+      return {
+        available: false,
+        message: `Availability check failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
       };
     }
   }
@@ -92,55 +94,73 @@ export abstract class BaseLspAdapter {
    * Start the LSP server process
    */
   async startProcess(rootPath: string): Promise<ChildProcess> {
-    debugLog(`Starting LSP server: ${this.config.bin} ${this.config.args?.join(' ') || ''}`);
-    
+    debugLog(
+      `Starting LSP server: ${this.config.bin} ${
+        this.config.args?.join(" ") || ""
+      }`,
+    );
+
     try {
       const lspProcess = spawn(this.config.bin, this.config.args || [], {
         cwd: rootPath,
-        stdio: ['pipe', 'pipe', 'pipe'],
-        env: { ...process.env, ...this.getEnvironmentVariables() }
+        stdio: ["pipe", "pipe", "pipe"],
+        env: { ...process.env, ...this.getEnvironmentVariables() },
       });
 
       // Give the process a moment to start
       await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           if (lspProcess.exitCode !== null) {
-            reject(new Error(`LSP server exited immediately with code ${lspProcess.exitCode}`));
+            reject(
+              new Error(
+                `LSP server exited immediately with code ${lspProcess.exitCode}`,
+              ),
+            );
           } else {
             resolve(void 0);
           }
         }, 1000);
 
-        lspProcess.on('spawn', () => {
+        lspProcess.on("spawn", () => {
           clearTimeout(timeout);
           resolve(void 0);
         });
 
-        lspProcess.on('error', (error: Error) => {
+        lspProcess.on("error", (error: Error) => {
           clearTimeout(timeout);
           reject(error);
         });
       });
 
       return lspProcess;
-
     } catch (error) {
-      throw new Error(`Failed to start LSP server: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to start LSP server: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
   }
 
   /**
    * Validate the LSP server functionality
    */
-  async validateLSP(rootPath: string, options: AdapterValidationOptions = {}): Promise<LSPValidationResult> {
+  async validateLSP(
+    rootPath: string,
+    options: AdapterValidationOptions = {},
+  ): Promise<LSPValidationResult> {
     // Check cache first
-    if (this.healthCache && Date.now() - this.healthCache.lastChecked.getTime() < this.healthCacheTimeout) {
+    if (
+      this.healthCache &&
+      Date.now() - this.healthCache.lastChecked.getTime() <
+        this.healthCacheTimeout
+    ) {
       debugLog("Using cached health check result");
       return this.healthCache.validationResult;
     }
 
     let process: ChildProcess | null = null;
-    
+
     try {
       // Start the process
       process = await this.startProcess(rootPath);
@@ -151,7 +171,8 @@ export abstract class BaseLspAdapter {
         process,
         languageId: this.config.baseLanguage,
         initializationOptions: this.config.initializationOptions,
-        testFileContent: options.testFileContent || this.getDefaultTestContent(),
+        testFileContent:
+          options.testFileContent || this.getDefaultTestContent(),
         testFileName: options.testFileName || this.getDefaultTestFileName(),
         timeout: options.timeout || 10000,
       });
@@ -163,11 +184,10 @@ export abstract class BaseLspAdapter {
       this.healthCache = {
         isHealthy: result.overallHealth === "healthy",
         validationResult: result,
-        lastChecked: new Date()
+        lastChecked: new Date(),
       };
 
       return result;
-
     } catch (error) {
       const errorResult: LSPValidationResult = {
         connectionSuccess: false,
@@ -175,11 +195,12 @@ export abstract class BaseLspAdapter {
         capabilities: {},
         featureTests: [],
         overallHealth: "unhealthy",
-        summary: `Validation failed: ${error instanceof Error ? error.message : String(error)}`
+        summary: `Validation failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
       };
 
       return errorResult;
-
     } finally {
       if (process && !process.killed) {
         try {
@@ -195,16 +216,20 @@ export abstract class BaseLspAdapter {
    * Get the current health status (uses cache if available)
    */
   async getHealth(rootPath: string): Promise<AdapterHealth> {
-    if (this.healthCache && Date.now() - this.healthCache.lastChecked.getTime() < this.healthCacheTimeout) {
+    if (
+      this.healthCache &&
+      Date.now() - this.healthCache.lastChecked.getTime() <
+        this.healthCacheTimeout
+    ) {
       return this.healthCache;
     }
 
     const validationResult = await this.validateLSP(rootPath);
-    
+
     return {
       isHealthy: validationResult.overallHealth === "healthy",
       validationResult,
-      lastChecked: new Date()
+      lastChecked: new Date(),
     };
   }
 
@@ -237,15 +262,15 @@ export abstract class BaseLspAdapter {
    */
   protected getDefaultTestFileName(): string {
     const extensions: Record<string, string> = {
-      'python': 'test.py',
-      'typescript': 'test.ts',
-      'javascript': 'test.js',
-      'rust': 'test.rs',
-      'go': 'test.go',
-      'fsharp': 'test.fs',
+      python: "test.py",
+      typescript: "test.ts",
+      javascript: "test.js",
+      rust: "test.rs",
+      go: "test.go",
+      fsharp: "test.fs",
     };
-    
-    return extensions[this.config.baseLanguage] || 'test.txt';
+
+    return extensions[this.config.baseLanguage] || "test.txt";
   }
 
   /**
@@ -253,20 +278,20 @@ export abstract class BaseLspAdapter {
    */
   getSupportedFeatures(): string[] {
     const allFeatures = [
-      'textDocument/hover',
-      'textDocument/completion',
-      'textDocument/definition',
-      'textDocument/references',
-      'textDocument/documentSymbol',
-      'textDocument/formatting',
-      'textDocument/rename',
-      'textDocument/codeAction',
-      'textDocument/signatureHelp',
-      'textDocument/diagnostic'
+      "textDocument/hover",
+      "textDocument/completion",
+      "textDocument/definition",
+      "textDocument/references",
+      "textDocument/documentSymbol",
+      "textDocument/formatting",
+      "textDocument/rename",
+      "textDocument/codeAction",
+      "textDocument/signatureHelp",
+      "textDocument/diagnostic",
     ];
 
     const unsupported = this.config.unsupported || [];
-    return allFeatures.filter(feature => !unsupported.includes(feature));
+    return allFeatures.filter((feature) => !unsupported.includes(feature));
   }
 
   /**
@@ -289,7 +314,7 @@ export abstract class BaseLspAdapter {
   }> {
     const [availability, health] = await Promise.all([
       this.checkAvailability(),
-      this.getHealth(rootPath)
+      this.getHealth(rootPath),
     ]);
 
     return {
@@ -298,7 +323,7 @@ export abstract class BaseLspAdapter {
       health,
       supportedFeatures: this.getSupportedFeatures(),
       unsupportedFeatures: this.getUnsupportedFeatures(),
-      availabilityMessage: availability.message
+      availabilityMessage: availability.message,
     };
   }
 }

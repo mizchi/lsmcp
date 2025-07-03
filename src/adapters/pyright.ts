@@ -22,12 +22,16 @@ export const pyrightAdapter: LspAdapter = {
   },
   doctor: async () => {
     try {
-      execSync("uv run pyright-langserver --version", { stdio: "ignore", timeout: 5000 });
+      execSync("uv run pyright-langserver --version", {
+        stdio: "ignore",
+        timeout: 5000,
+      });
       return { ok: true, message: "pyright-langserver available via uv" };
     } catch {
       return {
         ok: false,
-        message: "pyright-langserver not available via uv. Install with: uv add pyright",
+        message:
+          "pyright-langserver not available via uv. Install with: uv add pyright",
       };
     }
   },

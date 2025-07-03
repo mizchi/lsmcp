@@ -75,7 +75,7 @@ describe("lsp document symbols", () => {
     // Create an empty test file
     const emptyFile = path.join(FIXTURES_DIR, "empty.ts");
     await import("fs/promises").then((fs) =>
-      fs.writeFile(emptyFile, "// Empty file\n")
+      fs.writeFile(emptyFile, "// Empty file\n"),
     );
 
     try {
@@ -88,7 +88,7 @@ describe("lsp document symbols", () => {
     } finally {
       // Clean up
       await import("fs/promises").then((fs) =>
-        fs.unlink(emptyFile).catch(() => {})
+        fs.unlink(emptyFile).catch(() => {}),
       );
     }
   });

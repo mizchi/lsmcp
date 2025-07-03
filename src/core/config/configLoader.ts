@@ -92,8 +92,8 @@ export class ConfigLoader {
         baseConfig = {
           ...baseConfig,
           ...Object.fromEntries(
-            Object.entries(fileConfig).filter(([_, value]) =>
-              value !== undefined
+            Object.entries(fileConfig).filter(
+              ([_, value]) => value !== undefined,
             ),
           ),
         };

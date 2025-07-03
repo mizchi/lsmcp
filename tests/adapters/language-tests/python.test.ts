@@ -23,7 +23,7 @@ describe("Pyright Adapter", () => {
     const result = await testLspConnection(
       pyrightAdapter,
       projectRoot,
-      checkFiles
+      checkFiles,
     );
     // Pyright might take longer to initialize or might fail in CI environment
     expect(result.connected).toBeDefined();
@@ -45,7 +45,7 @@ describe.skip("Ruff Adapter", () => {
     const result = await testLspConnection(
       ruffAdapter,
       projectRoot,
-      checkFiles
+      checkFiles,
     );
     expect(result).toMatchInlineSnapshot(`
       {

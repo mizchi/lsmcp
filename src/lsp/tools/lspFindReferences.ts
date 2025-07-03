@@ -115,9 +115,8 @@ async function findReferencesWithLSP(
 
       // Create preview with context
       const prevLine = startLine > 0 ? refLines[startLine - 1] : "";
-      const nextLine = startLine < refLines.length - 1
-        ? refLines[startLine + 1]
-        : "";
+      const nextLine =
+        startLine < refLines.length - 1 ? refLines[startLine + 1] : "";
       const preview = [
         prevLine && `${startLine}: ${prevLine}`,
         `${startLine + 1}: ${refLineText}`,

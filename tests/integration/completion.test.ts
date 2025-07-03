@@ -76,12 +76,13 @@ describe("Completion Integration Tests", () => {
     beforeAll(async () => {
       try {
         // Spawn TypeScript Language Server process
-        const lspProcess = spawn("npx", [
-          "typescript-language-server",
-          "--stdio",
-        ], {
-          cwd: process.cwd(), // Use project root instead of test dir
-        });
+        const lspProcess = spawn(
+          "npx",
+          ["typescript-language-server", "--stdio"],
+          {
+            cwd: process.cwd(), // Use project root instead of test dir
+          },
+        );
 
         // Initialize LSP client with the process
         client = await initializeLSPClient(
@@ -301,10 +302,10 @@ describe("Completion Handler Edge Cases", () => {
     };
 
     const handler = createAdvancedCompletionHandler(mockClient as any);
-    const result = await handler.getCompletionsWithImports(
-      "file:///test.ts",
-      { line: 0, character: 0 },
-    );
+    const result = await handler.getCompletionsWithImports("file:///test.ts", {
+      line: 0,
+      character: 0,
+    });
 
     expect(result).toEqual([]);
   });
@@ -319,10 +320,10 @@ describe("Completion Handler Edge Cases", () => {
     const handler = createAdvancedCompletionHandler(mockClient as any);
 
     await expect(
-      handler.getCompletionsWithImports(
-        "file:///test.ts",
-        { line: 0, character: 0 },
-      ),
+      handler.getCompletionsWithImports("file:///test.ts", {
+        line: 0,
+        character: 0,
+      }),
     ).rejects.toThrow("Server error");
   });
 });

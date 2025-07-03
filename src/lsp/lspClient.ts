@@ -493,8 +493,8 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
 
   function openDocument(uri: string, text: string, languageId?: string): void {
     // Use provided languageId, or detect from file path, or fall back to client's default
-    const actualLanguageId = languageId || getLanguageIdFromPath(uri) ||
-      state.languageId;
+    const actualLanguageId =
+      languageId || getLanguageIdFromPath(uri) || state.languageId;
 
     const params: DidOpenTextDocumentParams = {
       textDocument: {
@@ -580,10 +580,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     position: Position,
   ): Promise<HoverResult> {
     const params = commands.hover.buildParams({ uri, position });
-    const result = await sendRequest<any>(
-      commands.hover.method,
-      params,
-    );
+    const result = await sendRequest<any>(commands.hover.method, params);
     // The command's processResponse returns its own HoverResult type
     // which is compatible with our HoverResult
     const processed = commands.hover.processResponse(result);

@@ -22,7 +22,8 @@ export function createHoverCommand(): LSPCommand<
 
     // Handle { value: string } format
     if (
-      typeof contents === "object" && "value" in contents &&
+      typeof contents === "object" &&
+      "value" in contents &&
       !("kind" in contents)
     ) {
       return {

@@ -26,10 +26,7 @@ export function validateLineAndSymbol(
   // Parse line number
   const lineResult = parseLineNumber(fileContent, line);
   if ("error" in lineResult) {
-    throw errors.lineNotFound(
-      line,
-      filePath,
-    );
+    throw errors.lineNotFound(line, filePath);
   }
 
   const { targetLine, lineText } = lineResult;
@@ -37,10 +34,7 @@ export function validateLineAndSymbol(
   // Find symbol in line
   const symbolResult = findSymbolInLine(lineText, symbolName);
   if ("error" in symbolResult) {
-    throw errors.symbolNotFound(
-      symbolName,
-      targetLine + 1,
-    );
+    throw errors.symbolNotFound(symbolName, targetLine + 1);
   }
 
   return {
@@ -65,10 +59,7 @@ export function validateLine(
 ): { lineIndex: number; lineContent: string } {
   const lineResult = parseLineNumber(fileContent, line);
   if ("error" in lineResult) {
-    throw errors.lineNotFound(
-      line,
-      filePath,
-    );
+    throw errors.lineNotFound(line, filePath);
   }
 
   return {
@@ -99,8 +90,5 @@ function findSymbolPosition(
     }
   }
 
-  throw errors.symbolNotFound(
-    symbolName,
-    undefined,
-  );
+  throw errors.symbolNotFound(symbolName, undefined);
 }

@@ -42,9 +42,10 @@ function formatSignatureHelp(help: SignatureHelp): string {
 
   // Add documentation if available
   if (signature.documentation) {
-    const doc = typeof signature.documentation === "string"
-      ? signature.documentation
-      : signature.documentation.value;
+    const doc =
+      typeof signature.documentation === "string"
+        ? signature.documentation
+        : signature.documentation.value;
     if (doc) {
       result += `\nDocumentation:\n${doc}\n`;
     }
@@ -73,9 +74,10 @@ function formatSignatureHelp(help: SignatureHelp): string {
 
       // Add parameter documentation if available
       if (param.documentation) {
-        const paramDoc = typeof param.documentation === "string"
-          ? param.documentation
-          : param.documentation.value;
+        const paramDoc =
+          typeof param.documentation === "string"
+            ? param.documentation
+            : param.documentation.value;
         if (paramDoc) {
           result += ` - ${paramDoc}`;
         }

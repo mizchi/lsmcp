@@ -93,9 +93,9 @@ async function performRenameWithLine(
     const lineResult = parseLineNumber(fileContent, request.line!);
     if ("error" in lineResult) {
       return err(
-        `Line parameter "${
-          String(request.line)
-        }" not found in ${request.filePath}: ${lineResult.error}`,
+        `Line parameter "${String(
+          request.line,
+        )}" not found in ${request.filePath}: ${lineResult.error}`,
       );
     }
 
@@ -105,11 +105,9 @@ async function performRenameWithLine(
     const symbolResult = findSymbolInLine(lineText, request.target);
     if ("error" in symbolResult) {
       return err(
-        `Symbol "${request.target}" not found on line ${
-          String(
-            targetLine + 1,
-          )
-        }: ${symbolResult.error}`,
+        `Symbol "${request.target}" not found on line ${String(
+          targetLine + 1,
+        )}: ${symbolResult.error}`,
       );
     }
     const symbolPosition = symbolResult.characterIndex;
@@ -315,8 +313,7 @@ async function applyWorkspaceEdit(
   );
 
   return {
-    message:
-      `Successfully renamed symbol in ${changedFiles.length} file(s) with ${totalChanges} change(s)`,
+    message: `Successfully renamed symbol in ${changedFiles.length} file(s) with ${totalChanges} change(s)`,
     changedFiles,
   };
 }
@@ -387,7 +384,8 @@ function applyTextEditsToContent(content: string, edits: TextEdit[]): string {
 
     if (startLine === endLine) {
       // Single line edit
-      lines[startLine] = lines[startLine].substring(0, startCol) +
+      lines[startLine] =
+        lines[startLine].substring(0, startCol) +
         edit.newText +
         lines[startLine].substring(endCol);
     } else {

@@ -4,8 +4,14 @@ import { createLSPTool } from "../../core/io/toolFactory.ts";
 import { debugLogger } from "../debugLogger.ts";
 
 const schema = z.object({
-  sessionId: z.string().optional().describe("Debug session ID (default: current session)"),
-  format: z.enum(["json", "text"]).optional().describe("Export format (default: text)"),
+  sessionId: z
+    .string()
+    .optional()
+    .describe("Debug session ID (default: current session)"),
+  format: z
+    .enum(["json", "text"])
+    .optional()
+    .describe("Export format (default: text)"),
 });
 
 type ExportDebugSessionRequest = z.infer<typeof schema>;
@@ -31,7 +37,7 @@ async function exportDebugSession(
 ): Promise<Result<ExportDebugSessionSuccess, string>> {
   try {
     const format = request.format || "text";
-    
+
     // Get session
     const session = debugLogger.getSession(request.sessionId);
     if (!session) {
@@ -39,12 +45,13 @@ async function exportDebugSession(
     }
 
     // Export data
-    const data = format === "json" 
-      ? debugLogger.exportSession(session.sessionId)
-      : debugLogger.exportSessionText(session.sessionId);
+    const data =
+      format === "json"
+        ? debugLogger.exportSession(session.sessionId)
+        : debugLogger.exportSessionText(session.sessionId);
 
     // Calculate duration
-    const duration = session.endTime 
+    const duration = session.endTime
       ? session.endTime.getTime() - session.startTime.getTime()
       : Date.now() - session.startTime.getTime();
 
@@ -62,7 +69,6 @@ async function exportDebugSession(
     };
 
     return ok(result);
-
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     return err(`Failed to export debug session: ${errorMessage}`);
@@ -77,23 +83,27 @@ export const lspExportDebugSessionTool = createLSPTool({
   handler: exportDebugSession,
   formatSuccess: (result) => {
     const lines: string[] = [];
-    
+
     lines.push(`=== Debug Session Export ===`);
     lines.push(`Session ID: ${result.sessionId}`);
     lines.push(`Format: ${result.format}`);
     lines.push(`Adapter: ${result.summary.adapter}`);
-    
+
     if (result.summary.duration) {
       lines.push(`Duration: ${result.summary.duration}ms`);
     }
-    
+
     lines.push(`Total Requests: ${result.summary.totalRequests}`);
     lines.push(`Failed Requests: ${result.summary.failedRequests}`);
-    lines.push(`Average Response Time: ${result.summary.averageResponseTime.toFixed(1)}ms`);
-    
+    lines.push(
+      `Average Response Time: ${result.summary.averageResponseTime.toFixed(
+        1,
+      )}ms`,
+    );
+
     lines.push(`\n=== Session Data ===`);
     lines.push(result.data);
-    
-    return lines.join('\n');
+
+    return lines.join("\n");
   },
 });

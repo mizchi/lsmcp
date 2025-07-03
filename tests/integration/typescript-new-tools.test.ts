@@ -263,9 +263,10 @@ function cleanData(data: string) {
       });
 
       expect(incomingResult).toBeDefined();
-      const incomingContents = incomingResult.content as Array<
-        { type: string; text?: string }
-      >;
+      const incomingContents = incomingResult.content as Array<{
+        type: string;
+        text?: string;
+      }>;
       if (incomingContents.length > 0 && incomingContents[0].type === "text") {
         expect(incomingContents[0].text).toContain("Call Hierarchy");
         expect(incomingContents[0].text).toContain("Incoming Calls");
@@ -286,9 +287,10 @@ function cleanData(data: string) {
       });
 
       expect(outgoingResult).toBeDefined();
-      const outgoingContents = outgoingResult.content as Array<
-        { type: string; text?: string }
-      >;
+      const outgoingContents = outgoingResult.content as Array<{
+        type: string;
+        text?: string;
+      }>;
       if (outgoingContents.length > 0 && outgoingContents[0].type === "text") {
         expect(outgoingContents[0].text).toContain("Outgoing Calls");
         expect(outgoingContents[0].text).toContain("validateInput");

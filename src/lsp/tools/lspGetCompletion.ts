@@ -81,15 +81,17 @@ function formatCompletionItem(
   }
 
   if (item.documentation) {
-    const doc = typeof item.documentation === "string"
-      ? item.documentation
-      : item.documentation.value;
+    const doc =
+      typeof item.documentation === "string"
+        ? item.documentation
+        : item.documentation.value;
     if (doc) {
       // Truncate long documentation
       const maxDocLength = 200;
-      const truncatedDoc = doc.length > maxDocLength
-        ? doc.substring(0, maxDocLength) + "..."
-        : doc;
+      const truncatedDoc =
+        doc.length > maxDocLength
+          ? doc.substring(0, maxDocLength) + "..."
+          : doc;
       result += `\n\n${truncatedDoc}`;
     }
   }
@@ -164,11 +166,11 @@ async function handleGetCompletion({
     if (completions.length === 0) {
       const message = includeAutoImport
         ? `No auto-import completions available at ${filePath}:${
-          lineIndex + 1
-        }:${character + 1}`
+            lineIndex + 1
+          }:${character + 1}`
         : `No completions available at ${filePath}:${lineIndex + 1}:${
-          character + 1
-        }`;
+            character + 1
+          }`;
       return message;
     }
 

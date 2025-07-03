@@ -74,10 +74,11 @@ describe.skip("lsp get all diagnostics", () => {
       env: {
         ...process.env,
         FORCE_LSP: "true",
-        LSP_COMMAND: join(
-          __dirname,
-          "../../node_modules/.bin/typescript-language-server",
-        ) + " --stdio",
+        LSP_COMMAND:
+          join(
+            __dirname,
+            "../../node_modules/.bin/typescript-language-server",
+          ) + " --stdio",
       },
     });
 
@@ -99,7 +100,7 @@ describe.skip("lsp get all diagnostics", () => {
   });
 
   it("should get diagnostics for all files", async () => {
-    const result = await client.request(
+    const result = (await client.request(
       {
         method: "tools/call",
         params: {
@@ -112,12 +113,14 @@ describe.skip("lsp get all diagnostics", () => {
         },
       },
       z.object({
-        content: z.array(z.object({
-          type: z.string(),
-          text: z.string(),
-        })),
+        content: z.array(
+          z.object({
+            type: z.string(),
+            text: z.string(),
+          }),
+        ),
       }),
-    ) as any;
+    )) as any;
 
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();
@@ -133,7 +136,7 @@ describe.skip("lsp get all diagnostics", () => {
   });
 
   it("should filter by severity", async () => {
-    const result = await client.request(
+    const result = (await client.request(
       {
         method: "tools/call",
         params: {
@@ -146,12 +149,14 @@ describe.skip("lsp get all diagnostics", () => {
         },
       },
       z.object({
-        content: z.array(z.object({
-          type: z.string(),
-          text: z.string(),
-        })),
+        content: z.array(
+          z.object({
+            type: z.string(),
+            text: z.string(),
+          }),
+        ),
       }),
-    ) as any;
+    )) as any;
 
     const text = result.content[0].text;
     expect(text).toContain("error");
@@ -159,7 +164,7 @@ describe.skip("lsp get all diagnostics", () => {
   });
 
   it("should support include pattern", async () => {
-    const result = await client.request(
+    const result = (await client.request(
       {
         method: "tools/call",
         params: {
@@ -171,12 +176,14 @@ describe.skip("lsp get all diagnostics", () => {
         },
       },
       z.object({
-        content: z.array(z.object({
-          type: z.string(),
-          text: z.string(),
-        })),
+        content: z.array(
+          z.object({
+            type: z.string(),
+            text: z.string(),
+          }),
+        ),
       }),
-    ) as any;
+    )) as any;
 
     const text = result.content[0].text;
     expect(text).toContain("file1.ts");

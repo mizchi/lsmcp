@@ -45,10 +45,9 @@ function findSymbolPosition(
   if (symbolIndex < 0 || symbolIndex >= occurrences.length) {
     return {
       success: false,
-      error:
-        `Symbol "${symbolName}" only appears ${occurrences.length} time(s) on line ${
-          lineIndex + 1
-        }, but index ${symbolIndex} was requested`,
+      error: `Symbol "${symbolName}" only appears ${occurrences.length} time(s) on line ${
+        lineIndex + 1
+      }, but index ${symbolIndex} was requested`,
     };
   }
 

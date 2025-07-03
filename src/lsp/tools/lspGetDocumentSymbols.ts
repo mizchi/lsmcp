@@ -49,9 +49,8 @@ function formatDocumentSymbol(
   indent: string = "",
 ): string {
   try {
-    const kind = symbol.kind !== undefined
-      ? getSymbolKindName(symbol.kind)
-      : "Unknown";
+    const kind =
+      symbol.kind !== undefined ? getSymbolKindName(symbol.kind) : "Unknown";
     const deprecated = symbol.deprecated ? " (deprecated)" : "";
     const name = symbol.name || "Unnamed";
     let result = `${indent}${name} [${kind}]${deprecated}`;
@@ -79,9 +78,8 @@ function formatDocumentSymbol(
 
 function formatSymbolInformation(symbol: SymbolInformation): string {
   try {
-    const kind = symbol.kind !== undefined
-      ? getSymbolKindName(symbol.kind)
-      : "Unknown";
+    const kind =
+      symbol.kind !== undefined ? getSymbolKindName(symbol.kind) : "Unknown";
     const deprecated = symbol.deprecated ? " (deprecated)" : "";
     const container = symbol.containerName ? ` in ${symbol.containerName}` : "";
     const name = symbol.name || "Unnamed";
@@ -150,8 +148,8 @@ async function handleGetDocumentSymbols({
         // Check each symbol individually to determine its type
         if ("location" in symbol && symbol.location) {
           // This is a SymbolInformation
-          result += formatSymbolInformation(symbol as SymbolInformation) +
-            "\n\n";
+          result +=
+            formatSymbolInformation(symbol as SymbolInformation) + "\n\n";
         } else if (
           "range" in symbol ||
           "children" in symbol ||

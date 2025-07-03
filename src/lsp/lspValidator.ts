@@ -52,7 +52,9 @@ export class LSPValidator {
 
   constructor(config: LSPValidatorConfig) {
     this.config = config;
-    this.testFileUri = `file://${config.rootPath}/${config.testFileName || "test.py"}`;
+    this.testFileUri = `file://${config.rootPath}/${
+      config.testFileName || "test.py"
+    }`;
   }
 
   async validateFull(): Promise<LSPValidationResult> {
@@ -62,14 +64,14 @@ export class LSPValidator {
       capabilities: {},
       featureTests: [],
       overallHealth: "unhealthy",
-      summary: ""
+      summary: "",
     };
 
     try {
       // Step 1: Test Connection
       debugLog("LSP Validator: Testing connection...");
       result.connectionSuccess = await this.validateConnection();
-      
+
       if (!result.connectionSuccess) {
         result.summary = "Failed to establish LSP connection";
         return result;
@@ -78,7 +80,7 @@ export class LSPValidator {
       // Step 2: Test Initialization
       debugLog("LSP Validator: Testing initialization...");
       result.initializationSuccess = await this.validateInitialization();
-      
+
       if (!result.initializationSuccess) {
         result.summary = "Failed to initialize LSP client";
         return result;
@@ -97,10 +99,11 @@ export class LSPValidator {
       result.summary = this.generateSummary(result);
 
       return result;
-
     } catch (error) {
       debugLog("LSP Validator: Validation failed:", error);
-      result.summary = `Validation failed: ${error instanceof Error ? error.message : String(error)}`;
+      result.summary = `Validation failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`;
       return result;
     } finally {
       await this.cleanup();
@@ -128,7 +131,6 @@ export class LSPValidator {
 
       debugLog("LSP Validator: Connection test passed");
       return true;
-
     } catch (error) {
       debugLog("LSP Validator: Connection test failed:", error);
       return false;
@@ -145,20 +147,19 @@ export class LSPValidator {
       };
 
       this.client = createLSPClient(clientConfig);
-      
+
       // Set timeout for initialization
       const timeout = this.config.timeout || 10000;
       const initPromise = this.client.start();
-      
+
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error("Initialization timeout")), timeout);
       });
 
       await Promise.race([initPromise, timeoutPromise]);
-      
+
       debugLog("LSP Validator: Initialization successful");
       return true;
-
     } catch (error) {
       debugLog("LSP Validator: Initialization failed:", error);
       return false;
@@ -175,9 +176,10 @@ export class LSPValidator {
     try {
       // Test basic capabilities by attempting to use them
       // Note: This is a simplified approach - in reality we'd check the initialization response
-      
+
       // Test document sync by opening a test document
-      const testContent = this.config.testFileContent || "# Test content\nprint('hello')\n";
+      const testContent =
+        this.config.testFileContent || "# Test content\nprint('hello')\n";
       this.client.openDocument(this.testFileUri, testContent);
       capabilities.textDocumentSync = true;
       debugLog("LSP Validator: textDocumentSync supported");
@@ -193,7 +195,6 @@ export class LSPValidator {
       capabilities.rename = true;
       capabilities.codeAction = true;
       capabilities.signatureHelp = true;
-
     } catch (error) {
       debugLog("LSP Validator: Capabilities validation failed:", error);
     }
@@ -210,82 +211,124 @@ export class LSPValidator {
     const testPosition: Position = { line: 1, character: 5 };
 
     // Test Diagnostics
-    results.push(await this.testFeature("diagnostics", async () => {
-      if (!this.client?.pullDiagnostics) return false;
-      const diagnostics = await this.client.pullDiagnostics(this.testFileUri);
-      return Array.isArray(diagnostics);
-    }));
+    results.push(
+      await this.testFeature("diagnostics", async () => {
+        if (!this.client?.pullDiagnostics) return false;
+        const diagnostics = await this.client.pullDiagnostics(this.testFileUri);
+        return Array.isArray(diagnostics);
+      }),
+    );
 
     // Test Hover
-    results.push(await this.testFeature("hover", async () => {
-      if (!this.client) return false;
-      const hover = await this.client.getHover(this.testFileUri, testPosition);
-      return hover !== null;
-    }));
+    results.push(
+      await this.testFeature("hover", async () => {
+        if (!this.client) return false;
+        const hover = await this.client.getHover(
+          this.testFileUri,
+          testPosition,
+        );
+        return hover !== null;
+      }),
+    );
 
     // Test Completion
-    results.push(await this.testFeature("completion", async () => {
-      if (!this.client) return false;
-      const completion = await this.client.getCompletion(this.testFileUri, testPosition);
-      return Array.isArray(completion);
-    }));
+    results.push(
+      await this.testFeature("completion", async () => {
+        if (!this.client) return false;
+        const completion = await this.client.getCompletion(
+          this.testFileUri,
+          testPosition,
+        );
+        return Array.isArray(completion);
+      }),
+    );
 
     // Test Definition
-    results.push(await this.testFeature("definition", async () => {
-      const definition = await this.client!.getDefinition(this.testFileUri, testPosition);
-      return definition !== null;
-    }));
+    results.push(
+      await this.testFeature("definition", async () => {
+        const definition = await this.client!.getDefinition(
+          this.testFileUri,
+          testPosition,
+        );
+        return definition !== null;
+      }),
+    );
 
     // Test References
-    results.push(await this.testFeature("references", async () => {
-      const references = await this.client!.findReferences(this.testFileUri, testPosition);
-      return Array.isArray(references);
-    }));
+    results.push(
+      await this.testFeature("references", async () => {
+        const references = await this.client!.findReferences(
+          this.testFileUri,
+          testPosition,
+        );
+        return Array.isArray(references);
+      }),
+    );
 
     // Test Document Symbols
-    results.push(await this.testFeature("documentSymbol", async () => {
-      const symbols = await this.client!.getDocumentSymbols(this.testFileUri);
-      return Array.isArray(symbols);
-    }));
+    results.push(
+      await this.testFeature("documentSymbol", async () => {
+        const symbols = await this.client!.getDocumentSymbols(this.testFileUri);
+        return Array.isArray(symbols);
+      }),
+    );
 
     // Test Formatting
-    results.push(await this.testFeature("formatting", async () => {
-      const edits = await this.client!.formatDocument(this.testFileUri, {
-        tabSize: 4,
-        insertSpaces: true
-      });
-      return Array.isArray(edits);
-    }));
+    results.push(
+      await this.testFeature("formatting", async () => {
+        const edits = await this.client!.formatDocument(this.testFileUri, {
+          tabSize: 4,
+          insertSpaces: true,
+        });
+        return Array.isArray(edits);
+      }),
+    );
 
     // Test Rename
-    results.push(await this.testFeature("rename", async () => {
-      const edit = await this.client!.rename(this.testFileUri, testPosition, "newName");
-      return edit !== null;
-    }));
+    results.push(
+      await this.testFeature("rename", async () => {
+        const edit = await this.client!.rename(
+          this.testFileUri,
+          testPosition,
+          "newName",
+        );
+        return edit !== null;
+      }),
+    );
 
     // Test Code Actions
-    results.push(await this.testFeature("codeAction", async () => {
-      const actions = await this.client!.getCodeActions(this.testFileUri, {
-        start: testPosition,
-        end: testPosition
-      });
-      return Array.isArray(actions);
-    }));
+    results.push(
+      await this.testFeature("codeAction", async () => {
+        const actions = await this.client!.getCodeActions(this.testFileUri, {
+          start: testPosition,
+          end: testPosition,
+        });
+        return Array.isArray(actions);
+      }),
+    );
 
     // Test Signature Help
-    results.push(await this.testFeature("signatureHelp", async () => {
-      const help = await this.client!.getSignatureHelp(this.testFileUri, testPosition);
-      return help !== null;
-    }));
+    results.push(
+      await this.testFeature("signatureHelp", async () => {
+        const help = await this.client!.getSignatureHelp(
+          this.testFileUri,
+          testPosition,
+        );
+        return help !== null;
+      }),
+    );
 
     return results;
   }
 
-  private async testFeature(featureName: string, testFn: () => Promise<boolean>): Promise<FeatureTestResult> {
+  private async testFeature(
+    featureName: string,
+    testFn: () => Promise<boolean>,
+  ): Promise<FeatureTestResult> {
     const result: FeatureTestResult = {
       feature: featureName,
       supported: false,
-      working: false
+      working: false,
     };
 
     try {
@@ -294,18 +337,21 @@ export class LSPValidator {
         testFn(),
         new Promise<boolean>((_, reject) => {
           setTimeout(() => reject(new Error("Feature test timeout")), 5000);
-        })
+        }),
       ]);
 
       result.responseTime = Date.now() - startTime;
       result.supported = true;
       result.working = success;
 
-      debugLog(`LSP Validator: ${featureName} test - supported: ${result.supported}, working: ${result.working}, time: ${result.responseTime}ms`);
-
+      debugLog(
+        `LSP Validator: ${featureName} test - supported: ${result.supported}, working: ${result.working}, time: ${result.responseTime}ms`,
+      );
     } catch (error) {
       result.error = error instanceof Error ? error.message : String(error);
-      result.supported = !result.error.includes("not supported") && !result.error.includes("Unhandled method");
+      result.supported =
+        !result.error.includes("not supported") &&
+        !result.error.includes("Unhandled method");
       result.working = false;
 
       debugLog(`LSP Validator: ${featureName} test failed:`, result.error);
@@ -314,8 +360,10 @@ export class LSPValidator {
     return result;
   }
 
-  private determineOverallHealth(featureTests: FeatureTestResult[]): "healthy" | "degraded" | "unhealthy" {
-    const workingFeatures = featureTests.filter(test => test.working).length;
+  private determineOverallHealth(
+    featureTests: FeatureTestResult[],
+  ): "healthy" | "degraded" | "unhealthy" {
+    const workingFeatures = featureTests.filter((test) => test.working).length;
     const totalFeatures = featureTests.length;
 
     if (workingFeatures === 0) {
@@ -335,7 +383,9 @@ export class LSPValidator {
       return "LSP initialization failed";
     }
 
-    const workingFeatures = result.featureTests.filter(test => test.working).length;
+    const workingFeatures = result.featureTests.filter(
+      (test) => test.working,
+    ).length;
     const totalFeatures = result.featureTests.length;
 
     return `LSP validation complete: ${workingFeatures}/${totalFeatures} features working (${result.overallHealth})`;

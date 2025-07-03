@@ -172,16 +172,14 @@ async function getProjectFiles(
   debug(`[lspGetAllDiagnostics] Total unique files to check: ${files.length}`);
   if (files.length > 0) {
     debug(
-      `[lspGetAllDiagnostics] File extensions found: ${
-        [
-          ...new Set(
-            files.map((f) => {
-              const ext = f.lastIndexOf(".");
-              return ext > 0 ? f.substring(ext) : "no-ext";
-            }),
-          ),
-        ].join(", ")
-      }`,
+      `[lspGetAllDiagnostics] File extensions found: ${[
+        ...new Set(
+          files.map((f) => {
+            const ext = f.lastIndexOf(".");
+            return ext > 0 ? f.substring(ext) : "no-ext";
+          }),
+        ),
+      ].join(", ")}`,
     );
   }
   return files;

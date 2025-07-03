@@ -53,34 +53,42 @@ export class LSPTester {
    */
   async runTestSuite(suite: TestSuite): Promise<TestSuiteResult> {
     debugLog(`Running test suite: ${suite.name}`);
-    
+
     const testResults: TestResult[] = [];
-    
+
     // First, run the basic validation
     const validationResult = await suite.adapter.validateLSP(suite.rootPath);
-    
+
     if (!validationResult.connectionSuccess) {
       debugLog(`Test suite ${suite.name} failed: No LSP connection`);
-      return this.createFailedSuiteResult(suite, validationResult, "No LSP connection");
+      return this.createFailedSuiteResult(
+        suite,
+        validationResult,
+        "No LSP connection",
+      );
     }
 
     // Run individual test cases
     for (const testCase of suite.testCases) {
       debugLog(`Running test case: ${testCase.name}`);
-      
-      const caseResults = await this.runTestCase(suite.adapter, suite.rootPath, testCase);
+
+      const caseResults = await this.runTestCase(
+        suite.adapter,
+        suite.rootPath,
+        testCase,
+      );
       testResults.push(...caseResults);
     }
 
     // Calculate summary
     const summary = this.calculateSummary(testResults);
-    
+
     return {
       suiteName: suite.name,
       adapter: suite.adapter.getConfig().id,
       validationResult,
       testResults,
-      summary
+      summary,
     };
   }
 
@@ -90,20 +98,20 @@ export class LSPTester {
   private async runTestCase(
     adapter: BaseLspAdapter,
     rootPath: string,
-    testCase: TestCase
+    testCase: TestCase,
   ): Promise<TestResult[]> {
     const results: TestResult[] = [];
-    
+
     for (const expectation of testCase.expectations) {
       const result = await this.runTestExpectation(
         adapter,
         rootPath,
         testCase,
-        expectation
+        expectation,
       );
       results.push(result);
     }
-    
+
     return results;
   }
 
@@ -114,12 +122,12 @@ export class LSPTester {
     adapter: BaseLspAdapter,
     rootPath: string,
     testCase: TestCase,
-    expectation: TestExpectation
+    expectation: TestExpectation,
   ): Promise<TestResult> {
     const result: TestResult = {
       testCase: testCase.name,
       feature: expectation.feature,
-      passed: false
+      passed: false,
     };
 
     try {
@@ -127,12 +135,12 @@ export class LSPTester {
       const validationResult = await adapter.validateLSP(rootPath, {
         testFileContent: testCase.testContent,
         testFileName: testCase.fileName,
-        timeout: expectation.timeout || 5000
+        timeout: expectation.timeout || 5000,
       });
 
       // Find the feature test result
       const featureResult = validationResult.featureTests.find(
-        test => test.feature === expectation.feature
+        (test) => test.feature === expectation.feature,
       );
 
       if (!featureResult) {
@@ -144,7 +152,8 @@ export class LSPTester {
       if (expectation.shouldWork) {
         result.passed = featureResult.working;
         if (!result.passed) {
-          result.error = featureResult.error || "Feature expected to work but didn't";
+          result.error =
+            featureResult.error || "Feature expected to work but didn't";
         }
       } else {
         result.passed = !featureResult.working;
@@ -155,7 +164,6 @@ export class LSPTester {
 
       result.responseTime = featureResult.responseTime;
       result.actualResult = featureResult;
-
     } catch (error) {
       result.error = error instanceof Error ? error.message : String(error);
       result.passed = !expectation.shouldWork; // If we expected failure, error is success
@@ -170,10 +178,13 @@ export class LSPTester {
   private createFailedSuiteResult(
     suite: TestSuite,
     validationResult: LSPValidationResult,
-    _reason: string
+    _reason: string,
   ): TestSuiteResult {
-    const totalTests = suite.testCases.reduce((sum, testCase) => sum + testCase.expectations.length, 0);
-    
+    const totalTests = suite.testCases.reduce(
+      (sum, testCase) => sum + testCase.expectations.length,
+      0,
+    );
+
     return {
       suiteName: suite.name,
       adapter: suite.adapter.getConfig().id,
@@ -183,17 +194,19 @@ export class LSPTester {
         totalTests,
         passedTests: 0,
         failedTests: totalTests,
-        successRate: 0
-      }
+        successRate: 0,
+      },
     };
   }
 
   /**
    * Calculate test summary
    */
-  private calculateSummary(testResults: TestResult[]): TestSuiteResult['summary'] {
+  private calculateSummary(
+    testResults: TestResult[],
+  ): TestSuiteResult["summary"] {
     const totalTests = testResults.length;
-    const passedTests = testResults.filter(result => result.passed).length;
+    const passedTests = testResults.filter((result) => result.passed).length;
     const failedTests = totalTests - passedTests;
     const successRate = totalTests > 0 ? (passedTests / totalTests) * 100 : 0;
 
@@ -201,7 +214,7 @@ export class LSPTester {
       totalTests,
       passedTests,
       failedTests,
-      successRate: Math.round(successRate * 100) / 100
+      successRate: Math.round(successRate * 100) / 100,
     };
   }
 
@@ -210,56 +223,71 @@ export class LSPTester {
    */
   generateReport(result: TestSuiteResult): string {
     const lines: string[] = [];
-    
+
     lines.push(`=== LSP Test Report ===`);
     lines.push(`Suite: ${result.suiteName}`);
     lines.push(`Adapter: ${result.adapter}`);
     lines.push(`Overall Health: ${result.validationResult.overallHealth}`);
-    lines.push(`Connection: ${result.validationResult.connectionSuccess ? 'OK' : 'FAILED'}`);
-    lines.push(`Initialization: ${result.validationResult.initializationSuccess ? 'OK' : 'FAILED'}`);
-    lines.push('');
-    
-    lines.push(`Test Results: ${result.summary.passedTests}/${result.summary.totalTests} passed (${result.summary.successRate}%)`);
-    lines.push('');
-    
+    lines.push(
+      `Connection: ${
+        result.validationResult.connectionSuccess ? "OK" : "FAILED"
+      }`,
+    );
+    lines.push(
+      `Initialization: ${
+        result.validationResult.initializationSuccess ? "OK" : "FAILED"
+      }`,
+    );
+    lines.push("");
+
+    lines.push(
+      `Test Results: ${result.summary.passedTests}/${result.summary.totalTests} passed (${result.summary.successRate}%)`,
+    );
+    lines.push("");
+
     // Group results by test case
-    const resultsByTestCase = result.testResults.reduce((acc, testResult) => {
-      if (!acc[testResult.testCase]) {
-        acc[testResult.testCase] = [];
-      }
-      acc[testResult.testCase].push(testResult);
-      return acc;
-    }, {} as Record<string, TestResult[]>);
+    const resultsByTestCase = result.testResults.reduce(
+      (acc, testResult) => {
+        if (!acc[testResult.testCase]) {
+          acc[testResult.testCase] = [];
+        }
+        acc[testResult.testCase].push(testResult);
+        return acc;
+      },
+      {} as Record<string, TestResult[]>,
+    );
 
     for (const [testCase, testResults] of Object.entries(resultsByTestCase)) {
       lines.push(`Test Case: ${testCase}`);
-      
+
       for (const testResult of testResults) {
-        const status = testResult.passed ? '✓' : '✗';
-        const time = testResult.responseTime ? ` (${testResult.responseTime}ms)` : '';
+        const status = testResult.passed ? "✓" : "✗";
+        const time = testResult.responseTime
+          ? ` (${testResult.responseTime}ms)`
+          : "";
         lines.push(`  ${status} ${testResult.feature}${time}`);
-        
+
         if (testResult.error) {
           lines.push(`    Error: ${testResult.error}`);
         }
       }
-      
-      lines.push('');
+
+      lines.push("");
     }
 
     // Feature validation summary
-    lines.push('Feature Validation:');
+    lines.push("Feature Validation:");
     for (const feature of result.validationResult.featureTests) {
-      const status = feature.working ? '✓' : '✗';
-      const time = feature.responseTime ? ` (${feature.responseTime}ms)` : '';
+      const status = feature.working ? "✓" : "✗";
+      const time = feature.responseTime ? ` (${feature.responseTime}ms)` : "";
       lines.push(`  ${status} ${feature.feature}${time}`);
-      
+
       if (feature.error) {
         lines.push(`    Error: ${feature.error}`);
       }
     }
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 }
 

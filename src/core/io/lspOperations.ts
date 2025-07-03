@@ -77,13 +77,10 @@ export async function withLSPOperation<T>(
   }
 
   // Execute the operation with timeout and error handling
-  const operationPromise = withErrorHandling(
-    () => operation(client),
-    {
-      ...errorContext,
-      operation: errorContext.operation || "lsp_operation",
-    },
-  );
+  const operationPromise = withErrorHandling(() => operation(client), {
+    ...errorContext,
+    operation: errorContext.operation || "lsp_operation",
+  });
 
   // Add timeout wrapper
   const timeoutPromise = new Promise<never>((_, reject) => {
@@ -167,13 +164,10 @@ export async function withBatchLSPOperation<T>(
   }
 
   // Execute the operation with error handling
-  return withErrorHandling(
-    () => operation(client),
-    {
-      ...errorContext,
-      operation: errorContext.operation || "batch_lsp_operation",
-    },
-  );
+  return withErrorHandling(() => operation(client), {
+    ...errorContext,
+    operation: errorContext.operation || "batch_lsp_operation",
+  });
 }
 
 /**

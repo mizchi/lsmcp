@@ -1,4 +1,5 @@
-export const calculateSum = (a: number, b: number): number => { // @rename calculateSum add
+export const calculateSum = (a: number, b: number): number => {
+  // @rename calculateSum add
   return a + b;
 };
 

@@ -297,15 +297,17 @@ export class SymbolResultBuilder {
   }): this {
     this.symbols.push({
       name: symbol.name,
-      kind: typeof symbol.kind === "string"
-        ? symbol.kind
-        : this.mapSymbolKind(symbol.kind),
-      location: symbol.line !== undefined
-        ? {
-          line: symbol.line,
-          column: symbol.column || 1,
-        }
-        : undefined,
+      kind:
+        typeof symbol.kind === "string"
+          ? symbol.kind
+          : this.mapSymbolKind(symbol.kind),
+      location:
+        symbol.line !== undefined
+          ? {
+              line: symbol.line,
+              column: symbol.column || 1,
+            }
+          : undefined,
       containerName: symbol.containerName,
     });
     return this;

@@ -2,11 +2,9 @@
 
 # Check formatting (don't modify files)
 echo "Checking code format..."
-if command -v deno >/dev/null 2>&1; then
-  if ! deno fmt --check src/ tests/ 2>/dev/null; then
-    echo "❌ Code is not formatted. Run 'deno fmt src/ tests/' to fix."
-    exit 1
-  fi
+if ! pnpm biome check --linter-enabled=false --formatter-enabled=true src/ tests/ 2>/dev/null; then
+  echo "❌ Code is not formatted. Run 'pnpm biome format --write src/ tests/' to fix."
+  exit 1
 fi
 
 # Run lint

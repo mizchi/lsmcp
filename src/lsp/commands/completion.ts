@@ -66,17 +66,12 @@ export interface CompletionHandler {
   /**
    * Get completion items at a specific position
    */
-  getCompletion(
-    uri: string,
-    position: Position,
-  ): Promise<CompletionItem[]>;
+  getCompletion(uri: string, position: Position): Promise<CompletionItem[]>;
 
   /**
    * Resolve a completion item for additional details
    */
-  resolveCompletionItem(
-    item: CompletionItem,
-  ): Promise<CompletionItem>;
+  resolveCompletionItem(item: CompletionItem): Promise<CompletionItem>;
 }
 
 /**

@@ -324,9 +324,8 @@ export const errors = {
     code?: string | ErrorCode,
     context?: ErrorContext,
   ) => {
-    const errorCode = code && isErrorCode(code)
-      ? code
-      : ErrorCode.UNKNOWN_ERROR;
+    const errorCode =
+      code && isErrorCode(code) ? code : ErrorCode.UNKNOWN_ERROR;
     return new LSMCPError(errorCode, message, context);
   },
 };
@@ -349,8 +348,10 @@ function getLSPInstallCommand(language: string): string {
     moonbit: "moon update && moon install",
   };
 
-  return commands[language.toLowerCase()] ||
-    `Check the documentation for ${language} language server installation`;
+  return (
+    commands[language.toLowerCase()] ||
+    `Check the documentation for ${language} language server installation`
+  );
 }
 
 /**

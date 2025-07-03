@@ -180,14 +180,10 @@ describe("LSP Client Error Handling", () => {
 
   describe("Server Crash Recovery", () => {
     it("should detect server crash", async () => {
-      const process = spawn(
-        "npx",
-        ["typescript-language-server", "--stdio"],
-        {
-          cwd: projectRoot,
-          stdio: ["pipe", "pipe", "pipe"],
-        },
-      );
+      const process = spawn("npx", ["typescript-language-server", "--stdio"], {
+        cwd: projectRoot,
+        stdio: ["pipe", "pipe", "pipe"],
+      });
 
       const crashClient = createLSPClient({ rootPath: projectRoot, process });
 

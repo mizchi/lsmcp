@@ -91,7 +91,7 @@ export class DebugLogger {
     this.log(
       LogLevel.INFO,
       "DebugLogger",
-      `Started debug session: ${id} for adapter: ${adapter}`
+      `Started debug session: ${id} for adapter: ${adapter}`,
     );
 
     return id;
@@ -133,7 +133,7 @@ export class DebugLogger {
     component: string,
     message: string,
     data?: unknown,
-    error?: Error
+    error?: Error,
   ): void {
     if (level > this.logLevel) {
       return;
@@ -173,7 +173,7 @@ export class DebugLogger {
   logLSPRequest(
     method: string,
     params?: unknown,
-    requestId?: string | number
+    requestId?: string | number,
   ): void {
     this.log(LogLevel.DEBUG, "LSP-Request", `${method}`, {
       method,
@@ -201,7 +201,7 @@ export class DebugLogger {
     result?: unknown,
     error?: unknown,
     requestId?: string | number,
-    responseTime?: number
+    responseTime?: number,
   ): void {
     const level = error ? LogLevel.ERROR : LogLevel.DEBUG;
     const message = error ? `${method} - ERROR` : `${method} - OK`;
@@ -253,8 +253,8 @@ export class DebugLogger {
       health === "healthy"
         ? LogLevel.INFO
         : health === "degraded"
-        ? LogLevel.WARN
-        : LogLevel.ERROR;
+          ? LogLevel.WARN
+          : LogLevel.ERROR;
 
     this.log(level, "Health", `Adapter ${adapter}: ${health}`, details);
   }
@@ -289,7 +289,9 @@ export class DebugLogger {
     if (session.endTime) {
       lines.push(`End Time: ${session.endTime.toISOString()}`);
       lines.push(
-        `Duration: ${session.endTime.getTime() - session.startTime.getTime()}ms`
+        `Duration: ${
+          session.endTime.getTime() - session.startTime.getTime()
+        }ms`,
       );
     }
     lines.push("");
@@ -307,18 +309,18 @@ export class DebugLogger {
               100
             ).toFixed(1)
           : 0
-      }%`
+      }%`,
     );
     lines.push(
       `Average Response Time: ${session.metrics.averageResponseTime.toFixed(
-        1
-      )}ms`
+        1,
+      )}ms`,
     );
     lines.push("");
 
     lines.push(`=== Feature Usage ===`);
     for (const [feature, count] of Object.entries(
-      session.metrics.featureUsage
+      session.metrics.featureUsage,
     )) {
       lines.push(`${feature}: ${count}`);
     }
@@ -328,7 +330,7 @@ export class DebugLogger {
     for (const entry of session.logEntries) {
       const levelName = LogLevel[entry.level];
       lines.push(
-        `[${entry.timestamp}] ${levelName} ${entry.component}: ${entry.message}`
+        `[${entry.timestamp}] ${levelName} ${entry.component}: ${entry.message}`,
       );
 
       if (entry.data) {
@@ -354,7 +356,7 @@ export class DebugLogger {
     this.log(
       LogLevel.INFO,
       "DebugLogger",
-      `Log level set to: ${LogLevel[level]}`
+      `Log level set to: ${LogLevel[level]}`,
     );
   }
 
