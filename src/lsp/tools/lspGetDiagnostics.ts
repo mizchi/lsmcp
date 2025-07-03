@@ -3,8 +3,7 @@ import { err, ok, type Result } from "neverthrow";
 import { createLSPTool } from "../../core/io/toolFactory.ts";
 import { resolveFileAndSymbol } from "../../core/io/fileSymbolResolver.ts";
 import { DiagnosticResultBuilder } from "../../core/pure/resultBuilders.ts";
-import { getLanguageIdFromPath } from "../languageDetection.ts";
-import { getActiveClient } from "../lspClient.ts";
+import { getActiveClient, getLanguageIdFromPath } from "../lspClient.ts";
 import type { Diagnostic as LSPDiagnostic } from "../lspTypes.ts";
 
 const schema = z.object({
@@ -57,7 +56,7 @@ async function getDiagnosticsWithLSP(
     const isMoonBit = languageId === "moonbit";
 
     // Open document in LSP with current content
-    client.openDocument(fileUri, fileContent, languageId);
+    client.openDocument(fileUri, fileContent, languageId || undefined);
 
     // Force LSP to re-read the file by sending an update
     client.updateDocument(fileUri, fileContent, 2);

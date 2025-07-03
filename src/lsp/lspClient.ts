@@ -93,7 +93,7 @@ import {
   ErrorContext,
   formatError,
 } from "../mcp/utils/errorHandler.ts";
-import { getLanguageIdFromPath } from "./languageDetection.ts";
+import { getLanguageIdFromPath } from "../core/pure/languageDetection.ts";
 
 // Re-export types for backward compatibility
 export type {
@@ -104,6 +104,9 @@ export type {
   LSPClientConfig,
   ReferencesResult,
 };
+
+// Re-export getLanguageIdFromPath for backward compatibility
+export { getLanguageIdFromPath };
 
 // Global state for active client
 let activeClient: LSPClient | null = null;

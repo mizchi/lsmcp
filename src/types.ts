@@ -10,9 +10,6 @@ export interface BaseLspConfig {
   /** Display name */
   name: string;
 
-  /** File extensions supported (e.g., [".ts", ".tsx"]) */
-  extensions: string[];
-
   /** Command line arguments for the LSP server */
   lspArgs?: string[];
 

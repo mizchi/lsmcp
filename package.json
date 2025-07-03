@@ -43,6 +43,8 @@
     "@types/micromatch": "^4.0.9",
     "@types/minimatch": "^5.1.2",
     "glob": "^11.0.3",
+    "ignore": "^7.0.5",
+    "linguist-languages": "^8.0.0",
     "micromatch": "^4.0.8",
     "minimatch": "^10.0.3",
     "neverthrow": "^8.2.0",

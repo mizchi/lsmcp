@@ -9,7 +9,6 @@ export const ruffAdapter: LspAdapter = {
   name: "Ruff",
   baseLanguage: "python",
   description: "Python linter",
-  extensions: [".py", ".pyw", ".pyi", ".ipynb"],
   lspCommand: "uv",
   lspArgs: ["run", "ruff", "server"],
   initializationOptions: {},

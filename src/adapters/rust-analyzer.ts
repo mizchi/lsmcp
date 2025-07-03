@@ -9,7 +9,6 @@ export const rustAnalyzerAdapter: LspAdapter = {
   name: "rust-analyzer",
   baseLanguage: "rust",
   description: "Official Rust language server",
-  extensions: [".rs"],
   lspCommand: "rust-analyzer",
   lspArgs: [],
   initializationOptions: {

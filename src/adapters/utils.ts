@@ -32,7 +32,6 @@ export function adapterToLanguageConfig(
   return {
     id: adapter.id,
     name: adapter.name,
-    extensions: adapter.extensions,
     lspCommand,
     lspArgs,
     initializationOptions: adapter.initializationOptions,

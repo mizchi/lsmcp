@@ -15,20 +15,6 @@ export const tsgoAdapter: LspAdapter = {
   name: "tsgo",
   baseLanguage: "typescript",
   description: "Fast TypeScript language server by tsgo",
-  extensions: [
-    ".ts",
-    ".tsx",
-    ".js",
-    ".jsx",
-    ".mjs",
-    ".cjs",
-    ".mts",
-    ".cts",
-    ".d.ts",
-    ".d.mts",
-    ".d.cts",
-  ],
-
   lspCommand: "tsgo",
   lspArgs: ["--lsp", "--stdio"],
 

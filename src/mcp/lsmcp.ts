@@ -96,7 +96,6 @@ function adapterToLanguageConfig(adapter: LspAdapter): LanguageConfig {
   return {
     id: adapter.id,
     name: adapter.name,
-    extensions: adapter.extensions,
     lspCommand: adapter.lspCommand,
     lspArgs: adapter.lspArgs,
     initializationOptions: adapter.initializationOptions,
@@ -315,11 +314,8 @@ async function main() {
       const lspCmd = typeof lang.lspCommand === "function"
         ? lang.lspCommand()
         : lang.lspCommand;
-      const extensions = lang.extensions.join(", ");
       console.log(
-        `  ${
-          lang.id.padEnd(12)
-        } - ${lang.name} (${extensions}) [requires ${lspCmd}]`,
+        `  ${lang.id.padEnd(12)} - ${lang.name} [requires ${lspCmd}]`,
       );
     }
 

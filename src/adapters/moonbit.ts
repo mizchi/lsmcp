@@ -10,7 +10,6 @@ export const moonbitLanguageServerAdapter: LspAdapter = {
   name: "MoonBit Language Server",
   baseLanguage: "moonbit",
   description: "moonbit lsp",
-  extensions: [".mbt", ".mbti"],
   lspCommand: "moonbit-lsp",
   lspArgs: [],
   doctor: async () => {
