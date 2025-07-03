@@ -43,8 +43,8 @@ export function getLanguageIdFromPath(filePath: string): string | null {
 
   // Special cases for common extensions that have ambiguous matches
   if (ext === ".md") {
-    const markdown = matches.find((lang) =>
-      lang.name.toLowerCase() === "markdown"
+    const markdown = matches.find(
+      (lang) => lang.name.toLowerCase() === "markdown",
     );
     if (markdown) return markdown.name.toLowerCase();
   }
@@ -58,8 +58,8 @@ export function getLanguageIdFromPath(filePath: string): string | null {
 
   // Multiple matches - prioritize by type and popularity
   // Prefer programming languages over data/markup/prose
-  const programmingLangs = matches.filter((lang) =>
-    lang.type === "programming"
+  const programmingLangs = matches.filter(
+    (lang) => lang.type === "programming",
   );
   if (programmingLangs.length === 1) {
     return programmingLangs[0].name.toLowerCase();
@@ -84,8 +84,8 @@ export function getLanguageIdFromPath(filePath: string): string | null {
   if (proseLangs.length > 0) {
     // For .md files, prefer Markdown over other prose languages
     if (ext === ".md") {
-      const markdown = proseLangs.find((lang) =>
-        lang.name.toLowerCase() === "markdown"
+      const markdown = proseLangs.find(
+        (lang) => lang.name.toLowerCase() === "markdown",
       );
       if (markdown) return markdown.name.toLowerCase();
     }

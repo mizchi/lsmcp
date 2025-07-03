@@ -58,10 +58,10 @@ export const callHierarchyTool: ToolDef<typeof schema> = {
     maxDepth,
   }) => {
     // Read file content with metadata
-    const {
-      fileContent: content,
-      fileUri,
-    } = readFileWithMetadata(root, filePath);
+    const { fileContent: content, fileUri } = readFileWithMetadata(
+      root,
+      filePath,
+    );
 
     // Create TypeScript LSP client
     const clientInstance = await createTypescriptLSPClient(root);
@@ -164,8 +164,7 @@ async function getIncomingCalls(
 ): Promise<any[]> {
   if (depth >= maxDepth) return [];
 
-  const key =
-    `${item.uri}:${item.range.start.line}:${item.range.start.character}`;
+  const key = `${item.uri}:${item.range.start.line}:${item.range.start.character}`;
   if (visited.has(key)) return [];
   visited.add(key);
 
@@ -205,8 +204,7 @@ async function getOutgoingCalls(
 ): Promise<any[]> {
   if (depth >= maxDepth) return [];
 
-  const key =
-    `${item.uri}:${item.range.start.line}:${item.range.start.character}`;
+  const key = `${item.uri}:${item.range.start.line}:${item.range.start.character}`;
   if (visited.has(key)) return [];
   visited.add(key);
 

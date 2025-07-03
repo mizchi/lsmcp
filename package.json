@@ -29,8 +29,8 @@
     "test:examples": "tsx scripts/check-examples.ts",
     "build:supported-table": "node scripts/build-supported-table.ts",
     "coverage": "vitest run --coverage",
-    "format": "deno fmt src/ tests/",
-    "format:check": "deno fmt --check src/ tests/",
+    "format": "biome format --write src/ tests/",
+    "format:check": "biome check --linter-enabled=false --formatter-enabled=true src/ tests/",
     "prepare": "husky",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md"
@@ -58,6 +58,7 @@
     "zod": "^3.25.56"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.0.6",
     "@moonbit/moonbit-lsp": "^0.1.202506241",
     "@types/node": "^22.15.30",
     "@types/ws": "^8.18.1",

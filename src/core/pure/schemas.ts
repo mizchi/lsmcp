@@ -4,9 +4,7 @@ import { z } from "zod";
 export const commonSchemas = {
   root: z.string().describe("Root directory for resolving relative paths"),
 
-  filePath: z
-    .string()
-    .describe("File path (relative to root)"),
+  filePath: z.string().describe("File path (relative to root)"),
 
   line: z
     .union([z.number(), z.string()])

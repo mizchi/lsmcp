@@ -67,8 +67,10 @@ export class GitignoreManager {
   isIgnored(filePath: string): boolean {
     // Always ignore .git directory
     if (
-      filePath.includes("/.git/") || filePath.endsWith("/.git") ||
-      filePath.startsWith(".git/") || filePath === ".git"
+      filePath.includes("/.git/") ||
+      filePath.endsWith("/.git") ||
+      filePath.startsWith(".git/") ||
+      filePath === ".git"
     ) {
       return true;
     }

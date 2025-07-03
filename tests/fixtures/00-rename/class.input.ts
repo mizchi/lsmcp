@@ -1,4 +1,5 @@
-class Foo { // @rename Foo Bar
+class Foo {
+  // @rename Foo Bar
   private value: number;
 
   constructor(value: number) {

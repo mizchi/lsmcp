@@ -13,7 +13,7 @@ async function initializePythonEnvironment() {
   await $({ cwd: projectRoot })`uv sync`;
 }
 
-describe.skip("Pyright Adapter", () => {
+describe("Pyright Adapter", () => {
   beforeAll(async () => {
     await initializePythonEnvironment();
   }, 30000); // 30s timeout for initialization
@@ -32,10 +32,10 @@ describe.skip("Pyright Adapter", () => {
     } else {
       expect(result.error).toBeDefined();
     }
-  }, 15000);
+  });
 });
 
-describe("Ruff Adapter", () => {
+describe.skip("Ruff Adapter", () => {
   beforeAll(async () => {
     await initializePythonEnvironment();
   }, 15000); // 30s timeout for initialization

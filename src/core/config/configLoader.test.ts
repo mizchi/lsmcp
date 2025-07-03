@@ -68,9 +68,9 @@ describe("ConfigLoader", () => {
     // Create temp directory for test files
     tempDir = join(
       tmpdir(),
-      `configloader-test-${Date.now()}-${
-        Math.random().toString(36).substr(2, 9)
-      }`,
+      `configloader-test-${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}`,
     );
     await mkdir(tempDir, { recursive: true });
   });
@@ -98,9 +98,11 @@ describe("ConfigLoader", () => {
     });
 
     it("should throw error for unknown preset", async () => {
-      await expect(loader.loadConfig({
-        preset: "unknown-preset",
-      })).rejects.toThrow("Unknown preset: unknown-preset");
+      await expect(
+        loader.loadConfig({
+          preset: "unknown-preset",
+        }),
+      ).rejects.toThrow("Unknown preset: unknown-preset");
     });
   });
 
@@ -153,15 +155,19 @@ describe("ConfigLoader", () => {
       const configPath = join(tempDir, "invalid.json");
       await writeFile(configPath, "{ invalid json");
 
-      await expect(loader.loadConfig({
-        configFile: configPath,
-      })).rejects.toThrow(/Failed to load config file/);
+      await expect(
+        loader.loadConfig({
+          configFile: configPath,
+        }),
+      ).rejects.toThrow(/Failed to load config file/);
     });
 
     it("should throw error for non-existent file", async () => {
-      await expect(loader.loadConfig({
-        configFile: "/non/existent/file.json",
-      })).rejects.toThrow(/Failed to load config file/);
+      await expect(
+        loader.loadConfig({
+          configFile: "/non/existent/file.json",
+        }),
+      ).rejects.toThrow(/Failed to load config file/);
     });
   });
 
@@ -222,11 +228,13 @@ describe("ConfigLoader", () => {
     });
 
     it("should throw error when no bin provided for standalone override", async () => {
-      await expect(loader.loadConfig({
-        overrides: {
-          args: ["--no-bin"],
-        },
-      })).rejects.toThrow(/No configuration source provided/);
+      await expect(
+        loader.loadConfig({
+          overrides: {
+            args: ["--no-bin"],
+          },
+        }),
+      ).rejects.toThrow(/No configuration source provided/);
     });
   });
 
@@ -299,9 +307,11 @@ describe("ConfigLoader", () => {
       };
       await writeFile(configPath, JSON.stringify(configData, null, 2));
 
-      await expect(loader.loadConfig({
-        configFile: configPath,
-      })).rejects.toThrow(/Invalid configuration: missing required fields/);
+      await expect(
+        loader.loadConfig({
+          configFile: configPath,
+        }),
+      ).rejects.toThrow(/Invalid configuration: missing required fields/);
     });
   });
 });
@@ -342,8 +352,11 @@ describe("ConfigLoader.parseBinString", () => {
 
 if (import.meta.vitest) {
   // In-source testing support
-  const { describe: vitestDescribe, it: vitestIt, expect: vitestExpected } =
-    import.meta.vitest;
+  const {
+    describe: vitestDescribe,
+    it: vitestIt,
+    expect: vitestExpected,
+  } = import.meta.vitest;
 
   vitestDescribe("configLoader basic functionality", () => {
     vitestIt("should create registry and loader", () => {

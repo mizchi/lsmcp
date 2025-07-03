@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import type { LspAdapter } from "../types.ts";
 
 /**
@@ -19,8 +20,19 @@ export const pyrightAdapter: LspAdapter = {
       },
     },
   },
-  // TODO:
-  // doctor: async () => {
-  //   return {ok: true};
-  // },
+  doctor: async () => {
+    try {
+      execSync("uv run pyright-langserver --version", {
+        stdio: "ignore",
+        timeout: 5000,
+      });
+      return { ok: true, message: "pyright-langserver available via uv" };
+    } catch {
+      return {
+        ok: false,
+        message:
+          "pyright-langserver not available via uv. Install with: uv add pyright",
+      };
+    }
+  },
 };

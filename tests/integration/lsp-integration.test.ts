@@ -272,8 +272,7 @@ console.log(unknownVariable); // Unknown variable
       expect(client).toBeDefined();
 
       // Perform multiple operations to ensure connection stability
-      const testFile =
-        `export const VERSION = "1.0.0";\nexport const NAME = "Test";`;
+      const testFile = `export const VERSION = "1.0.0";\nexport const NAME = "Test";`;
       await fs.writeFile(path.join(tmpDir, "constants.ts"), testFile);
 
       // Multiple operations on the same file

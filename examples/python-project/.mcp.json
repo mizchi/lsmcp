@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "python-pyright": {
+      "command": "node",
+      "args": ["../../dist/lsmcp.js", "-p", "pyright"]
+    }
+  }
+}

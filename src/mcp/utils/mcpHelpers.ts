@@ -131,18 +131,20 @@ export class BaseMcpServer {
       const schemaShape = tool.schema.shape;
 
       // Create a wrapper handler that adds default root if not provided
-      const wrappedHandler = this.defaultRoot && "root" in schemaShape
-        ? (args: z.infer<S>) => {
-          // If root is not provided in args, use the default
-          const argsWithRoot = {
-            ...args,
-            root: (typeof args === "object" && args !== null && "root" in args
-              ? (args as Record<string, unknown>).root
-              : undefined) || this.defaultRoot,
-          } as z.infer<S>;
-          return tool.execute(argsWithRoot);
-        }
-        : tool.execute;
+      const wrappedHandler =
+        this.defaultRoot && "root" in schemaShape
+          ? (args: z.infer<S>) => {
+              // If root is not provided in args, use the default
+              const argsWithRoot = {
+                ...args,
+                root:
+                  (typeof args === "object" && args !== null && "root" in args
+                    ? (args as Record<string, unknown>).root
+                    : undefined) || this.defaultRoot,
+              } as z.infer<S>;
+              return tool.execute(argsWithRoot);
+            }
+          : tool.execute;
 
       this.server.tool(
         tool.name,

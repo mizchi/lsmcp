@@ -95,10 +95,13 @@ export type HoverResult = {
   contents: string | { value: string } | MarkupContent | MarkupContent[];
   range?: Range;
 } | null;
-export type CompletionResult = CompletionItem[] | {
-  items: CompletionItem[];
-  isIncomplete?: boolean;
-} | null;
+export type CompletionResult =
+  | CompletionItem[]
+  | {
+      items: CompletionItem[];
+      isIncomplete?: boolean;
+    }
+  | null;
 export type DocumentSymbolResult =
   | DocumentSymbol[]
   | SymbolInformation[]

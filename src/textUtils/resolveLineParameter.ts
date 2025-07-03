@@ -24,8 +24,7 @@ export function resolveLineParameter(
     if (lineIndex < 0 || lineIndex >= lines.length) {
       return {
         success: false,
-        error:
-          `Invalid line number: ${lineParam}. File has ${lines.length} lines.`,
+        error: `Invalid line number: ${lineParam}. File has ${lines.length} lines.`,
       };
     }
     return { success: true, lineIndex };
@@ -45,8 +44,7 @@ export function resolveLineParameter(
     const lineNumbers = matchingIndices.map((i) => i + 1).join(", ");
     return {
       success: false,
-      error:
-        `Multiple lines found containing "${lineParam}". Found on lines: ${lineNumbers}. Please be more specific or use a line number.`,
+      error: `Multiple lines found containing "${lineParam}". Found on lines: ${lineNumbers}. Please be more specific or use a line number.`,
     };
   }
 

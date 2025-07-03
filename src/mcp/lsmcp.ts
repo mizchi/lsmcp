@@ -64,18 +64,18 @@ const lspTools: ToolDef<any>[] = [
 
 // Tool name mapping for unsupported filtering
 const toolNameMap: Record<string, string> = {
-  "get_hover": lspGetHoverTool.name,
-  "find_references": lspFindReferencesTool.name,
-  "get_definitions": lspGetDefinitionsTool.name,
-  "get_diagnostics": lspGetDiagnosticsTool.name,
-  "get_all_diagnostics": lspGetAllDiagnosticsTool.name,
-  "rename_symbol": lspRenameSymbolTool.name,
-  "delete_symbol": lspDeleteSymbolTool.name,
-  "get_document_symbols": lspGetDocumentSymbolsTool.name,
-  "get_completion": lspGetCompletionTool.name,
-  "get_signature_help": lspGetSignatureHelpTool.name,
-  "format_document": lspFormatDocumentTool.name,
-  "get_code_actions": lspGetCodeActionsTool.name,
+  get_hover: lspGetHoverTool.name,
+  find_references: lspFindReferencesTool.name,
+  get_definitions: lspGetDefinitionsTool.name,
+  get_diagnostics: lspGetDiagnosticsTool.name,
+  get_all_diagnostics: lspGetAllDiagnosticsTool.name,
+  rename_symbol: lspRenameSymbolTool.name,
+  delete_symbol: lspDeleteSymbolTool.name,
+  get_document_symbols: lspGetDocumentSymbolsTool.name,
+  get_completion: lspGetCompletionTool.name,
+  get_signature_help: lspGetSignatureHelpTool.name,
+  format_document: lspFormatDocumentTool.name,
+  get_code_actions: lspGetCodeActionsTool.name,
 };
 
 // Filter tools based on unsupported list
@@ -222,9 +222,9 @@ async function runLanguageServerWithConfig(
   customEnv?: Record<string, string | undefined>,
 ) {
   debug(
-    `[lsmcp] runLanguageServerWithConfig called with config: ${
-      JSON.stringify(config)
-    }`,
+    `[lsmcp] runLanguageServerWithConfig called with config: ${JSON.stringify(
+      config,
+    )}`,
   );
 
   try {
@@ -266,9 +266,10 @@ async function runLanguageServerWithConfig(
     debug(`lsmcp MCP server connected for: ${config.name}`);
 
     // Handle LSP process errors
-    const fullCommand = config.args.length > 0
-      ? `${config.bin} ${config.args.join(" ")}`
-      : config.bin;
+    const fullCommand =
+      config.args.length > 0
+        ? `${config.bin} ${config.args.join(" ")}`
+        : config.bin;
 
     lspProcess.on("error", (error) => {
       const context: ErrorContext = {
@@ -303,11 +304,9 @@ async function runLanguageServer(
   customEnv?: Record<string, string | undefined>,
 ) {
   debug(
-    `[lsmcp] runLanguageServer called with language: ${language}, args: ${
-      JSON.stringify(
-        positionals,
-      )
-    }`,
+    `[lsmcp] runLanguageServer called with language: ${language}, args: ${JSON.stringify(
+      positionals,
+    )}`,
   );
 
   // Get language configuration
@@ -348,9 +347,8 @@ async function runLanguageServer(
 
   // Start MCP server directly
   debug(`[lsmcp] Using LSP command '${lspBin}' for language '${language}'`);
-  const fullCommand = lspArgs.length > 0
-    ? `${lspBin} ${lspArgs.join(" ")}`
-    : lspBin;
+  const fullCommand =
+    lspArgs.length > 0 ? `${lspBin} ${lspArgs.join(" ")}` : lspBin;
 
   try {
     // Spawn LSP server process
@@ -418,11 +416,9 @@ async function runLanguageServer(
 
 async function main() {
   debug(
-    `[lsmcp] main() called with values: ${
-      JSON.stringify(
-        values,
-      )
-    }, positionals: ${JSON.stringify(positionals)}`,
+    `[lsmcp] main() called with values: ${JSON.stringify(
+      values,
+    )}, positionals: ${JSON.stringify(positionals)}`,
   );
 
   // Use new configuration system when possible
@@ -517,9 +513,11 @@ async function mainWithConfigLoader() {
     }
     if (config.initializationOptions) {
       debug(
-        `[lsmcp] Initialization Options: ${
-          JSON.stringify(config.initializationOptions, null, 2)
-        }`,
+        `[lsmcp] Initialization Options: ${JSON.stringify(
+          config.initializationOptions,
+          null,
+          2,
+        )}`,
       );
     }
     debug(`[lsmcp] ================================`);
@@ -641,9 +639,7 @@ async function mainLegacy() {
     console.warn(
       "⚠️  Warning: The -l/--language option is deprecated. Please use -p/--preset instead.",
     );
-    console.warn(
-      `   Example: lsmcp -p ${values.language}`,
-    );
+    console.warn(`   Example: lsmcp -p ${values.language}`);
     console.warn("");
 
     // Treat -l as -p for backward compatibility
@@ -712,9 +708,11 @@ async function mainLegacy() {
       debug(`[lsmcp] Arguments: ${JSON.stringify(config.args || [])}`);
       if (config.initializationOptions) {
         debug(
-          `[lsmcp] Initialization Options: ${
-            JSON.stringify(config.initializationOptions, null, 2)
-          }`,
+          `[lsmcp] Initialization Options: ${JSON.stringify(
+            config.initializationOptions,
+            null,
+            2,
+          )}`,
         );
       }
       debug(`[lsmcp] ==========================================`);

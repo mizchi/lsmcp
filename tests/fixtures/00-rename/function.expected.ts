@@ -1,4 +1,5 @@
-function bar(x: number): number { // @rename foo bar
+function bar(x: number): number {
+  // @rename foo bar
   return x * 2;
 }
 

@@ -119,7 +119,7 @@ async function getDiagnosticsWithLSP(
 
         for (let poll = 0; poll < maxPolls; poll++) {
           await new Promise<void>((resolve) =>
-            setTimeout(resolve, pollInterval)
+            setTimeout(resolve, pollInterval),
           );
           lspDiagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
 

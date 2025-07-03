@@ -37,10 +37,10 @@ export const extractTypeTool: ToolDef<typeof schema> = {
     typeName,
   }) => {
     // Read file content with metadata
-    const {
-      fileContent: content,
-      fileUri,
-    } = readFileWithMetadata(root, filePath);
+    const { fileContent: content, fileUri } = readFileWithMetadata(
+      root,
+      filePath,
+    );
 
     // Create TypeScript LSP client
     const clientInstance = await createTypescriptLSPClient(root);
@@ -50,9 +50,10 @@ export const extractTypeTool: ToolDef<typeof schema> = {
       const lines = content.split("\n");
 
       // Find line numbers
-      const start = typeof startLine === "string"
-        ? lines.findIndex((l) => l.includes(startLine))
-        : startLine - 1;
+      const start =
+        typeof startLine === "string"
+          ? lines.findIndex((l) => l.includes(startLine))
+          : startLine - 1;
       const end = endLine
         ? typeof endLine === "string"
           ? lines.findIndex((l) => l.includes(endLine))
@@ -120,10 +121,12 @@ export const extractTypeTool: ToolDef<typeof schema> = {
       const extractActions = (codeActions as CodeAction[]).filter(
         (action: CodeAction) => {
           const title = action.title.toLowerCase();
-          const isExtractType = extractType === "type" &&
+          const isExtractType =
+            extractType === "type" &&
             (title.includes("extract to type alias") ||
               title.includes("extract type"));
-          const isExtractInterface = extractType === "interface" &&
+          const isExtractInterface =
+            extractType === "interface" &&
             (title.includes("extract to interface") ||
               title.includes("extract interface"));
           return isExtractType || isExtractInterface;
@@ -237,7 +240,8 @@ export const extractTypeTool: ToolDef<typeof schema> = {
 
           if (startLine === endLine) {
             // Single line edit
-            lines[startLine] = lines[startLine].substring(0, startChar) +
+            lines[startLine] =
+              lines[startLine].substring(0, startChar) +
               edit.newText +
               lines[startLine].substring(endChar);
           } else {
@@ -300,7 +304,8 @@ async function applyWorkspaceEdit(
 
       if (startLine === endLine) {
         // Single line edit
-        lines[startLine] = lines[startLine].substring(0, startChar) +
+        lines[startLine] =
+          lines[startLine].substring(0, startChar) +
           edit.newText +
           lines[startLine].substring(endChar);
       } else {

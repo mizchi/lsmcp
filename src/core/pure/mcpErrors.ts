@@ -57,15 +57,11 @@ export const CommonErrors = {
     ),
 
   FILE_NOT_FOUND: (filePath: string) =>
-    new MCPToolError(
-      `File not found: ${filePath}`,
-      "FILE_NOT_FOUND",
-      [
-        "Check if the file path is correct and relative to the root directory",
-        "Use forward slashes (/) for path separators",
-        "Make sure the file exists in the project",
-      ],
-    ),
+    new MCPToolError(`File not found: ${filePath}`, "FILE_NOT_FOUND", [
+      "Check if the file path is correct and relative to the root directory",
+      "Use forward slashes (/) for path separators",
+      "Make sure the file exists in the project",
+    ]),
 
   INVALID_LINE_NUMBER: (line: number | string, maxLine: number) =>
     new MCPToolError(

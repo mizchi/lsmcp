@@ -23,16 +23,16 @@ export function applyTextEdits(content: string, edits: TextEdit[]): string {
     // Handle single line edit
     if (startLine === endLine) {
       const line = lines[startLine] || "";
-      lines[startLine] = line.substring(0, startChar) +
-        edit.newText +
-        line.substring(endChar);
+      lines[startLine] =
+        line.substring(0, startChar) + edit.newText + line.substring(endChar);
     } else {
       // Handle multi-line edit
       const startLineText = lines[startLine] || "";
       const endLineText = lines[endLine] || "";
 
       // Create the new content
-      const newContent = startLineText.substring(0, startChar) +
+      const newContent =
+        startLineText.substring(0, startChar) +
         edit.newText +
         endLineText.substring(endChar);
 

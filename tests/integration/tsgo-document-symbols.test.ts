@@ -34,11 +34,9 @@ class MyClass {
   });
 
   it("should handle document symbols not supported gracefully", async () => {
-    const result = await testLspConnection(
-      tsgoAdapter,
-      process.cwd(),
-      ["test-tsgo-symbols.ts"],
-    );
+    const result = await testLspConnection(tsgoAdapter, process.cwd(), [
+      "test-tsgo-symbols.ts",
+    ]);
 
     // tsgo should connect but won't support document symbols
     expect(result.connected).toBe(true);

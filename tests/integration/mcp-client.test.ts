@@ -153,8 +153,9 @@ export function useOldName() {
 
       // Verify file was moved
       await expect(fs.access(srcFile)).rejects.toThrow();
-      await expect(fs.access(path.join(tmpDir, "moved/src.ts"))).resolves
-        .toBeUndefined();
+      await expect(
+        fs.access(path.join(tmpDir, "moved/src.ts")),
+      ).resolves.toBeUndefined();
 
       // Verify import was updated
       const importerContent = await fs.readFile(importerFile, "utf-8");

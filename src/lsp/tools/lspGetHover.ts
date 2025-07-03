@@ -18,7 +18,9 @@ const schema = z.object({
     .number()
     .describe("Character position in the line (0-based)")
     .optional(),
-  target: z.string().describe("Text to find and get hover information for")
+  target: z
+    .string()
+    .describe("Text to find and get hover information for")
     .optional(),
 });
 

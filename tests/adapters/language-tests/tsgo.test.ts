@@ -29,10 +29,11 @@ describe("tsgo Adapter", () => {
     const diagnostics = result.diagnostics || [];
 
     // Should detect type errors in simple.ts
-    const typeErrors = diagnostics.filter((d) =>
-      d.message.includes("Type") &&
-      (d.message.includes("'string' is not assignable to type 'number'") ||
-        d.message.includes("'number' is not assignable to type 'string'"))
+    const typeErrors = diagnostics.filter(
+      (d) =>
+        d.message.includes("Type") &&
+        (d.message.includes("'string' is not assignable to type 'number'") ||
+          d.message.includes("'number' is not assignable to type 'string'")),
     );
 
     // Expect the two type errors

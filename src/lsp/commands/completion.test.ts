@@ -228,9 +228,8 @@ describe("completionHandler", () => {
     });
 
     it("should respect maxItems limit", async () => {
-      const items: CompletionItem[] = Array.from(
-        { length: 50 },
-        (_, i) => testHelpers.createMockCompletionItem({ label: `item${i}` }),
+      const items: CompletionItem[] = Array.from({ length: 50 }, (_, i) =>
+        testHelpers.createMockCompletionItem({ label: `item${i}` }),
       );
 
       vi.mocked(mockClient.sendRequest!).mockResolvedValue(items);
