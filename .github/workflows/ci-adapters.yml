@@ -138,9 +138,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Python Language Server
+      - name: Install uv and Python Language Server
         run: |
-          pip install python-lsp-server[all]
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          source ~/.cargo/env
+          uv tool install python-lsp-server[all]
           pylsp --version
 
       - name: Install Node.js dependencies
