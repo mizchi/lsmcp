@@ -41,7 +41,7 @@ jobs:
         run: pnpm build
 
       - name: Run F# adapter tests
-        run: pnpm test:adapters -- tests/adapters/language-tests/fsharp.test.ts
+        run: pnpm vitest run tests/adapters/language-tests/fsharp.test.ts
         env:
           CI: true
           TEST_FSHARP: true
@@ -79,7 +79,7 @@ jobs:
         run: pnpm build
 
       - name: Run Rust adapter tests
-        run: pnpm test:adapters tests/adapters/language-tests/rust.test.ts
+        run: pnpm vitest run tests/adapters/language-tests/rust.test.ts
         env:
           CI: true
           TEST_RUST: true
@@ -112,7 +112,7 @@ jobs:
         run: pnpm build
 
       - name: Run tsgo adapter tests
-        run: pnpm test:adapters tests/adapters/language-tests/tsgo.test.ts
+        run: pnpm vitest run tests/adapters/language-tests/tsgo.test.ts
         env:
           CI: true
           TEST_TSGO: true
@@ -150,7 +150,7 @@ jobs:
         run: pnpm build
 
       - name: Run Python adapter tests
-        run: pnpm test:adapters tests/adapters/language-tests/python.test.ts
+        run: pnpm vitest run tests/adapters/language-tests/python.test.ts
         env:
           CI: true
           TEST_PYTHON: true
@@ -213,7 +213,7 @@ jobs:
         run: pnpm build
 
       - name: Run MoonBit adapter tests
-        run: pnpm test:adapters tests/adapters/language-tests/moonbit.test.ts
+        run: pnpm vitest run tests/adapters/language-tests/moonbit.test.ts
         env:
           CI: true
           TEST_MOONBIT: true
