@@ -146,18 +146,18 @@ export class BaseMcpServer {
             }
           : tool.execute;
 
-      this.server.tool(
+      // Cast as any to handle MCP SDK type mismatch
+      (this.server as any).tool(
         tool.name,
-        // @ts-ignore - MCP SDK type mismatch
         tool.description,
         schemaShape,
         toMcpToolHandler(wrappedHandler),
       );
     } else {
       // For non-ZodObject schemas, register without shape
-      this.server.tool(
+      // Cast as any to handle MCP SDK type mismatch
+      (this.server as any).tool(
         tool.name,
-        // @ts-ignore - MCP SDK type mismatch
         tool.description,
         toMcpToolHandler(tool.execute),
       );

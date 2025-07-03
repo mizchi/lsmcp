@@ -161,3 +161,4 @@ tests/adapters/fixtures/rust/Cargo.lock
 tests/adapters/fixtures/moonbit/target/
 tests/adapters/fixtures/fsharp/obj/
 tests/adapters/fixtures/fsharp/bin/
+tests/adapters/fixtures/python/.venv

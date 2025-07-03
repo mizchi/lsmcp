@@ -5,22 +5,24 @@
 This table shows which LSP features are supported by each adapter.
 Generated automatically by `scripts/build-supported-table.ts` - do not edit manually.
 
-| Adapter | Language | get_hover | find_references | get_definitions | get_diagnostics | get_all_diagnostics | rename_symbol | delete_symbol | get_document_symbols | get_completion | get_signature_help | format_document | get_code_actions |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **F# Autocomplete**<br/><small>F# language server (fsautocomplete)</small> | fsharp | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **MoonBit Language Server**<br/><small>moonbit lsp</small> | moonbit | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Ruff**<br/><small>Python linter</small> | python | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Pyright**<br/><small>Microsoft</small> | python | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **rust-analyzer**<br/><small>Official Rust language server</small> | rust | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **TypeScript Language Server**<br/><small>Community TypeScript Language Server</small> | typescript | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **tsgo**<br/><small>Fast TypeScript language server by tsgo</small> | typescript | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ |
-| **Deno**<br/><small>Deno language server</small> | typescript | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Adapter                                                                                | Language   | get_hover | find_references | get_definitions | get_diagnostics | get_all_diagnostics | rename_symbol | delete_symbol | get_document_symbols | get_completion | get_signature_help | format_document | get_code_actions |
+| -------------------------------------------------------------------------------------- | ---------- | --------- | --------------- | --------------- | --------------- | ------------------- | ------------- | ------------- | -------------------- | -------------- | ------------------ | --------------- | ---------------- |
+| **F# Autocomplete**<br/><small>F# language server (fsautocomplete)</small>             | fsharp     | ✅        | ✅              | ✅              | ✅              | ✅                  | ✅            | ✅            | ✅                   | ✅             | ✅                 | ✅              | ✅               |
+| **MoonBit Language Server**<br/><small>moonbit lsp</small>                             | moonbit    | ✅        | ✅              | ✅              | ✅              | ✅                  | ✅            | ✅            | ✅                   | ✅             | ✅                 | ✅              | ✅               |
+| **Ruff**<br/><small>Python linter</small>                                              | python     | ✅        | ✅              | ✅              | ✅              | ✅                  | ✅            | ✅            | ✅                   | ✅             | ✅                 | ✅              | ✅               |
+| **Pyright**<br/><small>Microsoft</small>                                               | python     | ✅        | ✅              | ✅              | ✅              | ✅                  | ✅            | ✅            | ✅                   | ✅             | ✅                 | ✅              | ✅               |
+| **rust-analyzer**<br/><small>Official Rust language server</small>                     | rust       | ✅        | ✅              | ✅              | ✅              | ✅                  | ✅            | ✅            | ✅                   | ✅             | ✅                 | ✅              | ✅               |
+| **TypeScript Language Server**<br/><small>Community TypeScript Language Server</small> | typescript | ✅        | ✅              | ✅              | ✅              | ✅                  | ✅            | ✅            | ✅                   | ✅             | ✅                 | ✅              | ✅               |
+| **tsgo**<br/><small>Fast TypeScript language server by tsgo</small>                    | typescript | ✅        | ✅              | ✅              | ✅              | ✅                  | ❌            | ❌            | ❌                   | ✅             | ✅                 | ✅              | ❌               |
+| **Deno**<br/><small>Deno language server</small>                                       | typescript | ✅        | ✅              | ✅              | ✅              | ✅                  | ✅            | ✅            | ✅                   | ✅             | ✅                 | ✅              | ✅               |
 
 ## Legend
+
 - ✅ Supported
 - ❌ Not supported or not implemented
 
 ## Notes
+
 - Features marked as ❌ will return appropriate error messages when called
 - Some adapters may have partial support for certain features
 - This table reflects the current implementation and may change as adapters are updated
