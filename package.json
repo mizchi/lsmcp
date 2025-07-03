@@ -23,6 +23,7 @@
     "test:adapters:rust": "vitest --run --project=adapters tests/adapters/language-tests/rust.test.ts",
     "test:adapters:tsgo": "vitest --run --project=adapters tests/adapters/language-tests/tsgo.test.ts",
     "test:adapters:python": "vitest --run --project=adapters tests/adapters/language-tests/python.test.ts",
+    "test:adapters:moonbit": "vitest --run --project=adapters tests/adapters/language-tests/moonbit.test.ts",
     "test:all": "vitest --run",
     "test:watch": "vitest",
     "test:examples": "tsx scripts/check-examples.ts",
