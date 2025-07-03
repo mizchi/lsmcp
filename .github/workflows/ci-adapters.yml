@@ -204,8 +204,8 @@ jobs:
       - name: Verify MoonBit tools
         run: |
           # Verify MoonBit CLI
-          moon --version
-          moonc --version
+          moon version
+          moonc -v
           # Verify MoonBit LSP via npm package
           npx moonbit-lsp --version
 
