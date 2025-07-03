@@ -1,0 +1,10 @@
+{
+  "id": "fsharp-test",
+  "name": "F# Test Configuration",
+  "bin": "fsautocomplete",
+  "args": [],
+  "initializationOptions": {
+    "AutomaticWorkspaceInit": true
+  },
+  "unsupported": ["get_all_diagnostics"]
+}

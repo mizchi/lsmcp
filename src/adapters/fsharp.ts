@@ -14,6 +14,7 @@ export const fsharpAdapter: LspAdapter = {
   initializationOptions: {
     AutomaticWorkspaceInit: true,
   },
+  unsupported: ["get_all_diagnostics"],
   doctor: async () => {
     try {
       execSync("which dotnet", { stdio: "ignore" });

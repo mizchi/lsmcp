@@ -1,8 +1,18 @@
 {
   "mcpServers": {
-    "fsharp": {
+    "fsharp-preset": {
       "command": "node",
       "args": ["../../dist/lsmcp.js", "-p", "fsharp"]
+    },
+    "fsharp-direct": {
+      "command": "node",
+      "args": [
+        "../../dist/lsmcp.js",
+        "--bin",
+        "fsautocomplete",
+        "--initializationOptions",
+        "{\"AutomaticWorkspaceInit\": true}"
+      ]
     }
   }
 }

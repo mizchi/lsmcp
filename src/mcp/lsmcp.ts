@@ -62,6 +62,36 @@ const lspTools: ToolDef<any>[] = [
   lspGetCodeActionsTool,
 ];
 
+// Tool name mapping for unsupported filtering
+const toolNameMap: Record<string, string> = {
+  "get_hover": lspGetHoverTool.name,
+  "find_references": lspFindReferencesTool.name,
+  "get_definitions": lspGetDefinitionsTool.name,
+  "get_diagnostics": lspGetDiagnosticsTool.name,
+  "get_all_diagnostics": lspGetAllDiagnosticsTool.name,
+  "rename_symbol": lspRenameSymbolTool.name,
+  "delete_symbol": lspDeleteSymbolTool.name,
+  "get_document_symbols": lspGetDocumentSymbolsTool.name,
+  "get_completion": lspGetCompletionTool.name,
+  "get_signature_help": lspGetSignatureHelpTool.name,
+  "format_document": lspFormatDocumentTool.name,
+  "get_code_actions": lspGetCodeActionsTool.name,
+};
+
+// Filter tools based on unsupported list
+function filterUnsupportedTools(
+  tools: ToolDef<any>[],
+  unsupported: string[] = [],
+): ToolDef<any>[] {
+  if (unsupported.length === 0) return tools;
+
+  const unsupportedToolNames = new Set(
+    unsupported.map((name) => toolNameMap[name]).filter(Boolean),
+  );
+
+  return tools.filter((tool) => !unsupportedToolNames.has(tool.name));
+}
+
 // Initialize configuration system
 const adapterRegistry = new AdapterRegistry();
 const configLoader = new ConfigLoader(adapterRegistry);
@@ -141,6 +171,11 @@ const { values, positionals } = parseArgs({
       description:
         'Glob pattern for files to get diagnostics (e.g., "src/**/*.ts")',
     },
+    initializationOptions: {
+      type: "string",
+      description:
+        "JSON string for LSP initialization options (e.g., '{}', '[object Object]')",
+    },
     help: {
       type: "boolean",
       short: "h",
@@ -167,6 +202,7 @@ Options:
   -l, --language <lang>     [DEPRECATED] Use -p/--preset instead
   --config <path>           Load language configuration from JSON file
   --bin <command>           Custom LSP server command (e.g., "deno lsp", "rust-analyzer")
+  --initializationOptions <json>  JSON string for LSP initialization options
   --list                    List all supported languages and presets
   -h, --help               Show this help message
 
@@ -215,8 +251,12 @@ async function runLanguageServerWithConfig(
       version: "0.1.0",
     });
 
-    // Register all tools
-    const allTools: ToolDef<import("zod").ZodType>[] = [...lspTools];
+    // Register all tools (filtered by unsupported list)
+    const filteredLspTools = filterUnsupportedTools(
+      lspTools,
+      config.unsupported,
+    );
+    const allTools: ToolDef<import("zod").ZodType>[] = [...filteredLspTools];
 
     // Add custom tools if available (note: would need adapter lookup for this)
     server.registerTools(allTools);
@@ -333,8 +373,12 @@ async function runLanguageServer(
       version: "0.1.0",
     });
 
-    // Register all tools
-    const allTools: ToolDef<import("zod").ZodType>[] = [...lspTools];
+    // Register all tools (filtered by unsupported list)
+    const filteredLspTools = filterUnsupportedTools(
+      lspTools,
+      adapter?.unsupported,
+    );
+    const allTools: ToolDef<import("zod").ZodType>[] = [...filteredLspTools];
     if (adapter?.customTools) {
       allTools.push(...adapter.customTools);
     }
@@ -436,9 +480,49 @@ async function mainWithConfigLoader() {
       };
     }
 
+    if (values.initializationOptions) {
+      try {
+        const parsedOptions = JSON.parse(values.initializationOptions);
+        if (!sources.overrides) {
+          sources.overrides = {};
+        }
+        sources.overrides.initializationOptions = parsedOptions;
+      } catch (error) {
+        console.error(
+          `Error parsing initializationOptions JSON: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+        process.exit(1);
+      }
+    }
+
     // Load configuration
     const config = await configLoader.loadConfig(sources);
-    debug(`[lsmcp] Loaded config: ${JSON.stringify(config)}`);
+
+    // Display final configuration details
+    debug(`[lsmcp] ===== Final Configuration =====`);
+    debug(`[lsmcp] Adapter ID: ${config.id}`);
+    debug(`[lsmcp] Name: ${config.name}`);
+    debug(`[lsmcp] Command: ${config.bin}`);
+    debug(`[lsmcp] Arguments: ${JSON.stringify(config.args)}`);
+    if (config.baseLanguage) {
+      debug(`[lsmcp] Base Language: ${config.baseLanguage}`);
+    }
+    if (config.description) {
+      debug(`[lsmcp] Description: ${config.description}`);
+    }
+    if (config.unsupported && config.unsupported.length > 0) {
+      debug(`[lsmcp] Unsupported features: ${config.unsupported.join(", ")}`);
+    }
+    if (config.initializationOptions) {
+      debug(
+        `[lsmcp] Initialization Options: ${
+          JSON.stringify(config.initializationOptions, null, 2)
+        }`,
+      );
+    }
+    debug(`[lsmcp] ================================`);
 
     // Start LSP server with resolved configuration
     await runLanguageServerWithConfig(config, positionals);
@@ -617,6 +701,25 @@ async function mainLegacy() {
 
   if (language) {
     debug(`[lsmcp] Running with language: ${language}`);
+
+    // Display configuration details for legacy system
+    const config = getLanguage(language);
+    if (config) {
+      debug(`[lsmcp] ===== Final Configuration (Legacy) =====`);
+      debug(`[lsmcp] Language ID: ${config.id}`);
+      debug(`[lsmcp] Name: ${config.name}`);
+      debug(`[lsmcp] Command: ${config.bin}`);
+      debug(`[lsmcp] Arguments: ${JSON.stringify(config.args || [])}`);
+      if (config.initializationOptions) {
+        debug(
+          `[lsmcp] Initialization Options: ${
+            JSON.stringify(config.initializationOptions, null, 2)
+          }`,
+        );
+      }
+      debug(`[lsmcp] ==========================================`);
+    }
+
     // Run the appropriate language server
     await runLanguageServer(language, positionals, undefined);
   }

@@ -13,8 +13,8 @@ export const typescriptAdapter: LspAdapter = {
   name: "TypeScript Language Server",
   baseLanguage: "typescript",
   description: "Community TypeScript Language Server",
-  bin: "typescript-language-server",
-  args: ["--stdio"],
+  bin: "npx",
+  args: ["typescript-language-server", "--stdio"],
   initializationOptions: {
     preferences: {
       includeCompletionsForModuleExports: true,
