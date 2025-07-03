@@ -5,7 +5,10 @@
     "clientKind": "git",
     "useIgnoreFile": false
   },
-  "files": { "ignoreUnknown": false },
+  "files": { 
+    "ignoreUnknown": false,
+    "includes": ["**", "!tests/adapters/fixtures/python/.venv/**"]
+  },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2 },
   "linter": {
     "enabled": false

@@ -8,7 +8,11 @@
 
 import { parseArgs } from "node:util";
 import { spawn } from "child_process";
-import { BaseMcpServer, debug, type ToolDef } from "./utils/mcpHelpers.ts";
+import {
+  BaseMcpServer,
+  debug as debugLog,
+  type ToolDef,
+} from "./utils/mcpHelpers.ts";
 import { ErrorContext, formatError } from "./utils/errorHandler.ts";
 import { readFile } from "fs/promises";
 import type { LanguageConfig, LspAdapter } from "../types.ts";
@@ -221,7 +225,7 @@ async function runLanguageServerWithConfig(
   _positionals: string[] = [],
   customEnv?: Record<string, string | undefined>,
 ) {
-  debug(
+  debugLog(
     `[lsmcp] runLanguageServerWithConfig called with config: ${JSON.stringify(
       config,
     )}`,
@@ -263,7 +267,7 @@ async function runLanguageServerWithConfig(
 
     // Start the server
     await server.start();
-    debug(`lsmcp MCP server connected for: ${config.name}`);
+    debugLog(`lsmcp MCP server connected for: ${config.name}`);
 
     // Handle LSP process errors
     const fullCommand =
@@ -303,7 +307,7 @@ async function runLanguageServer(
   positionals: string[] = [],
   customEnv?: Record<string, string | undefined>,
 ) {
-  debug(
+  debugLog(
     `[lsmcp] runLanguageServer called with language: ${language}, args: ${JSON.stringify(
       positionals,
     )}`,
@@ -346,7 +350,7 @@ async function runLanguageServer(
   }
 
   // Start MCP server directly
-  debug(`[lsmcp] Using LSP command '${lspBin}' for language '${language}'`);
+  debugLog(`[lsmcp] Using LSP command '${lspBin}' for language '${language}'`);
   const fullCommand =
     lspArgs.length > 0 ? `${lspBin} ${lspArgs.join(" ")}` : lspBin;
 
@@ -384,7 +388,7 @@ async function runLanguageServer(
 
     // Start the server
     await server.start();
-    debug(`lsmcp MCP server connected for language: ${language}`);
+    debugLog(`lsmcp MCP server connected for language: ${language}`);
 
     // Handle LSP process errors
     lspProcess.on("error", (error) => {
@@ -415,7 +419,7 @@ async function runLanguageServer(
 }
 
 async function main() {
-  debug(
+  debugLog(
     `[lsmcp] main() called with values: ${JSON.stringify(
       values,
     )}, positionals: ${JSON.stringify(positionals)}`,
@@ -431,7 +435,7 @@ async function main() {
 }
 
 async function mainWithConfigLoader() {
-  debug("[lsmcp] Using new configuration system");
+  debugLog("[lsmcp] Using new configuration system");
 
   // Show help if requested
   if (values.help) {
@@ -497,22 +501,24 @@ async function mainWithConfigLoader() {
     const config = await configLoader.loadConfig(sources);
 
     // Display final configuration details
-    debug(`[lsmcp] ===== Final Configuration =====`);
-    debug(`[lsmcp] Adapter ID: ${config.id}`);
-    debug(`[lsmcp] Name: ${config.name}`);
-    debug(`[lsmcp] Command: ${config.bin}`);
-    debug(`[lsmcp] Arguments: ${JSON.stringify(config.args)}`);
+    debugLog(`[lsmcp] ===== Final Configuration =====`);
+    debugLog(`[lsmcp] Adapter ID: ${config.id}`);
+    debugLog(`[lsmcp] Name: ${config.name}`);
+    debugLog(`[lsmcp] Command: ${config.bin}`);
+    debugLog(`[lsmcp] Arguments: ${JSON.stringify(config.args)}`);
     if (config.baseLanguage) {
-      debug(`[lsmcp] Base Language: ${config.baseLanguage}`);
+      debugLog(`[lsmcp] Base Language: ${config.baseLanguage}`);
     }
     if (config.description) {
-      debug(`[lsmcp] Description: ${config.description}`);
+      debugLog(`[lsmcp] Description: ${config.description}`);
     }
     if (config.unsupported && config.unsupported.length > 0) {
-      debug(`[lsmcp] Unsupported features: ${config.unsupported.join(", ")}`);
+      debugLog(
+        `[lsmcp] Unsupported features: ${config.unsupported.join(", ")}`,
+      );
     }
     if (config.initializationOptions) {
-      debug(
+      debugLog(
         `[lsmcp] Initialization Options: ${JSON.stringify(
           config.initializationOptions,
           null,
@@ -520,7 +526,7 @@ async function mainWithConfigLoader() {
         )}`,
       );
     }
-    debug(`[lsmcp] ================================`);
+    debugLog(`[lsmcp] ================================`);
 
     // Start LSP server with resolved configuration
     await runLanguageServerWithConfig(config, positionals);
@@ -535,7 +541,7 @@ async function mainWithConfigLoader() {
 }
 
 async function mainLegacy() {
-  debug("[lsmcp] Using legacy configuration system");
+  debugLog("[lsmcp] Using legacy configuration system");
 
   // Show help if requested
   if (values.help) {
@@ -571,7 +577,7 @@ async function mainLegacy() {
 
   // Check if custom LSP command is provided
   if (values.bin) {
-    debug(`[lsmcp] Using custom LSP command: ${values.bin}`);
+    debugLog(`[lsmcp] Using custom LSP command: ${values.bin}`);
 
     try {
       // Parse the custom command
@@ -598,7 +604,7 @@ async function mainLegacy() {
 
       // Start the server
       await server.start();
-      debug(`lsmcp MCP server connected for custom LSP: ${values.bin}`);
+      debugLog(`lsmcp MCP server connected for custom LSP: ${values.bin}`);
 
       // Handle LSP process errors
       lspProcess.on("error", (error) => {
@@ -679,7 +685,7 @@ async function mainLegacy() {
     }
   }
 
-  debug(`[lsmcp] Resolved language: ${language}`);
+  debugLog(`[lsmcp] Resolved language: ${language}`);
 
   // Require either --preset, --config, or --bin option
   if (!language && !values.bin) {
@@ -696,18 +702,18 @@ async function mainLegacy() {
   }
 
   if (language) {
-    debug(`[lsmcp] Running with language: ${language}`);
+    debugLog(`[lsmcp] Running with language: ${language}`);
 
     // Display configuration details for legacy system
     const config = getLanguage(language);
     if (config) {
-      debug(`[lsmcp] ===== Final Configuration (Legacy) =====`);
-      debug(`[lsmcp] Language ID: ${config.id}`);
-      debug(`[lsmcp] Name: ${config.name}`);
-      debug(`[lsmcp] Command: ${config.bin}`);
-      debug(`[lsmcp] Arguments: ${JSON.stringify(config.args || [])}`);
+      debugLog(`[lsmcp] ===== Final Configuration (Legacy) =====`);
+      debugLog(`[lsmcp] Language ID: ${config.id}`);
+      debugLog(`[lsmcp] Name: ${config.name}`);
+      debugLog(`[lsmcp] Command: ${config.bin}`);
+      debugLog(`[lsmcp] Arguments: ${JSON.stringify(config.args || [])}`);
       if (config.initializationOptions) {
-        debug(
+        debugLog(
           `[lsmcp] Initialization Options: ${JSON.stringify(
             config.initializationOptions,
             null,
@@ -715,7 +721,7 @@ async function mainLegacy() {
           )}`,
         );
       }
-      debug(`[lsmcp] ==========================================`);
+      debugLog(`[lsmcp] ==========================================`);
     }
 
     // Run the appropriate language server
