@@ -126,7 +126,6 @@ export const callHierarchyTool: ToolDef<typeof schema> = {
           new Set(),
           0,
           maxDepth,
-          root,
         );
         output += formatCallTree(incomingCalls, "incoming");
         output += "\n";
@@ -141,7 +140,6 @@ export const callHierarchyTool: ToolDef<typeof schema> = {
           new Set(),
           0,
           maxDepth,
-          root,
         );
         output += formatCallTree(outgoingCalls, "outgoing");
       }
@@ -160,7 +158,6 @@ async function getIncomingCalls(
   visited: Set<string>,
   depth: number,
   maxDepth: number,
-  root: string,
 ): Promise<any[]> {
   if (depth >= maxDepth) return [];
 
@@ -179,7 +176,6 @@ async function getIncomingCalls(
       visited,
       depth + 1,
       maxDepth,
-      root,
     );
 
     results.push({
@@ -200,7 +196,6 @@ async function getOutgoingCalls(
   visited: Set<string>,
   depth: number,
   maxDepth: number,
-  root: string,
 ): Promise<any[]> {
   if (depth >= maxDepth) return [];
 
@@ -219,7 +214,6 @@ async function getOutgoingCalls(
       visited,
       depth + 1,
       maxDepth,
-      root,
     );
 
     results.push({

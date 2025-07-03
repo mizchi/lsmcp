@@ -32,25 +32,25 @@ function greetUser(user: User): string {
 }
 
 // Duplicate variable declaration
-const testUser: User = {
+const testUser2: User = {
   id: 2,
   name: "Another User",
   email: "another@example.com",
 };
 
 // Another duplicate variable
-const invalidUser: User = {
+const invalidUser2: User = {
   id: 3,
   name: "Yet Another User",
   email: "yet@example.com",
 };
 
 // Another duplicate with type error
-const invalidUser: User = {
+const invalidUser3: User = {
   id: "still-not-a-number", // Type error
   name: "Invalid Again",
   email: "invalid2@example.com",
 };
 
 // Another duplicate const
-const result: number = greetUser(testUser); // Type error
+const result2: number = greetUser(testUser2); // Type error
