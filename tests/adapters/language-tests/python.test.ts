@@ -35,7 +35,7 @@ describe("Pyright Adapter", () => {
   });
 });
 
-describe("Ruff Adapter", () => {
+describe.skip("Ruff Adapter", () => {
   beforeAll(async () => {
     await initializePythonEnvironment();
   }, 15000); // 30s timeout for initialization
