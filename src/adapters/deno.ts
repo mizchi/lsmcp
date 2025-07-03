@@ -9,8 +9,8 @@ export const denoAdapter: LspAdapter = {
   name: "Deno",
   baseLanguage: "typescript",
   description: "Deno language server",
-  lspCommand: "deno",
-  lspArgs: ["lsp"],
+  bin: "deno",
+  args: ["lsp"],
 
   initializationOptions: {
     enable: true,

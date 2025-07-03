@@ -15,25 +15,25 @@ export function adapterToLanguageConfig(
     "moonbit-lsp",
   ];
 
-  let lspCommand = adapter.lspCommand;
-  let lspArgs = adapter.lspArgs || [];
+  let bin = adapter.bin;
+  let args = adapter.args || [];
 
   // If it's a known node_modules binary, try to resolve it
-  if (nodeModulesBinaries.includes(adapter.lspCommand)) {
+  if (nodeModulesBinaries.includes(adapter.bin)) {
     const resolved = getNodeModulesCommand(
-      adapter.lspCommand,
-      lspArgs,
+      adapter.bin,
+      args,
       projectRoot,
     );
-    lspCommand = resolved.command;
-    lspArgs = resolved.args;
+    bin = resolved.command;
+    args = resolved.args;
   }
 
   return {
     id: adapter.id,
     name: adapter.name,
-    lspCommand,
-    lspArgs,
+    bin,
+    args,
     initializationOptions: adapter.initializationOptions,
   };
 }
@@ -51,23 +51,23 @@ export function resolveAdapterCommand(
     "moonbit-lsp",
   ];
 
-  if (nodeModulesBinaries.includes(adapter.lspCommand)) {
+  if (nodeModulesBinaries.includes(adapter.bin)) {
     const resolved = getNodeModulesCommand(
-      adapter.lspCommand,
-      adapter.lspArgs || [],
+      adapter.bin,
+      adapter.args || [],
       projectRoot,
     );
     // Log when we resolve to node_modules (only in debug mode)
     if (!resolved.command.includes("npx") && process.env.DEBUG_LSP) {
       console.error(
-        `[lsmcp] Resolved ${adapter.lspCommand} to: ${resolved.command}`,
+        `[lsmcp] Resolved ${adapter.bin} to: ${resolved.command}`,
       );
     }
     return resolved;
   }
 
   return {
-    command: adapter.lspCommand,
-    args: adapter.lspArgs || [],
+    command: adapter.bin,
+    args: adapter.args || [],
   };
 }

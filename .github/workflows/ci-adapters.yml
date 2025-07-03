@@ -2,7 +2,7 @@ name: CI - Language Adapters
 
 on:
   push:
-    branches: [main, feat/adapters]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -167,7 +167,6 @@ jobs:
         env:
           CI: true
           TEST_PYTHON: true
-
 
   # MoonBit adapter test
   moonbit-adapter:

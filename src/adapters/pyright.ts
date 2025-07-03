@@ -8,8 +8,8 @@ export const pyrightAdapter: LspAdapter = {
   name: "Pyright",
   baseLanguage: "python",
   description: "Microsoft's Pyright Python language server",
-  lspCommand: "uv",
-  lspArgs: ["run", "pyright-langserver", "--stdio"],
+  bin: "uv",
+  args: ["run", "pyright-langserver", "--stdio"],
   initializationOptions: {
     python: {
       analysis: {

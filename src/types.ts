@@ -10,8 +10,11 @@ export interface BaseLspConfig {
   /** Display name */
   name: string;
 
+  /** LSP server binary command */
+  bin: string;
+
   /** Command line arguments for the LSP server */
-  lspArgs?: string[];
+  args?: string[];
 
   /** LSP initialization options */
   initializationOptions?: unknown;
@@ -21,9 +24,6 @@ export interface BaseLspConfig {
  * Language configuration for lsmcp
  */
 export interface LanguageConfig extends BaseLspConfig {
-  /** LSP server command or function to get the command */
-  lspCommand: string | (() => string);
-
   /** Pre-initialization hook (before LSP server starts) */
   preInitialize?: (projectRoot: string) => Promise<void>;
 
@@ -40,9 +40,6 @@ export interface LanguageConfig extends BaseLspConfig {
  * This type is JSON-serializable for configuration files
  */
 export interface LspAdapter extends BaseLspConfig {
-  /** LSP server command */
-  lspCommand: string;
-
   /** Base language this adapter is for */
   baseLanguage: string;
 

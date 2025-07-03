@@ -9,7 +9,8 @@ export const fsharpAdapter: LspAdapter = {
   name: "F# Autocomplete",
   baseLanguage: "fsharp",
   description: "F# language server (fsautocomplete)",
-  lspCommand: "fsautocomplete",
+  bin: "fsautocomplete",
+  args: [],
   initializationOptions: {
     AutomaticWorkspaceInit: true,
   },

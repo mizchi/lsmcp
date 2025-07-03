@@ -14,6 +14,11 @@ import { readFile } from "fs/promises";
 import type { LanguageConfig, LspAdapter } from "../types.ts";
 import { resolveAdapterCommand } from "../adapters/utils.ts";
 import { initialize as initializeLSPClient } from "../lsp/lspClient.ts";
+import {
+  AdapterRegistry,
+  ConfigLoader,
+  type ConfigSources,
+} from "../core/config/configLoader.ts";
 
 // Import LSP tools
 import { lspGetHoverTool } from "../lsp/tools/lspGetHover.ts";
@@ -57,28 +62,29 @@ const lspTools: ToolDef<any>[] = [
   lspGetCodeActionsTool,
 ];
 
-// Simple maps for languages and adapters
+// Initialize configuration system
+const adapterRegistry = new AdapterRegistry();
+const configLoader = new ConfigLoader(adapterRegistry);
+
+// Register all adapters
+adapterRegistry.register(typescriptAdapter);
+adapterRegistry.register(tsgoAdapter);
+adapterRegistry.register(denoAdapter);
+adapterRegistry.register(pyrightAdapter);
+adapterRegistry.register(ruffAdapter);
+adapterRegistry.register(rustAnalyzerAdapter);
+adapterRegistry.register(fsharpAdapter);
+adapterRegistry.register(moonbitLanguageServerAdapter);
+
+// Legacy support - will be removed in future versions
 const languages = new Map<string, LanguageConfig>();
-const adapters = new Map<string, LspAdapter>();
 
-// Languages are now handled through adapters
-
-// Register adapters
-adapters.set("typescript", typescriptAdapter);
-adapters.set("tsgo", tsgoAdapter);
-adapters.set("deno", denoAdapter);
-adapters.set("pyright", pyrightAdapter);
-adapters.set("ruff", ruffAdapter);
-adapters.set("rust-analyzer", rustAnalyzerAdapter);
-adapters.set("fsharp", fsharpAdapter);
-adapters.set("moonbit-language-server", moonbitLanguageServerAdapter);
-
-// Helper functions
+// Helper functions (legacy support)
 function getLanguage(id: string): LanguageConfig | undefined {
   const lang = languages.get(id);
   if (lang) return lang;
 
-  const adapter = adapters.get(id);
+  const adapter = adapterRegistry.get(id);
   if (adapter) return adapterToLanguageConfig(adapter);
 
   return undefined;
@@ -89,15 +95,15 @@ function listLanguages(): LanguageConfig[] {
 }
 
 function listAdapters(): LspAdapter[] {
-  return Array.from(adapters.values());
+  return adapterRegistry.list();
 }
 
 function adapterToLanguageConfig(adapter: LspAdapter): LanguageConfig {
   return {
     id: adapter.id,
     name: adapter.name,
-    lspCommand: adapter.lspCommand,
-    lspArgs: adapter.lspArgs,
+    bin: adapter.bin,
+    args: adapter.args,
     initializationOptions: adapter.initializationOptions,
   };
 }
@@ -174,15 +180,92 @@ Examples:
 `);
 }
 
+async function runLanguageServerWithConfig(
+  config: import("../core/config/configLoader.ts").ResolvedConfig,
+  _positionals: string[] = [],
+  customEnv?: Record<string, string | undefined>,
+) {
+  debug(
+    `[lsmcp] runLanguageServerWithConfig called with config: ${
+      JSON.stringify(config)
+    }`,
+  );
+
+  try {
+    const projectRoot = process.cwd();
+    const lspProcess = spawn(config.bin, config.args, {
+      cwd: projectRoot,
+      env: {
+        ...process.env,
+        ...customEnv,
+      },
+    });
+
+    // Initialize LSP client with the spawned process
+    await initializeLSPClient(
+      projectRoot,
+      lspProcess,
+      config.id,
+      config.initializationOptions,
+    );
+
+    // Start MCP server
+    const server = new BaseMcpServer({
+      name: `lsmcp (${config.name})`,
+      version: "0.1.0",
+    });
+
+    // Register all tools
+    const allTools: ToolDef<import("zod").ZodType>[] = [...lspTools];
+
+    // Add custom tools if available (note: would need adapter lookup for this)
+    server.registerTools(allTools);
+
+    // Start the server
+    await server.start();
+    debug(`lsmcp MCP server connected for: ${config.name}`);
+
+    // Handle LSP process errors
+    const fullCommand = config.args.length > 0
+      ? `${config.bin} ${config.args.join(" ")}`
+      : config.bin;
+
+    lspProcess.on("error", (error) => {
+      const context: ErrorContext = {
+        operation: "LSP server process",
+        language: config.id,
+        details: { command: fullCommand },
+      };
+      console.error(formatError(error, context));
+      process.exit(1);
+    });
+
+    lspProcess.on("exit", (code) => {
+      if (code !== 0) {
+        console.error(`LSP server exited with code ${code}`);
+        process.exit(code || 1);
+      }
+    });
+  } catch (error) {
+    const context: ErrorContext = {
+      operation: "MCP server startup",
+      language: config.id,
+      details: { command: `${config.bin} ${config.args.join(" ")}` },
+    };
+    console.error(formatError(error as Error, context));
+    process.exit(1);
+  }
+}
+
 async function runLanguageServer(
   language: string,
-  args: string[] = [],
+  positionals: string[] = [],
   customEnv?: Record<string, string | undefined>,
 ) {
   debug(
     `[lsmcp] runLanguageServer called with language: ${language}, args: ${
       JSON.stringify(
-        args,
+        positionals,
       )
     }`,
   );
@@ -200,24 +283,22 @@ async function runLanguageServer(
   }
 
   // Check if this came from an adapter
-  const adapter = adapters.get(language);
-  let lspCommand: string;
+  const adapter = adapterRegistry.get(language);
+  let lspBin: string;
   let lspArgs: string[];
 
   if (adapter) {
     // Use the adapter resolution for node_modules binaries
     const resolved = resolveAdapterCommand(adapter, process.cwd());
-    lspCommand = resolved.command;
+    lspBin = resolved.command;
     lspArgs = resolved.args;
   } else {
     // Use the config directly
-    lspCommand = typeof config.lspCommand === "function"
-      ? config.lspCommand()
-      : config.lspCommand;
-    lspArgs = config.lspArgs || [];
+    lspBin = config.bin;
+    lspArgs = config.args || [];
   }
 
-  if (!lspCommand) {
+  if (!lspBin) {
     console.error(
       `Error: No LSP command configured for language '${language}'.`,
     );
@@ -226,15 +307,15 @@ async function runLanguageServer(
   }
 
   // Start MCP server directly
-  debug(`[lsmcp] Using LSP command '${lspCommand}' for language '${language}'`);
+  debug(`[lsmcp] Using LSP command '${lspBin}' for language '${language}'`);
   const fullCommand = lspArgs.length > 0
-    ? `${lspCommand} ${lspArgs.join(" ")}`
-    : lspCommand;
+    ? `${lspBin} ${lspArgs.join(" ")}`
+    : lspBin;
 
   try {
     // Spawn LSP server process
     const projectRoot = process.cwd();
-    const lspProcess = spawn(lspCommand, lspArgs, {
+    const lspProcess = spawn(lspBin, lspArgs, {
       cwd: projectRoot,
       env: {
         ...process.env,
@@ -300,6 +381,80 @@ async function main() {
     }, positionals: ${JSON.stringify(positionals)}`,
   );
 
+  // Use new configuration system when possible
+  if (values.preset || values.config || values.bin) {
+    return await mainWithConfigLoader();
+  }
+
+  // Fall back to legacy behavior for backward compatibility
+  return await mainLegacy();
+}
+
+async function mainWithConfigLoader() {
+  debug("[lsmcp] Using new configuration system");
+
+  // Show help if requested
+  if (values.help) {
+    showHelp();
+    process.exit(0);
+  }
+
+  // List languages if requested
+  if (values.list) {
+    console.log("Available adapters with --preset:");
+    const adapterList = adapterRegistry.list();
+    for (const adapter of adapterList) {
+      console.log(`  ${adapter.id.padEnd(25)} - ${adapter.description}`);
+    }
+
+    console.log("\nFor custom language configuration, use --config:");
+    console.log('  --config "./my-language.json"');
+    console.log("\nFor other languages or custom LSP servers, use --bin:");
+    console.log('  --bin "deno lsp" for Deno');
+    console.log('  --bin "clangd" for C/C++');
+    console.log('  --bin "jdtls" for Java');
+    process.exit(0);
+  }
+
+  try {
+    // Prepare configuration sources
+    const sources: ConfigSources = {};
+
+    if (values.preset) {
+      sources.preset = values.preset;
+    }
+
+    if (values.config) {
+      sources.configFile = values.config;
+    }
+
+    if (values.bin) {
+      const parsedBin = ConfigLoader.parseBinString(values.bin);
+      sources.overrides = {
+        bin: parsedBin.bin,
+        args: parsedBin.args,
+      };
+    }
+
+    // Load configuration
+    const config = await configLoader.loadConfig(sources);
+    debug(`[lsmcp] Loaded config: ${JSON.stringify(config)}`);
+
+    // Start LSP server with resolved configuration
+    await runLanguageServerWithConfig(config, positionals);
+  } catch (error) {
+    console.error(
+      `Configuration error: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    process.exit(1);
+  }
+}
+
+async function mainLegacy() {
+  debug("[lsmcp] Using legacy configuration system");
+
   // Show help if requested
   if (values.help) {
     showHelp();
@@ -311,9 +466,7 @@ async function main() {
     console.log("Supported languages with --language:");
     const languageList = listLanguages();
     for (const lang of languageList) {
-      const lspCmd = typeof lang.lspCommand === "function"
-        ? lang.lspCommand()
-        : lang.lspCommand;
+      const lspCmd = lang.bin;
       console.log(
         `  ${lang.id.padEnd(12)} - ${lang.name} [requires ${lspCmd}]`,
       );

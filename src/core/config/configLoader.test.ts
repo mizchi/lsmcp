@@ -11,8 +11,8 @@ const testAdapter: LspAdapter = {
   name: "Test Adapter",
   baseLanguage: "test",
   description: "Test adapter for unit tests",
-  lspCommand: "test-lsp",
-  lspArgs: ["--test", "--mode=stdio"],
+  bin: "test-lsp",
+  args: ["--test", "--mode=stdio"],
   unsupported: ["get_workspace_symbols"],
   initializationOptions: { test: true },
 };
@@ -22,8 +22,8 @@ const tsgoTestAdapter: LspAdapter = {
   name: "tsgo",
   baseLanguage: "typescript",
   description: "Fast TypeScript language server",
-  lspCommand: "npx",
-  lspArgs: ["tsgo", "--lsp", "--stdio"],
+  bin: "npx",
+  args: ["tsgo", "--lsp", "--stdio"],
   unsupported: ["get_document_symbols"],
 };
 
@@ -110,8 +110,8 @@ describe("ConfigLoader", () => {
       const configData = {
         id: "file-config",
         name: "File Config",
-        lspCommand: "file-lsp",
-        lspArgs: ["--file", "--test"],
+        bin: "file-lsp",
+        args: ["--file", "--test"],
         baseLanguage: "file",
         description: "Config from file",
       };
@@ -236,7 +236,7 @@ describe("ConfigLoader", () => {
       const configData = {
         id: "file-override",
         name: "File Override",
-        lspCommand: "file-override-lsp",
+        bin: "file-override-lsp",
       };
       await writeFile(configPath, JSON.stringify(configData, null, 2));
 
@@ -259,8 +259,8 @@ describe("ConfigLoader", () => {
       const configData = {
         id: "base",
         name: "Base Config",
-        lspCommand: "base-lsp",
-        lspArgs: ["--base"],
+        bin: "base-lsp",
+        args: ["--base"],
       };
       await writeFile(configPath, JSON.stringify(configData, null, 2));
 

@@ -15,8 +15,8 @@ function adapterToLanguageConfig(adapter: LspAdapter): LanguageConfig {
   return {
     id: adapter.id,
     name: adapter.name,
-    lspCommand: adapter.lspCommand,
-    lspArgs: adapter.lspArgs,
+    bin: adapter.bin,
+    args: adapter.args,
     initializationOptions: adapter.initializationOptions,
   };
 }

@@ -144,8 +144,8 @@ export class ConfigLoader {
     return {
       id: adapter.id,
       name: adapter.name,
-      bin: adapter.lspCommand,
-      args: adapter.lspArgs || [],
+      bin: adapter.bin,
+      args: adapter.args || [],
       baseLanguage: adapter.baseLanguage,
       description: adapter.description,
       unsupported: adapter.unsupported,
@@ -163,12 +163,11 @@ export class ConfigLoader {
       const content = await readFile(filepath, "utf-8");
       const json = JSON.parse(content);
 
-      // Convert old format to new format if needed
       return {
         id: json.id,
         name: json.name,
-        bin: json.lspCommand || json.bin,
-        args: json.lspArgs || json.args || [],
+        bin: json.bin,
+        args: json.args || [],
         baseLanguage: json.baseLanguage,
         description: json.description,
         unsupported: json.unsupported,

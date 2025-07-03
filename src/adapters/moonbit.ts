@@ -14,8 +14,8 @@ export const moonbitLanguageServerAdapter: LspAdapter = {
   name: "MoonBit Language Server",
   baseLanguage: "moonbit",
   description: "moonbit lsp",
-  lspCommand: "moonbit-lsp",
-  lspArgs: [],
+  bin: "moonbit-lsp",
+  args: [],
   unsupported: [
     // "get_hover", // May be slow/timeout on some files
   ],

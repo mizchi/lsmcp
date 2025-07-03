@@ -14,8 +14,8 @@ describe.skip("Go Adapter", () => {
       name: "Go Language Server",
       baseLanguage: "go",
       description: "Official Go language server",
-      lspCommand: "gopls",
-      lspArgs: [],
+      bin: "gopls",
+      args: [],
       initializationOptions: {
         "ui.documentation.hoverKind": "FullDocumentation",
         "ui.completion.usePlaceholders": true,

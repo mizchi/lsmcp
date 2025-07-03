@@ -9,16 +9,16 @@ export const ruffAdapter: LspAdapter = {
   name: "Ruff",
   baseLanguage: "python",
   description: "Python linter",
-  lspCommand: "uv",
-  lspArgs: ["run", "ruff", "server"],
+  bin: "uv",
+  args: ["run", "ruff", "server"],
   initializationOptions: {},
   doctor: async () => {
     // First check if ruff is directly available
     try {
       execSync("which ruff", { stdio: "ignore" });
       // If ruff is directly available, update the adapter to use it directly
-      ruffAdapter.lspCommand = "ruff";
-      ruffAdapter.lspArgs = ["server"];
+      ruffAdapter.bin = "ruff";
+      ruffAdapter.args = ["server"];
       return { ok: true };
     } catch {
       // If not, check for uv
