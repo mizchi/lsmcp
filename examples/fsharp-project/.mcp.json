@@ -2,7 +2,7 @@
   "mcpServers": {
     "fsharp": {
       "command": "node",
-      "args": ["../../dist/lsmcp.js", "-p", "fsac"]
+      "args": ["../../dist/lsmcp.js", "-p", "fsharp"]
     }
   }
 }

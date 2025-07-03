@@ -37,7 +37,7 @@ import { denoAdapter } from "../adapters/deno.ts";
 import { pyrightAdapter } from "../adapters/pyright.ts";
 import { ruffAdapter } from "../adapters/ruff.ts";
 import { rustAnalyzerAdapter } from "../adapters/rust-analyzer.ts";
-import { fsacAdapter } from "../adapters/fsac.ts";
+import { fsharpAdapter } from "../adapters/fsharp.ts";
 import { moonbitLanguageServerAdapter } from "../adapters/moonbit.ts";
 
 // Define LSP-only tools
@@ -70,7 +70,7 @@ adapters.set("deno", denoAdapter);
 adapters.set("pyright", pyrightAdapter);
 adapters.set("ruff", ruffAdapter);
 adapters.set("rust-analyzer", rustAnalyzerAdapter);
-adapters.set("fsac", fsacAdapter);
+adapters.set("fsharp", fsharpAdapter);
 adapters.set("moonbit-language-server", moonbitLanguageServerAdapter);
 
 // Helper functions

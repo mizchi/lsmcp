@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { join } from "path";
-import { fsacAdapter } from "../../../src/adapters/fsac.ts";
+import { fsharpAdapter } from "../../../src/adapters/fsharp.ts";
 import { testLspConnection } from "../testHelpers.ts";
 
 describe("F# Adapter", () => {
@@ -8,7 +8,7 @@ describe("F# Adapter", () => {
     const projectRoot = join(import.meta.dirname, "../fixtures", "fsharp");
     const checkFiles = ["Program.fs"];
     const result = await testLspConnection(
-      fsacAdapter,
+      fsharpAdapter,
       projectRoot,
       checkFiles,
     );

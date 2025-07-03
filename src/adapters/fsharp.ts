@@ -4,8 +4,8 @@ import { execSync } from "child_process";
 /**
  * F# Autocomplete (fsautocomplete) adapter
  */
-export const fsacAdapter: LspAdapter = {
-  id: "fsac",
+export const fsharpAdapter: LspAdapter = {
+  id: "fsharp",
   name: "F# Autocomplete",
   baseLanguage: "fsharp",
   description: "F# language server (fsautocomplete)",

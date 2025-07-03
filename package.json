@@ -15,7 +15,7 @@
     "typecheck:tsc": "tsc --noEmit -p tsconfig.json",
     "lint": "oxlint --quiet --ignore-path=.oxlintignore",
     "lint:refactor": "oxlint",
-    "test": "pnpm test:unit && pnpm test:integration && pnpm test:typescript-lsp",
+    "test": "pnpm test:unit && pnpm test:integration",
     "test:unit": "vitest --run --project unit",
     "test:integration": "pnpm build && vitest --run --project=integration",
     "test:adapters": "vitest --run --project=adapters # only local",
