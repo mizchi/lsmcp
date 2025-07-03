@@ -49,6 +49,9 @@ export interface LspAdapter extends BaseLspConfig {
   /** List of LSP features that are not supported by this adapter */
   unsupported?: string[];
 
+  /** Whether diagnostics need deduplication (e.g., for servers that report duplicates) */
+  needsDiagnosticDeduplication?: boolean;
+
   /** Language-specific MCP tools */
   customTools?: ToolDef<import("zod").ZodType>[];
 

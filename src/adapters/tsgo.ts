@@ -24,6 +24,7 @@ export const tsgoAdapter: LspAdapter = {
     "rename_symbol",
     "delete_symbol",
   ],
+  needsDiagnosticDeduplication: true,
 
   // Initialize with TypeScript preferences
   initializationOptions: {

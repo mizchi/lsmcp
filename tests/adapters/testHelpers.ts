@@ -6,7 +6,7 @@ import type { LanguageConfig, LspAdapter } from "../../src/types.ts";
 import { resolveAdapterCommand } from "../../src/adapters/utils.ts";
 import {
   processDefaultDiagnostics,
-  processTsgoDiagnostics,
+  processDeduplicatedDiagnostics,
 } from "../../src/adapters/diagnosticProcessors.ts";
 
 // Helper to convert adapter to language config
@@ -192,8 +192,9 @@ export async function testLspConnection(
 
         // Use adapter-specific diagnostic processor if needed
         let processedDiagnostics;
-        if (adapter.id === "tsgo") {
-          processedDiagnostics = processTsgoDiagnostics(
+        // Process diagnostics based on adapter configuration
+        if (adapter.needsDiagnosticDeduplication) {
+          processedDiagnostics = processDeduplicatedDiagnostics(
             errorAndWarningDiagnostics,
             checkFile,
             fileContent,

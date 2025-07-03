@@ -9,13 +9,13 @@ export interface ProcessedDiagnostic {
 }
 
 /**
- * Process diagnostics for tsgo adapter
- * tsgo has known issues:
+ * Process diagnostics with deduplication and validation
+ * Some LSP servers may have issues:
  * 1. Reports duplicate diagnostics
  * 2. Reports diagnostics for non-existent lines
  * 3. May report diagnostics multiple times with different line numbers
  */
-export function processTsgoDiagnostics(
+export function processDeduplicatedDiagnostics(
   diagnostics: Diagnostic[],
   filePath: string,
   fileContent: string,
