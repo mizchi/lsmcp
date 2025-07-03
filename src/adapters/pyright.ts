@@ -9,8 +9,8 @@ export const pyrightAdapter: LspAdapter = {
   name: "Pyright",
   baseLanguage: "python",
   description: "Microsoft's Pyright Python language server",
-  bin: "pyright-langserver",
-  args: ["--stdio"],
+  bin: "uv",
+  args: ["run", "pyright-langserver", "--stdio"],
   initializationOptions: {
     python: {
       analysis: {
@@ -22,35 +22,13 @@ export const pyrightAdapter: LspAdapter = {
   },
   doctor: async () => {
     try {
-      // Check if pyright-langserver is available
-      execSync("which pyright-langserver", { stdio: "ignore" });
-      return { ok: true };
+      execSync("uv run pyright-langserver --version", { stdio: "ignore", timeout: 5000 });
+      return { ok: true, message: "pyright-langserver available via uv" };
     } catch {
-      try {
-        // Check if pyright is available via npx
-        execSync("npx pyright-langserver --version", { stdio: "ignore" });
-        return {
-          ok: true,
-          bin: "npx",
-          args: ["pyright-langserver", "--stdio"],
-        };
-      } catch {
-        try {
-          // Check if pyright is available via uv
-          execSync("uv run pyright-langserver --version", { stdio: "ignore" });
-          return {
-            ok: true,
-            bin: "uv",
-            args: ["run", "pyright-langserver", "--stdio"],
-          };
-        } catch {
-          return {
-            ok: false,
-            message:
-              "pyright-langserver not found. Install with: npm install -g pyright, or pip install pyright, or uv add pyright",
-          };
-        }
-      }
+      return {
+        ok: false,
+        message: "pyright-langserver not available via uv. Install with: uv add pyright",
+      };
     }
   },
 };

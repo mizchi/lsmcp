@@ -65,7 +65,7 @@ def main() -> None:
     result2 = calc.multiply(4, 7)
     
     # This will cause a type error - passing string instead of int
-    # result3 = calc.add("5", 3)  # Uncomment to test error detection
+    result3 = calc.add("5", 3)  # Uncomment to test error detection
     
     # This will cause a runtime error
     # result4 = calc.divide(10, 0)  # Uncomment to test error detection
@@ -75,7 +75,7 @@ def main() -> None:
     message = process_data(test_data)
     
     # This will cause a type error - undefined variable
-    # print(undefined_variable)  # Uncomment to test error detection
+    print(undefined_variable)  # Uncomment to test error detection
     
     print(f"Results: {result1}, {result2}")
     print(f"Message: {message}")

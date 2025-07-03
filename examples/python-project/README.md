@@ -1,6 +1,7 @@
 # Python Project - Pyright Language Server Test
 
-This directory contains a test Python project for the Pyright language server integration.
+This directory contains a test Python project for the Pyright language server
+integration.
 
 ## Files
 
