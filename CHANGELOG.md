@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0](https://github.com/mizchi/lsmcp/compare/v0.7.0...v0.8.0) (2025-07-03)
+
+### 🚀 Features
+
+* **Python Support**: Add Pyright and Ruff adapters for comprehensive Python language support
+  - Pyright adapter for type checking and language features
+  - Ruff adapter for fast Python linting
+  - Full LSP tool support for Python development
+
+### 📚 Documentation
+
+* **Preset Usage**: Update all documentation to use `-p`/`--preset` pattern instead of deprecated `--language`
+* **Manual Setup**: Add comprehensive manual setup documentation
+  - Minimal rust-analyzer configuration example
+  - Configuration file usage with `--config` option
+  - Custom LSP server setup instructions
+* **Available Presets**: Document all 8 built-in language presets
+  - TypeScript (typescript, tsgo)
+  - Python (pyright, ruff)
+  - Rust (rust-analyzer)
+  - F# (fsharp)
+  - Deno
+  - MoonBit
+
+### 🐛 Bug Fixes
+
+* **Type Errors**: Fix MCP SDK type mismatches using type casting approach
+  - Resolve TypeScript compilation errors in mcpHelpers.ts
+  - Ensure compatibility with both typescript-language-server and tsgo
+
+### ♻️ Code Refactoring
+
+* **Build Configuration**: Exclude Python virtual environments (.venv) from formatting
+
+### 🔧 Chores
+
+* Switch code formatter from Deno to Biome
+* Drop MoonBit target support
+
 ## [0.7.0](https://github.com/mizchi/lsmcp/compare/v0.6.0...v0.7.0) (2025-07-02)
 
 ### 🎉 Highlights
