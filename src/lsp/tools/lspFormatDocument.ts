@@ -5,7 +5,7 @@ import { pathToFileURL } from "url";
 import { FormattingOptions, TextEdit } from "vscode-languageserver-types";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { getLSPClient } from "../lspClient.ts";
-import { applyTextEdits } from "../../textUtils/applyTextEdits.ts";
+import { applyTextEdits } from "../../core/textUtils/applyTextEdits.ts";
 
 const schemaShape = {
   root: z.string().describe("Root directory for resolving relative paths"),

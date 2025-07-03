@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
 import { getActiveClient } from "../lspClient.ts";
-import { parseLineNumber } from "../../textUtils/parseLineNumber.ts";
-import { findSymbolInLine } from "../../textUtils/findSymbolInLine.ts";
-import { findTargetInFile } from "../../textUtils/findTargetInFile.ts";
+import { parseLineNumber } from "../../core/textUtils/parseLineNumber.ts";
+import { findSymbolInLine } from "../../core/textUtils/findSymbolInLine.ts";
+import { findTargetInFile } from "../../core/textUtils/findTargetInFile.ts";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import path from "path";

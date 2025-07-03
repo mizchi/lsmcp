@@ -1,6 +1,6 @@
 import { readFileWithMetadata } from "./fileOperations.ts";
 import { validateLine, validateLineAndSymbol } from "../pure/validation.ts";
-import { findTargetInFile } from "../../textUtils/findTargetInFile.ts";
+import { findTargetInFile } from "../../core/textUtils/findTargetInFile.ts";
 import { errors } from "../pure/errors/index.ts";
 
 /**

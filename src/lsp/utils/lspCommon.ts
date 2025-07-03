@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs/promises";
 import { pathToFileURL } from "url";
 import { getLSPClient } from "../lspClient.ts";
-import { resolveLineParameter } from "../../textUtils/resolveLineParameter.ts";
+import { resolveLineParameter } from "../../core/textUtils/resolveLineParameter.ts";
 import { ErrorContext, formatError } from "../../mcp/utils/errorHandler.ts";
 
 // Common file operations

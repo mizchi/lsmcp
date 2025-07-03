@@ -11,7 +11,7 @@ import {
 } from "vscode-languageserver-types";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { getLSPClient } from "../lspClient.ts";
-import { resolveLineParameter } from "../../textUtils/resolveLineParameter.ts";
+import { resolveLineParameter } from "../../core/textUtils/resolveLineParameter.ts";
 
 const schemaShape = {
   root: z.string().describe("Root directory for resolving relative paths"),
