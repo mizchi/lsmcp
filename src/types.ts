@@ -1,14 +1,22 @@
 import type { ToolDef } from "./mcp/utils/mcpHelpers.ts";
+import type { ZodType } from "zod";
 
 /**
- * Common LSP configuration fields
+ * LSP adapter configuration
+ * Defines how to connect to and configure a language server
  */
-export interface BaseLspConfig {
-  /** Unique identifier */
+export interface LspAdapter {
+  /** Unique identifier (e.g., "typescript", "pyright") */
   id: string;
 
-  /** Display name */
+  /** Display name (e.g., "TypeScript Language Server") */
   name: string;
+
+  /** Base language this adapter supports (e.g., "typescript", "python") */
+  baseLanguage: string;
+
+  /** Brief description of the adapter */
+  description: string;
 
   /** LSP server binary command */
   bin: string;
@@ -18,49 +26,36 @@ export interface BaseLspConfig {
 
   /** LSP initialization options */
   initializationOptions?: unknown;
-}
 
-/**
- * Language configuration for lsmcp
- */
-export interface LanguageConfig extends BaseLspConfig {
-  /** Pre-initialization hook (before LSP server starts) */
-  preInitialize?: (projectRoot: string) => Promise<void>;
-
-  /** Language-specific MCP tools */
-  customTools?: ToolDef<import("zod").ZodType>[];
-
-  /** Check if the language server is available and properly configured */
-  doctor?: () => Promise<{ ok: boolean; message?: string }>;
-}
-
-/**
- * LSP adapter configuration
- * Provides specific configuration for an LSP server implementation
- * This type is JSON-serializable for configuration files
- */
-export interface LspAdapter extends BaseLspConfig {
-  /** Base language this adapter is for */
-  baseLanguage: string;
-
-  /** Description of what makes this adapter different */
-  description: string;
-
-  /** List of LSP features that are not supported by this adapter */
+  /** List of unsupported LSP features (e.g., ["rename_symbol", "get_code_actions"]) */
   unsupported?: string[];
 
-  /** Whether diagnostics need deduplication (e.g., for servers that report duplicates) */
+  /** Whether diagnostics need deduplication */
   needsDiagnosticDeduplication?: boolean;
 
-  /** Language-specific MCP tools */
-  customTools?: ToolDef<import("zod").ZodType>[];
+  /** Custom MCP tools specific to this adapter */
+  customTools?: ToolDef<ZodType>[];
 
-  /** Check if the language server is available and properly configured */
+  /** Health check function */
   doctor?: () => Promise<{ ok: boolean; message?: string }>;
 }
 
 /**
- * Configuration file format for --config option
- * This is the same as LspAdapter for simplicity
+ * Legacy language configuration type
+ * @deprecated Use LspAdapter instead
  */
-export type LanguageConfigJson = LspAdapter;
+export interface LanguageConfig {
+  id: string;
+  name: string;
+  bin: string;
+  args?: string[];
+  initializationOptions?: unknown;
+  preInitialize?: (projectRoot: string) => Promise<void>;
+  customTools?: ToolDef<ZodType>[];
+  doctor?: () => Promise<{ ok: boolean; message?: string }>;
+}
+
+/**
+ * Configuration file format (JSON-serializable subset of LspAdapter)
+ */
+export type LanguageConfigJson = Omit<LspAdapter, "customTools" | "doctor">;
