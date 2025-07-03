@@ -240,7 +240,7 @@ You can configure any LSP server by providing the binary path and optional initi
         "@mizchi/lsmcp",
         "--bin",
         "/path/to/your/lsp-server",
-        "--init-options",
+        "--initializationOptions",
         "{\"customOption\":\"value\"}"
       ]
     }
