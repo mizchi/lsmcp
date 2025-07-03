@@ -46,12 +46,27 @@ lsmcp provides multi-language support through Language Server Protocol (LSP) int
 ### Basic Usage
 
 ```bash
-# Basic pattern: Specify LSP server with --bin
-claude mcp add <server-name> npx -- -y @mizchi/lsmcp --bin="<lsp-command>"
-
 # Using presets for common languages
 claude mcp add typescript npx -- -y @mizchi/lsmcp -p typescript
+
+# Custom LSP server with --bin
+claude mcp add <server-name> npx -- -y @mizchi/lsmcp --bin="<lsp-command>"
 ```
+
+### Available Presets
+
+lsmcp includes built-in presets for popular language servers:
+
+- **`typescript`** - TypeScript/JavaScript (typescript-language-server)
+- **`tsgo`** - TypeScript/JavaScript (tsgo - faster alternative)
+- **`deno`** - Deno TypeScript/JavaScript
+- **`pyright`** - Python (Microsoft Pyright)
+- **`ruff`** - Python (Ruff linter as LSP)
+- **`rust-analyzer`** - Rust
+- **`fsharp`** - F# (fsautocomplete)
+- **`moonbit-language-server`** - MoonBit
+
+For languages not in this list, or to customize LSP server settings, see [Manual Setup](#manual-setup).
 
 ### Language-Specific Setup
 
@@ -197,7 +212,17 @@ lsmcp supports any language with an LSP server. Here are some common configurati
 # Go
 go install golang.org/x/tools/gopls@latest
 claude mcp add go npx -- -y @mizchi/lsmcp --bin="gopls"
+
+# C/C++ 
+# Install clangd from your package manager or LLVM releases
+claude mcp add cpp npx -- -y @mizchi/lsmcp --bin="clangd"
+
+# Java
+# Install jdtls (Eclipse JDT Language Server)
+claude mcp add java npx -- -y @mizchi/lsmcp --bin="jdtls"
 ```
+
+For more customization options, see [Manual Setup](#manual-setup).
 
 </details>
 
