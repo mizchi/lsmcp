@@ -71,7 +71,7 @@ export abstract class BaseLspAdapter {
           });
         });
 
-        process.on('error', (error) => {
+        process.on('error', (error: Error) => {
           cleanup();
           resolve({ 
             available: false, 
@@ -95,7 +95,7 @@ export abstract class BaseLspAdapter {
     debugLog(`Starting LSP server: ${this.config.bin} ${this.config.args?.join(' ') || ''}`);
     
     try {
-      const process = spawn(this.config.bin, this.config.args || [], {
+      const lspProcess = spawn(this.config.bin, this.config.args || [], {
         cwd: rootPath,
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, ...this.getEnvironmentVariables() }
@@ -104,25 +104,25 @@ export abstract class BaseLspAdapter {
       // Give the process a moment to start
       await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
-          if (process.exitCode !== null) {
-            reject(new Error(`LSP server exited immediately with code ${process.exitCode}`));
+          if (lspProcess.exitCode !== null) {
+            reject(new Error(`LSP server exited immediately with code ${lspProcess.exitCode}`));
           } else {
             resolve(void 0);
           }
         }, 1000);
 
-        process.on('spawn', () => {
+        lspProcess.on('spawn', () => {
           clearTimeout(timeout);
           resolve(void 0);
         });
 
-        process.on('error', (error) => {
+        lspProcess.on('error', (error: Error) => {
           clearTimeout(timeout);
           reject(error);
         });
       });
 
-      return process;
+      return lspProcess;
 
     } catch (error) {
       throw new Error(`Failed to start LSP server: ${error instanceof Error ? error.message : String(error)}`);

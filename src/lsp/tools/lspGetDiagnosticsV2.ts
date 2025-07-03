@@ -97,7 +97,7 @@ async function getDiagnosticsWithLSPV2(
         await new Promise<void>((resolve) => setTimeout(resolve, 200));
         attempts++;
         
-        diagnostics = await client.pullDiagnostics(fileUri);
+        diagnostics = await client.pullDiagnostics!(fileUri);
         method = "pull";
         
         debugLogger.log(LogLevel.DEBUG, "DiagnosticsV2", `Pull diagnostics success: ${diagnostics.length} diagnostics`);

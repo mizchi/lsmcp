@@ -1,6 +1,5 @@
 import { ChildProcess } from "child_process";
-import { EventEmitter } from "events";
-import { Position, Range, Diagnostic } from "vscode-languageserver-types";
+import { Position } from "vscode-languageserver-types";
 import { LSPClient, LSPClientConfig } from "./lspTypes.ts";
 import { createLSPClient } from "./lspClient.ts";
 import { debugLog } from "../mcp/utils/errorHandler.ts";
@@ -49,12 +48,10 @@ export interface LSPValidatorConfig {
 export class LSPValidator {
   private client: LSPClient | null = null;
   private config: LSPValidatorConfig;
-  private eventEmitter: EventEmitter;
   private testFileUri: string;
 
   constructor(config: LSPValidatorConfig) {
     this.config = config;
-    this.eventEmitter = new EventEmitter();
     this.testFileUri = `file://${config.rootPath}/${config.testFileName || "test.py"}`;
   }
 
@@ -214,19 +211,22 @@ export class LSPValidator {
 
     // Test Diagnostics
     results.push(await this.testFeature("diagnostics", async () => {
-      const diagnostics = await this.client!.pullDiagnostics(this.testFileUri);
+      if (!this.client?.pullDiagnostics) return false;
+      const diagnostics = await this.client.pullDiagnostics(this.testFileUri);
       return Array.isArray(diagnostics);
     }));
 
     // Test Hover
     results.push(await this.testFeature("hover", async () => {
-      const hover = await this.client!.getHover(this.testFileUri, testPosition);
+      if (!this.client) return false;
+      const hover = await this.client.getHover(this.testFileUri, testPosition);
       return hover !== null;
     }));
 
     // Test Completion
     results.push(await this.testFeature("completion", async () => {
-      const completion = await this.client!.getCompletion(this.testFileUri, testPosition);
+      if (!this.client) return false;
+      const completion = await this.client.getCompletion(this.testFileUri, testPosition);
       return Array.isArray(completion);
     }));
 

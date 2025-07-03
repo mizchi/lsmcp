@@ -170,7 +170,7 @@ export class LSPTester {
   private createFailedSuiteResult(
     suite: TestSuite,
     validationResult: LSPValidationResult,
-    reason: string
+    _reason: string
   ): TestSuiteResult {
     const totalTests = suite.testCases.reduce((sum, testCase) => sum + testCase.expectations.length, 0);
     
