@@ -7,7 +7,7 @@ import fs from "fs/promises";
 import { randomBytes } from "crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SERVER_PATH = path.join(__dirname, "../../dist/typescript-mcp.js");
+const SERVER_PATH = path.join(__dirname, "../../dist/lsmcp.js");
 
 describe("TypeScript New Tools Basic Integration", () => {
   let client: Client;
@@ -39,21 +39,12 @@ describe("TypeScript New Tools Basic Integration", () => {
       ),
     );
 
-    // Get TypeScript language server path
-    const tsLangServerPath = path.join(
-      __dirname,
-      "../../node_modules/.bin/typescript-language-server",
-    );
-
     // Create transport with LSP configuration
     const cleanEnv = { ...process.env } as Record<string, string>;
-    // Set FORCE_LSP and LSP_COMMAND to enable LSP initialization
-    cleanEnv.FORCE_LSP = "true";
-    cleanEnv.LSP_COMMAND = `${tsLangServerPath} --stdio`;
 
     transport = new StdioClientTransport({
       command: "node",
-      args: [SERVER_PATH],
+      args: [SERVER_PATH, "--language=typescript"],
       env: cleanEnv,
       cwd: tmpDir,
     });

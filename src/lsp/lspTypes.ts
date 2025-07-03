@@ -21,6 +21,22 @@ import {
   TextEdit,
   WorkspaceEdit,
 } from "vscode-languageserver-types";
+
+// Re-export commonly used types
+export {
+  CodeAction,
+  Command,
+  CompletionItem,
+  Diagnostic,
+  DocumentSymbol,
+  Location,
+  LocationLink,
+  Position,
+  Range,
+  SymbolInformation,
+  TextEdit,
+  WorkspaceEdit,
+};
 import { ChildProcess } from "child_process";
 import { EventEmitter } from "events";
 
@@ -239,9 +255,11 @@ export interface LSPClientConfig {
   languageId?: string; // Default: "typescript"
   clientName?: string; // Default: "lsp-client"
   clientVersion?: string; // Default: "0.1.0"
+  initializationOptions?: unknown; // Language-specific initialization options
 }
 
 export type LSPClient = {
+  languageId: string;
   start: () => Promise<void>;
   stop: () => Promise<void>;
   openDocument: (uri: string, text: string, languageId?: string) => void;
@@ -252,7 +270,7 @@ export type LSPClient = {
   getDefinition: (
     uri: string,
     position: Position,
-  ) => Promise<Location | Location[]>;
+  ) => Promise<Location | Location[] | LocationLink[]>;
   getHover: (uri: string, position: Position) => Promise<HoverResult>;
   getDiagnostics: (uri: string) => Diagnostic[];
   pullDiagnostics?: (uri: string) => Promise<Diagnostic[]>;
@@ -294,13 +312,13 @@ export type LSPClient = {
     method: string,
     params?: Record<string, unknown>,
   ) => Promise<T>;
-  on: (
+  on(
     event: "diagnostics",
     listener: (params: PublishDiagnosticsParams) => void,
-  ) => void;
-  on: (event: string, listener: (...args: unknown[]) => void) => void;
-  emit: (event: "diagnostics", params: PublishDiagnosticsParams) => boolean;
-  emit: (event: string, ...args: unknown[]) => boolean;
+  ): void;
+  on(event: string, listener: (...args: unknown[]) => void): void;
+  emit(event: "diagnostics", params: PublishDiagnosticsParams): boolean;
+  emit(event: string, ...args: unknown[]): boolean;
   waitForDiagnostics: (
     fileUri: string,
     timeout?: number,

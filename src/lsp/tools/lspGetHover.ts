@@ -1,12 +1,9 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
-import { createLSPTool } from "../../common/toolFactory.ts";
-import { withLSPOperation } from "../../common/lspOperations.ts";
-import {
-  hasSymbolResolution,
-  resolveFileAndSymbol,
-} from "../../common/fileSymbolResolver.ts";
-import { errors } from "../../common/errors/index.ts";
+import { createLSPTool } from "../../core/io/toolFactory.ts";
+import { withLSPOperation } from "../../core/io/lspOperations.ts";
+import { resolveFileAndSymbol } from "../../core/io/fileSymbolResolver.ts";
+import { getLanguageIdFromPath } from "../../core/pure/languageDetection.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -178,10 +175,15 @@ async function getHover(
 
     const { fileUri, fileContent } = resolution;
 
+    // Get language ID from file extension
+    const languageId = getLanguageIdFromPath(request.filePath);
+
     // Get hover info using LSP operation wrapper
     const result = await withLSPOperation({
       fileUri,
       fileContent,
+      languageId: languageId || undefined,
+      timeout: 5000, // 5 second timeout for hover operations
       operation: async (client) => {
         return (await client.getHover(fileUri, {
           line: targetLine,

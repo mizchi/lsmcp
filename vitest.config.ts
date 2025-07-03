@@ -33,14 +33,18 @@ export default defineConfig({
         },
       },
       {
-        // flaky isolated
         extends: true,
         test: {
-          name: "typescript-lsp",
-          include: ["tests/integration/typescript-lsp.test.ts"],
-          testTimeout: 10000, // 10s timeout for integration tests
-          // Retry flaky tests up to 2 times due to timing-sensitive LSP operations
-          retry: 2,
+          name: "adapters",
+          // pool: "forks",
+          // poolOptions: {
+          //   // minThreads: 1, // Minimum threads for adapter tests
+          //   // maxThreads: 1
+          // },
+          include: ["tests/adapters/**/*.test.ts"],
+          exclude: [...GLOBAL_IGNORED_FILES],
+          testTimeout: 15000, // 15s timeout for adapter initialization tests
+          retry: 0, // No retry for adapter tests
         },
       },
     ],

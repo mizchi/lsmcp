@@ -84,15 +84,15 @@ The TypeScript MCP server provides the following tools:
 - `move_directory` - Move a directory and update all imports
 - `delete_symbol` - Delete a symbol and its references
 
-### LSP Tools (Available in dist/generic-lsp-mcp.js)
+### LSP Tools
 
 - `lsp_get_hover` - Get hover information for a symbol
 - `lsp_find_references` - Find all references to a symbol
 - `lsp_get_definitions` - Get definition locations for a symbol
 - `lsp_get_diagnostics` - Get TypeScript diagnostics for a file
 
-**Note**: LSP tools are provided in a separate MCP server
-(`dist/generic-lsp-mcp.js`) and not included in the main TypeScript MCP server.
+**Note**: LSP tools are available in the main lsmcp server when using
+`--language=typescript` or `--bin` options.
 
 ## Test Environment
 

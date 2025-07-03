@@ -11,17 +11,23 @@
     "prepublishOnly": "pnpm build",
     "build": "tsdown",
     "watch": "tsdown --watch",
-    "typecheck": "tsgo check",
+    "typecheck": "tsgo",
     "typecheck:tsc": "tsc --noEmit -p tsconfig.json",
-    "lint": "oxlint --quiet",
+    "lint": "oxlint --quiet --ignore-path=.oxlintignore",
     "lint:refactor": "oxlint",
-    "test": "pnpm test:unit && pnpm test:integration && pnpm test:typescript-lsp",
+    "test": "pnpm test:unit && pnpm test:integration",
     "test:unit": "vitest --run --project unit",
-    "test:integration": "vitest --run --project integration",
-    "test:typescript-lsp": "vitest run tests/integration/typescript-lsp.test.ts",
+    "test:integration": "pnpm build && vitest --run --project=integration",
+    "test:adapters": "vitest --run --project=adapters # only local",
+    "test:adapters:fsharp": "vitest run tests/adapters/language-tests/fsharp.test.ts",
+    "test:adapters:rust": "vitest run tests/adapters/language-tests/rust.test.ts",
+    "test:adapters:tsgo": "vitest run tests/adapters/language-tests/tsgo.test.ts",
+    "test:adapters:python": "vitest run tests/adapters/language-tests/python.test.ts",
+    "test:adapters:moonbit": "vitest run tests/adapters/language-tests/moonbit.test.ts",
     "test:all": "vitest --run",
     "test:watch": "vitest",
     "test:examples": "tsx scripts/check-examples.ts",
+    "build:supported-table": "node scripts/build-supported-table.ts",
     "coverage": "vitest run --coverage",
     "format": "deno fmt src/ tests/",
     "format:check": "deno fmt --check src/ tests/",
@@ -30,7 +36,6 @@
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md"
   },
   "bin": {
-    "typescript-mcp": "./dist/typescript-mcp.js",
     "lsmcp": "./dist/lsmcp.js"
   },
   "files": [
@@ -44,6 +49,8 @@
     "@types/micromatch": "^4.0.9",
     "@types/minimatch": "^5.1.2",
     "glob": "^11.0.3",
+    "ignore": "^7.0.5",
+    "linguist-languages": "^8.0.0",
     "micromatch": "^4.0.8",
     "minimatch": "^10.0.3",
     "neverthrow": "^8.2.0",
@@ -61,6 +68,7 @@
     "husky": "^9.1.7",
     "jscpd": "^4.0.5",
     "lint-staged": "^16.1.2",
+    "memfs": "^4.17.2",
     "oxlint": "^1.1.0",
     "tsdown": "^0.12.7",
     "tsr": "^1.3.4",
@@ -69,10 +77,8 @@
     "vitest": "^3.2.2",
     "vscode-languageserver-protocol": "^3.17.5",
     "vscode-languageserver-types": "^3.17.5",
-    "ws": "^8.18.2"
-  },
-  "peerDependencies": {
-    "typescript": "*"
+    "ws": "^8.18.2",
+    "zx": "^8.6.1"
   },
   "packageManager": "pnpm@9.15.0"
 }

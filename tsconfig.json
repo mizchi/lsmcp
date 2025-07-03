@@ -3,7 +3,6 @@
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "bundler",
-    "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "noEmit": true,
@@ -11,14 +10,11 @@
     "allowImportingTsExtensions": true,
     "lib": ["esnext", "dom"],
     "types": ["vitest/importMeta"],
-    
-    // Type checking options
+    "strict": true,
     "noImplicitAny": true,
-    
-    // Unused code detection
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
   "include": ["src/**/*", "tests/**/*"],
-  "exclude": ["tests/fixtures/**/*", "playground/**/*"]
+  "exclude": ["tests/fixtures/**/*", "tests/adapters/fixtures/**/*"]
 }

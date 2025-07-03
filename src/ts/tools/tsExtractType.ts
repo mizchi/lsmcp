@@ -1,26 +1,25 @@
 import { z } from "zod";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
-import { commonSchemas } from "../../common/schemas.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
+import { commonSchemas } from "../../core/pure/schemas.ts";
 import { CodeAction, Range, WorkspaceEdit } from "vscode-languageserver-types";
 import { readFileSync, writeFileSync } from "fs";
-import { join } from "path";
-import { errors } from "../../common/errors/index.ts";
-import { readFileWithMetadata } from "../../common/fileOperations.ts";
+import { errors } from "../../core/pure/errors/index.ts";
+import { readFileWithMetadata } from "../../core/io/fileOperations.ts";
 import {
   createTypescriptLSPClient,
   openDocument,
   stopLSPClient,
   waitForLSP,
-} from "../../common/lspClientFactory.ts";
+} from "../../core/io/lspClientFactory.ts";
 
 const schema = z.object({
   root: commonSchemas.root,
   filePath: commonSchemas.filePath,
   startLine: commonSchemas.line,
   endLine: commonSchemas.line.optional(),
-  extractType: z.enum(["type", "interface"]).describe(
-    "Extract as type alias or interface",
-  ),
+  extractType: z
+    .enum(["type", "interface"])
+    .describe("Extract as type alias or interface"),
   typeName: z.string().describe("Name for the extracted type"),
 });
 
@@ -38,11 +37,10 @@ export const extractTypeTool: ToolDef<typeof schema> = {
     typeName,
   }) => {
     // Read file content with metadata
-    const { absolutePath, fileContent: content, fileUri } =
-      readFileWithMetadata(
-        root,
-        filePath,
-      );
+    const {
+      fileContent: content,
+      fileUri,
+    } = readFileWithMetadata(root, filePath);
 
     // Create TypeScript LSP client
     const clientInstance = await createTypescriptLSPClient(root);
@@ -56,16 +54,13 @@ export const extractTypeTool: ToolDef<typeof schema> = {
         ? lines.findIndex((l) => l.includes(startLine))
         : startLine - 1;
       const end = endLine
-        ? (typeof endLine === "string"
+        ? typeof endLine === "string"
           ? lines.findIndex((l) => l.includes(endLine))
-          : endLine - 1)
+          : endLine - 1
         : start;
 
       if (start < 0 || end < 0) {
-        throw errors.lineNotFound(
-          startLine,
-          filePath,
-        );
+        throw errors.lineNotFound(startLine, filePath);
       }
 
       // Open the document
@@ -220,11 +215,7 @@ export const extractTypeTool: ToolDef<typeof schema> = {
       // Apply the workspace edit manually
       const workspaceEdit = action.edit;
       let changeCount = 0;
-      for (
-        const [uri, edits] of Object.entries(
-          workspaceEdit.changes || {},
-        )
-      ) {
+      for (const [uri, edits] of Object.entries(workspaceEdit.changes || {})) {
         const path = uri.replace("file://", "");
         let fileContent = readFileSync(path, "utf-8");
 

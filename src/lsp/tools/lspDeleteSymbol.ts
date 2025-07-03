@@ -9,7 +9,7 @@ import {
   TextEdit,
   WorkspaceEdit,
 } from "vscode-languageserver-types";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { getLSPClient } from "../lspClient.ts";
 import { resolveLineParameter } from "../../textUtils/resolveLineParameter.ts";
 
@@ -151,7 +151,8 @@ async function handleDeleteSymbol({
       for (const range of sortedRanges) {
         // Check if this is a complete line deletion
         const lineText = fileLines[range.start.line];
-        const beforeSymbol = lineText.substring(0, range.start.character)
+        const beforeSymbol = lineText
+          .substring(0, range.start.character)
           .trim();
         const afterSymbol = lineText.substring(range.end.character).trim();
 

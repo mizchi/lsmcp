@@ -3,6 +3,7 @@ import { mkdir, rm, writeFile } from "fs/promises";
 import { join } from "path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { z } from "zod";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
@@ -98,17 +99,25 @@ describe.skip("lsp get all diagnostics", () => {
   });
 
   it("should get diagnostics for all files", async () => {
-    const result = await client.request({
-      method: "tools/call",
-      params: {
-        name: "get_all_diagnostics",
-        arguments: {
-          root: projectDir,
-          include: "**/*.ts",
-          severityFilter: "all",
+    const result = await client.request(
+      {
+        method: "tools/call",
+        params: {
+          name: "get_all_diagnostics",
+          arguments: {
+            root: projectDir,
+            include: "**/*.ts",
+            severityFilter: "all",
+          },
         },
       },
-    }) as any;
+      z.object({
+        content: z.array(z.object({
+          type: z.string(),
+          text: z.string(),
+        })),
+      }),
+    ) as any;
 
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();
@@ -124,17 +133,25 @@ describe.skip("lsp get all diagnostics", () => {
   });
 
   it("should filter by severity", async () => {
-    const result = await client.request({
-      method: "tools/call",
-      params: {
-        name: "get_all_diagnostics",
-        arguments: {
-          root: projectDir,
-          include: "**/*.ts",
-          severityFilter: "error",
+    const result = await client.request(
+      {
+        method: "tools/call",
+        params: {
+          name: "get_all_diagnostics",
+          arguments: {
+            root: projectDir,
+            include: "**/*.ts",
+            severityFilter: "error",
+          },
         },
       },
-    }) as any;
+      z.object({
+        content: z.array(z.object({
+          type: z.string(),
+          text: z.string(),
+        })),
+      }),
+    ) as any;
 
     const text = result.content[0].text;
     expect(text).toContain("error");
@@ -142,16 +159,24 @@ describe.skip("lsp get all diagnostics", () => {
   });
 
   it("should support include pattern", async () => {
-    const result = await client.request({
-      method: "tools/call",
-      params: {
-        name: "get_all_diagnostics",
-        arguments: {
-          root: projectDir,
-          include: "**/file1.ts",
+    const result = await client.request(
+      {
+        method: "tools/call",
+        params: {
+          name: "get_all_diagnostics",
+          arguments: {
+            root: projectDir,
+            include: "**/file1.ts",
+          },
         },
       },
-    }) as any;
+      z.object({
+        content: z.array(z.object({
+          type: z.string(),
+          text: z.string(),
+        })),
+      }),
+    ) as any;
 
     const text = result.content[0].text;
     expect(text).toContain("file1.ts");

@@ -152,4 +152,12 @@ tmp/
 
 # .NET / F#
 bin/
-obj/tests/integration/tmp-*
+obj/
+tests/integration/tmp-*
+
+# Language-specific build artifacts in test fixtures
+tests/adapters/fixtures/rust/target/
+tests/adapters/fixtures/rust/Cargo.lock
+tests/adapters/fixtures/moonbit/target/
+tests/adapters/fixtures/fsharp/obj/
+tests/adapters/fixtures/fsharp/bin/

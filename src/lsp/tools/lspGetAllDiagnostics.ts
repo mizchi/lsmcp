@@ -3,18 +3,19 @@ import { promisify } from "util";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { minimatch } from "minimatch";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { getActiveClient } from "../lspClient.ts";
-import { debug } from "../../mcp/_mcplib.ts";
+import { debug } from "../../mcp/utils/mcpHelpers.ts";
 import { pathToFileURL } from "url";
 import { Diagnostic } from "vscode-languageserver-types";
 import { exec } from "child_process";
+import { createGitignoreFilter } from "../../core/io/gitignoreUtils.ts";
 
 const execAsync = promisify(exec);
 
 const schema = z.object({
   root: z.string().describe("Root directory for the project"),
-  include: z
+  pattern: z
     .string()
     .describe(
       "Glob pattern for files to include (e.g., '**/*.ts' for TypeScript, '**/*.fs' for F#, '**/*.py' for Python)",
@@ -28,6 +29,11 @@ const schema = z.object({
     .optional()
     .default("all")
     .describe("Filter diagnostics by severity"),
+  useGitignore: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe("Whether to respect .gitignore files (default: true)"),
 });
 
 type GetAllDiagnosticsRequest = z.infer<typeof schema>;
@@ -70,11 +76,12 @@ const SEVERITY_MAP: Record<
  */
 async function getProjectFiles(
   root: string,
-  include: string,
+  pattern: string,
   exclude?: string,
+  useGitignore: boolean = true,
 ): Promise<string[]> {
   debug(
-    `[lspGetAllDiagnostics] getProjectFiles called with root=${root}, include=${include}, exclude=${exclude}`,
+    `[lspGetAllDiagnostics] getProjectFiles called with root=${root}, pattern=${pattern}, exclude=${exclude}, useGitignore=${useGitignore}`,
   );
   const fileSet = new Set<string>();
 
@@ -84,7 +91,7 @@ async function getProjectFiles(
     const gitFiles = stdout
       .split("\n")
       .filter((f: string) => f.trim().length > 0)
-      .filter((f: string) => minimatch(f, include));
+      .filter((f: string) => minimatch(f, pattern));
 
     gitFiles.forEach((f) => fileSet.add(f));
     debug(
@@ -97,29 +104,17 @@ async function getProjectFiles(
   // Then, use glob to find all files (including untracked ones)
   try {
     const { glob } = await import("glob");
-    const pattern = include;
 
-    // Read .gitignore patterns if it exists
-    let gitignorePatterns: string[] = ["**/node_modules/**", "**/.git/**"];
-    try {
-      const gitignorePath = join(root, ".gitignore");
-      const gitignoreContent = await readFile(gitignorePath, "utf-8");
-      const patterns = gitignoreContent
-        .split("\n")
-        .filter((line) => line.trim() && !line.startsWith("#"))
-        .map((line) => line.trim());
-      gitignorePatterns = [...gitignorePatterns, ...patterns];
-    } catch {
-      // .gitignore doesn't exist or can't be read
-    }
+    // Basic ignore patterns that always apply
+    let ignorePatterns: string[] = ["**/node_modules/**", "**/.git/**"];
 
     if (exclude) {
-      gitignorePatterns.push(exclude);
+      ignorePatterns.push(exclude);
     }
 
     const globFiles = await glob(pattern, {
       cwd: root,
-      ignore: gitignorePatterns,
+      ignore: ignorePatterns,
       nodir: true,
     });
 
@@ -145,8 +140,20 @@ async function getProjectFiles(
 
   // Include pattern is already applied in git files and glob,
   // but we apply it again to the combined results for consistency
-  debug(`[lspGetAllDiagnostics] Applying include pattern: ${include}`);
-  files = files.filter((f: string) => minimatch(f, include));
+  debug(`[lspGetAllDiagnostics] Applying include pattern: ${pattern}`);
+  files = files.filter((f: string) => minimatch(f, pattern));
+
+  // Apply gitignore filtering if enabled
+  if (useGitignore) {
+    const gitignoreFilter = createGitignoreFilter(root);
+    const originalCount = files.length;
+    files = files.filter(gitignoreFilter);
+    debug(
+      `[lspGetAllDiagnostics] Gitignore filtered out ${
+        originalCount - files.length
+      } files`,
+    );
+  }
 
   // Apply exclude pattern if provided
   if (exclude) {
@@ -154,11 +161,12 @@ async function getProjectFiles(
   }
 
   // Final filter to exclude common directories (redundant but safe)
-  files = files.filter((f: string) =>
-    !f.includes("node_modules/") &&
-    !f.includes(".git/") &&
-    !f.includes("/obj/") && // Exclude build artifacts
-    !f.includes("/bin/") // Exclude build outputs
+  files = files.filter(
+    (f: string) =>
+      !f.includes("node_modules/") &&
+      !f.includes(".git/") &&
+      !f.includes("/obj/") && // Exclude build artifacts
+      !f.includes("/bin/"), // Exclude build outputs
   );
 
   debug(`[lspGetAllDiagnostics] Total unique files to check: ${files.length}`);
@@ -166,10 +174,12 @@ async function getProjectFiles(
     debug(
       `[lspGetAllDiagnostics] File extensions found: ${
         [
-          ...new Set(files.map((f) => {
-            const ext = f.lastIndexOf(".");
-            return ext > 0 ? f.substring(ext) : "no-ext";
-          })),
+          ...new Set(
+            files.map((f) => {
+              const ext = f.lastIndexOf(".");
+              return ext > 0 ? f.substring(ext) : "no-ext";
+            }),
+          ),
         ].join(", ")
       }`,
     );
@@ -194,8 +204,9 @@ async function getAllDiagnosticsWithLSP(
   try {
     files = await getProjectFiles(
       request.root,
-      request.include,
+      request.pattern,
       request.exclude,
+      request.useGitignore ?? true,
     );
     debug(
       `[lspGetAllDiagnostics] getProjectFiles returned ${files.length} files`,
@@ -270,7 +281,8 @@ async function getAllDiagnosticsWithLSP(
               .filter((d: any) => {
                 // Apply severity filter
                 if (
-                  request.severityFilter === "error" && d.severity !== "error"
+                  request.severityFilter === "error" &&
+                  d.severity !== "error"
                 ) {
                   return false;
                 }

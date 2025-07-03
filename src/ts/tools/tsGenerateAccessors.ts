@@ -1,25 +1,25 @@
 import { z } from "zod";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
-import { commonSchemas } from "../../common/schemas.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
+import { commonSchemas } from "../../core/pure/schemas.ts";
 import { CodeAction, Range, WorkspaceEdit } from "vscode-languageserver-types";
 import { readFileSync, writeFileSync } from "fs";
-import { errors } from "../../common/errors/index.ts";
-import { readFileWithMetadata } from "../../common/fileOperations.ts";
+import { errors } from "../../core/pure/errors/index.ts";
+import { readFileWithMetadata } from "../../core/io/fileOperations.ts";
 import {
   createTypescriptLSPClient,
   openDocument,
   stopLSPClient,
   waitForLSP,
-} from "../../common/lspClientFactory.ts";
-import { validateLineAndSymbol } from "../../common/validation.ts";
+} from "../../core/io/lspClientFactory.ts";
+import { validateLineAndSymbol } from "../../core/pure/validation.ts";
 
 const schema = z.object({
   root: commonSchemas.root,
   filePath: commonSchemas.filePath,
   line: commonSchemas.line,
-  propertyName: z.string().describe(
-    "Name of the property to generate accessors for",
-  ),
+  propertyName: z
+    .string()
+    .describe("Name of the property to generate accessors for"),
 });
 
 export const generateAccessorsTool: ToolDef<typeof schema> = {
@@ -29,11 +29,11 @@ export const generateAccessorsTool: ToolDef<typeof schema> = {
   schema,
   execute: async ({ root, filePath, line, propertyName }) => {
     // Read file content with metadata
-    const { absolutePath, fileContent: content, fileUri } =
-      readFileWithMetadata(
-        root,
-        filePath,
-      );
+    const {
+      absolutePath,
+      fileContent: content,
+      fileUri,
+    } = readFileWithMetadata(root, filePath);
 
     // Create TypeScript LSP client
     const clientInstance = await createTypescriptLSPClient(root);
@@ -85,9 +85,12 @@ export const generateAccessorsTool: ToolDef<typeof schema> = {
           for (const refactor of refactorResponse) {
             const action = refactor.actions?.find((a: any) => {
               const name = a.name.toLowerCase();
-              return name.includes("generate") &&
-                (name.includes("get") || name.includes("set") ||
-                  name.includes("accessor"));
+              return (
+                name.includes("generate") &&
+                (name.includes("get") ||
+                  name.includes("set") ||
+                  name.includes("accessor"))
+              );
             });
 
             if (action) {
@@ -114,10 +117,11 @@ export const generateAccessorsTool: ToolDef<typeof schema> = {
                   const lines = fileContent.split("\n");
 
                   // Sort text changes by position (reverse order)
-                  const sortedChanges = [...(fileEdit.textChanges || [])]
-                    .sort((a, b) => {
+                  const sortedChanges = [...(fileEdit.textChanges || [])].sort(
+                    (a, b) => {
                       return b.start.offset - a.start.offset;
-                    });
+                    },
+                  );
 
                   for (const change of sortedChanges) {
                     const startPos = change.start;
@@ -202,10 +206,12 @@ The property has been converted to use accessor methods.`;
       const accessorActions = (codeActions as CodeAction[]).filter(
         (action: CodeAction) => {
           const title = action.title.toLowerCase();
-          return title.includes("generate") &&
+          return (
+            title.includes("generate") &&
             (title.includes("get") ||
               title.includes("set") ||
-              title.includes("accessor"));
+              title.includes("accessor"))
+          );
         },
       );
 
@@ -254,11 +260,7 @@ The property has been converted to use accessor methods.`;
       // Apply the workspace edit manually
       let changeCount = 0;
       let modifiedFiles: string[] = [];
-      for (
-        const [uri, edits] of Object.entries(
-          workspaceEdit.changes || {},
-        )
-      ) {
+      for (const [uri, edits] of Object.entries(workspaceEdit.changes || {})) {
         const path = uri.replace("file://", "");
         let fileContent = readFileSync(path, "utf-8");
         modifiedFiles.push(path);

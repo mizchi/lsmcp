@@ -1,0 +1,210 @@
+name: CI - Language Adapters
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # F# Language Server Test
+  fsharp-adapter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Install F# dependencies
+        run: |
+          dotnet tool install -g fsautocomplete
+          # Verify installation
+          fsautocomplete --version
+
+      - name: Install Node.js dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run F# adapter tests
+        run: pnpm vitest run tests/adapters/language-tests/fsharp.test.ts
+        env:
+          CI: true
+          TEST_FSHARP: true
+
+  # Rust Language Server Test
+  rust-adapter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rust-analyzer
+
+      - name: Install Rust Language Server
+        run: |
+          # rust-analyzer is included with rustup toolchain
+          rust-analyzer --version
+
+      - name: Install Node.js dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Initialize Rust project
+        run: |
+          cd tests/adapters/fixtures/rust
+          cargo check || true
+
+      - name: Run Rust adapter tests
+        run: pnpm vitest run tests/adapters/language-tests/rust.test.ts
+        env:
+          CI: true
+          TEST_RUST: true
+
+  # TypeScript (tsgo) adapter test
+  tsgo-adapter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install Node.js dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify TypeScript tools
+        run: |
+          # tsgo is available via @typescript/native-preview in devDependencies
+          npx tsgo --version
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run tsgo adapter tests
+        run: pnpm vitest run tests/adapters/language-tests/tsgo.test.ts
+        env:
+          CI: true
+          TEST_TSGO: true
+
+  # Python adapter test
+  python-adapter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv and Python Language Server
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          source ~/.cargo/env
+          uv tool install python-lsp-server[all]
+          pylsp --version
+
+      - name: Install Node.js dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Initialize Python project
+        run: |
+          cd tests/adapters/fixtures/python
+          source ~/.cargo/env
+          uv sync
+
+      - name: Run Python adapter tests
+        run: pnpm vitest run tests/adapters/language-tests/python.test.ts
+        env:
+          CI: true
+          TEST_PYTHON: true
+
+  # MoonBit adapter test
+  moonbit-adapter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: Install Node.js dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify MoonBit tools
+        run: |
+          # Verify MoonBit CLI
+          moon version
+          moonc -v
+          # Verify MoonBit LSP via npm package
+          npx moonbit-lsp --version
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run MoonBit adapter tests
+        run: pnpm vitest run tests/adapters/language-tests/moonbit.test.ts
+        env:
+          CI: true
+          TEST_MOONBIT: true

@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs/promises";
 import { pathToFileURL } from "url";
 import { SignatureHelp } from "vscode-languageserver-types";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { getLSPClient } from "../lspClient.ts";
 import { resolveLineParameter } from "../../textUtils/resolveLineParameter.ts";
 

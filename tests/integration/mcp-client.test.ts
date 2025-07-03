@@ -7,7 +7,7 @@ import fs from "fs/promises";
 import { randomBytes } from "crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SERVER_PATH = path.join(__dirname, "../../dist/typescript-mcp.js");
+const SERVER_PATH = path.join(__dirname, "../../dist/lsmcp.js");
 
 describe("MCP TypeScript Tools", () => {
   let client: Client;
@@ -47,7 +47,7 @@ describe("MCP TypeScript Tools", () => {
 
     transport = new StdioClientTransport({
       command: "node",
-      args: [SERVER_PATH],
+      args: [SERVER_PATH, "--language=typescript"],
       env: cleanEnv,
       cwd: tmpDir, // Use cwd instead of --project-root
     });

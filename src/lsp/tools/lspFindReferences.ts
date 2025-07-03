@@ -3,10 +3,10 @@ import { err, ok, type Result } from "neverthrow";
 import { readFileSync } from "fs";
 import path from "path";
 import { getActiveClient } from "../lspClient.ts";
-import type { ToolDef } from "../../mcp/_mcplib.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { ErrorContext, formatError } from "../../mcp/utils/errorHandler.ts";
-import { readFileWithMetadata } from "../../common/fileOperations.ts";
-import { validateLineAndSymbol } from "../../common/validation.ts";
+import { readFileWithMetadata } from "../../core/io/fileOperations.ts";
+import { validateLineAndSymbol } from "../../core/pure/validation.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),

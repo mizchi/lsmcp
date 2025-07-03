@@ -34,6 +34,19 @@
             "Debug",
             "Release"
           ]
+        },
+        "/home/mizchi/mizchi/lsmcp/examples/moonbit-project/src/test/test.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Debug",
+            "Release"
+          ]
         }
       },
       "wbtest-files": {},

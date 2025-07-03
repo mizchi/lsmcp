@@ -1,0 +1,19 @@
+[project]
+dependencies = [
+  "pyright>=1.1.402",
+  "nodejs-wheel",
+]
+name = "test"
+requires-python = ">=3.12"
+version = "0.1.0"
+
+[tool.pyright]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

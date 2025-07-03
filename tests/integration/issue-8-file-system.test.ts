@@ -34,16 +34,13 @@ describe("Issue #8 - Real File System Tests", () => {
   it("should handle file creation, modification, and deletion cycle", async () => {
     const transport = new StdioClientTransport({
       command: "node",
-      args: [path.join(__dirname, "../../dist/typescript-mcp.js")],
-      env: {
-        ...process.env,
-        LSP_COMMAND: `${
-          path.join(
-            __dirname,
-            "../../node_modules/.bin/typescript-language-server",
-          )
-        } --stdio`,
-      },
+      args: [
+        path.join(__dirname, "../../dist/lsmcp.js"),
+        "--language=typescript",
+      ],
+      env: Object.fromEntries(
+        Object.entries(process.env).filter(([_, v]) => v !== undefined),
+      ) as Record<string, string>,
     });
 
     const client = new Client(
@@ -139,16 +136,13 @@ const num: number = "not a number";
   it("should handle symlinks correctly", async () => {
     const transport = new StdioClientTransport({
       command: "node",
-      args: [path.join(__dirname, "../../dist/typescript-mcp.js")],
-      env: {
-        ...process.env,
-        LSP_COMMAND: `${
-          path.join(
-            __dirname,
-            "../../node_modules/.bin/typescript-language-server",
-          )
-        } --stdio`,
-      },
+      args: [
+        path.join(__dirname, "../../dist/lsmcp.js"),
+        "--language=typescript",
+      ],
+      env: Object.fromEntries(
+        Object.entries(process.env).filter(([_, v]) => v !== undefined),
+      ) as Record<string, string>,
     });
 
     const client = new Client(
@@ -210,16 +204,13 @@ const num: number = "not a number";
   it("should handle files with different encodings", async () => {
     const transport = new StdioClientTransport({
       command: "node",
-      args: [path.join(__dirname, "../../dist/typescript-mcp.js")],
-      env: {
-        ...process.env,
-        LSP_COMMAND: `${
-          path.join(
-            __dirname,
-            "../../node_modules/.bin/typescript-language-server",
-          )
-        } --stdio`,
-      },
+      args: [
+        path.join(__dirname, "../../dist/lsmcp.js"),
+        "--language=typescript",
+      ],
+      env: Object.fromEntries(
+        Object.entries(process.env).filter(([_, v]) => v !== undefined),
+      ) as Record<string, string>,
     });
 
     const client = new Client(
