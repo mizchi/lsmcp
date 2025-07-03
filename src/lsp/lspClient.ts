@@ -1,7 +1,11 @@
 import { EventEmitter } from "events";
 import { promises as fs } from "fs";
 import { fileURLToPath } from "url";
-import { getErrorMessage, isErrorWithCode, isObject } from "../common/types.ts";
+import {
+  getErrorMessage,
+  isErrorWithCode,
+  isObject,
+} from "../core/pure/types.ts";
 import {
   CodeAction,
   Command,
@@ -19,6 +23,21 @@ import {
   WorkspaceEdit,
 } from "vscode-languageserver-types";
 import { ChildProcess } from "child_process";
+import {
+  createCodeActionCommand,
+  createCompletionCommand,
+  createCompletionResolveCommand,
+  createDefinitionCommand,
+  createDocumentFormattingCommand,
+  createDocumentRangeFormattingCommand,
+  createDocumentSymbolsCommand,
+  createHoverCommand,
+  createPrepareRenameCommand,
+  createPullDiagnosticsCommand,
+  createReferencesCommand,
+  createRenameCommand,
+  createSignatureHelpCommand,
+} from "./commands/index.ts";
 
 // Type definitions for LSP 3.17+ pull diagnostics
 // These are not yet in vscode-languageserver-protocol types
@@ -64,10 +83,8 @@ import {
   LSPNotification,
   LSPRequest,
   PublishDiagnosticsParams,
-  ReferenceParams,
   ReferencesResult,
   SignatureHelpResult,
-  TextDocumentPositionParams,
   WorkspaceSymbolResult,
 } from "./lspTypes.ts";
 import { debug } from "../mcp/utils/mcpHelpers.ts";
@@ -176,6 +193,23 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
 
   // Track open documents
   const openDocuments = new Set<string>();
+
+  // Initialize commands
+  const commands = {
+    definition: createDefinitionCommand(),
+    references: createReferencesCommand(),
+    hover: createHoverCommand(),
+    completion: createCompletionCommand(),
+    completionResolve: createCompletionResolveCommand(),
+    documentSymbols: createDocumentSymbolsCommand(),
+    pullDiagnostics: createPullDiagnosticsCommand(),
+    formatting: createDocumentFormattingCommand(),
+    rangeFormatting: createDocumentRangeFormattingCommand(),
+    prepareRename: createPrepareRenameCommand(),
+    rename: createRenameCommand(),
+    codeAction: createCodeActionCommand(),
+    signatureHelp: createSignatureHelpCommand(),
+  };
 
   function processBuffer(): void {
     while (state.buffer.length > 0) {
@@ -498,28 +532,23 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     uri: string,
     position: Position,
   ): Promise<Location[]> {
-    const params: ReferenceParams = {
-      textDocument: { uri },
+    const params = commands.references.buildParams({
+      uri,
       position,
-      context: {
-        includeDeclaration: true,
-      },
-    };
+      includeDeclaration: true,
+    });
     const result = await sendRequest<ReferencesResult>(
-      "textDocument/references",
+      commands.references.method,
       params,
     );
-    return result ?? [];
+    return commands.references.processResponse(result);
   }
 
   async function getDefinition(
     uri: string,
     position: Position,
   ): Promise<Location | Location[] | LocationLink[]> {
-    const params: TextDocumentPositionParams = {
-      textDocument: { uri },
-      position,
-    };
+    const params = commands.definition.buildParams({ uri, position });
 
     debug(
       "[lspClient] Sending textDocument/definition request:",
@@ -527,7 +556,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     );
 
     const result = await sendRequest<DefinitionResult>(
-      "textDocument/definition",
+      commands.definition.method,
       params,
     );
 
@@ -536,45 +565,22 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       JSON.stringify(result, null, 2),
     );
 
-    if (!result) {
-      return [];
-    }
-
-    if (Array.isArray(result)) {
-      // Check if it's an array of LocationLink objects
-      if (result.length > 0 && "targetUri" in result[0]) {
-        // Convert LocationLink[] to Location[]
-        return result.map((link: any) => ({
-          uri: link.targetUri,
-          range: link.targetSelectionRange || link.targetRange,
-        }));
-      }
-      return result;
-    }
-
-    // Handle single Location or Definition
-    if ("uri" in result) {
-      return [result];
-    }
-
-    // Handle Definition type (convert to Location)
-    if ("range" in result && "uri" in result) {
-      return [result as Location];
-    }
-
-    return [];
+    return commands.definition.processResponse(result);
   }
 
   async function getHover(
     uri: string,
     position: Position,
   ): Promise<HoverResult> {
-    const params: TextDocumentPositionParams = {
-      textDocument: { uri },
-      position,
-    };
-    const result = await sendRequest<HoverResult>("textDocument/hover", params);
-    return result;
+    const params = commands.hover.buildParams({ uri, position });
+    const result = await sendRequest<any>(
+      commands.hover.method,
+      params,
+    );
+    // The command's processResponse returns its own HoverResult type
+    // which is compatible with our HoverResult
+    const processed = commands.hover.processResponse(result);
+    return processed as HoverResult;
   }
 
   function getDiagnostics(uri: string): Diagnostic[] {
@@ -586,19 +592,18 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   async function pullDiagnostics(uri: string): Promise<Diagnostic[]> {
     // Try the newer textDocument/diagnostic request (LSP 3.17+)
     try {
-      const params = {
-        textDocument: { uri },
-      };
+      const params = commands.pullDiagnostics.buildParams({ uri });
       const result = await sendRequest<DocumentDiagnosticReport>(
-        "textDocument/diagnostic",
+        commands.pullDiagnostics.method,
         params,
       );
+      const diagnostics = commands.pullDiagnostics.processResponse(result);
 
-      if (result && result.items) {
-        // Store the diagnostics
-        state.diagnostics.set(uri, result.items);
-        return result.items;
+      // Store the diagnostics
+      if (diagnostics.length > 0) {
+        state.diagnostics.set(uri, diagnostics);
       }
+      return diagnostics;
     } catch (error: unknown) {
       // If the server doesn't support pull diagnostics, fall back to push model
       debugLog("Pull diagnostics not supported:", getErrorMessage(error));
@@ -611,14 +616,12 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   async function getDocumentSymbols(
     uri: string,
   ): Promise<DocumentSymbol[] | SymbolInformation[]> {
-    const params = {
-      textDocument: { uri },
-    };
+    const params = commands.documentSymbols.buildParams({ uri });
     const result = await sendRequest<DocumentSymbolResult>(
-      "textDocument/documentSymbol",
+      commands.documentSymbols.method,
       params,
     );
-    return result ?? [];
+    return commands.documentSymbols.processResponse(result);
   }
 
   async function getWorkspaceSymbols(
@@ -636,52 +639,35 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     uri: string,
     position: Position,
   ): Promise<CompletionItem[]> {
-    const params: TextDocumentPositionParams = {
-      textDocument: { uri },
-      position,
-    };
+    const params = commands.completion.buildParams({ uri, position });
     const result = await sendRequest<CompletionResult>(
-      "textDocument/completion",
+      commands.completion.method,
       params,
     );
-
-    if (!result) {
-      return [];
-    }
-
-    // Handle both CompletionItem[] and CompletionList
-    if (Array.isArray(result)) {
-      return result;
-    } else if ("items" in result) {
-      return result.items;
-    }
-
-    return [];
+    return commands.completion.processResponse(result);
   }
 
   async function resolveCompletionItem(
     item: CompletionItem,
   ): Promise<CompletionItem> {
+    const params = commands.completionResolve.buildParams(item);
     const result = await sendRequest<CompletionItem>(
-      "completionItem/resolve",
-      item,
+      commands.completionResolve.method,
+      params,
     );
-    return result ?? item;
+    return commands.completionResolve.processResponse(result) || item;
   }
 
   async function getSignatureHelp(
     uri: string,
     position: Position,
   ): Promise<SignatureHelp | null> {
-    const params: TextDocumentPositionParams = {
-      textDocument: { uri },
-      position,
-    };
+    const params = commands.signatureHelp.buildParams({ uri, position });
     const result = await sendRequest<SignatureHelpResult>(
-      "textDocument/signatureHelp",
+      commands.signatureHelp.method,
       params,
     );
-    return result;
+    return commands.signatureHelp.processResponse(result);
   }
 
   async function getCodeActions(
@@ -689,31 +675,28 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     range: Range,
     context?: { diagnostics?: Diagnostic[] },
   ): Promise<(Command | CodeAction)[]> {
-    const params = {
-      textDocument: { uri },
+    const params = commands.codeAction.buildParams({
+      uri,
       range,
-      context: context || { diagnostics: [] },
-    };
+      diagnostics: context?.diagnostics,
+    });
     const result = await sendRequest<CodeActionResult>(
-      "textDocument/codeAction",
+      commands.codeAction.method,
       params,
     );
-    return result ?? [];
+    return commands.codeAction.processResponse(result);
   }
 
   async function formatDocument(
     uri: string,
     options: FormattingOptions,
   ): Promise<TextEdit[]> {
-    const params = {
-      textDocument: { uri },
-      options,
-    };
+    const params = commands.formatting.buildParams({ uri, options });
     const result = await sendRequest<FormattingResult>(
-      "textDocument/formatting",
+      commands.formatting.method,
       params,
     );
-    return result ?? [];
+    return commands.formatting.processResponse(result);
   }
 
   async function formatRange(
@@ -721,35 +704,29 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     range: Range,
     options: FormattingOptions,
   ): Promise<TextEdit[]> {
-    const params = {
-      textDocument: { uri },
+    const params = commands.rangeFormatting.buildParams({
+      uri,
       range,
       options,
-    };
+    });
     const result = await sendRequest<FormattingResult>(
-      "textDocument/rangeFormatting",
+      commands.rangeFormatting.method,
       params,
     );
-    return result ?? [];
+    return commands.rangeFormatting.processResponse(result);
   }
 
   async function prepareRename(
     uri: string,
     position: Position,
   ): Promise<Range | null> {
-    const params = {
-      textDocument: { uri },
-      position,
-    };
+    const params = commands.prepareRename.buildParams({ uri, position });
     try {
       const result = await sendRequest<Range | { range: Range } | null>(
-        "textDocument/prepareRename",
+        commands.prepareRename.method,
         params,
       );
-      if (result && "range" in result) {
-        return result.range;
-      }
-      return result;
+      return commands.prepareRename.processResponse(result);
     } catch {
       // Some LSP servers don't support prepareRename
       return null;
@@ -761,17 +738,13 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     position: Position,
     newName: string,
   ): Promise<WorkspaceEdit | null> {
-    const params = {
-      textDocument: { uri },
-      position,
-      newName,
-    };
+    const params = commands.rename.buildParams({ uri, position, newName });
     try {
       const result = await sendRequest<WorkspaceEdit>(
-        "textDocument/rename",
+        commands.rename.method,
         params,
       );
-      return result ?? null;
+      return commands.rename.processResponse(result);
     } catch (error: unknown) {
       // Check if this is a TypeScript Native Preview LSP that doesn't support rename
       if (

@@ -1,6 +1,6 @@
 import type { LspAdapter } from "../types.ts";
 import { execSync } from "child_process";
-import { getNodeModulesBin } from "../common/nodeModulesUtils.ts";
+import { getNodeModulesBin } from "../core/io/nodeModulesUtils.ts";
 import { extractTypeTool } from "../ts/tools/tsExtractType.ts";
 import { generateAccessorsTool } from "../ts/tools/tsGenerateAccessors.ts";
 import { callHierarchyTool } from "../ts/tools/tsCallHierarchy.ts";

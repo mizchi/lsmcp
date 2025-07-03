@@ -1,17 +1,17 @@
 import { z } from "zod";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
-import { commonSchemas } from "../../common/schemas.ts";
+import { commonSchemas } from "../../core/pure/schemas.ts";
 import { relative } from "path";
-import { errors } from "../../common/errors/index.ts";
+import { errors } from "../../core/pure/errors/index.ts";
 import { Position } from "vscode-languageserver-types";
-import { readFileWithMetadata } from "../../common/fileOperations.ts";
+import { readFileWithMetadata } from "../../core/io/fileOperations.ts";
 import {
   createTypescriptLSPClient,
   openDocument,
   stopLSPClient,
   waitForLSP,
-} from "../../common/lspClientFactory.ts";
-import { validateLineAndSymbol } from "../../common/validation.ts";
+} from "../../core/io/lspClientFactory.ts";
+import { validateLineAndSymbol } from "../../core/pure/validation.ts";
 
 const schema = z.object({
   root: commonSchemas.root,

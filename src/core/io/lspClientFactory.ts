@@ -1,8 +1,8 @@
 import { ChildProcess, spawn } from "child_process";
-import { createLSPClient } from "../lsp/lspClient.ts";
-import type { LSPClient } from "../lsp/lspTypes.ts";
-import { findTypescriptLanguageServer } from "../ts/utils/findTypescriptLanguageServer.ts";
-import { errors } from "./errors/index.ts";
+import { createLSPClient } from "../../lsp/lspClient.ts";
+import type { LSPClient } from "../../lsp/lspTypes.ts";
+import { findTypescriptLanguageServer } from "../../ts/utils/findTypescriptLanguageServer.ts";
+import { errors } from "../pure/errors/index.ts";
 
 export interface LSPClientInstance {
   client: LSPClient;

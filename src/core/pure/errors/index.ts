@@ -153,6 +153,42 @@ export const errors = {
       ],
     ),
 
+  fileRead: (filePath: string, error: string, context?: ErrorContext) =>
+    new LSMCPError(
+      ErrorCode.FILE_READ_ERROR,
+      `Failed to read file ${filePath}: ${error}`,
+      { ...context, filePath },
+      [
+        "Check if the file exists and is readable",
+        "Verify file permissions",
+        "Ensure the file is not corrupted",
+      ],
+    ),
+
+  fileWrite: (filePath: string, error: string, context?: ErrorContext) =>
+    new LSMCPError(
+      ErrorCode.FILE_WRITE_ERROR,
+      `Failed to write file ${filePath}: ${error}`,
+      { ...context, filePath },
+      [
+        "Check if the directory exists and is writable",
+        "Verify file permissions",
+        "Ensure there is enough disk space",
+      ],
+    ),
+
+  filePermission: (filePath: string, context?: ErrorContext) =>
+    new LSMCPError(
+      ErrorCode.PERMISSION_DENIED,
+      `Permission denied: ${filePath}`,
+      { ...context, filePath },
+      [
+        "Check file permissions",
+        "Ensure you have read/write access to the file",
+        "Try running with appropriate permissions",
+      ],
+    ),
+
   symbolNotFound: (
     symbol: string,
     line?: number | string,

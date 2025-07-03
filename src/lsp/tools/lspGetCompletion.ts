@@ -10,7 +10,8 @@ import {
   resolveLineOrThrow,
   withLSPDocument,
 } from "../utils/lspCommon.ts";
-import { commonSchemas } from "../../common/schemas.ts";
+import { commonSchemas } from "../../core/pure/schemas.ts";
+import { createAdvancedCompletionHandler } from "../commands/completion.ts";
 
 const schema = z.object({
   root: commonSchemas.root,
@@ -146,56 +147,21 @@ async function handleGetCompletion({
       throw new Error("LSP client not initialized");
     }
 
-    // Get completions
-    const completions = await client.getCompletion(fileUri, {
-      line: lineIndex,
-      character,
-    });
+    // Use the advanced completion handler
+    const handler = createAdvancedCompletionHandler(client);
+
+    // Get completions with options
+    const completions = await handler.getCompletionsWithImports(
+      fileUri,
+      { line: lineIndex, character },
+      {
+        resolveAll: resolve,
+        filterAutoImports: includeAutoImport,
+        maxItems: 20,
+      },
+    );
 
     if (completions.length === 0) {
-      return `No completions available at ${filePath}:${lineIndex + 1}:${
-        character + 1
-      }`;
-    }
-
-    // Sort completions by relevance (sortText if available, otherwise by label)
-    const sortedCompletions = completions.sort((a, b) => {
-      if (a.sortText && b.sortText) {
-        return a.sortText.localeCompare(b.sortText);
-      }
-      return a.label.localeCompare(b.label);
-    });
-
-    // Take top 20 completions
-    const topCompletions = sortedCompletions.slice(0, 20);
-
-    // Resolve completion items if requested
-    const resolvedCompletions = resolve
-      ? await Promise.all(
-        topCompletions.map(async (item) => {
-          try {
-            return await client.resolveCompletionItem(item);
-          } catch {
-            // If resolve fails, return the original item
-            return item;
-          }
-        }),
-      )
-      : topCompletions;
-
-    // Filter for auto-import completions if requested
-    const finalCompletions = includeAutoImport
-      ? resolvedCompletions.filter((item) => {
-        // Include items that have additionalTextEdits (likely imports) or are from external modules
-        return (
-          (item.additionalTextEdits && item.additionalTextEdits.length > 0) ||
-          (item.detail &&
-            (item.detail.includes("import") || item.detail.includes("from")))
-        );
-      })
-      : resolvedCompletions;
-
-    if (finalCompletions.length === 0) {
       const message = includeAutoImport
         ? `No auto-import completions available at ${filePath}:${
           lineIndex + 1
@@ -206,6 +172,8 @@ async function handleGetCompletion({
       return message;
     }
 
+    const finalCompletions = completions;
+
     // Format the completions
     let result = `Completions at ${filePath}:${lineIndex + 1}:${
       character + 1
@@ -215,11 +183,8 @@ async function handleGetCompletion({
       result += formatCompletionItem(item, resolve) + "\n\n";
     }
 
-    if (completions.length > finalCompletions.length) {
-      result += `... and ${
-        completions.length - finalCompletions.length
-      } more completions`;
-    }
+    // Note: We can't show "more completions" count anymore since we're using the handler
+    // which already limits the results
 
     return result.trim();
   });

@@ -1,4 +1,4 @@
-import { getNodeModulesCommand } from "../common/nodeModulesUtils.ts";
+import { getNodeModulesCommand } from "../core/io/nodeModulesUtils.ts";
 import type { LanguageConfig, LspAdapter } from "../types.ts";
 
 /**

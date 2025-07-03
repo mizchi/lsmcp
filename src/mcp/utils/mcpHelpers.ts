@@ -8,7 +8,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { type z, ZodObject, ZodType } from "zod";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { MCPToolError } from "../../common/mcpErrors.ts";
+import { MCPToolError } from "../../core/pure/mcpErrors.ts";
 
 /**
  * Debug logging for MCP servers.

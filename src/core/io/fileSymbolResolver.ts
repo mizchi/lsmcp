@@ -1,7 +1,7 @@
 import { readFileWithMetadata } from "./fileOperations.ts";
-import { validateLine, validateLineAndSymbol } from "./validation.ts";
-import { findTargetInFile } from "../textUtils/findTargetInFile.ts";
-import { errors } from "./errors/index.ts";
+import { validateLine, validateLineAndSymbol } from "../pure/validation.ts";
+import { findTargetInFile } from "../../textUtils/findTargetInFile.ts";
+import { errors } from "../pure/errors/index.ts";
 
 /**
  * Base result for file resolution

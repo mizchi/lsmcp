@@ -1,10 +1,10 @@
-import { getActiveClient } from "../lsp/lspClient.ts";
-import type { LSPClient } from "../lsp/lspTypes.ts";
+import { getActiveClient } from "../../lsp/lspClient.ts";
+import type { LSPClient } from "../../lsp/lspTypes.ts";
 import {
   type ErrorContext,
   errors,
   withErrorHandling,
-} from "./errors/index.ts";
+} from "../pure/errors/index.ts";
 
 /**
  * Options for LSP operations

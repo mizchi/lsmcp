@@ -1,7 +1,7 @@
 import { z, type ZodType } from "zod";
 import type { Result } from "neverthrow";
-import type { ToolDef } from "../mcp/utils/mcpHelpers.ts";
-import { errors } from "./errors/index.ts";
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
+import { errors } from "../pure/errors/index.ts";
 
 /**
  * Options for creating a tool with the factory

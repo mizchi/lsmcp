@@ -6,8 +6,8 @@ import {
 } from "vscode-languageserver-types";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { prepareFileContext, withLSPDocument } from "../utils/lspCommon.ts";
-import { fileLocationSchema } from "../../common/schemas.ts";
-import { formatLocation, formatRange } from "../../common/formatting.ts";
+import { fileLocationSchema } from "../../core/pure/schemas.ts";
+import { formatLocation, formatRange } from "../../core/pure/formatting.ts";
 import { getLSPClient } from "../lspClient.ts";
 
 const schema = fileLocationSchema;

@@ -1,4 +1,7 @@
-import type { Diagnostic as LSPDiagnostic, Location } from "../lsp/lspTypes.ts";
+import type {
+  Diagnostic as LSPDiagnostic,
+  Location,
+} from "../../lsp/lspTypes.ts";
 import { relative } from "path";
 
 /**

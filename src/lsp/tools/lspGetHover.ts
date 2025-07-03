@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
-import { createLSPTool } from "../../common/toolFactory.ts";
-import { withLSPOperation } from "../../common/lspOperations.ts";
-import { resolveFileAndSymbol } from "../../common/fileSymbolResolver.ts";
+import { createLSPTool } from "../../core/io/toolFactory.ts";
+import { withLSPOperation } from "../../core/io/lspOperations.ts";
+import { resolveFileAndSymbol } from "../../core/io/fileSymbolResolver.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
