@@ -142,7 +142,7 @@ async function handleGetDocumentSymbols({
     let result = `Document symbols in ${filePath}:\n\n`;
 
     // Check if we have DocumentSymbol[] or SymbolInformation[]
-    // FSAutoComplete may return DocumentSymbol without some optional properties
+    // Some language servers may return DocumentSymbol without optional properties
     try {
       for (const symbol of symbols) {
         // Check each symbol individually to determine its type

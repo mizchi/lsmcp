@@ -5,7 +5,6 @@ import { resolveFileAndSymbol } from "../../core/io/fileSymbolResolver.ts";
 import { DiagnosticResultBuilder } from "../../core/pure/resultBuilders.ts";
 import { getActiveClient, getLanguageIdFromPath } from "../lspClient.ts";
 import type { Diagnostic as LSPDiagnostic } from "../lspTypes.ts";
-import { processMoonbitDiagnostics } from "../../adapters/diagnosticProcessors.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -54,7 +53,6 @@ async function getDiagnosticsWithLSP(
 
     // Detect language from file extension
     const languageId = getLanguageIdFromPath(request.filePath);
-    const isMoonBit = languageId === "moonbit";
 
     // Open document in LSP with current content
     client.openDocument(fileUri, fileContent, languageId || undefined);
@@ -69,7 +67,6 @@ async function getDiagnosticsWithLSP(
     // Determine if this is a large file that might need more time
     const lineCount = fileContent.split("\n").length;
     const isLargeFile = lineCount > 100;
-    // MoonBit needs more time to compile and produce diagnostics
     const eventTimeout = isLargeFile ? 3000 : 1000;
 
     // Check if pull diagnostics should be enabled
@@ -94,7 +91,6 @@ async function getDiagnosticsWithLSP(
       (lspDiagnostics.length === 0 && !client.waitForDiagnostics)
     ) {
       // Initial wait for LSP to process the document (important for CI)
-      // MoonBit needs more time to compile
       const initialWait = isLargeFile ? 500 : 200;
       await new Promise<void>((resolve) => setTimeout(resolve, initialWait));
 
@@ -112,10 +108,9 @@ async function getDiagnosticsWithLSP(
       // If still no diagnostics, poll for them
       if (lspDiagnostics.length === 0) {
         // Poll for diagnostics
-        // MoonBit might need more time to compile and produce diagnostics
-        const maxPolls = isMoonBit ? 200 : isLargeFile ? 100 : 60; // Max 10 seconds for MoonBit
+        const maxPolls = isLargeFile ? 100 : 60;
         const pollInterval = 50; // Poll every 50ms
-        const minPollsForNoError = isMoonBit ? 100 : isLargeFile ? 60 : 40; // More polls for MoonBit
+        const minPollsForNoError = isLargeFile ? 60 : 40;
 
         for (let poll = 0; poll < maxPolls; poll++) {
           await new Promise<void>((resolve) =>
@@ -132,48 +127,6 @@ async function getDiagnosticsWithLSP(
           if (poll === 5 || poll === 10) {
             client.updateDocument(fileUri, fileContent, poll + 1);
           }
-        }
-      }
-    }
-
-    // For MoonBit files, if no LSP diagnostics, try moonc compiler check
-    if (isMoonBit) {
-      console.log(
-        `[DEBUG] MoonBit file detected: ${request.filePath}, LSP diagnostics: ${lspDiagnostics.length}`,
-      );
-
-      if (lspDiagnostics.length === 0) {
-        try {
-          console.log(`[DEBUG] Running moonc check for ${request.filePath}`);
-          const mooncDiagnostics = processMoonbitDiagnostics(
-            [], // Empty LSP diagnostics
-            request.filePath,
-            fileContent,
-            request.root,
-          );
-
-          console.log(`[DEBUG] moonc diagnostics: ${mooncDiagnostics.length}`);
-
-          // Convert ProcessedDiagnostic to LSPDiagnostic format
-          const convertedDiagnostics: LSPDiagnostic[] = mooncDiagnostics.map(
-            (d) => ({
-              range: {
-                start: { line: d.line, character: 0 },
-                end: { line: d.line, character: 1000 }, // End of line
-              },
-              severity: d.severity as 1 | 2, // 1=Error, 2=Warning
-              message: d.message,
-              source: d.source,
-            }),
-          );
-
-          lspDiagnostics = convertedDiagnostics;
-        } catch (error) {
-          // If moonc check fails, continue with empty diagnostics
-          console.warn(
-            `Failed to run moonc check for ${request.filePath}:`,
-            error,
-          );
         }
       }
     }
