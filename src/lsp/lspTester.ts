@@ -1,10 +1,10 @@
-import { BaseLspAdapter } from "./baseLspAdapter.ts";
+import { AdapterManager } from "./lspAdapterUtils.ts";
 import { LSPValidationResult } from "./lspValidator.ts";
 import { debugLog } from "../mcp/utils/errorHandler.ts";
 
 export interface TestSuite {
   name: string;
-  adapter: BaseLspAdapter;
+  adapter: AdapterManager;
   rootPath: string;
   testCases: TestCase[];
 }
@@ -57,7 +57,7 @@ export class LSPTester {
     const testResults: TestResult[] = [];
 
     // First, run the basic validation
-    const validationResult = await suite.adapter.validateLSP(suite.rootPath);
+    const validationResult = await suite.adapter.validate(suite.rootPath);
 
     if (!validationResult.connectionSuccess) {
       debugLog(`Test suite ${suite.name} failed: No LSP connection`);
@@ -85,7 +85,7 @@ export class LSPTester {
 
     return {
       suiteName: suite.name,
-      adapter: suite.adapter.getConfig().id,
+      adapter: suite.adapter.config.id,
       validationResult,
       testResults,
       summary,
@@ -96,7 +96,7 @@ export class LSPTester {
    * Run a single test case
    */
   private async runTestCase(
-    adapter: BaseLspAdapter,
+    adapter: AdapterManager,
     rootPath: string,
     testCase: TestCase,
   ): Promise<TestResult[]> {
@@ -119,7 +119,7 @@ export class LSPTester {
    * Run a single test expectation
    */
   private async runTestExpectation(
-    adapter: BaseLspAdapter,
+    adapter: AdapterManager,
     rootPath: string,
     testCase: TestCase,
     expectation: TestExpectation,
@@ -132,7 +132,7 @@ export class LSPTester {
 
     try {
       // Create a temporary validation to test the specific feature
-      const validationResult = await adapter.validateLSP(rootPath, {
+      const validationResult = await adapter.validate(rootPath, {
         testFileContent: testCase.testContent,
         testFileName: testCase.fileName,
         timeout: expectation.timeout || 5000,
@@ -187,7 +187,7 @@ export class LSPTester {
 
     return {
       suiteName: suite.name,
-      adapter: suite.adapter.getConfig().id,
+      adapter: suite.adapter.config.id,
       validationResult,
       testResults: [],
       summary: {
