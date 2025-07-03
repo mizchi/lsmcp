@@ -5,9 +5,17 @@
     "clientKind": "git",
     "useIgnoreFile": false
   },
-  "files": { 
+  "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!tests/adapters/fixtures/python/.venv/**"]
+    "includes": [
+      "**",
+      "!**/.venv/**",
+      "!node_modules/**",
+      "!dist/**",
+      "!coverage/**",
+      "!**/*.min.js",
+      "!pnpm-lock.yaml"
+    ]
   },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2 },
   "linter": {

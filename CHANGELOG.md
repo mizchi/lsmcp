@@ -1,4 +1,17 @@
-# [0.7.0](https://github.com/mizchi/lsmcp/compare/v0.6.0...v0.7.0) (2025-07-02)
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.7.0](https://github.com/mizchi/lsmcp/compare/v0.6.0...v0.7.0) (2025-07-02)
+
+### 🎉 Highlights
+
+- **LocationLink Support for Modern LSP Servers**: Fixes "Go to Definition" for typescript-language-server and rust-analyzer
+- **Simplified Tool Names**: Removed `lsmcp_` prefix for better developer experience
+- **Enhanced Documentation**: Language-specific installation guides for TypeScript, Rust, F#, and Python
 
 ### 🚀 Features
 
@@ -36,16 +49,27 @@
   - `lsmcp_get_hover` → `get_hover`
   - `lsmcp_find_references` → `find_references`
   - `lsmcp_get_definitions` → `get_definitions`
-  - And all other tools follow the same pattern
+  - `lsmcp_rename_symbol` → `rename_symbol`
+  - `lsmcp_delete_symbol` → `delete_symbol`
+  - `lsmcp_get_diagnostics` → `get_diagnostics`
+  - `lsmcp_get_all_diagnostics` → `get_all_diagnostics`
+  - `lsmcp_get_document_symbols` → `get_document_symbols`
+  - `lsmcp_get_workspace_symbols` → `get_workspace_symbols`
+  - `lsmcp_get_completion` → `get_completion`
+  - `lsmcp_get_signature_help` → `get_signature_help`
+  - `lsmcp_get_code_actions` → `get_code_actions`
+  - `lsmcp_format_document` → `format_document`
 
+### 🔄 Upgrading from v0.6.x
 
+1. Update to v0.7.0:
+   ```bash
+   npm update @mizchi/lsmcp
+   ```
 
-# Changelog
+2. Update your tool references to use the new names (remove `lsmcp_` prefix)
 
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+3. If you're using typescript-language-server, "Go to Definition" should now work correctly without any additional configuration
 
 ## [0.6.0](https://github.com/mizchi/typescript-mcp/compare/v0.5.0...v0.6.0) (2025-01-30)
 
