@@ -2,6 +2,10 @@
 
 **LSP for headless AI Agents**
 
+[![CI - Unit Tests](https://github.com/mizchi/lsmcp/actions/workflows/ci-unit.yml/badge.svg)](https://github.com/mizchi/lsmcp/actions/workflows/ci-unit.yml)
+[![CI - Integration Tests](https://github.com/mizchi/lsmcp/actions/workflows/ci-integration.yml/badge.svg)](https://github.com/mizchi/lsmcp/actions/workflows/ci-integration.yml)
+[![CI - Language Adapters](https://github.com/mizchi/lsmcp/actions/workflows/ci-adapters.yml/badge.svg)](https://github.com/mizchi/lsmcp/actions/workflows/ci-adapters.yml)
+
 > ⚠️ **This project is under active development.** APIs and features may change without notice.
 
 A unified MCP (Model Context Protocol) server that provides advanced code manipulation and analysis capabilities for multiple programming languages through Language Server Protocol integration.

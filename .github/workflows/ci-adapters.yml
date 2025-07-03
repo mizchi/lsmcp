@@ -1,0 +1,177 @@
+name: CI - Language Adapters
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # F# Language Server Test
+  fsharp-adapter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install F# dependencies
+        run: |
+          dotnet tool install -g fsautocomplete
+          # Verify installation
+          fsautocomplete --version
+
+      - name: Install Node.js dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run F# adapter tests
+        run: pnpm test:adapters -- tests/adapters/language-tests/fsharp.test.ts
+        env:
+          CI: true
+          TEST_FSHARP: true
+
+  # Rust Language Server Test
+  rust-adapter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rust-analyzer
+
+      - name: Install Rust Language Server
+        run: |
+          # rust-analyzer is included with rustup toolchain
+          rust-analyzer --version
+
+      - name: Install Node.js dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run Rust adapter tests
+        run: pnpm test:adapters -- tests/adapters/language-tests/rust.test.ts
+        env:
+          CI: true
+          TEST_RUST: true
+
+  # TypeScript (tsgo) adapter test
+  tsgo-adapter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install TypeScript tools
+        run: |
+          npm install -g tsgo
+          tsgo --version
+
+      - name: Install Node.js dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run tsgo adapter tests
+        run: pnpm test:adapters -- tests/adapters/language-tests/tsgo.test.ts
+        env:
+          CI: true
+          TEST_TSGO: true
+
+  # Python adapter test
+  python-adapter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python Language Server
+        run: |
+          pip install python-lsp-server[all]
+          pylsp --version
+
+      - name: Install Node.js dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run Python adapter tests
+        run: pnpm test:adapters -- tests/adapters/language-tests/python.test.ts
+        env:
+          CI: true
+          TEST_PYTHON: true
+
+  # Summary job to check all adapter tests
+  adapters-summary:
+    runs-on: ubuntu-latest
+    needs: [fsharp-adapter, rust-adapter, tsgo-adapter, python-adapter]
+    if: always()
+    steps:
+      - name: Check all adapter tests
+        run: |
+          echo "F# adapter: ${{ needs.fsharp-adapter.result }}"
+          echo "Rust adapter: ${{ needs.rust-adapter.result }}"
+          echo "tsgo adapter: ${{ needs.tsgo-adapter.result }}"
+          echo "Python adapter: ${{ needs.python-adapter.result }}"
+          
+          # Fail if any critical adapter failed
+          if [[ "${{ needs.fsharp-adapter.result }}" == "failure" || "${{ needs.rust-adapter.result }}" == "failure" ]]; then
+            echo "Critical adapter tests failed"
+            exit 1
+          fi
+          
+          echo "All adapter tests completed"
