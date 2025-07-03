@@ -273,6 +273,50 @@ You can configure any LSP server by providing the binary path and optional initi
 }
 ```
 
+### Using Configuration Files
+
+For complex LSP server configurations, you can use the `--config` option to load settings from a JSON file:
+
+1. Create a configuration file (e.g., `my-language.json`):
+
+```json
+{
+  "id": "my-language",
+  "name": "My Custom Language",
+  "bin": "my-language-server",
+  "args": ["--stdio"],
+  "initializationOptions": {
+    "formatOnSave": true,
+    "lintingEnabled": true,
+    "customFeatures": {
+      "autoImport": true
+    }
+  }
+}
+```
+
+2. Use it with lsmcp:
+
+```bash
+# Using Claude CLI
+claude mcp add my-language npx -- -y @mizchi/lsmcp --config ./my-language.json
+
+# Or in .mcp.json
+{
+  "mcpServers": {
+    "my-language": {
+      "command": "npx",
+      "args": ["-y", "@mizchi/lsmcp", "--config", "./my-language.json"]
+    }
+  }
+}
+```
+
+This approach is useful when:
+- You have complex initialization options
+- You want to share configurations across projects
+- You need to version control your LSP settings
+
 ### Environment Variables
 
 Some LSP servers can be configured via environment variables:
