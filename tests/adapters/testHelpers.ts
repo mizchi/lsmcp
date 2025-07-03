@@ -7,7 +7,7 @@ import { resolveAdapterCommand } from "../../src/adapters/utils.ts";
 import {
   processDefaultDiagnostics,
   processDeduplicatedDiagnostics,
-} from "../../src/adapters/diagnosticProcessors.ts";
+} from "./diagnosticProcessors.ts";
 
 // Helper to convert adapter to language config
 function adapterToLanguageConfig(adapter: LspAdapter): LanguageConfig {
