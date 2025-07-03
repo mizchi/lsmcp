@@ -15,8 +15,15 @@ export const tsgoAdapter: LspAdapter = {
   name: "tsgo",
   baseLanguage: "typescript",
   description: "Fast TypeScript language server by tsgo",
-  lspCommand: "tsgo",
-  lspArgs: ["--lsp", "--stdio"],
+  lspCommand: "npx",
+  lspArgs: ["tsgo", "--lsp", "--stdio"],
+  unsupported: [
+    "get_document_symbols",
+    // "get_workspace_symbols", // Not implemented yet in any adapter
+    "get_code_actions",
+    "rename_symbol",
+    "delete_symbol",
+  ],
 
   // Initialize with TypeScript preferences
   initializationOptions: {

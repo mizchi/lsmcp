@@ -24,7 +24,7 @@ import { lspGetAllDiagnosticsTool } from "../lsp/tools/lspGetAllDiagnostics.ts";
 import { lspRenameSymbolTool } from "../lsp/tools/lspRenameSymbol.ts";
 import { lspDeleteSymbolTool } from "../lsp/tools/lspDeleteSymbol.ts";
 import { lspGetDocumentSymbolsTool } from "../lsp/tools/lspGetDocumentSymbols.ts";
-import { lspGetWorkspaceSymbolsTool } from "../lsp/tools/lspGetWorkspaceSymbols.ts";
+// import { lspGetWorkspaceSymbolsTool } from "../lsp/tools/lspGetWorkspaceSymbols.ts"; // Not implemented yet
 import { lspGetCompletionTool } from "../lsp/tools/lspGetCompletion.ts";
 import { lspGetSignatureHelpTool } from "../lsp/tools/lspGetSignatureHelp.ts";
 import { lspFormatDocumentTool } from "../lsp/tools/lspFormatDocument.ts";
@@ -50,7 +50,7 @@ const lspTools: ToolDef<any>[] = [
   lspRenameSymbolTool,
   lspDeleteSymbolTool,
   lspGetDocumentSymbolsTool,
-  lspGetWorkspaceSymbolsTool,
+  // lspGetWorkspaceSymbolsTool, // Not implemented yet
   lspGetCompletionTool,
   lspGetSignatureHelpTool,
   lspFormatDocumentTool,

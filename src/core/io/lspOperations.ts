@@ -22,6 +22,9 @@ export interface LSPOperationOptions<T> {
   /** Wait time after opening document (ms) */
   waitTime?: number;
 
+  /** Timeout for the operation (ms) */
+  timeout?: number;
+
   /** The actual LSP operation to perform */
   operation: (client: LSPClient) => Promise<T>;
 
@@ -50,6 +53,7 @@ export async function withLSPOperation<T>(
     fileContent,
     languageId,
     waitTime = 1000,
+    timeout = 10000, // 10 second default timeout
     operation,
     errorContext = {},
   } = options;
@@ -72,14 +76,23 @@ export async function withLSPOperation<T>(
     await new Promise<void>((resolve) => setTimeout(resolve, waitTime));
   }
 
-  // Execute the operation with error handling
-  return withErrorHandling(
+  // Execute the operation with timeout and error handling
+  const operationPromise = withErrorHandling(
     () => operation(client),
     {
       ...errorContext,
       operation: errorContext.operation || "lsp_operation",
     },
   );
+
+  // Add timeout wrapper
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`LSP operation timed out after ${timeout}ms`));
+    }, timeout);
+  });
+
+  return Promise.race([operationPromise, timeoutPromise]);
 }
 
 /**

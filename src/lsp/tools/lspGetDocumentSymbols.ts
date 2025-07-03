@@ -109,9 +109,34 @@ async function handleGetDocumentSymbols({
     }
 
     // Get document symbols
-    const symbols = await client.getDocumentSymbols(fileUri);
+    let symbols: any[];
+    try {
+      symbols = await client.getDocumentSymbols(fileUri);
+      console.log(
+        `[DEBUG] Document symbols for ${filePath}:`,
+        JSON.stringify(symbols, null, 2),
+      );
+    } catch (error) {
+      console.error(
+        `[DEBUG] Error getting document symbols for ${filePath}:`,
+        error,
+      );
 
-    if (symbols.length === 0) {
+      // Check if it's a method not supported error
+      if (error && typeof error === "object" && "message" in error) {
+        const errorMessage = String(error.message);
+        if (
+          errorMessage.includes("InvalidRequest") ||
+          errorMessage.includes("method not found")
+        ) {
+          return `Document symbols not supported by this language server for ${filePath}`;
+        }
+      }
+
+      return `Error getting document symbols: ${error}`;
+    }
+
+    if (!symbols || symbols.length === 0) {
       return `No symbols found in ${filePath}`;
     }
 

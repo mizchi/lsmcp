@@ -4,6 +4,10 @@ import { getNodeModulesBin } from "../core/io/nodeModulesUtils.ts";
 
 /**
  * MoonBit language server adapter
+ *
+ * Known issues:
+ * - May have slower response times for some operations
+ * - Hover operations may timeout on large files
  */
 export const moonbitLanguageServerAdapter: LspAdapter = {
   id: "moonbit-language-server",
@@ -12,6 +16,9 @@ export const moonbitLanguageServerAdapter: LspAdapter = {
   description: "moonbit lsp",
   lspCommand: "moonbit-lsp",
   lspArgs: [],
+  unsupported: [
+    // "get_hover", // May be slow/timeout on some files
+  ],
   doctor: async () => {
     try {
       const binPath = getNodeModulesBin("moonbit-lsp");

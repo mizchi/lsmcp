@@ -427,6 +427,10 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       `LSP initialized for ${state.languageId}:`,
       JSON.stringify(initResult, null, 2),
     );
+    console.log(
+      `[DEBUG] LSP capabilities for ${state.languageId}:`,
+      JSON.stringify(initResult.capabilities, null, 2),
+    );
     // Send initialized notification
     sendNotification("initialized", {});
     debugLog(`After initialization - Language ID: "${state.languageId}"`);
@@ -619,12 +623,28 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   async function getDocumentSymbols(
     uri: string,
   ): Promise<DocumentSymbol[] | SymbolInformation[]> {
-    const params = commands.documentSymbols.buildParams({ uri });
-    const result = await sendRequest<DocumentSymbolResult>(
-      commands.documentSymbols.method,
-      params,
-    );
-    return commands.documentSymbols.processResponse(result);
+    try {
+      const params = commands.documentSymbols.buildParams({ uri });
+      const result = await sendRequest<DocumentSymbolResult>(
+        commands.documentSymbols.method,
+        params,
+      );
+      return commands.documentSymbols.processResponse(result);
+    } catch (error: unknown) {
+      // Check if this is a method not supported error
+      if (
+        getErrorMessage(error).includes("Unhandled method") ||
+        getErrorMessage(error).includes("Method not found") ||
+        getErrorMessage(error).includes("InvalidRequest") ||
+        (isErrorWithCode(error) && error.code === -32601)
+      ) {
+        debug("LSP server doesn't support document symbols");
+        throw new Error(
+          "Document symbols not supported by this language server",
+        );
+      }
+      throw error;
+    }
   }
 
   async function getWorkspaceSymbols(

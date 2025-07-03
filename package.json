@@ -22,6 +22,7 @@
     "test:all": "vitest --run",
     "test:watch": "vitest",
     "test:examples": "tsx scripts/check-examples.ts",
+    "build:supported-table": "node scripts/build-supported-table.ts",
     "coverage": "vitest run --coverage",
     "format": "deno fmt src/ tests/",
     "format:check": "deno fmt --check src/ tests/",

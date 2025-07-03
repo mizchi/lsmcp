@@ -6,6 +6,7 @@ import type { LanguageConfig, LspAdapter } from "../../src/types.ts";
 import { resolveAdapterCommand } from "../../src/adapters/utils.ts";
 import {
   processDefaultDiagnostics,
+  processMoonbitDiagnostics,
   processTsgoDiagnostics,
 } from "../../src/adapters/diagnosticProcessors.ts";
 
@@ -197,6 +198,13 @@ export async function testLspConnection(
             errorAndWarningDiagnostics,
             checkFile,
             fileContent,
+          );
+        } else if (adapter.id === "moonbit-language-server") {
+          processedDiagnostics = processMoonbitDiagnostics(
+            errorAndWarningDiagnostics,
+            checkFile,
+            fileContent,
+            projectPath,
           );
         } else {
           processedDiagnostics = processDefaultDiagnostics(

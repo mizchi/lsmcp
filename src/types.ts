@@ -49,6 +49,9 @@ export interface LspAdapter extends BaseLspConfig {
   /** Description of what makes this adapter different */
   description: string;
 
+  /** List of LSP features that are not supported by this adapter */
+  unsupported?: string[];
+
   /** Language-specific MCP tools */
   customTools?: ToolDef<import("zod").ZodType>[];
 

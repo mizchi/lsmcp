@@ -5,6 +5,7 @@ import { resolveFileAndSymbol } from "../../core/io/fileSymbolResolver.ts";
 import { DiagnosticResultBuilder } from "../../core/pure/resultBuilders.ts";
 import { getActiveClient, getLanguageIdFromPath } from "../lspClient.ts";
 import type { Diagnostic as LSPDiagnostic } from "../lspTypes.ts";
+import { processMoonbitDiagnostics } from "../../adapters/diagnosticProcessors.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -137,6 +138,48 @@ async function getDiagnosticsWithLSP(
           if (poll === 5 || poll === 10) {
             client.updateDocument(fileUri, fileContent, poll + 1);
           }
+        }
+      }
+    }
+
+    // For MoonBit files, if no LSP diagnostics, try moonc compiler check
+    if (isMoonBit) {
+      console.log(
+        `[DEBUG] MoonBit file detected: ${request.filePath}, LSP diagnostics: ${lspDiagnostics.length}`,
+      );
+
+      if (lspDiagnostics.length === 0) {
+        try {
+          console.log(`[DEBUG] Running moonc check for ${request.filePath}`);
+          const mooncDiagnostics = processMoonbitDiagnostics(
+            [], // Empty LSP diagnostics
+            request.filePath,
+            fileContent,
+            request.root,
+          );
+
+          console.log(`[DEBUG] moonc diagnostics: ${mooncDiagnostics.length}`);
+
+          // Convert ProcessedDiagnostic to LSPDiagnostic format
+          const convertedDiagnostics: LSPDiagnostic[] = mooncDiagnostics.map(
+            (d) => ({
+              range: {
+                start: { line: d.line, character: 0 },
+                end: { line: d.line, character: 1000 }, // End of line
+              },
+              severity: d.severity as 1 | 2, // 1=Error, 2=Warning
+              message: d.message,
+              source: d.source,
+            }),
+          );
+
+          lspDiagnostics = convertedDiagnostics;
+        } catch (error) {
+          // If moonc check fails, continue with empty diagnostics
+          console.warn(
+            `Failed to run moonc check for ${request.filePath}:`,
+            error,
+          );
         }
       }
     }
