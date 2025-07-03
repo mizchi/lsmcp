@@ -100,13 +100,13 @@ jobs:
           node-version: 22
           cache: "pnpm"
 
-      - name: Install TypeScript tools
-        run: |
-          npm install -g tsgo
-          tsgo --version
-
       - name: Install Node.js dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Verify TypeScript tools
+        run: |
+          # tsgo is available via @typescript/native-preview in devDependencies
+          npx tsgo --version
 
       - name: Build
         run: pnpm build
