@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { join } from "path";
-import { moonbitLanguageServerAdapter } from "../../../src/adapters/moonbit.ts";
+import { moonbitAdapter } from "../../../src/adapters/moonbit.ts";
 import { testLspConnection } from "../testHelpers.ts";
 
 describe("MoonBit Adapter", () => {
@@ -8,7 +8,7 @@ describe("MoonBit Adapter", () => {
     const projectRoot = join(import.meta.dirname, "../fixtures", "moonbit");
     const checkFiles = ["main.mbt"];
     const result = await testLspConnection(
-      moonbitLanguageServerAdapter,
+      moonbitAdapter,
       projectRoot,
       checkFiles,
     );

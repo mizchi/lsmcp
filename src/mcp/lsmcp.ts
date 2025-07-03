@@ -47,7 +47,7 @@ import { pyrightAdapter } from "../adapters/pyright.ts";
 import { ruffAdapter } from "../adapters/ruff.ts";
 import { rustAnalyzerAdapter } from "../adapters/rust-analyzer.ts";
 import { fsharpAdapter } from "../adapters/fsharp.ts";
-import { moonbitLanguageServerAdapter } from "../adapters/moonbit.ts";
+import { moonbitAdapter } from "../adapters/moonbit.ts";
 
 // Define LSP-only tools
 const lspTools: ToolDef<any>[] = [
@@ -108,7 +108,7 @@ adapterRegistry.register(pyrightAdapter);
 adapterRegistry.register(ruffAdapter);
 adapterRegistry.register(rustAnalyzerAdapter);
 adapterRegistry.register(fsharpAdapter);
-adapterRegistry.register(moonbitLanguageServerAdapter);
+adapterRegistry.register(moonbitAdapter);
 
 // Legacy support - will be removed in future versions
 const languages = new Map<string, LanguageConfig>();

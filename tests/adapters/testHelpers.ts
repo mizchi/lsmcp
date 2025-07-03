@@ -199,7 +199,7 @@ export async function testLspConnection(
             checkFile,
             fileContent,
           );
-        } else if (adapter.id === "moonbit-language-server") {
+        } else if (adapter.id === "moonbit") {
           processedDiagnostics = processMoonbitDiagnostics(
             errorAndWarningDiagnostics,
             checkFile,

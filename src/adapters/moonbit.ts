@@ -9,8 +9,8 @@ import { getNodeModulesBin } from "../core/io/nodeModulesUtils.ts";
  * - May have slower response times for some operations
  * - Hover operations may timeout on large files
  */
-export const moonbitLanguageServerAdapter: LspAdapter = {
-  id: "moonbit-language-server",
+export const moonbitAdapter: LspAdapter = {
+  id: "moonbit",
   name: "MoonBit Language Server",
   baseLanguage: "moonbit",
   description: "moonbit lsp",

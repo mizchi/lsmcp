@@ -64,7 +64,7 @@ lsmcp includes built-in presets for popular language servers:
 - **`ruff`** - Python (Ruff linter as LSP)
 - **`rust-analyzer`** - Rust
 - **`fsharp`** - F# (fsautocomplete)
-- **`moonbit-language-server`** - MoonBit
+- **`moonbit`** - MoonBit
 
 For languages not in this list, or to customize LSP server settings, see [Manual Setup](#manual-setup).
 
