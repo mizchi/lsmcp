@@ -78,6 +78,11 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Initialize Rust project
+        run: |
+          cd tests/adapters/fixtures/rust
+          cargo check
+
       - name: Run Rust adapter tests
         run: pnpm vitest run tests/adapters/language-tests/rust.test.ts
         env:
@@ -150,6 +155,12 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Initialize Python project
+        run: |
+          cd tests/adapters/fixtures/python
+          source ~/.cargo/env
+          uv sync
 
       - name: Run Python adapter tests
         run: pnpm vitest run tests/adapters/language-tests/python.test.ts
