@@ -155,27 +155,6 @@ jobs:
           CI: true
           TEST_PYTHON: true
 
-  # Summary job to check all adapter tests
-  adapters-summary:
-    runs-on: ubuntu-latest
-    needs: [fsharp-adapter, rust-adapter, tsgo-adapter, python-adapter, moonbit-adapter]
-    if: always()
-    steps:
-      - name: Check all adapter tests
-        run: |
-          echo "F# adapter: ${{ needs.fsharp-adapter.result }}"
-          echo "Rust adapter: ${{ needs.rust-adapter.result }}"
-          echo "tsgo adapter: ${{ needs.tsgo-adapter.result }}"
-          echo "Python adapter: ${{ needs.python-adapter.result }}"
-          echo "MoonBit adapter: ${{ needs.moonbit-adapter.result }}"
-
-          # Fail if any critical adapter failed
-          if [[ "${{ needs.fsharp-adapter.result }}" == "failure" || "${{ needs.rust-adapter.result }}" == "failure" || "${{ needs.moonbit-adapter.result }}" == "failure" ]]; then
-            echo "Critical adapter tests failed"
-            exit 1
-          fi
-
-          echo "All adapter tests completed"
 
   # MoonBit adapter test
   moonbit-adapter:
