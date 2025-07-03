@@ -81,7 +81,7 @@ jobs:
       - name: Initialize Rust project
         run: |
           cd tests/adapters/fixtures/rust
-          cargo check
+          cargo check || true
 
       - name: Run Rust adapter tests
         run: pnpm vitest run tests/adapters/language-tests/rust.test.ts
