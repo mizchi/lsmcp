@@ -27,17 +27,17 @@ describe("F# Adapter", () => {
         result.diagnostics?.filter((d) => d.file === "Program.fs") || [];
       expect(programErrors.length).toBeGreaterThan(0);
 
-      // Should detect the type error on line 19 (string vs int)
-      const line19Error = programErrors.find((d) => d.line === 19);
-      expect(line19Error).toBeDefined();
-      expect(line19Error?.severity).toBe(1); // Error severity
-      expect(line19Error?.source).toBe("F# Compiler");
+      // Should detect the type error on line 18 (string vs int)
+      const line18Error = programErrors.find((d) => d.line === 18);
+      expect(line18Error).toBeDefined();
+      expect(line18Error?.severity).toBe(1); // Error severity
+      expect(line18Error?.source).toBe("F# Compiler");
 
-      // Should detect the type error on line 22 (string vs int)
-      const line22Error = programErrors.find((d) => d.line === 22);
-      expect(line22Error).toBeDefined();
-      expect(line22Error?.severity).toBe(1); // Error severity
-      expect(line22Error?.source).toBe("F# Compiler");
+      // Should detect the type error on line 21 (string vs int)
+      const line21Error = programErrors.find((d) => d.line === 21);
+      expect(line21Error).toBeDefined();
+      expect(line21Error?.severity).toBe(1); // Error severity
+      expect(line21Error?.source).toBe("F# Compiler");
     },
     30000,
   );
