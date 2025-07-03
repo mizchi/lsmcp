@@ -8,14 +8,14 @@ export interface ErrorContext {
   details?: Record<string, unknown>;
 }
 
-export interface FormattedError {
+interface FormattedError {
   title: string;
   reason: string;
   solution?: string;
   debugInfo?: string;
 }
 
-export class MCPError extends Error {
+class MCPError extends Error {
   constructor(
     public readonly formatted: FormattedError,
     public readonly context?: ErrorContext,
@@ -228,17 +228,7 @@ export function debugLog(message: string, ...args: unknown[]): void {
   }
 }
 
-export function wrapError(operation: string, context?: Partial<ErrorContext>) {
-  return (error: unknown): never => {
-    const fullContext: ErrorContext = {
-      operation,
-      ...context,
-    };
-
-    const formatted = formatError(error, fullContext);
-    throw new Error(formatted);
-  };
-}
+// wrapError was removed as it was not used anywhere in the codebase
 
 if (import.meta.vitest) {
   const { describe, it, expect } = import.meta.vitest;

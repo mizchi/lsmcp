@@ -10,7 +10,7 @@ export enum LogLevel {
   TRACE = 4,
 }
 
-export interface LogEntry {
+interface LogEntry {
   timestamp: string;
   level: LogLevel;
   component: string;
@@ -19,7 +19,7 @@ export interface LogEntry {
   error?: Error;
 }
 
-export interface DebugSession {
+interface DebugSession {
   sessionId: string;
   adapter: string;
   startTime: Date;
@@ -33,7 +33,7 @@ export interface DebugSession {
   };
 }
 
-export class DebugLogger {
+class DebugLogger {
   private logLevel: LogLevel = LogLevel.INFO;
   private logFile?: string;
   private sessions: Map<string, DebugSession> = new Map();

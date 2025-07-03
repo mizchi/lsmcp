@@ -1,6 +1,6 @@
 import type { Diagnostic } from "vscode-languageserver-protocol";
 
-export interface ProcessedDiagnostic {
+interface ProcessedDiagnostic {
   file: string;
   severity: number;
   message: string;
