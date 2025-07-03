@@ -113,7 +113,7 @@ const { values, positionals } = parseArgs({
     language: {
       type: "string",
       short: "l",
-      description: "Language to use (typescript, moonbit, rust, etc.)",
+      description: "[DEPRECATED] Use -p/--preset instead",
     },
     preset: {
       type: "string",
@@ -158,8 +158,8 @@ Usage:
   lsmcp --bin <command> --extensions=<extensions> [options]
 
 Options:
-  -l, --language <lang>     Language to use (required unless --preset or --bin is provided)
   -p, --preset <preset>     Language adapter to use (e.g., tsgo, deno, pyright)
+  -l, --language <lang>     [DEPRECATED] Use -p/--preset instead
   --config <path>           Load language configuration from JSON file
   --bin <command>           Custom LSP server command (e.g., "deno lsp", "rust-analyzer")
   --list                    List all supported languages and presets
@@ -403,6 +403,21 @@ async function main() {
   // Determine which option was provided
   let language = values.language;
 
+  // Handle -l option as alias for -p (deprecated)
+  if (values.language && !values.preset) {
+    console.warn(
+      "⚠️  Warning: The -l/--language option is deprecated. Please use -p/--preset instead.",
+    );
+    console.warn(
+      `   Example: lsmcp -p ${values.language}`,
+    );
+    console.warn("");
+
+    // Treat -l as -p for backward compatibility
+    values.preset = values.language;
+    language = undefined;
+  }
+
   // Handle preset/adapter option
   if (values.preset) {
     const adapter = getLanguage(values.preset);
@@ -437,13 +452,13 @@ async function main() {
 
   debug(`[lsmcp] Resolved language: ${language}`);
 
-  // Require either --language, --preset, --config, or --bin option
+  // Require either --preset, --config, or --bin option
   if (!language && !values.bin) {
     console.error(
-      "Error: Either --language, --preset, --config, or --bin option is required",
+      "Error: Either --preset, --config, or --bin option is required",
     );
     console.error("\nExamples:");
-    console.error("  lsmcp --language=typescript");
+    console.error("  lsmcp --preset=typescript");
     console.error("  lsmcp --preset=tsgo");
     console.error("  lsmcp --config=./my-language.json");
     console.error('  lsmcp --bin="deno lsp"');
