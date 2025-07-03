@@ -1,0 +1,12 @@
+[tool.pyright]
+include = ["**/*.py"]
+exclude = ["**/node_modules", "**/__pycache__"]
+reportMissingImports = true
+reportMissingTypeStubs = false
+pythonVersion = "3.8"
+pythonPlatform = "Linux"
+
+[tool.pyright.analysis]
+autoSearchPaths = true
+useLibraryCodeForTypes = true
+diagnosticMode = "workspace"

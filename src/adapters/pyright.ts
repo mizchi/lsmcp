@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import type { LspAdapter } from "../types.ts";
 
 /**
@@ -8,8 +9,8 @@ export const pyrightAdapter: LspAdapter = {
   name: "Pyright",
   baseLanguage: "python",
   description: "Microsoft's Pyright Python language server",
-  bin: "uv",
-  args: ["run", "pyright-langserver", "--stdio"],
+  bin: "pyright-langserver",
+  args: ["--stdio"],
   initializationOptions: {
     python: {
       analysis: {
@@ -19,8 +20,37 @@ export const pyrightAdapter: LspAdapter = {
       },
     },
   },
-  // TODO:
-  // doctor: async () => {
-  //   return {ok: true};
-  // },
+  doctor: async () => {
+    try {
+      // Check if pyright-langserver is available
+      execSync("which pyright-langserver", { stdio: "ignore" });
+      return { ok: true };
+    } catch {
+      try {
+        // Check if pyright is available via npx
+        execSync("npx pyright-langserver --version", { stdio: "ignore" });
+        return {
+          ok: true,
+          bin: "npx",
+          args: ["pyright-langserver", "--stdio"],
+        };
+      } catch {
+        try {
+          // Check if pyright is available via uv
+          execSync("uv run pyright-langserver --version", { stdio: "ignore" });
+          return {
+            ok: true,
+            bin: "uv",
+            args: ["run", "pyright-langserver", "--stdio"],
+          };
+        } catch {
+          return {
+            ok: false,
+            message:
+              "pyright-langserver not found. Install with: npm install -g pyright, or pip install pyright, or uv add pyright",
+          };
+        }
+      }
+    }
+  },
 };
