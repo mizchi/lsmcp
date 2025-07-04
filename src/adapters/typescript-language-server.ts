@@ -13,8 +13,8 @@ export const typescriptAdapter: LspAdapter = {
   name: "TypeScript Language Server",
   baseLanguage: "typescript",
   description: "Community TypeScript Language Server",
-  bin: "npx",
-  args: ["typescript-language-server", "--stdio"],
+  bin: "typescript-language-server",
+  args: ["--stdio"],
   initializationOptions: {
     preferences: {
       includeCompletionsForModuleExports: true,
@@ -34,15 +34,14 @@ export const typescriptAdapter: LspAdapter = {
   ],
   doctor: async () => {
     try {
+      // Check if typescript-language-server is available in node_modules
       const binPath = getNodeModulesBin("typescript-language-server");
       if (binPath) {
         return { ok: true };
       }
-      // Fall back to checking npx
-      execSync("which npx", { stdio: "ignore" });
-      execSync("npx -y typescript-language-server --version", {
-        stdio: "ignore",
-      });
+
+      // Check if globally installed
+      execSync("which typescript-language-server", { stdio: "ignore" });
       return { ok: true };
     } catch {
       return {
