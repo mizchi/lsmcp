@@ -1,6 +1,4 @@
 import { EventEmitter } from "events";
-import { promises as fs } from "fs";
-import { fileURLToPath } from "url";
 import {
   getErrorMessage,
   isErrorWithCode,
@@ -24,6 +22,12 @@ import {
 } from "vscode-languageserver-types";
 import { ChildProcess } from "child_process";
 
+// Import new modular components
+import { DiagnosticsManager } from "./diagnostics/diagnosticsManager.ts";
+import { DocumentManager } from "./documents/documentManager.ts";
+import { RequestManager } from "./core/requestManager.ts";
+import { applyWorkspaceEditManually } from "./workspace/workspaceEditHandler.ts";
+
 import {
   createCodeActionCommand,
   createCompletionCommand,
@@ -39,14 +43,6 @@ import {
   createRenameCommand,
   createSignatureHelpCommand,
 } from "./commands/index.ts";
-
-// Type definitions for LSP 3.17+ pull diagnostics
-// These are not yet in vscode-languageserver-protocol types
-interface DocumentDiagnosticReport {
-  kind: "full" | "unchanged";
-  items?: Diagnostic[];
-  resultId?: string;
-}
 
 // Type guard for PublishDiagnosticsParams
 function isPublishDiagnosticsParams(
@@ -65,9 +61,6 @@ import {
   CodeActionResult,
   CompletionResult,
   DefinitionResult,
-  DidChangeTextDocumentParams,
-  DidCloseTextDocumentParams,
-  DidOpenTextDocumentParams,
   DocumentSymbolResult,
   FormattingResult,
   HoverContents,
@@ -81,8 +74,6 @@ import {
   LSPClientConfig,
   LSPClientState,
   LSPMessage,
-  LSPNotification,
-  LSPRequest,
   LSPResponse,
   PublishDiagnosticsParams,
   ReferencesResult,
@@ -90,11 +81,7 @@ import {
   WorkspaceSymbolResult,
 } from "./lspTypes.ts";
 import { debug } from "../mcp/utils/mcpHelpers.ts";
-import {
-  debugLog,
-  ErrorContext,
-  formatError,
-} from "../mcp/utils/errorHandler.ts";
+import { ErrorContext, formatError } from "../mcp/utils/errorHandler.ts";
 import { getLanguageIdFromPath } from "../core/pure/languageDetection.ts";
 
 // Re-export types for backward compatibility
@@ -196,8 +183,10 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     languageId: config.languageId || "plaintext", // Use plaintext as fallback, actual language will be detected per file
   };
 
-  // Track open documents
-  const openDocuments = new Set<string>();
+  // Initialize managers
+  const diagnosticsManager = new DiagnosticsManager(state.eventEmitter);
+  const documentManager = new DocumentManager();
+  const requestManager = new RequestManager();
 
   // Initialize commands
   const commands = {
@@ -258,11 +247,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   function handleMessage(message: LSPMessage): void {
     if (isLSPResponse(message)) {
       // This is a response
-      const handler = state.responseHandlers.get(message.id);
-      if (handler) {
-        handler(message);
-        state.responseHandlers.delete(message.id);
-      }
+      requestManager.handleResponse(message as LSPResponse);
     } else if (isLSPNotification(message) || isLSPRequest(message)) {
       // This is a notification or request from server
       if (
@@ -276,9 +261,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
           const validDiagnostics = params.diagnostics.filter(
             (d) => d && d.range,
           );
-          state.diagnostics.set(params.uri, validDiagnostics);
-          // Emit specific diagnostics event
-          state.eventEmitter.emit("diagnostics", {
+          diagnosticsManager.handlePublishDiagnostics({
             ...params,
             diagnostics: validDiagnostics,
           });
@@ -336,65 +319,20 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     method: string,
     params?: unknown,
   ): Promise<T> {
-    const id = ++state.messageId;
-    const message: LSPRequest = {
-      jsonrpc: "2.0",
-      id,
+    return requestManager.sendRequest<T>(
       method,
-      params: params as Record<string, unknown> | undefined,
-    };
-
-    return new Promise<T>((resolve, reject) => {
-      // Set timeout for requests
-      const timeout = setTimeout(() => {
-        state.responseHandlers.delete(id);
-        const context: ErrorContext = {
-          operation: method,
-          language: state.languageId,
-          details: { method, params },
-        };
-        reject(
-          new Error(
-            formatError(
-              new Error(`Request '${method}' timed out after 30 seconds`),
-              context,
-            ),
-          ),
-        );
-      }, 30000);
-
-      state.responseHandlers.set(id, (response) => {
-        clearTimeout(timeout);
-        state.responseHandlers.delete(id);
-
-        if (response.error) {
-          const context: ErrorContext = {
-            operation: method,
-            language: state.languageId,
-            details: {
-              errorCode: response.error.code,
-              errorData: response.error.data,
-            },
-          };
-          reject(
-            new Error(formatError(new Error(response.error.message), context)),
-          );
-        } else {
-          resolve(response.result as T);
-        }
-      });
-
-      sendMessage(message);
-    });
+      params,
+      sendMessage as (message: unknown) => void,
+      30000,
+    );
   }
 
   function sendNotification(method: string, params?: unknown): void {
-    const message: LSPNotification = {
-      jsonrpc: "2.0",
+    requestManager.sendNotification(
       method,
-      params: params as Record<string, unknown> | undefined,
-    };
-    sendMessage(message);
+      params,
+      sendMessage as (message: unknown) => void,
+    );
   }
 
   async function initialize(): Promise<void> {
@@ -520,43 +458,21 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     const actualLanguageId =
       languageId || getLanguageIdFromPath(uri) || state.languageId;
 
-    const params: DidOpenTextDocumentParams = {
-      textDocument: {
-        uri,
-        languageId: actualLanguageId,
-        version: 1,
-        text,
-      },
-    };
-    sendNotification("textDocument/didOpen", params);
-    openDocuments.add(uri);
+    documentManager.openDocument(uri, text, sendNotification, actualLanguageId);
   }
 
   function closeDocument(uri: string): void {
-    const params: DidCloseTextDocumentParams = {
-      textDocument: {
-        uri,
-      },
-    };
-    sendNotification("textDocument/didClose", params);
+    documentManager.closeDocument(uri, sendNotification);
     // Also clear diagnostics for this document
-    state.diagnostics.delete(uri);
-    openDocuments.delete(uri);
+    diagnosticsManager.clearDiagnostics(uri);
   }
 
   function isDocumentOpen(uri: string): boolean {
-    return openDocuments.has(uri);
+    return documentManager.isDocumentOpen(uri);
   }
 
   function updateDocument(uri: string, text: string, version: number): void {
-    const params: DidChangeTextDocumentParams = {
-      textDocument: {
-        uri,
-        version,
-      },
-      contentChanges: [{ text }],
-    };
-    sendNotification("textDocument/didChange", params);
+    documentManager.updateDocument(uri, text, sendNotification, version);
   }
 
   async function findReferences(
@@ -612,33 +528,11 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   }
 
   function getDiagnostics(uri: string): Diagnostic[] {
-    // In LSP, diagnostics are pushed by the server via notifications
-    // We need to retrieve them from our diagnostics storage
-    return state.diagnostics.get(uri) || [];
+    return diagnosticsManager.getDiagnostics(uri);
   }
 
   async function pullDiagnostics(uri: string): Promise<Diagnostic[]> {
-    // Try the newer textDocument/diagnostic request (LSP 3.17+)
-    try {
-      const params = commands.pullDiagnostics.buildParams({ uri });
-      const result = await sendRequest<DocumentDiagnosticReport>(
-        commands.pullDiagnostics.method,
-        params,
-      );
-      const diagnostics = commands.pullDiagnostics.processResponse(result);
-
-      // Store the diagnostics
-      if (diagnostics.length > 0) {
-        state.diagnostics.set(uri, diagnostics);
-      }
-      return diagnostics;
-    } catch (error: unknown) {
-      // If the server doesn't support pull diagnostics, fall back to push model
-      debugLog("Pull diagnostics not supported:", getErrorMessage(error));
-    }
-
-    // Fall back to getting stored diagnostics
-    return getDiagnostics(uri);
+    return diagnosticsManager.pullDiagnostics(uri, sendRequest);
   }
 
   async function getDocumentSymbols(
@@ -832,61 +726,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
         );
 
         try {
-          // Apply text edits manually
-          if (edit.changes) {
-            for (const [uri, edits] of Object.entries(edit.changes)) {
-              const filePath = fileURLToPath(uri);
-
-              // Read the file
-              const content = await fs.readFile(filePath, "utf-8");
-              const lines = content.split("\n");
-
-              // Sort edits in reverse order to apply from end to start
-              const sortedEdits = [...edits].sort((a, b) => {
-                const lineComp = b.range.start.line - a.range.start.line;
-                if (lineComp !== 0) return lineComp;
-                return b.range.start.character - a.range.start.character;
-              });
-
-              // Apply each edit
-              for (const textEdit of sortedEdits) {
-                const { range, newText } = textEdit;
-
-                // Handle full line deletion
-                if (
-                  range.start.character === 0 &&
-                  range.end.line > range.start.line &&
-                  range.end.character === 0 &&
-                  newText === ""
-                ) {
-                  // Delete entire lines
-                  lines.splice(
-                    range.start.line,
-                    range.end.line - range.start.line,
-                  );
-                } else {
-                  // Handle partial line edit
-                  const startLine = lines[range.start.line] || "";
-                  const endLine = lines[range.end.line] || "";
-
-                  const before = startLine.substring(0, range.start.character);
-                  const after = endLine.substring(range.end.character);
-
-                  // Replace the affected lines
-                  const newLines = (before + newText + after).split("\n");
-                  lines.splice(
-                    range.start.line,
-                    range.end.line - range.start.line + 1,
-                    ...newLines,
-                  );
-                }
-              }
-
-              // Write the modified content back
-              await fs.writeFile(filePath, lines.join("\n"), "utf-8");
-            }
-          }
-
+          await applyWorkspaceEditManually(edit);
           return { applied: true };
         } catch (err) {
           return {
@@ -932,24 +772,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     pushDiagnostics: boolean;
     pullDiagnostics: boolean;
   } {
-    if (!state.serverCapabilities) {
-      return { pushDiagnostics: true, pullDiagnostics: false };
-    }
-
-    // Check for pull diagnostics support (LSP 3.17+)
-    // Either via diagnosticProvider or textDocument.diagnostic
-    const hasPullDiagnostics = !!(
-      state.serverCapabilities.diagnosticProvider ||
-      state.serverCapabilities.textDocument?.diagnostic
-    );
-
-    // Push diagnostics are always supported unless explicitly disabled
-    const hasPushDiagnostics = true;
-
-    return {
-      pushDiagnostics: hasPushDiagnostics,
-      pullDiagnostics: hasPullDiagnostics,
-    };
+    return DiagnosticsManager.getDiagnosticSupport(state.serverCapabilities);
   }
 
   // Helper function to wait for diagnostics
@@ -957,26 +780,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     fileUri: string,
     timeout: number = 2000,
   ): Promise<Diagnostic[]> {
-    return new Promise((resolve, reject) => {
-      let timeoutId: NodeJS.Timeout | undefined;
-
-      const diagnosticsHandler = (params: PublishDiagnosticsParams) => {
-        if (params.uri === fileUri) {
-          if (timeoutId) clearTimeout(timeoutId);
-          state.eventEmitter.off("diagnostics", diagnosticsHandler); // Remove listener
-          resolve(params.diagnostics || []);
-        }
-      };
-
-      // Set up timeout
-      timeoutId = setTimeout(() => {
-        state.eventEmitter.off("diagnostics", diagnosticsHandler); // Remove listener
-        reject(new Error(`Timeout waiting for diagnostics for ${fileUri}`));
-      }, timeout);
-
-      // Listen for diagnostics
-      state.eventEmitter.on("diagnostics", diagnosticsHandler);
-    });
+    return diagnosticsManager.waitForDiagnostics(fileUri, timeout);
   }
 
   const lspClient: LSPClient = {
