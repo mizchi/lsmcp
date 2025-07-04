@@ -39,35 +39,10 @@ export async function testLspConnection(
     const config = adapterToLanguageConfig(adapter);
     const { command, args } = resolveAdapterCommand(adapter, projectPath);
 
-    // Debug log for pyright
-    if (adapter.id === "pyright") {
-      console.log(
-        `[pyright] Starting LSP with command: ${command} ${args.join(" ")}`,
-      );
-      console.log(`[pyright] Working directory: ${projectPath}`);
-    }
-
     const lspProcess = spawn(command, args, {
       cwd: projectPath,
       stdio: ["pipe", "pipe", "pipe"],
     });
-
-    // Log stderr for debugging
-    if (adapter.id === "pyright") {
-      lspProcess.stderr?.on("data", (data) => {
-        console.error(`[pyright] LSP stderr:`, data.toString());
-      });
-
-      lspProcess.on("error", (error) => {
-        console.error(`[pyright] LSP process error:`, error);
-      });
-
-      lspProcess.on("exit", (code, signal) => {
-        console.error(
-          `[pyright] LSP process exited with code ${code}, signal ${signal}`,
-        );
-      });
-    }
 
     // Create LSP client
     const client = createLSPClient({
@@ -76,21 +51,6 @@ export async function testLspConnection(
       languageId: adapter.baseLanguage,
       initializationOptions: config.initializationOptions,
     });
-
-    // Debug logging for pyright
-    if (adapter.id === "pyright") {
-      lspProcess.stderr?.on("data", (data) => {
-        console.log(`[pyright stderr] ${data.toString()}`);
-      });
-
-      lspProcess.on("exit", (code) => {
-        console.log(`[pyright] Process exited with code ${code}`);
-      });
-
-      lspProcess.on("error", (err) => {
-        console.log(`[pyright] Process error:`, err);
-      });
-    }
 
     // Start the client - this will throw if connection fails
     await client.start();

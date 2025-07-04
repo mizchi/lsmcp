@@ -450,23 +450,9 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
         | undefined,
     };
 
-    debugLog(`Language ID: ${state.languageId}`);
-    debugLog(`InitializationOptions set:`, initParams.initializationOptions);
-    debugLog(
-      `Initializing LSP for ${state.languageId} with params:`,
-      JSON.stringify(initParams, null, 2),
-    );
     const initResult = await sendRequest<InitializeResult>(
       "initialize",
       initParams,
-    );
-    debugLog(
-      `LSP initialized for ${state.languageId}:`,
-      JSON.stringify(initResult, null, 2),
-    );
-    console.log(
-      `[DEBUG] LSP capabilities for ${state.languageId}:`,
-      JSON.stringify(initResult.capabilities, null, 2),
     );
 
     // Store server capabilities
@@ -474,7 +460,6 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
 
     // Send initialized notification
     sendNotification("initialized", {});
-    debugLog(`After initialization - Language ID: "${state.languageId}"`);
   }
 
   async function start(): Promise<void> {
@@ -491,11 +476,9 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
 
     state.process.stderr?.on("data", (data: Buffer) => {
       stderrBuffer += data.toString();
-      debugLog("LSP stderr:", data.toString());
     });
 
     state.process.on("exit", (code) => {
-      debugLog(`LSP server exited with code ${code}`);
       state.process = null;
 
       if (code !== 0 && code !== null) {
@@ -512,7 +495,6 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     });
 
     state.process.on("error", (error) => {
-      debugLog("LSP server error:", error);
       const context: ErrorContext = {
         operation: "LSP server startup",
         language: state.languageId,
