@@ -2,14 +2,13 @@ import { z } from "zod";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { commonSchemas } from "../../core/pure/schemas.ts";
 import { relative } from "path";
-import { errors } from "../../core/pure/errors/index.ts";
 import { Position } from "vscode-languageserver-types";
 import { readFileWithMetadata } from "../../core/io/fileOperations.ts";
 import {
   createTypescriptLSPClient,
   openDocument,
   stopLSPClient,
-  waitForLSP,
+  waitForDocumentProcessed,
 } from "../../core/io/lspClientFactory.ts";
 import { validateLineAndSymbol } from "../../core/pure/validation.ts";
 
@@ -84,8 +83,8 @@ export const callHierarchyTool: ToolDef<typeof schema> = {
       // Open the document
       openDocument(client, fileUri, content);
 
-      // Wait for LSP to process the document
-      await waitForLSP();
+      // Wait for the document to be processed by the LSP server
+      await waitForDocumentProcessed(client, fileUri, 1500);
 
       // Prepare call hierarchy
       const prepareParams = {
@@ -93,22 +92,26 @@ export const callHierarchyTool: ToolDef<typeof schema> = {
         position,
       };
 
-      const items = await client.sendRequest<CallHierarchyItem[] | null>(
-        "textDocument/prepareCallHierarchy",
-        prepareParams,
-      );
+      let items: CallHierarchyItem[] | null;
+      try {
+        items = await client.sendRequest<CallHierarchyItem[] | null>(
+          "textDocument/prepareCallHierarchy",
+          prepareParams,
+        );
+      } catch (error) {
+        // If the server doesn't support call hierarchy, return a user-friendly message
+        if (
+          error instanceof Error &&
+          error.message.includes("Unhandled method")
+        ) {
+          return "Call hierarchy is not supported by the TypeScript Language Server. This feature requires TypeScript 3.9 or later.";
+        }
+        throw error;
+      }
 
       if (!items || items.length === 0) {
-        throw errors.generic(
-          `No call hierarchy available for "${symbolName}"`,
-          undefined,
-          {
-            operation: "call_hierarchy",
-            filePath,
-            symbolName,
-            line,
-          },
-        );
+        // Instead of throwing, return a helpful message
+        return `No call hierarchy information available for "${symbolName}" at line ${lineIndex + 1}.\n\nThis could be because:\n- The symbol is not a function or method\n- The TypeScript server is still processing the file\n- The symbol is not properly defined`;
       }
 
       const item = items[0];
