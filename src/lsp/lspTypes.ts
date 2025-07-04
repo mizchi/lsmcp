@@ -157,14 +157,32 @@ export interface WorkspaceFolder {
   name: string;
 }
 
-export interface InitializeResult {
-  capabilities: {
-    textDocumentSync?: number;
-    hoverProvider?: boolean;
-    definitionProvider?: boolean;
-    referencesProvider?: boolean;
-    [key: string]: unknown;
+export interface ServerCapabilities {
+  textDocumentSync?:
+    | number
+    | {
+        openClose?: boolean;
+        change?: number;
+        save?: boolean | { includeText?: boolean };
+      };
+  hoverProvider?: boolean;
+  definitionProvider?: boolean;
+  referencesProvider?: boolean;
+  diagnosticProvider?: {
+    identifier?: string;
+    interFileDependencies?: boolean;
+    workspaceDiagnostics?: boolean;
   };
+  textDocument?: {
+    diagnostic?: {
+      dynamicRegistration?: boolean;
+    };
+  };
+  [key: string]: unknown;
+}
+
+export interface InitializeResult {
+  capabilities: ServerCapabilities;
   serverInfo?: {
     name: string;
     version?: string;
@@ -248,6 +266,7 @@ export interface LSPClientState {
   eventEmitter: EventEmitter;
   rootPath: string;
   languageId: string;
+  serverCapabilities?: ServerCapabilities;
 }
 
 export interface LSPClientConfig {
@@ -324,4 +343,8 @@ export type LSPClient = {
     fileUri: string,
     timeout?: number,
   ) => Promise<Diagnostic[]>;
+  getDiagnosticSupport: () => {
+    pushDiagnostics: boolean;
+    pullDiagnostics: boolean;
+  };
 };

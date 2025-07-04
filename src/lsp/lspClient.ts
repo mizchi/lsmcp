@@ -468,6 +468,10 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       `[DEBUG] LSP capabilities for ${state.languageId}:`,
       JSON.stringify(initResult.capabilities, null, 2),
     );
+
+    // Store server capabilities
+    state.serverCapabilities = initResult.capabilities;
+
     // Send initialized notification
     sendNotification("initialized", {});
     debugLog(`After initialization - Language ID: "${state.languageId}"`);
@@ -940,6 +944,31 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     }
   }
 
+  // Helper function to check diagnostic support
+  function getDiagnosticSupport(): {
+    pushDiagnostics: boolean;
+    pullDiagnostics: boolean;
+  } {
+    if (!state.serverCapabilities) {
+      return { pushDiagnostics: true, pullDiagnostics: false };
+    }
+
+    // Check for pull diagnostics support (LSP 3.17+)
+    // Either via diagnosticProvider or textDocument.diagnostic
+    const hasPullDiagnostics = !!(
+      state.serverCapabilities.diagnosticProvider ||
+      state.serverCapabilities.textDocument?.diagnostic
+    );
+
+    // Push diagnostics are always supported unless explicitly disabled
+    const hasPushDiagnostics = true;
+
+    return {
+      pushDiagnostics: hasPushDiagnostics,
+      pullDiagnostics: hasPullDiagnostics,
+    };
+  }
+
   // Helper function to wait for diagnostics
   function waitForDiagnostics(
     fileUri: string,
@@ -1001,6 +1030,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     emit: (event: string, ...args: unknown[]) =>
       state.eventEmitter.emit(event, ...args),
     waitForDiagnostics,
+    getDiagnosticSupport,
   };
 
   return lspClient;

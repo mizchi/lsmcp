@@ -95,23 +95,43 @@ async function getDiagnosticsWithLSPV2(
 
     let diagnostics: LSPDiagnostic[] = [];
 
-    // Strategy 1: Try push diagnostics (event-driven)
-    try {
-      log(LogLevel.DEBUG, "DiagnosticsV2", "Trying push diagnostics");
+    // Check server capabilities
+    const diagnosticSupport = client.getDiagnosticSupport();
+    log(
+      LogLevel.DEBUG,
+      "DiagnosticsV2",
+      `Server diagnostic support: push=${diagnosticSupport.pushDiagnostics}, pull=${diagnosticSupport.pullDiagnostics}`,
+    );
 
-      const pushTimeout = Math.min(timeout * 0.6, 3000); // Use 60% of total timeout
-      diagnostics = await client.waitForDiagnostics(fileUri, pushTimeout);
-      method = "push";
+    // Strategy 1: Try push diagnostics (event-driven) if supported
+    if (diagnosticSupport.pushDiagnostics) {
+      try {
+        log(LogLevel.DEBUG, "DiagnosticsV2", "Trying push diagnostics");
 
-      log(
-        LogLevel.DEBUG,
-        "DiagnosticsV2",
-        `Push diagnostics success: ${diagnostics.length} diagnostics`,
-      );
-    } catch (error) {
-      log(LogLevel.DEBUG, "DiagnosticsV2", `Push diagnostics failed: ${error}`);
+        const pushTimeout = Math.min(timeout * 0.6, 3000); // Use 60% of total timeout
+        diagnostics = await client.waitForDiagnostics(fileUri, pushTimeout);
+        method = "push";
 
-      // Strategy 2: Try pull diagnostics
+        log(
+          LogLevel.DEBUG,
+          "DiagnosticsV2",
+          `Push diagnostics success: ${diagnostics.length} diagnostics`,
+        );
+      } catch (error) {
+        log(
+          LogLevel.DEBUG,
+          "DiagnosticsV2",
+          `Push diagnostics failed: ${error}`,
+        );
+      }
+    }
+
+    // Strategy 2: Try pull diagnostics if supported and push failed/unavailable
+    if (
+      diagnostics.length === 0 &&
+      diagnosticSupport.pullDiagnostics &&
+      client.pullDiagnostics
+    ) {
       try {
         log(LogLevel.DEBUG, "DiagnosticsV2", "Trying pull diagnostics");
 
@@ -119,7 +139,7 @@ async function getDiagnosticsWithLSPV2(
         await new Promise<void>((resolve) => setTimeout(resolve, 200));
         attempts++;
 
-        diagnostics = await client.pullDiagnostics!(fileUri);
+        diagnostics = await client.pullDiagnostics(fileUri);
         method = "pull";
 
         log(
@@ -133,44 +153,46 @@ async function getDiagnosticsWithLSPV2(
           "DiagnosticsV2",
           `Pull diagnostics failed: ${pullError}`,
         );
+      }
+    }
 
-        // Strategy 3: Polling fallback
-        log(LogLevel.DEBUG, "DiagnosticsV2", "Falling back to polling");
-        method = "polling";
+    // Strategy 3: Polling fallback if all else fails
+    if (diagnostics.length === 0) {
+      log(LogLevel.DEBUG, "DiagnosticsV2", "Falling back to polling");
+      method = "polling";
 
-        const remainingTime = timeout - (Date.now() - startTime);
-        const maxPolls = Math.max(10, Math.floor(remainingTime / 100));
+      const remainingTime = timeout - (Date.now() - startTime);
+      const maxPolls = Math.max(10, Math.floor(remainingTime / 100));
 
-        for (let poll = 0; poll < maxPolls; poll++) {
-          await new Promise<void>((resolve) => setTimeout(resolve, 100));
-          attempts++;
+      for (let poll = 0; poll < maxPolls; poll++) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 100));
+        attempts++;
 
-          diagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
+        diagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
 
-          if (diagnostics.length > 0) {
-            log(
-              LogLevel.DEBUG,
-              "DiagnosticsV2",
-              `Polling success after ${poll + 1} attempts`,
-            );
-            break;
-          }
+        if (diagnostics.length > 0) {
+          log(
+            LogLevel.DEBUG,
+            "DiagnosticsV2",
+            `Polling success after ${poll + 1} attempts`,
+          );
+          break;
+        }
 
-          // Force document update every few polls
-          if (poll > 0 && poll % 3 === 0) {
-            log(
-              LogLevel.DEBUG,
-              "DiagnosticsV2",
-              `Forcing document update (poll ${poll})`,
-            );
-            client.updateDocument(fileUri, fileContent, poll + 2);
-          }
+        // Force document update every few polls
+        if (poll > 0 && poll % 3 === 0) {
+          log(
+            LogLevel.DEBUG,
+            "DiagnosticsV2",
+            `Forcing document update (poll ${poll})`,
+          );
+          client.updateDocument(fileUri, fileContent, poll + 2);
+        }
 
-          // Check timeout
-          if (Date.now() - startTime > timeout) {
-            log(LogLevel.WARN, "DiagnosticsV2", "Polling timeout reached");
-            break;
-          }
+        // Check timeout
+        if (Date.now() - startTime > timeout) {
+          log(LogLevel.WARN, "DiagnosticsV2", "Polling timeout reached");
+          break;
         }
       }
     }
