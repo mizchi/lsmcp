@@ -5,12 +5,21 @@ import { resolveFileAndSymbol } from "../../core/io/fileSymbolResolver.ts";
 import { DiagnosticResultBuilder } from "../../core/pure/resultBuilders.ts";
 import { getActiveClient, getLanguageIdFromPath } from "../lspClient.ts";
 import type { Diagnostic as LSPDiagnostic } from "../lspTypes.ts";
+import { defaultLog as log, LogLevel } from "../debugLogger.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
   filePath: z
     .string()
     .describe("File path to check for diagnostics (relative to root)"),
+  timeout: z
+    .number()
+    .optional()
+    .describe("Timeout in milliseconds (default: 5000)"),
+  forceRefresh: z
+    .boolean()
+    .optional()
+    .describe("Force document refresh (default: true)"),
 });
 
 type GetDiagnosticsRequest = z.infer<typeof schema>;
@@ -26,14 +35,25 @@ interface GetDiagnosticsSuccess {
     message: string;
     source?: string;
   }>;
+  debug: {
+    method: "push" | "pull" | "polling";
+    attempts: number;
+    totalTime: number;
+    documentWasOpen: boolean;
+  };
 }
 
 /**
- * Gets diagnostics for a TypeScript file using LSP
+ * Enhanced diagnostics with better error handling and debugging
  */
-async function getDiagnosticsWithLSP(
+async function getDiagnosticsWithLSPV2(
   request: GetDiagnosticsRequest,
 ): Promise<Result<GetDiagnosticsSuccess, string>> {
+  const startTime = Date.now();
+  const timeout = request.timeout || 5000;
+  let attempts = 0;
+  let method: "push" | "pull" | "polling" = "push";
+
   try {
     // Resolve file
     const { fileContent, fileUri } = resolveFileAndSymbol({
@@ -42,128 +62,153 @@ async function getDiagnosticsWithLSP(
     });
 
     const client = getActiveClient();
-
-    // Check if document is already open and close it to force refresh
-    const isAlreadyOpen = client.isDocumentOpen(fileUri);
-    if (isAlreadyOpen) {
-      client.closeDocument(fileUri);
-      // Reduced wait time from 100ms to 50ms
-      await new Promise<void>((resolve) => setTimeout(resolve, 50));
-    }
-
-    // Detect language from file extension
     const languageId = getLanguageIdFromPath(request.filePath);
 
-    // Open document in LSP with current content
+    // Check if document is already open
+    const documentWasOpen = client.isDocumentOpen(fileUri);
+
+    if (documentWasOpen && request.forceRefresh !== false) {
+      client.closeDocument(fileUri);
+      // Allow time for cleanup
+      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+    }
+
+    // Open document with fresh content
     client.openDocument(fileUri, fileContent, languageId || undefined);
+    attempts++;
 
-    // Force LSP to re-read the file by sending an update
-    client.updateDocument(fileUri, fileContent, 2);
+    let diagnostics: LSPDiagnostic[] = [];
 
-    // Try event-driven approach first
-    let lspDiagnostics: LSPDiagnostic[] = [];
-    let usePolling = false;
+    // Check server capabilities
+    const diagnosticSupport = client.getDiagnosticSupport();
 
-    // Determine if this is a large file that might need more time
-    const lineCount = fileContent.split("\n").length;
-    const isLargeFile = lineCount > 100;
-    const eventTimeout = isLargeFile ? 3000 : 1000;
-
-    // Check if pull diagnostics should be enabled
-    const enablePullDiagnostics =
-      process.env.ENABLE_PULL_DIAGNOSTICS === "true";
-
-    try {
-      // Wait for diagnostics with event-driven approach (shorter timeout for faster fallback)
-      const diagnostics = await client.waitForDiagnostics(
-        fileUri,
-        eventTimeout,
-      );
-      lspDiagnostics = diagnostics as LSPDiagnostic[];
-    } catch (error) {
-      // Event-driven failed, fall back to polling
-      usePolling = true;
+    // Strategy 1: Try push diagnostics (event-driven) if supported
+    if (diagnosticSupport.pushDiagnostics) {
+      try {
+        const pushTimeout = Math.min(timeout * 0.6, 3000); // Use 60% of total timeout
+        diagnostics = await client.waitForDiagnostics(fileUri, pushTimeout);
+        method = "push";
+      } catch (error) {
+        // Push failed, will try next strategy
+      }
     }
 
-    // Fallback to polling if event-driven didn't work
+    // Strategy 2: Try pull diagnostics if supported and push failed/unavailable
     if (
-      usePolling ||
-      (lspDiagnostics.length === 0 && !client.waitForDiagnostics)
+      diagnostics.length === 0 &&
+      diagnosticSupport.pullDiagnostics &&
+      client.pullDiagnostics
     ) {
-      // Initial wait for LSP to process the document (important for CI)
-      const initialWait = isLargeFile ? 500 : 200;
-      await new Promise<void>((resolve) => setTimeout(resolve, initialWait));
+      try {
+        // Give LSP time to process
+        await new Promise<void>((resolve) => setTimeout(resolve, 200));
+        attempts++;
 
-      // Try pull diagnostics first (LSP 3.17+) if explicitly enabled
-      if (enablePullDiagnostics && client.pullDiagnostics) {
-        try {
-          lspDiagnostics = (await client.pullDiagnostics(
-            fileUri,
-          )) as LSPDiagnostic[];
-        } catch {
-          // Fall back to polling if pull diagnostics is not supported
-        }
+        diagnostics = await client.pullDiagnostics(fileUri);
+        method = "pull";
+      } catch (pullError) {
+        // Pull failed, will try polling
       }
+    }
 
-      // If still no diagnostics, poll for them
-      if (lspDiagnostics.length === 0) {
-        // Poll for diagnostics
-        const maxPolls = isLargeFile ? 100 : 60;
-        const pollInterval = 50; // Poll every 50ms
-        const minPollsForNoError = isLargeFile ? 60 : 40;
+    // Strategy 3: Polling fallback if all else fails
+    if (diagnostics.length === 0) {
+      method = "polling";
 
-        for (let poll = 0; poll < maxPolls; poll++) {
-          await new Promise<void>((resolve) =>
-            setTimeout(resolve, pollInterval),
-          );
-          lspDiagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
+      const remainingTime = timeout - (Date.now() - startTime);
+      const maxPolls = Math.max(10, Math.floor(remainingTime / 100));
 
-          // Break early if we have diagnostics or after minimum polls for no-error files
-          if (lspDiagnostics.length > 0 || poll >= minPollsForNoError) {
-            break;
-          }
+      for (let poll = 0; poll < maxPolls; poll++) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 100));
+        attempts++;
 
-          // Try updating document again after a few polls
-          if (poll === 5 || poll === 10) {
-            client.updateDocument(fileUri, fileContent, poll + 1);
-          }
+        diagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
+
+        if (diagnostics.length > 0) {
+          break;
+        }
+
+        // Force document update every few polls
+        if (poll > 0 && poll % 3 === 0) {
+          client.updateDocument(fileUri, fileContent, poll + 2);
+        }
+
+        // Check timeout
+        if (Date.now() - startTime > timeout) {
+          break;
         }
       }
     }
 
-    // Build diagnostics result
+    // Build result
     const builder = new DiagnosticResultBuilder(request.root, request.filePath);
-    builder.addLSPDiagnostics(lspDiagnostics);
+    builder.addLSPDiagnostics(diagnostics);
 
-    // Always close the document to avoid caching issues
-    client.closeDocument(fileUri);
+    const totalTime = Date.now() - startTime;
 
-    return ok(builder.build());
+    // Clean up - always close document
+    try {
+      client.closeDocument(fileUri);
+    } catch (cleanupError) {
+      // Ignore cleanup errors
+    }
+
+    const result = builder.build();
+    return ok({
+      ...result,
+      debug: {
+        method,
+        attempts,
+        totalTime,
+        documentWasOpen,
+      },
+    });
   } catch (error) {
-    return err(error instanceof Error ? error.message : String(error));
+    const totalTime = Date.now() - startTime;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    log(
+      LogLevel.ERROR,
+      "DiagnosticsV2",
+      `Failed after ${totalTime}ms: ${errorMessage}`,
+      undefined,
+      error instanceof Error ? error : undefined,
+    );
+
+    return err(
+      `Diagnostics failed: ${errorMessage} (${totalTime}ms, ${attempts} attempts)`,
+    );
   }
 }
 
 export const lspGetDiagnosticsTool = createLSPTool({
   name: "get_diagnostics",
-  description: "Get diagnostics (errors, warnings) for a file using LSP",
+  description:
+    "Get diagnostics (errors, warnings) for a file using enhanced LSP with debugging",
   schema,
   language: "lsp",
-  handler: getDiagnosticsWithLSP,
+  handler: getDiagnosticsWithLSPV2,
   formatSuccess: (result) => {
-    const messages = [result.message];
+    const messages = [
+      result.message,
+      `\nDebug Info: ${result.debug.method} method, ${result.debug.attempts} attempts, ${result.debug.totalTime}ms`,
+    ];
 
     if (result.diagnostics.length > 0) {
+      messages.push(`\nFound ${result.diagnostics.length} diagnostic(s):`);
+
       for (const diag of result.diagnostics) {
         const sourceInfo = diag.source ? ` (${diag.source})` : "";
         messages.push(
           `\n${diag.severity.toUpperCase()}: ${diag.message}${sourceInfo}\n` +
-            `  at ${diag.line}:${diag.column}`,
+            `  at line ${diag.line}:${diag.column}`,
         );
       }
+    } else {
+      messages.push("\nNo diagnostics found.");
     }
 
-    return messages.join("\n\n");
+    return messages.join("\n");
   },
 });
 
