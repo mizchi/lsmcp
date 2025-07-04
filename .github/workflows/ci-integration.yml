@@ -22,6 +22,8 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Install typescript-language-server globally
+        run: npm install -g typescript typescript-language-server
       - name: Build
         run: pnpm build
       - name: Run integration tests
