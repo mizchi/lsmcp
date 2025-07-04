@@ -8,6 +8,10 @@ import {
   processDefaultDiagnostics,
   processDeduplicatedDiagnostics,
 } from "./diagnosticProcessors.ts";
+import {
+  waitForDiagnosticsWithRetry,
+  isLargeFile,
+} from "../../src/lsp/diagnosticUtils.ts";
 
 // Helper to convert adapter to language config
 function adapterToLanguageConfig(adapter: LspAdapter): LanguageConfig {
@@ -68,117 +72,25 @@ export async function testLspConnection(
         const fileContent = readFileSync(testFile, "utf8");
         const fileUri = `file://${testFile}`;
 
-        // Check if document is already open and close it to force refresh
-        const isAlreadyOpen = client.isDocumentOpen(fileUri);
-        if (isAlreadyOpen) {
-          client.closeDocument(fileUri);
-          await new Promise<void>((resolve) => setTimeout(resolve, 50));
-        }
+        // Use unified diagnostic wait logic
+        const languageSpecific = {
+          moonbit: { initialWait: 1000, maxPolls: 200, timeout: 5000 },
+          deno: { initialWait: 800, maxPolls: 100, timeout: 3000 },
+          default: isLargeFile(fileContent)
+            ? { initialWait: 500, maxPolls: 100, timeout: 3000 }
+            : { initialWait: 200, maxPolls: 60, timeout: 1000 },
+        };
 
-        // Open document in LSP with current content
-        client.openDocument(fileUri, fileContent, adapter.baseLanguage);
-
-        // Force LSP to re-read the file by sending an update
-        client.updateDocument(fileUri, fileContent, 2);
-
-        // Language-specific wait times
-        const isMoonBit = adapter.baseLanguage === "moonbit";
-        const isDeno = adapter.id === "deno";
-        const lineCount = fileContent.split("\n").length;
-        const isLargeFile = lineCount > 100;
-
-        // Try event-driven approach first
-        let diagnostics: any[] = [];
-        let usePolling = false;
-
-        const eventTimeout = isMoonBit
-          ? 5000
-          : isDeno
-            ? 3000
-            : isLargeFile
-              ? 3000
-              : 1000;
-
-        try {
-          // Wait for diagnostics with event-driven approach
-          diagnostics = await client.waitForDiagnostics(fileUri, eventTimeout);
-
-          // For Deno, if we got empty diagnostics, wait a bit more and check again
-          // Deno sometimes sends empty diagnostics first, then the real ones
-          if (isDeno && diagnostics.length === 0) {
-            await new Promise<void>((resolve) => setTimeout(resolve, 500));
-            const currentDiagnostics = client.getDiagnostics(fileUri) || [];
-            if (currentDiagnostics.length > 0) {
-              diagnostics = currentDiagnostics;
-            }
-          }
-        } catch {
-          // Event-driven failed, fall back to polling
-          usePolling = true;
-        }
-
-        // Fallback to polling if event-driven didn't work
-        if (
-          usePolling ||
-          (diagnostics.length === 0 && !client.waitForDiagnostics)
-        ) {
-          // Initial wait for LSP to process the document
-          const initialWait = isMoonBit
-            ? 1000
-            : isDeno
-              ? 800
-              : isLargeFile
-                ? 500
-                : 200;
-          await new Promise<void>((resolve) =>
-            setTimeout(resolve, initialWait),
-          );
-
-          // Try pull diagnostics first (LSP 3.17+)
-          if (client.pullDiagnostics) {
-            try {
-              diagnostics = await client.pullDiagnostics(fileUri);
-            } catch {
-              // Fall back to polling if pull diagnostics is not supported
-            }
-          }
-
-          // If still no diagnostics, poll for them
-          if (diagnostics.length === 0) {
-            const maxPolls = isMoonBit
-              ? 200
-              : isDeno
-                ? 100
-                : isLargeFile
-                  ? 100
-                  : 60;
-            const pollInterval = 50;
-            const minPollsForNoError = isMoonBit
-              ? 100
-              : isDeno
-                ? 80
-                : isLargeFile
-                  ? 60
-                  : 40;
-
-            for (let poll = 0; poll < maxPolls; poll++) {
-              await new Promise<void>((resolve) =>
-                setTimeout(resolve, pollInterval),
-              );
-              diagnostics = client.getDiagnostics(fileUri) || [];
-
-              // Break early if we have diagnostics or after minimum polls
-              if (diagnostics.length > 0 || poll >= minPollsForNoError) {
-                break;
-              }
-
-              // Try updating document again after a few polls
-              if (poll === 5 || poll === 10) {
-                client.updateDocument(fileUri, fileContent, poll + 1);
-              }
-            }
-          }
-        }
+        const diagnostics = await waitForDiagnosticsWithRetry(
+          client,
+          fileUri,
+          fileContent,
+          adapter.baseLanguage,
+          {
+            forceRefresh: true,
+            languageSpecific,
+          },
+        );
 
         // Filter to only errors and warnings
         const errorAndWarningDiagnostics = diagnostics.filter(

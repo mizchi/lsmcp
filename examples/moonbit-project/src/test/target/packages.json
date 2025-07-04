@@ -12,17 +12,8 @@
       "wbtest-files": {},
       "test-files": {
         "/home/mizchi/mizchi/lsmcp/examples/moonbit-project/src/test/error.mbt": {
-          "backend": [
-            "Wasm",
-            "WasmGC",
-            "Js",
-            "Native",
-            "LLVM"
-          ],
-          "optlevel": [
-            "Debug",
-            "Release"
-          ]
+          "backend": ["Wasm", "WasmGC", "Js", "Native", "LLVM"],
+          "optlevel": ["Debug", "Release"]
         }
       },
       "mbt-md-files": {},

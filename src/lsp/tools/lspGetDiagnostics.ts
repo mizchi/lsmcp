@@ -4,8 +4,8 @@ import { createLSPTool } from "../../core/io/toolFactory.ts";
 import { resolveFileAndSymbol } from "../../core/io/fileSymbolResolver.ts";
 import { DiagnosticResultBuilder } from "../../core/pure/resultBuilders.ts";
 import { getActiveClient, getLanguageIdFromPath } from "../lspClient.ts";
-import type { Diagnostic as LSPDiagnostic } from "../lspTypes.ts";
 import { defaultLog as log, LogLevel } from "../debugLogger.ts";
+import { waitForDiagnosticsWithRetry } from "../diagnosticUtils.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -67,78 +67,30 @@ async function getDiagnosticsWithLSPV2(
     // Check if document is already open
     const documentWasOpen = client.isDocumentOpen(fileUri);
 
-    if (documentWasOpen && request.forceRefresh !== false) {
-      client.closeDocument(fileUri);
-      // Allow time for cleanup
-      await new Promise<void>((resolve) => setTimeout(resolve, 100));
-    }
+    // Use unified diagnostic wait logic
+    const diagnostics = await waitForDiagnosticsWithRetry(
+      client,
+      fileUri,
+      fileContent,
+      languageId || undefined,
+      {
+        timeout,
+        forceRefresh: request.forceRefresh !== false,
+      },
+    );
 
-    // Open document with fresh content
-    client.openDocument(fileUri, fileContent, languageId || undefined);
-    attempts++;
-
-    let diagnostics: LSPDiagnostic[] = [];
-
-    // Check server capabilities
+    // Determine which method was used (for debug info)
     const diagnosticSupport = client.getDiagnosticSupport();
-
-    // Strategy 1: Try push diagnostics (event-driven) if supported
-    if (diagnosticSupport.pushDiagnostics) {
-      try {
-        const pushTimeout = Math.min(timeout * 0.6, 3000); // Use 60% of total timeout
-        diagnostics = await client.waitForDiagnostics(fileUri, pushTimeout);
+    if (diagnostics.length > 0) {
+      if (diagnosticSupport.pushDiagnostics) {
         method = "push";
-      } catch (error) {
-        // Push failed, will try next strategy
-      }
-    }
-
-    // Strategy 2: Try pull diagnostics if supported and push failed/unavailable
-    if (
-      diagnostics.length === 0 &&
-      diagnosticSupport.pullDiagnostics &&
-      client.pullDiagnostics
-    ) {
-      try {
-        // Give LSP time to process
-        await new Promise<void>((resolve) => setTimeout(resolve, 200));
-        attempts++;
-
-        diagnostics = await client.pullDiagnostics(fileUri);
+      } else if (diagnosticSupport.pullDiagnostics && client.pullDiagnostics) {
         method = "pull";
-      } catch (pullError) {
-        // Pull failed, will try polling
+      } else {
+        method = "polling";
       }
     }
-
-    // Strategy 3: Polling fallback if all else fails
-    if (diagnostics.length === 0) {
-      method = "polling";
-
-      const remainingTime = timeout - (Date.now() - startTime);
-      const maxPolls = Math.max(10, Math.floor(remainingTime / 100));
-
-      for (let poll = 0; poll < maxPolls; poll++) {
-        await new Promise<void>((resolve) => setTimeout(resolve, 100));
-        attempts++;
-
-        diagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
-
-        if (diagnostics.length > 0) {
-          break;
-        }
-
-        // Force document update every few polls
-        if (poll > 0 && poll % 3 === 0) {
-          client.updateDocument(fileUri, fileContent, poll + 2);
-        }
-
-        // Check timeout
-        if (Date.now() - startTime > timeout) {
-          break;
-        }
-      }
-    }
+    attempts = Math.max(3, Math.floor((Date.now() - startTime) / 100));
 
     // Build result
     const builder = new DiagnosticResultBuilder(request.root, request.filePath);
@@ -146,11 +98,13 @@ async function getDiagnosticsWithLSPV2(
 
     const totalTime = Date.now() - startTime;
 
-    // Clean up - always close document
-    try {
-      client.closeDocument(fileUri);
-    } catch (cleanupError) {
-      // Ignore cleanup errors
+    // Clean up - always close document if we opened it
+    if (!documentWasOpen) {
+      try {
+        client.closeDocument(fileUri);
+      } catch (cleanupError) {
+        // Ignore cleanup errors
+      }
     }
 
     const result = builder.build();

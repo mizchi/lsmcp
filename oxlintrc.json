@@ -14,12 +14,15 @@
   ],
   "rules": {
     "no-throw-literal": "error",
-    "no-unused-vars": ["warn", {
-      "vars": "all",
-      "varsIgnorePattern": "^_",
-      "args": "after-used",
-      "argsIgnorePattern": "^_"
-    }],
+    "no-unused-vars": [
+      "warn",
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_",
+        "args": "after-used",
+        "argsIgnorePattern": "^_"
+      }
+    ],
     "no-redeclare": "error",
     "no-console": "warn",
     "prefer-const": "warn",
@@ -32,26 +35,35 @@
     "no-undef": "error",
     "no-unreachable": "error",
     "no-constant-condition": "error",
-    "typescript/no-unused-vars": ["warn", {
-      "vars": "all",
-      "varsIgnorePattern": "^_",
-      "args": "after-used",
-      "argsIgnorePattern": "^_"
-    }],
+    "typescript/no-unused-vars": [
+      "warn",
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_",
+        "args": "after-used",
+        "argsIgnorePattern": "^_"
+      }
+    ],
     "typescript/no-explicit-any": "warn",
     "typescript/no-floating-promises": "error",
     "typescript/await-thenable": "warn",
     "typescript/require-await": "warn",
-    "typescript/ban-ts-comment": ["error", {
-      "ts-ignore": true,
-      "ts-expect-error": "allow-with-description"
-    }],
+    "typescript/ban-ts-comment": [
+      "error",
+      {
+        "ts-ignore": true,
+        "ts-expect-error": "allow-with-description"
+      }
+    ],
     "typescript/prefer-ts-expect-error": "error",
-    "typescript/consistent-type-imports": ["warn", {
-      "prefer": "type-imports",
-      "disallowTypeAnnotations": false,
-      "fixStyle": "inline-type-imports"
-    }],
+    "typescript/consistent-type-imports": [
+      "warn",
+      {
+        "prefer": "type-imports",
+        "disallowTypeAnnotations": false,
+        "fixStyle": "inline-type-imports"
+      }
+    ],
     "typescript/no-extraneous-class": "error",
     "unicorn/no-static-only-class": "error"
   },
@@ -65,7 +77,11 @@
       }
     },
     {
-      "files": ["tests/fixtures/**/*.ts", "tests/**/*.expected.ts", "tests/**/*.input.ts"],
+      "files": [
+        "tests/fixtures/**/*.ts",
+        "tests/**/*.expected.ts",
+        "tests/**/*.input.ts"
+      ],
       "rules": {
         "no-unused-vars": "off",
         "typescript/no-unused-vars": "off"
