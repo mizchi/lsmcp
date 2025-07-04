@@ -9,6 +9,7 @@ export default defineConfig({
       minThreads: 2,
       maxThreads: 6,
     },
+    setupFiles: ["./tests/setup.ts"],
     projects: [
       {
         extends: true,

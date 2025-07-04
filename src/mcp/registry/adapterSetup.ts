@@ -13,6 +13,7 @@ import { ruffAdapter } from "../../adapters/ruff.ts";
 import { rustAnalyzerAdapter } from "../../adapters/rust-analyzer.ts";
 import { fsharpAdapter } from "../../adapters/fsharp.ts";
 import { moonbitAdapter } from "../../adapters/moonbit.ts";
+import { goplsAdapter } from "../../adapters/gopls.ts";
 
 /**
  * Register all built-in adapters
@@ -26,4 +27,5 @@ export function registerBuiltinAdapters(registry: AdapterRegistry): void {
   registry.register(rustAnalyzerAdapter);
   registry.register(fsharpAdapter);
   registry.register(moonbitAdapter);
+  registry.register(goplsAdapter);
 }

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### 🚀 Features
+
+* **Go Support**: Add gopls adapter for Go language support
+  - Official Go language server (gopls) integration
+  - Full LSP tool support for Go development
+  - Comprehensive initialization options for enhanced functionality
+  - Doctor command to verify Go and gopls installation
+
 ## [0.8.1](https://github.com/mizchi/lsmcp/compare/v0.8.0...v0.8.1) (2025-07-03)
 
 ### ♻️ Code Refactoring

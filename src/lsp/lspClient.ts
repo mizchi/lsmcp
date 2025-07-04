@@ -335,6 +335,30 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     );
   }
 
+  async function waitForServerReady(): Promise<void> {
+    // Create a minimal test document to verify server readiness
+    const testUri = `file://${state.rootPath}/__lsmcp_test__.ts`;
+    const testContent =
+      "// Test document for server readiness check\nconst x = 1;\n";
+
+    try {
+      // Open a test document with the appropriate language ID
+      openDocument(testUri, testContent, state.languageId || "typescript");
+
+      // Try to get diagnostics with a short timeout
+      // This verifies the server is processing documents
+      await diagnosticsManager.waitForDiagnostics(testUri, 500).catch(() => {
+        // Ignore timeout - some servers don't send diagnostics for simple files
+      });
+
+      // Close the test document
+      closeDocument(testUri);
+    } catch (error) {
+      // If this fails, the server might not be ready yet
+      debug(`Server readiness check failed: ${error}`);
+    }
+  }
+
   async function initialize(): Promise<void> {
     const initParams: InitializeParams = {
       processId: process.pid,
@@ -399,6 +423,9 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
 
     // Send initialized notification
     sendNotification("initialized", {});
+
+    // Wait for server to be ready by sending a test request
+    await waitForServerReady();
   }
 
   async function start(): Promise<void> {
