@@ -11,6 +11,7 @@ import {
 } from "../utils/mcpHelpers.ts";
 import { ErrorContext, formatError } from "../utils/errorHandler.ts";
 import { filterUnsupportedTools, lspTools } from "../registry/toolRegistry.ts";
+import { createCapabilityFilter } from "../registry/capabilityFilter.ts";
 import { resolveAdapterCommand } from "../../adapters/utils.ts";
 import type { ResolvedConfig } from "../../core/config/configLoader.ts";
 import type { AdapterRegistry } from "../../core/config/configLoader.ts";
@@ -51,11 +52,15 @@ export async function runLanguageServerWithConfig(
       version: "0.1.0",
     });
 
-    // Register all tools (filtered by unsupported list)
-    const filteredLspTools = filterUnsupportedTools(
-      lspTools,
-      config.unsupported,
-    );
+    // Create capability filter
+    const capabilityFilter = createCapabilityFilter();
+
+    // Register all tools (filtered by unsupported list AND capabilities)
+    let filteredLspTools = filterUnsupportedTools(lspTools, config.unsupported);
+
+    // Apply capability-based filtering
+    filteredLspTools = capabilityFilter.filterTools(filteredLspTools);
+
     const allTools: ToolDef<import("zod").ZodType>[] = [...filteredLspTools];
 
     // Add custom tools if available (note: would need adapter lookup for this)
@@ -172,11 +177,18 @@ export async function runLanguageServer(
       version: "0.1.0",
     });
 
-    // Register all tools (filtered by unsupported list)
-    const filteredLspTools = filterUnsupportedTools(
+    // Create capability filter
+    const capabilityFilter = createCapabilityFilter();
+
+    // Register all tools (filtered by unsupported list AND capabilities)
+    let filteredLspTools = filterUnsupportedTools(
       lspTools,
       adapter?.unsupported,
     );
+
+    // Apply capability-based filtering
+    filteredLspTools = capabilityFilter.filterTools(filteredLspTools);
+
     const allTools: ToolDef<import("zod").ZodType>[] = [...filteredLspTools];
     if (adapter?.customTools) {
       allTools.push(...adapter.customTools);
@@ -244,8 +256,12 @@ export async function runCustomLspServer(
       version: "0.1.0",
     });
 
-    // Register all LSP tools
-    server.registerTools(lspTools);
+    // Create capability filter
+    const capabilityFilter = createCapabilityFilter();
+
+    // Register all LSP tools (filtered by capabilities)
+    const filteredLspTools = capabilityFilter.filterTools(lspTools);
+    server.registerTools(filteredLspTools);
 
     // Start the server
     await server.start();

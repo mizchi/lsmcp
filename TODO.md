@@ -14,11 +14,12 @@
 
 ### Bug Fixes
 
-- [ ] **Workspace Symbols Search** (Priority: High)
-  - Currently fails with "No Project" error in tsserver
-  - Feature is temporarily disabled in lspGetWorkspaceSymbols.ts
-  - Requires proper project initialization implementation
-  - Consider alternative approaches (e.g., using tsconfig.json path)
+- [x] **Workspace Symbols Search** (Priority: High) - Partially resolved
+  - ✅ Enabled for language servers that support workspace symbols
+  - ✅ Added server capability checking
+  - ✅ TypeScript/JavaScript shows appropriate error message
+  - ⚠️ TypeScript still requires proper project initialization
+  - Consider TypeScript-specific fallback implementation
 
 ### Performance Optimization
 

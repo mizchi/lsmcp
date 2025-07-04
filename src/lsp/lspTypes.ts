@@ -168,6 +168,30 @@ export interface ServerCapabilities {
   hoverProvider?: boolean;
   definitionProvider?: boolean;
   referencesProvider?: boolean;
+  workspaceSymbolProvider?: boolean;
+  documentSymbolProvider?: boolean;
+  completionProvider?:
+    | boolean
+    | {
+        resolveProvider?: boolean;
+        triggerCharacters?: string[];
+      };
+  signatureHelpProvider?: {
+    triggerCharacters?: string[];
+    retriggerCharacters?: string[];
+  };
+  documentFormattingProvider?: boolean;
+  documentRangeFormattingProvider?: boolean;
+  renameProvider?:
+    | boolean
+    | {
+        prepareProvider?: boolean;
+      };
+  codeActionProvider?:
+    | boolean
+    | {
+        codeActionKinds?: string[];
+      };
   diagnosticProvider?: {
     identifier?: string;
     interFileDependencies?: boolean;
@@ -176,6 +200,26 @@ export interface ServerCapabilities {
   textDocument?: {
     diagnostic?: {
       dynamicRegistration?: boolean;
+    };
+  };
+  workspace?: {
+    workspaceFolders?: {
+      supported?: boolean;
+      changeNotifications?: boolean | string;
+    };
+    fileOperations?: {
+      willRename?: {
+        filters: Array<{
+          scheme?: string;
+          pattern: {
+            glob: string;
+            matches?: string;
+          };
+        }>;
+      };
+      didCreate?: any;
+      didRename?: any;
+      didDelete?: any;
     };
   };
   [key: string]: unknown;
@@ -347,4 +391,5 @@ export type LSPClient = {
     pushDiagnostics: boolean;
     pullDiagnostics: boolean;
   };
+  getServerCapabilities: () => ServerCapabilities | undefined;
 };

@@ -77,6 +77,7 @@ import {
   LSPResponse,
   PublishDiagnosticsParams,
   ReferencesResult,
+  ServerCapabilities,
   SignatureHelpResult,
   WorkspaceSymbolResult,
 } from "./lspTypes.ts";
@@ -810,6 +811,11 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     return diagnosticsManager.waitForDiagnostics(fileUri, timeout);
   }
 
+  // Helper function to get server capabilities
+  function getServerCapabilities(): ServerCapabilities | undefined {
+    return state.serverCapabilities;
+  }
+
   const lspClient: LSPClient = {
     languageId: state.languageId,
     start,
@@ -845,6 +851,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       state.eventEmitter.emit(event, ...args),
     waitForDiagnostics,
     getDiagnosticSupport,
+    getServerCapabilities,
   };
 
   return lspClient;

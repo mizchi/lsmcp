@@ -17,6 +17,8 @@ import { lspGetCompletionTool } from "../../lsp/tools/lspGetCompletion.ts";
 import { lspGetSignatureHelpTool } from "../../lsp/tools/lspGetSignatureHelp.ts";
 import { lspFormatDocumentTool } from "../../lsp/tools/lspFormatDocument.ts";
 import { lspGetCodeActionsTool } from "../../lsp/tools/lspGetCodeActions.ts";
+import { lspGetWorkspaceSymbolsTool } from "../../lsp/tools/lspGetWorkspaceSymbols.ts";
+import { lspCheckCapabilitiesTool } from "../../lsp/tools/lspCheckCapabilities.ts";
 
 // Define LSP-only tools
 export const lspTools: ToolDef<any>[] = [
@@ -32,6 +34,8 @@ export const lspTools: ToolDef<any>[] = [
   lspGetSignatureHelpTool,
   lspFormatDocumentTool,
   lspGetCodeActionsTool,
+  lspGetWorkspaceSymbolsTool,
+  lspCheckCapabilitiesTool,
 ];
 
 // Tool name mapping for unsupported filtering
@@ -48,6 +52,8 @@ const toolNameMap: Record<string, string> = {
   get_signature_help: lspGetSignatureHelpTool.name,
   format_document: lspFormatDocumentTool.name,
   get_code_actions: lspGetCodeActionsTool.name,
+  get_workspace_symbols: lspGetWorkspaceSymbolsTool.name,
+  check_capabilities: lspCheckCapabilitiesTool.name,
 };
 
 /**

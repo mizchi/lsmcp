@@ -19,7 +19,7 @@ export const tsgoAdapter: LspAdapter = {
   args: ["tsgo", "--lsp", "--stdio"],
   unsupported: [
     "get_document_symbols",
-    // "get_workspace_symbols", // Not implemented yet in any adapter
+    "get_workspace_symbols", // TSGo doesn't support workspace symbols
     "get_code_actions",
     "rename_symbol",
     "delete_symbol",
