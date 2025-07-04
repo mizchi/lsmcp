@@ -73,7 +73,7 @@ function isCommandAvailable(command: string): boolean {
 
 async function testProjectDiagnostics(
   projectPath: string,
-  config: LanguageConfig
+  config: LanguageConfig,
 ): Promise<TestResult> {
   const projectName = dirname(projectPath);
   console.log(`\n📁 Testing ${config.language} in ${projectName}...`);
@@ -90,7 +90,7 @@ async function testProjectDiagnostics(
 
   const client = new Client(
     { name: "test-client", version: "1.0.0" },
-    { capabilities: {} }
+    { capabilities: {} },
   );
 
   try {
@@ -138,7 +138,7 @@ async function testProjectDiagnostics(
         const diagnosticLines = lines
           .filter(
             (line: string) =>
-              line.startsWith("ERROR:") || line.startsWith("WARNING:")
+              line.startsWith("ERROR:") || line.startsWith("WARNING:"),
           )
           .slice(0, 3);
 
@@ -150,7 +150,7 @@ async function testProjectDiagnostics(
           diagnosticLines.length <
           lines.filter(
             (line: string) =>
-              line.startsWith("ERROR:") || line.startsWith("WARNING:")
+              line.startsWith("ERROR:") || line.startsWith("WARNING:"),
           ).length
         ) {
           console.log(`     ... and more`);
@@ -203,7 +203,7 @@ async function main() {
       console.log(
         `  ⚠️  Dependency not found: ${
           config.lspCommand || config.language
-        } LSP server`
+        } LSP server`,
       );
       console.log(`  ℹ️  ${config.installHint}`);
       console.log(`  ⏭️  Skipping ${config.language} tests\n`);

@@ -8,8 +8,6 @@
       "mcp__typescript__lsmcp_*",
       "mcp__lsmcp__lsmcp_*"
     ],
-    "deny": [
-      "Bash(npm:*)"
-    ]
+    "deny": ["Bash(npm:*)"]
   }
 }

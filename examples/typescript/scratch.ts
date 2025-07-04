@@ -20,7 +20,7 @@ export function testFunction<T extends string>(
 
 export const arrowFunction = <T>(
   items: T[],
-  predicate: (item: T) => boolean
+  predicate: (item: T) => boolean,
 ): T[] => {
   return items.filter(predicate);
 };

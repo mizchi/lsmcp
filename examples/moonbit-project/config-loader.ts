@@ -12,7 +12,7 @@ const version = project.version;
 // Create a new config
 const config: MoonbitConfig = {
   name: "example",
-  version: "0.1.0"
+  version: "0.1.0",
 };
 
 // Use the config
