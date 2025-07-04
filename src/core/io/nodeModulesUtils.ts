@@ -1,6 +1,7 @@
 import { existsSync } from "fs";
 import { join } from "path";
 import { platform } from "os";
+import { execSync } from "child_process";
 
 /**
  * Get the path to a binary in node_modules/.bin/
@@ -80,6 +81,19 @@ export function getNodeModulesCommand(
       command: binPath,
       args,
     };
+  }
+
+  // Check if the binary is available globally in PATH
+  try {
+    const checkCommand = platform() === "win32" ? "where" : "which";
+    execSync(`${checkCommand} ${binName}`, { stdio: "ignore" });
+    // Binary is available in PATH, use it directly
+    return {
+      command: binName,
+      args,
+    };
+  } catch {
+    // Binary not found in PATH
   }
 
   // Fall back to npx
