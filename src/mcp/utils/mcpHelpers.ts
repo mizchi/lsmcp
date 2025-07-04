@@ -3,9 +3,9 @@
  * Provides utilities and base classes for building MCP servers
  */
 
+import { type z, type ZodType, ZodObject } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { type z, ZodObject, ZodType } from "zod";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { MCPToolError } from "../../core/pure/mcpErrors.ts";
@@ -28,9 +28,10 @@ export function debug(...args: unknown[]): void {
   console.error(...args);
 }
 
-// Re-export commonly used types from MCP SDK
+// Re-export commonly used types
 export { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 export { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+export * from "./mcpServerHelpers.ts";
 
 /**
  * Tool result format for MCP
@@ -69,6 +70,7 @@ export interface McpServerOptions {
 
 /**
  * Base class for MCP servers with common functionality
+ * @deprecated Use createMcpServerManager from mcpServerHelpers.ts instead
  */
 export class BaseMcpServer {
   protected server: McpServer;

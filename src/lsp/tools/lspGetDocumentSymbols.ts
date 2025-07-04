@@ -5,7 +5,8 @@ import {
   SymbolKind,
 } from "vscode-languageserver-types";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
-import { prepareFileContext, withLSPDocument } from "../utils/lspCommon.ts";
+import { loadFileContext } from "../utils/fileContext.ts";
+import { withTemporaryDocument } from "../utils/documentManager.ts";
 import { fileLocationSchema } from "../../core/pure/schemas.ts";
 import { formatLocation, formatRange } from "../../core/pure/formatting.ts";
 import { getLSPClient } from "../lspClient.ts";
@@ -98,9 +99,9 @@ async function handleGetDocumentSymbols({
   root,
   filePath,
 }: z.infer<typeof schema>): Promise<string> {
-  const { fileUri, content } = await prepareFileContext(root, filePath);
+  const { fileUri, content } = await loadFileContext(root, filePath);
 
-  return withLSPDocument(fileUri, content, async () => {
+  return withTemporaryDocument(fileUri, content, async () => {
     const client = getLSPClient();
     if (!client) {
       throw new Error("LSP client not initialized");

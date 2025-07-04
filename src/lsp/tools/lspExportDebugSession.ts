@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
 import { createLSPTool } from "../../core/io/toolFactory.ts";
-import { debugLogger } from "../debugLogger.ts";
+import {
+  defaultGetSession as getSession,
+  defaultExportSession as exportSession,
+  defaultExportSessionText as exportSessionText,
+} from "../debugLogger.ts";
 
 const schema = z.object({
   sessionId: z
@@ -39,7 +43,7 @@ async function exportDebugSession(
     const format = request.format || "text";
 
     // Get session
-    const session = debugLogger.getSession(request.sessionId);
+    const session = getSession(request.sessionId);
     if (!session) {
       return err(`Debug session not found: ${request.sessionId || "current"}`);
     }
@@ -47,8 +51,8 @@ async function exportDebugSession(
     // Export data
     const data =
       format === "json"
-        ? debugLogger.exportSession(session.sessionId)
-        : debugLogger.exportSessionText(session.sessionId);
+        ? exportSession(session.sessionId)
+        : exportSessionText(session.sessionId);
 
     // Calculate duration
     const duration = session.endTime

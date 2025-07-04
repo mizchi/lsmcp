@@ -123,6 +123,7 @@ export async function testLspConnection(
 
         // Language-specific wait times
         const isMoonBit = adapter.baseLanguage === "moonbit";
+        const isDeno = adapter.id === "deno";
         const lineCount = fileContent.split("\n").length;
         const isLargeFile = lineCount > 100;
 
@@ -130,11 +131,27 @@ export async function testLspConnection(
         let diagnostics: any[] = [];
         let usePolling = false;
 
-        const eventTimeout = isMoonBit ? 5000 : isLargeFile ? 3000 : 1000;
+        const eventTimeout = isMoonBit
+          ? 5000
+          : isDeno
+            ? 3000
+            : isLargeFile
+              ? 3000
+              : 1000;
 
         try {
           // Wait for diagnostics with event-driven approach
           diagnostics = await client.waitForDiagnostics(fileUri, eventTimeout);
+
+          // For Deno, if we got empty diagnostics, wait a bit more and check again
+          // Deno sometimes sends empty diagnostics first, then the real ones
+          if (isDeno && diagnostics.length === 0) {
+            await new Promise<void>((resolve) => setTimeout(resolve, 500));
+            const currentDiagnostics = client.getDiagnostics(fileUri) || [];
+            if (currentDiagnostics.length > 0) {
+              diagnostics = currentDiagnostics;
+            }
+          }
         } catch {
           // Event-driven failed, fall back to polling
           usePolling = true;
@@ -146,7 +163,13 @@ export async function testLspConnection(
           (diagnostics.length === 0 && !client.waitForDiagnostics)
         ) {
           // Initial wait for LSP to process the document
-          const initialWait = isMoonBit ? 1000 : isLargeFile ? 500 : 200;
+          const initialWait = isMoonBit
+            ? 1000
+            : isDeno
+              ? 800
+              : isLargeFile
+                ? 500
+                : 200;
           await new Promise<void>((resolve) =>
             setTimeout(resolve, initialWait),
           );
@@ -162,9 +185,21 @@ export async function testLspConnection(
 
           // If still no diagnostics, poll for them
           if (diagnostics.length === 0) {
-            const maxPolls = isMoonBit ? 200 : isLargeFile ? 100 : 60;
+            const maxPolls = isMoonBit
+              ? 200
+              : isDeno
+                ? 100
+                : isLargeFile
+                  ? 100
+                  : 60;
             const pollInterval = 50;
-            const minPollsForNoError = isMoonBit ? 100 : isLargeFile ? 60 : 40;
+            const minPollsForNoError = isMoonBit
+              ? 100
+              : isDeno
+                ? 80
+                : isLargeFile
+                  ? 60
+                  : 40;
 
             for (let poll = 0; poll < maxPolls; poll++) {
               await new Promise<void>((resolve) =>

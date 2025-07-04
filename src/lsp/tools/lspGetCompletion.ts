@@ -5,11 +5,9 @@ import {
 } from "vscode-languageserver-types";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { getLSPClient } from "../lspClient.ts";
-import {
-  prepareFileContext,
-  resolveLineOrThrow,
-  withLSPDocument,
-} from "../utils/lspCommon.ts";
+import { loadFileContext } from "../utils/fileContext.ts";
+import { withTemporaryDocument } from "../utils/documentManager.ts";
+import { resolveLineIndexOrThrow } from "../utils/lineResolver.ts";
 import { commonSchemas } from "../../core/pure/schemas.ts";
 import { createAdvancedCompletionHandler } from "../commands/completion.ts";
 
@@ -127,8 +125,8 @@ async function handleGetCompletion({
   resolve,
   includeAutoImport,
 }: z.infer<typeof schema>): Promise<string> {
-  const { fileUri, content } = await prepareFileContext(root, filePath);
-  const lineIndex = resolveLineOrThrow(content, line, filePath);
+  const { fileUri, content } = await loadFileContext(root, filePath);
+  const lineIndex = resolveLineIndexOrThrow(content, line, filePath);
 
   // Determine character position
   const lines = content.split("\n");
@@ -143,7 +141,7 @@ async function handleGetCompletion({
     }
   }
 
-  return withLSPDocument(fileUri, content, async () => {
+  return withTemporaryDocument(fileUri, content, async () => {
     const client = getLSPClient();
     if (!client) {
       throw new Error("LSP client not initialized");

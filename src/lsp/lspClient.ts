@@ -82,6 +82,7 @@ import {
   LSPMessage,
   LSPNotification,
   LSPRequest,
+  LSPResponse,
   PublishDiagnosticsParams,
   ReferencesResult,
   SignatureHelpResult,
@@ -282,8 +283,43 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
           });
         }
       }
+
+      // Handle workspace/configuration request from server
+      if (
+        isLSPRequest(message) &&
+        message.method === "workspace/configuration" &&
+        message.params
+      ) {
+        // Respond with configuration for Deno or other LSP servers
+        const params = message.params as { items: Array<{ section?: string }> };
+        const configurations = params.items.map((item) => {
+          // Return Deno-specific configuration if requested
+          if (item.section === "deno") {
+            const config = {
+              enable: true,
+              lint: true,
+              unstable: true,
+            };
+            return config;
+          }
+          // Return empty configuration for other sections
+          return {};
+        });
+
+        sendResponse(message.id, configurations);
+      }
+
       state.eventEmitter.emit("message", message);
     }
+  }
+
+  function sendResponse(id: number | string, result: unknown): void {
+    const response: LSPResponse = {
+      jsonrpc: "2.0",
+      id,
+      result,
+    };
+    sendMessage(response);
   }
 
   function sendMessage(message: LSPMessage): void {
@@ -405,6 +441,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
         },
         workspace: {
           workspaceFolders: true,
+          configuration: true,
         },
       },
       // Add language-specific initialization options

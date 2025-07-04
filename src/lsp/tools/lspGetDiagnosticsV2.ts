@@ -5,7 +5,7 @@ import { resolveFileAndSymbol } from "../../core/io/fileSymbolResolver.ts";
 import { DiagnosticResultBuilder } from "../../core/pure/resultBuilders.ts";
 import { getActiveClient, getLanguageIdFromPath } from "../lspClient.ts";
 import type { Diagnostic as LSPDiagnostic } from "../lspTypes.ts";
-import { debugLogger, LogLevel } from "../debugLogger.ts";
+import { defaultLog as log, LogLevel } from "../debugLogger.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -54,7 +54,7 @@ async function getDiagnosticsWithLSPV2(
   let attempts = 0;
   let method: "push" | "pull" | "polling" = "push";
 
-  debugLogger.log(
+  log(
     LogLevel.DEBUG,
     "DiagnosticsV2",
     `Getting diagnostics for ${request.filePath}`,
@@ -74,7 +74,7 @@ async function getDiagnosticsWithLSPV2(
     const documentWasOpen = client.isDocumentOpen(fileUri);
 
     if (documentWasOpen && request.forceRefresh !== false) {
-      debugLogger.log(
+      log(
         LogLevel.DEBUG,
         "DiagnosticsV2",
         "Closing existing document for refresh",
@@ -85,7 +85,7 @@ async function getDiagnosticsWithLSPV2(
     }
 
     // Open document with fresh content
-    debugLogger.log(
+    log(
       LogLevel.DEBUG,
       "DiagnosticsV2",
       `Opening document with language: ${languageId}`,
@@ -97,35 +97,23 @@ async function getDiagnosticsWithLSPV2(
 
     // Strategy 1: Try push diagnostics (event-driven)
     try {
-      debugLogger.log(
-        LogLevel.DEBUG,
-        "DiagnosticsV2",
-        "Trying push diagnostics",
-      );
+      log(LogLevel.DEBUG, "DiagnosticsV2", "Trying push diagnostics");
 
       const pushTimeout = Math.min(timeout * 0.6, 3000); // Use 60% of total timeout
       diagnostics = await client.waitForDiagnostics(fileUri, pushTimeout);
       method = "push";
 
-      debugLogger.log(
+      log(
         LogLevel.DEBUG,
         "DiagnosticsV2",
         `Push diagnostics success: ${diagnostics.length} diagnostics`,
       );
     } catch (error) {
-      debugLogger.log(
-        LogLevel.DEBUG,
-        "DiagnosticsV2",
-        `Push diagnostics failed: ${error}`,
-      );
+      log(LogLevel.DEBUG, "DiagnosticsV2", `Push diagnostics failed: ${error}`);
 
       // Strategy 2: Try pull diagnostics
       try {
-        debugLogger.log(
-          LogLevel.DEBUG,
-          "DiagnosticsV2",
-          "Trying pull diagnostics",
-        );
+        log(LogLevel.DEBUG, "DiagnosticsV2", "Trying pull diagnostics");
 
         // Give LSP time to process
         await new Promise<void>((resolve) => setTimeout(resolve, 200));
@@ -134,24 +122,20 @@ async function getDiagnosticsWithLSPV2(
         diagnostics = await client.pullDiagnostics!(fileUri);
         method = "pull";
 
-        debugLogger.log(
+        log(
           LogLevel.DEBUG,
           "DiagnosticsV2",
           `Pull diagnostics success: ${diagnostics.length} diagnostics`,
         );
       } catch (pullError) {
-        debugLogger.log(
+        log(
           LogLevel.DEBUG,
           "DiagnosticsV2",
           `Pull diagnostics failed: ${pullError}`,
         );
 
         // Strategy 3: Polling fallback
-        debugLogger.log(
-          LogLevel.DEBUG,
-          "DiagnosticsV2",
-          "Falling back to polling",
-        );
+        log(LogLevel.DEBUG, "DiagnosticsV2", "Falling back to polling");
         method = "polling";
 
         const remainingTime = timeout - (Date.now() - startTime);
@@ -164,7 +148,7 @@ async function getDiagnosticsWithLSPV2(
           diagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
 
           if (diagnostics.length > 0) {
-            debugLogger.log(
+            log(
               LogLevel.DEBUG,
               "DiagnosticsV2",
               `Polling success after ${poll + 1} attempts`,
@@ -174,7 +158,7 @@ async function getDiagnosticsWithLSPV2(
 
           // Force document update every few polls
           if (poll > 0 && poll % 3 === 0) {
-            debugLogger.log(
+            log(
               LogLevel.DEBUG,
               "DiagnosticsV2",
               `Forcing document update (poll ${poll})`,
@@ -184,11 +168,7 @@ async function getDiagnosticsWithLSPV2(
 
           // Check timeout
           if (Date.now() - startTime > timeout) {
-            debugLogger.log(
-              LogLevel.WARN,
-              "DiagnosticsV2",
-              "Polling timeout reached",
-            );
+            log(LogLevel.WARN, "DiagnosticsV2", "Polling timeout reached");
             break;
           }
         }
@@ -201,7 +181,7 @@ async function getDiagnosticsWithLSPV2(
 
     const totalTime = Date.now() - startTime;
 
-    debugLogger.log(
+    log(
       LogLevel.INFO,
       "DiagnosticsV2",
       `Completed: ${diagnostics.length} diagnostics via ${method} in ${totalTime}ms (${attempts} attempts)`,
@@ -211,11 +191,7 @@ async function getDiagnosticsWithLSPV2(
     try {
       client.closeDocument(fileUri);
     } catch (cleanupError) {
-      debugLogger.log(
-        LogLevel.WARN,
-        "DiagnosticsV2",
-        `Cleanup error: ${cleanupError}`,
-      );
+      log(LogLevel.WARN, "DiagnosticsV2", `Cleanup error: ${cleanupError}`);
     }
 
     const result = builder.build();
@@ -232,7 +208,7 @@ async function getDiagnosticsWithLSPV2(
     const totalTime = Date.now() - startTime;
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    debugLogger.log(
+    log(
       LogLevel.ERROR,
       "DiagnosticsV2",
       `Failed after ${totalTime}ms: ${errorMessage}`,
