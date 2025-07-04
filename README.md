@@ -65,6 +65,7 @@ lsmcp includes built-in presets for popular language servers:
 - **`rust-analyzer`** - Rust
 - **`fsharp`** - F# (fsautocomplete)
 - **`moonbit`** - MoonBit
+- **`gopls`** - Go (Official Go language server)
 
 For languages not in this list, or to customize LSP server settings, see [Manual Setup](#manual-setup).
 
@@ -132,6 +133,34 @@ Manual Configuration (.mcp.json)
 ```
 
 See [examples/rust-project/](examples/rust-project/) for a complete example.
+
+</details>
+
+#### Go
+
+<details>
+<summary>Go Setup</summary>
+
+```bash
+# Install gopls (official Go language server)
+go install golang.org/x/tools/gopls@latest
+claude mcp add go npx -- -y @mizchi/lsmcp -p gopls
+```
+
+Manual Configuration (.mcp.json)
+
+```json
+{
+  "mcpServers": {
+    "go": {
+      "command": "npx",
+      "args": ["-y", "@mizchi/lsmcp", "-p", "gopls"]
+    }
+  }
+}
+```
+
+See [examples/go/](examples/go/) for a complete example.
 
 </details>
 
