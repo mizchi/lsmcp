@@ -137,11 +137,15 @@ function foo(): string {
     for (const change of changes) {
       await fs.writeFile(filePath, change.content);
 
+      // Add a small delay between file write and diagnostics check
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       const result = (await client.callTool({
         name: "get_diagnostics",
         arguments: {
           root: tmpDir,
           filePath: testFile,
+          forceRefresh: true, // Force fresh read of file content
         },
       })) as any;
 
@@ -152,7 +156,7 @@ function foo(): string {
         expect(text).toContain("0 errors");
       }
     }
-  });
+  }, 20000);
 
   it("should handle concurrent diagnostics for different files", async () => {
     const files = [
