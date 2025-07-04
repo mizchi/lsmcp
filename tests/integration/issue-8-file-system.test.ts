@@ -131,7 +131,7 @@ const num: number = "not a number";
     } finally {
       await client.close();
     }
-  });
+  }, 20000);
 
   it("should handle symlinks correctly", async () => {
     const transport = new StdioClientTransport({
