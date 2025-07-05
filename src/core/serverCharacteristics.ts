@@ -60,6 +60,16 @@ const SERVER_CHARACTERISTICS: Record<string, ServerCharacteristics> = {
     operationTimeout: 12000,
   },
 
+  // Deno LSP is moderately fast
+  deno: {
+    documentOpenDelay: 1500,
+    readinessCheckTimeout: 1000,
+    initialDiagnosticsTimeout: 2500,
+    requiresProjectInit: false,
+    sendsInitialDiagnostics: true,
+    operationTimeout: 10000,
+  },
+
   // Rust analyzer is slower due to compilation
   "rust-analyzer": {
     documentOpenDelay: 2500,
@@ -68,16 +78,6 @@ const SERVER_CHARACTERISTICS: Record<string, ServerCharacteristics> = {
     requiresProjectInit: true,
     sendsInitialDiagnostics: true,
     operationTimeout: 20000,
-  },
-
-  // Deno LSP is fast
-  deno: {
-    documentOpenDelay: 600,
-    readinessCheckTimeout: 300,
-    initialDiagnosticsTimeout: 1200,
-    requiresProjectInit: false,
-    sendsInitialDiagnostics: true,
-    operationTimeout: 8000,
   },
 
   // F# (fsautocomplete) needs initialization time

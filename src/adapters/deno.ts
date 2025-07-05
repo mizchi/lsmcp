@@ -17,6 +17,16 @@ export const denoAdapter: LspAdapter = {
     lint: true,
     unstable: true,
   },
+
+  serverCharacteristics: {
+    documentOpenDelay: 1500,
+    readinessCheckTimeout: 1000,
+    initialDiagnosticsTimeout: 2500,
+    requiresProjectInit: false,
+    sendsInitialDiagnostics: true,
+    operationTimeout: 10000,
+  },
+
   doctor: async () => {
     try {
       execSync("which deno", { stdio: "ignore" });
