@@ -20,6 +20,9 @@ import { lspGetCodeActionsTool } from "../../lsp/tools/lspGetCodeActions.ts";
 import { lspGetWorkspaceSymbolsTool } from "../../lsp/tools/lspGetWorkspaceSymbols.ts";
 import { lspCheckCapabilitiesTool } from "../../lsp/tools/lspCheckCapabilities.ts";
 
+// Import analysis tools
+import { analysisTools } from "../analysis/analysisTools.ts";
+
 // Define LSP-only tools
 export const lspTools: ToolDef<any>[] = [
   lspGetHoverTool,
@@ -37,6 +40,9 @@ export const lspTools: ToolDef<any>[] = [
   lspGetWorkspaceSymbolsTool,
   lspCheckCapabilitiesTool,
 ];
+
+// Define high-level analysis tools (not affected by LSP capabilities)
+export const highLevelTools: ToolDef<any>[] = analysisTools;
 
 // Tool name mapping for unsupported filtering
 const toolNameMap: Record<string, string> = {

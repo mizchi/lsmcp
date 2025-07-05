@@ -10,7 +10,11 @@ import {
   type ToolDef,
 } from "../utils/mcpHelpers.ts";
 import { ErrorContext, formatError } from "../utils/errorHandler.ts";
-import { filterUnsupportedTools, lspTools } from "../registry/toolRegistry.ts";
+import {
+  filterUnsupportedTools,
+  lspTools,
+  highLevelTools,
+} from "../registry/toolRegistry.ts";
 import { createCapabilityFilter } from "../registry/capabilityFilter.ts";
 import { resolveAdapterCommand } from "../../adapters/utils.ts";
 import type { ResolvedConfig } from "../../core/config/configLoader.ts";
@@ -61,7 +65,10 @@ export async function runLanguageServerWithConfig(
     // Apply capability-based filtering
     filteredLspTools = capabilityFilter.filterTools(filteredLspTools);
 
-    const allTools: ToolDef<import("zod").ZodType>[] = [...filteredLspTools];
+    const allTools: ToolDef<import("zod").ZodType>[] = [
+      ...filteredLspTools,
+      ...highLevelTools, // Analysis tools are always available
+    ];
 
     // Add custom tools if available (note: would need adapter lookup for this)
     server.registerTools(allTools);
@@ -189,7 +196,10 @@ export async function runLanguageServer(
     // Apply capability-based filtering
     filteredLspTools = capabilityFilter.filterTools(filteredLspTools);
 
-    const allTools: ToolDef<import("zod").ZodType>[] = [...filteredLspTools];
+    const allTools: ToolDef<import("zod").ZodType>[] = [
+      ...filteredLspTools,
+      ...highLevelTools, // Analysis tools are always available
+    ];
     if (adapter?.customTools) {
       allTools.push(...adapter.customTools);
     }
@@ -259,9 +269,13 @@ export async function runCustomLspServer(
     // Create capability filter
     const capabilityFilter = createCapabilityFilter();
 
-    // Register all LSP tools (filtered by capabilities)
+    // Register all LSP tools (filtered by capabilities) and analysis tools
     const filteredLspTools = capabilityFilter.filterTools(lspTools);
-    server.registerTools(filteredLspTools);
+    const allTools: ToolDef<import("zod").ZodType>[] = [
+      ...filteredLspTools,
+      ...highLevelTools, // Analysis tools are always available
+    ];
+    server.registerTools(allTools);
 
     // Start the server
     await server.start();
