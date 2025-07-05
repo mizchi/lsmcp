@@ -311,6 +311,7 @@ export interface LSPClientState {
   rootPath: string;
   languageId: string;
   serverCapabilities?: ServerCapabilities;
+  serverCharacteristics?: import("../types.ts").ServerCharacteristics;
 }
 
 export interface LSPClientConfig {
@@ -320,6 +321,7 @@ export interface LSPClientConfig {
   clientName?: string; // Default: "lsp-client"
   clientVersion?: string; // Default: "0.1.0"
   initializationOptions?: unknown; // Language-specific initialization options
+  serverCharacteristics?: import("../types.ts").ServerCharacteristics;
 }
 
 export type LSPClient = {

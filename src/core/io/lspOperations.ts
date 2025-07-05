@@ -5,6 +5,7 @@ import {
   errors,
   withErrorHandling,
 } from "../pure/errors/index.ts";
+import { getServerCharacteristics } from "../serverCharacteristics.ts";
 
 /**
  * Options for LSP operations
@@ -30,6 +31,9 @@ export interface LSPOperationOptions<T> {
 
   /** Error context for better error messages */
   errorContext?: ErrorContext;
+
+  /** Override server characteristics for this operation */
+  serverCharacteristics?: import("../../types.ts").ServerCharacteristics;
 }
 
 /**
@@ -48,24 +52,30 @@ export interface LSPOperationOptions<T> {
 export async function withLSPOperation<T>(
   options: LSPOperationOptions<T>,
 ): Promise<T> {
-  const {
-    fileUri,
-    fileContent,
-    languageId,
-    waitTime = 1000,
-    timeout = 10000, // 10 second default timeout
-    operation,
-    errorContext = {},
-  } = options;
-
   const client = getActiveClient();
 
   if (!client) {
     throw errors.lspNotRunning(
-      errorContext.language || "unknown",
-      errorContext,
+      options.errorContext?.language || "unknown",
+      options.errorContext || {},
     );
   }
+
+  // Get server characteristics
+  const characteristics = getServerCharacteristics(
+    client.languageId || "unknown",
+    options.serverCharacteristics,
+  );
+
+  const {
+    fileUri,
+    fileContent,
+    languageId,
+    waitTime = characteristics.documentOpenDelay,
+    timeout = characteristics.operationTimeout,
+    operation,
+    errorContext = {},
+  } = options;
 
   // Open document with proper language ID
   const actualLanguageId = languageId || client.languageId || "plaintext";
@@ -135,22 +145,27 @@ export interface BatchLSPOperationOptions<T> {
 export async function withBatchLSPOperation<T>(
   options: BatchLSPOperationOptions<T>,
 ): Promise<T> {
-  const {
-    files,
-    languageId,
-    waitTime = 1000,
-    operation,
-    errorContext = {},
-  } = options;
-
   const client = getActiveClient();
 
   if (!client) {
     throw errors.lspNotRunning(
-      errorContext.language || "unknown",
-      errorContext,
+      options.errorContext?.language || "unknown",
+      options.errorContext || {},
     );
   }
+
+  // Get server characteristics
+  const characteristics = getServerCharacteristics(
+    client.languageId || "unknown",
+  );
+
+  const {
+    files,
+    languageId,
+    waitTime = characteristics.documentOpenDelay,
+    operation,
+    errorContext = {},
+  } = options;
 
   // Open all documents
   const actualLanguageId = languageId || client.languageId || "plaintext";

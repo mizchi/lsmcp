@@ -32,6 +32,14 @@ export const typescriptAdapter: LspAdapter = {
       import("zod").ZodType
     >,
   ],
+  serverCharacteristics: {
+    documentOpenDelay: 2000,
+    readinessCheckTimeout: 1000,
+    initialDiagnosticsTimeout: 3000,
+    requiresProjectInit: true,
+    sendsInitialDiagnostics: true,
+    operationTimeout: 15000,
+  },
   doctor: async () => {
     try {
       // Check if typescript-language-server is available in node_modules

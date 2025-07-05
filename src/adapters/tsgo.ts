@@ -26,6 +26,15 @@ export const tsgoAdapter: LspAdapter = {
   ],
   needsDiagnosticDeduplication: true,
 
+  serverCharacteristics: {
+    documentOpenDelay: 500,
+    readinessCheckTimeout: 200,
+    initialDiagnosticsTimeout: 1000,
+    requiresProjectInit: false,
+    sendsInitialDiagnostics: false,
+    operationTimeout: 5000,
+  },
+
   // Initialize with TypeScript preferences
   initializationOptions: {
     preferences: {

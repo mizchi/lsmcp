@@ -48,6 +48,7 @@ export async function runLanguageServerWithConfig(
       lspProcess,
       config.id,
       config.initializationOptions,
+      config.serverCharacteristics,
     );
 
     // Start MCP server
@@ -176,7 +177,14 @@ export async function runLanguageServer(
 
     // Initialize LSP client with the spawned process
     const initOptions = adapter?.initializationOptions || undefined;
-    await initializeLSPClient(projectRoot, lspProcess, language, initOptions);
+    const serverCharacteristics = adapter?.serverCharacteristics || undefined;
+    await initializeLSPClient(
+      projectRoot,
+      lspProcess,
+      language,
+      initOptions,
+      serverCharacteristics,
+    );
 
     // Start MCP server
     const server = new BaseMcpServer({

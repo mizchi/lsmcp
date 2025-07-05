@@ -98,6 +98,8 @@ export type {
 // Re-export getLanguageIdFromPath for backward compatibility
 export { getLanguageIdFromPath };
 
+import { getServerCharacteristics } from "../core/serverCharacteristics.ts";
+
 // Global state for active client
 let activeClient: LSPClient | null = null;
 
@@ -130,6 +132,7 @@ export async function initialize(
   process: ChildProcess,
   languageId?: string,
   initializationOptions?: unknown,
+  serverCharacteristics?: import("../types.ts").ServerCharacteristics,
 ): Promise<LSPClient> {
   // Stop existing client if any
   if (activeClient) {
@@ -142,6 +145,7 @@ export async function initialize(
     process,
     languageId,
     initializationOptions,
+    serverCharacteristics,
   });
 
   // Start the client
@@ -182,6 +186,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     eventEmitter: new EventEmitter(),
     rootPath: config.rootPath,
     languageId: config.languageId || "plaintext", // Use plaintext as fallback, actual language will be detected per file
+    serverCharacteristics: config.serverCharacteristics,
   };
 
   // Initialize managers
@@ -337,6 +342,12 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   }
 
   async function waitForServerReady(): Promise<void> {
+    // Get server characteristics
+    const characteristics = getServerCharacteristics(
+      state.languageId,
+      state.serverCharacteristics,
+    );
+
     // Create a minimal test document to verify server readiness
     const testUri = `file://${state.rootPath}/__lsmcp_test__.ts`;
     const testContent =
@@ -346,11 +357,20 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       // Open a test document with the appropriate language ID
       openDocument(testUri, testContent, state.languageId || "typescript");
 
-      // Try to get diagnostics with a short timeout
+      // Try to get diagnostics with server-specific timeout
       // This verifies the server is processing documents
-      await diagnosticsManager.waitForDiagnostics(testUri, 500).catch(() => {
-        // Ignore timeout - some servers don't send diagnostics for simple files
-      });
+      if (characteristics.sendsInitialDiagnostics) {
+        await diagnosticsManager
+          .waitForDiagnostics(testUri, characteristics.readinessCheckTimeout)
+          .catch(() => {
+            // Ignore timeout - some servers don't send diagnostics for simple files
+          });
+      } else {
+        // For servers that don't send initial diagnostics, just wait a bit
+        await new Promise((resolve) =>
+          setTimeout(resolve, characteristics.readinessCheckTimeout),
+        );
+      }
 
       // Close the test document
       closeDocument(testUri);

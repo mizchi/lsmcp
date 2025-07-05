@@ -20,6 +20,7 @@ export interface ResolvedConfig {
   description?: string;
   unsupported?: string[];
   initializationOptions?: unknown;
+  serverCharacteristics?: import("../../types.ts").ServerCharacteristics;
 }
 
 /**
@@ -150,6 +151,7 @@ export class ConfigLoader {
       description: adapter.description,
       unsupported: adapter.unsupported,
       initializationOptions: adapter.initializationOptions,
+      serverCharacteristics: adapter.serverCharacteristics,
     };
   }
 

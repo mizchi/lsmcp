@@ -20,6 +20,14 @@ export const pyrightAdapter: LspAdapter = {
       },
     },
   },
+  serverCharacteristics: {
+    documentOpenDelay: 1500,
+    readinessCheckTimeout: 800,
+    initialDiagnosticsTimeout: 2500,
+    requiresProjectInit: false,
+    sendsInitialDiagnostics: true,
+    operationTimeout: 12000,
+  },
   doctor: async () => {
     try {
       execSync("uv run pyright-langserver --version", {

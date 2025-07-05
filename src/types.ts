@@ -2,6 +2,29 @@ import type { ToolDef } from "./mcp/utils/mcpHelpers.ts";
 import type { ZodType } from "zod";
 
 /**
+ * Server characteristics that affect LSP client behavior
+ */
+export interface ServerCharacteristics {
+  /** Time to wait after opening a document before sending requests (ms) */
+  documentOpenDelay?: number;
+
+  /** Time to wait for server readiness check (ms) */
+  readinessCheckTimeout?: number;
+
+  /** Time to wait for initial diagnostics (ms) */
+  initialDiagnosticsTimeout?: number;
+
+  /** Whether the server requires project-level initialization */
+  requiresProjectInit?: boolean;
+
+  /** Whether the server sends diagnostics on document open */
+  sendsInitialDiagnostics?: boolean;
+
+  /** Maximum timeout for general operations (ms) */
+  operationTimeout?: number;
+}
+
+/**
  * LSP adapter configuration
  * Defines how to connect to and configure a language server
  */
@@ -38,6 +61,9 @@ export interface LspAdapter {
 
   /** Health check function */
   doctor?: () => Promise<{ ok: boolean; message?: string }>;
+
+  /** Server-specific behavior characteristics */
+  serverCharacteristics?: ServerCharacteristics;
 }
 
 /**
