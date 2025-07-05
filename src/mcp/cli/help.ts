@@ -3,7 +3,6 @@
  */
 
 import type { AdapterRegistry } from "../../core/config/configLoader.ts";
-import { listLanguages, listAdapters } from "../legacy/legacySupport.ts";
 
 export function showHelp(): void {
   console.log(`
@@ -15,7 +14,6 @@ Usage:
 
 Options:
   -p, --preset <preset>     Language adapter to use (e.g., tsgo, deno, pyright)
-  -l, --language <lang>     [DEPRECATED] Use -p/--preset instead
   --config <path>           Load language configuration from JSON file
   --bin <command>           Custom LSP server command (e.g., "deno lsp", "rust-analyzer")
   --initializationOptions <json>  JSON string for LSP initialization options
@@ -47,26 +45,4 @@ export function showListWithConfigLoader(
   console.log('  --bin "deno lsp" for Deno');
   console.log('  --bin "clangd" for C/C++');
   console.log('  --bin "jdtls" for Java');
-}
-
-export function showListLegacy(adapterRegistry: AdapterRegistry): void {
-  console.log("Supported languages with --language:");
-  const languageList = listLanguages();
-  for (const lang of languageList) {
-    const lspCmd = lang.bin;
-    console.log(`  ${lang.id.padEnd(12)} - ${lang.name} [requires ${lspCmd}]`);
-  }
-
-  console.log("\nAvailable adapters with --preset:");
-  const adapterList = listAdapters(adapterRegistry);
-  for (const adapter of adapterList) {
-    console.log(`  ${adapter.id.padEnd(25)} - ${adapter.description}`);
-  }
-
-  console.log("\nFor other languages or custom LSP servers, use --bin:");
-  console.log('  --bin "deno lsp" for Deno');
-  console.log('  --bin "clangd" for C/C++');
-  console.log('  --bin "jdtls" for Java');
-  console.log("\nFor custom language configuration, use --config:");
-  console.log('  --config "./my-language.json"');
 }

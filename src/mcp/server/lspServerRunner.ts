@@ -19,7 +19,6 @@ import { createCapabilityFilter } from "../registry/capabilityFilter.ts";
 import { resolveAdapterCommand } from "../../adapters/utils.ts";
 import type { ResolvedConfig } from "../../core/config/configLoader.ts";
 import type { AdapterRegistry } from "../../core/config/configLoader.ts";
-import { getLanguage } from "../legacy/legacySupport.ts";
 
 export async function runLanguageServerWithConfig(
   config: ResolvedConfig,
@@ -123,9 +122,9 @@ export async function runLanguageServer(
     )}`,
   );
 
-  // Get language configuration
-  const config = getLanguage(language, adapterRegistry);
-  if (!config) {
+  // Check if this came from an adapter
+  const adapter = adapterRegistry.get(language);
+  if (!adapter) {
     const supported = Array.from(adapterRegistry.list());
     console.error(`Error: Language '${language}' is not supported.`);
     console.error(
@@ -135,21 +134,10 @@ export async function runLanguageServer(
     process.exit(1);
   }
 
-  // Check if this came from an adapter
-  const adapter = adapterRegistry.get(language);
-  let lspBin: string;
-  let lspArgs: string[];
-
-  if (adapter) {
-    // Use the adapter resolution for node_modules binaries
-    const resolved = resolveAdapterCommand(adapter, process.cwd());
-    lspBin = resolved.command;
-    lspArgs = resolved.args;
-  } else {
-    // Use the config directly
-    lspBin = config.bin;
-    lspArgs = config.args || [];
-  }
+  // Use the adapter resolution for node_modules binaries
+  const resolved = resolveAdapterCommand(adapter, process.cwd());
+  const lspBin = resolved.command;
+  const lspArgs = resolved.args;
 
   if (!lspBin) {
     console.error(
