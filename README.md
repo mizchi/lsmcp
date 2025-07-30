@@ -80,11 +80,11 @@ For languages not in this list, or to customize LSP server settings, see [Manual
 # with typeScript-language-server (stable)
 npm add -D typescript typescript-language-server
 # Recommended: use tsgo for full functionality
-claude mcp add typescript npx -- -y @mizchi/lsmcp -p typescript --bin="npx tsgo --lsp --stdio"
+claude mcp add typescript npx -- -y @mizchi/lsmcp -p typescript
 
 # with @typescript/native-preview (experimental, fast)
 npm add -D @typescript/native-preview
-claude mcp add typescript npx -- -y @mizchi/lsmcp -p typescript --bin="npx tsgo"
+claude mcp add typescript npx -- -y @mizchi/lsmcp -p tsgo
 ```
 
 Manual Configuration (.mcp.json)
@@ -98,9 +98,7 @@ Manual Configuration (.mcp.json)
         "-y",
         "@mizchi/lsmcp",
         "-p",
-        "typescript",
-        "--bin",
-        "npx tsgo --lsp --stdio"
+        "typescript"
       ]
     }
   }
