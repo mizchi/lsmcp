@@ -52,12 +52,12 @@ describe("Onboarding Tools", () => {
     it("should return onboarding instructions", async () => {
       const result = await indexOnboardingTool.execute({ root: testRoot });
 
-      expect(result).toContain("symbol indexing capabilities");
-      expect(result).toContain("Project location: " + testRoot);
-      expect(result).toContain("Step 1: Understand the project structure");
-      expect(result).toContain("Step 2: Build the symbol index");
-      expect(result).toContain("Step 3: Verify the index");
-      expect(result).toContain("Step 4: Test symbol operations");
+      expect(result).toContain("setting up lsmcp's symbol indexing");
+      expect(result).toContain("Project: " + testRoot);
+      expect(result).toContain("1. Explore Project Structure");
+      expect(result).toContain("2. Index the Codebase");
+      expect(result).toContain("3. Verify Index Success");
+      expect(result).toContain("4. Test Symbol Search");
     });
   });
 

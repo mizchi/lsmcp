@@ -63,6 +63,18 @@ export function clearIndex(rootPath: string): void {
 }
 
 /**
+ * Force clear index including cache
+ */
+export async function forceClearIndex(rootPath: string): Promise<void> {
+  const index = indexInstances.get(rootPath);
+  if (index) {
+    await index.forceClear();
+    index.removeAllListeners();
+    indexInstances.delete(rootPath);
+  }
+}
+
+/**
  * Index files using the new implementation
  */
 export async function indexFiles(
@@ -152,4 +164,41 @@ export function getIndexStats(rootPath: string) {
   }
 
   return index.getStats();
+}
+
+/**
+ * Update index incrementally
+ */
+export async function updateIndexIncremental(rootPath: string): Promise<{
+  success: boolean;
+  updated: string[];
+  removed: string[];
+  errors: string[];
+  message?: string;
+}> {
+  const index = getOrCreateIndex(rootPath);
+  if (!index) {
+    return {
+      success: false,
+      updated: [],
+      removed: [],
+      errors: [],
+      message: "Failed to create index",
+    };
+  }
+
+  try {
+    const result = await index.updateIncremental();
+    return {
+      success: true,
+      ...result,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      updated: [],
+      removed: [],
+      errors: [error instanceof Error ? error.message : String(error)],
+    };
+  }
 }

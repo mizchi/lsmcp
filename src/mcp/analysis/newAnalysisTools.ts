@@ -7,9 +7,11 @@ import { SymbolKind } from "vscode-languageserver-types";
 import type { ToolDef } from "../utils/mcpHelpers.ts";
 import {
   clearIndex,
+  forceClearIndex,
   indexFiles,
   querySymbols,
   getIndexStats,
+  updateIndexIncremental,
 } from "../../indexer/mcp/IndexerAdapter.ts";
 import { glob } from "glob";
 import { relative } from "path";
@@ -277,10 +279,87 @@ export const clearIndexTool: ToolDef<typeof clearIndexSchema> = {
   },
 };
 
+// Incremental update tool
+const updateIndexIncrementalSchema = z.object({
+  root: z.string().describe("Root directory for the project").optional(),
+});
+
+export const updateIndexIncrementalTool: ToolDef<
+  typeof updateIndexIncrementalSchema
+> = {
+  name: "new_update_index_incremental",
+  description:
+    "Update symbol index incrementally based on git changes. Only re-indexes modified files.",
+  schema: updateIndexIncrementalSchema,
+  execute: async ({ root }) => {
+    const rootPath = root || process.cwd();
+    const result = await updateIndexIncremental(rootPath);
+
+    if (!result.success) {
+      return `Failed to update index incrementally: ${result.message || result.errors.join(", ")}`;
+    }
+
+    let output = `Incremental index update completed:\n`;
+
+    if (result.updated.length > 0) {
+      output += `\nUpdated files (${result.updated.length}):\n`;
+      result.updated.forEach((file) => {
+        output += `  - ${file}\n`;
+      });
+    }
+
+    if (result.removed.length > 0) {
+      output += `\nRemoved files (${result.removed.length}):\n`;
+      result.removed.forEach((file) => {
+        output += `  - ${file}\n`;
+      });
+    }
+
+    if (result.errors.length > 0) {
+      output += `\nErrors (${result.errors.length}):\n`;
+      result.errors.forEach((error) => {
+        output += `  - ${error}\n`;
+      });
+    }
+
+    if (result.updated.length === 0 && result.removed.length === 0) {
+      output += "\nNo changes detected.";
+    }
+
+    return output;
+  },
+};
+
+// Force clear tool
+const forceClearIndexSchema = z.object({
+  root: z.string().describe("Root directory for the project").optional(),
+});
+
+export const forceClearIndexTool: ToolDef<typeof forceClearIndexSchema> = {
+  name: "new_force_clear_index",
+  description:
+    "Force clear the symbol index including all caches. Use this to completely reset the index.",
+  schema: forceClearIndexSchema,
+  execute: async ({ root }) => {
+    const rootPath = root || process.cwd();
+    const stats = getIndexStats(rootPath);
+
+    await forceClearIndex(rootPath);
+
+    return `Force cleared symbol index:
+- Removed ${stats.totalFiles} files
+- Removed ${stats.totalSymbols} symbols
+- Cleared all caches
+- Reset all watchers`;
+  },
+};
+
 // Export new analysis tools
 export const newAnalysisTools = [
   indexFilesTool,
   searchSymbolTool,
   getIndexStatsTool,
   clearIndexTool,
+  updateIndexIncrementalTool,
+  forceClearIndexTool,
 ];

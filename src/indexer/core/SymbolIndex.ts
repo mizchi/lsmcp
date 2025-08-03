@@ -16,6 +16,11 @@ import type {
   IndexEvent,
 } from "./types.ts";
 import { SymbolKind } from "vscode-languageserver-types";
+import {
+  getGitHash,
+  getModifiedFiles,
+  getFileGitHash,
+} from "../utils/gitUtils.ts";
 
 export class SymbolIndex extends EventEmitter {
   private fileIndex: Map<string, FileSymbols> = new Map();
@@ -75,8 +80,11 @@ export class SymbolIndex extends EventEmitter {
       // Convert symbols
       const symbols = this.convertSymbols(rawSymbols, uri);
 
+      // Get git hash for the file
+      const gitHash = getFileGitHash(this.rootPath, absolutePath);
+
       // Store in index
-      this.storeSymbols(uri, symbols);
+      this.storeSymbols(uri, symbols, gitHash || undefined);
 
       // Update cache
       if (this.cache) {
@@ -121,6 +129,13 @@ export class SymbolIndex extends EventEmitter {
     }
 
     const duration = Date.now() - startTime;
+
+    // Save current git hash
+    const gitHash = getGitHash(this.rootPath);
+    if (gitHash) {
+      this.stats.lastGitHash = gitHash;
+    }
+
     this.emit("indexingCompleted", {
       type: "indexingCompleted",
       duration,
@@ -249,15 +264,138 @@ export class SymbolIndex extends EventEmitter {
       indexingTime: 0,
       lastUpdated: new Date(),
     };
+    this.emit("cleared");
+  }
+
+  /**
+   * Force clear all data including cache
+   */
+  async forceClear(): Promise<void> {
+    // Clear memory indices
+    this.clear();
+
+    // Clear cache if available
+    if (this.cache) {
+      await this.cache.clear();
+    }
+
+    // Reset all stats
+    this.stats = {
+      totalFiles: 0,
+      totalSymbols: 0,
+      indexingTime: 0,
+      lastUpdated: new Date(),
+      lastGitHash: undefined,
+    };
+  }
+
+  /**
+   * Update index incrementally based on git changes
+   */
+  async updateIncremental(): Promise<{
+    updated: string[];
+    removed: string[];
+    errors: string[];
+  }> {
+    const currentHash = getGitHash(this.rootPath);
+    if (!currentHash) {
+      // Not a git repository, fall back to full index
+      return { updated: [], removed: [], errors: ["Not a git repository"] };
+    }
+
+    const lastHash = this.stats.lastGitHash;
+    if (!lastHash) {
+      // First time, do full index
+      return {
+        updated: [],
+        removed: [],
+        errors: ["No previous git hash found"],
+      };
+    }
+
+    const modifiedFiles = getModifiedFiles(this.rootPath, lastHash);
+    const updated: string[] = [];
+    const removed: string[] = [];
+    const errors: string[] = [];
+
+    for (const file of modifiedFiles) {
+      const absolutePath = resolve(this.rootPath, file);
+
+      try {
+        // Check if file still exists
+        if (await this.fileSystem.exists(absolutePath)) {
+          // Re-index the file
+          await this.indexFile(file);
+          updated.push(file);
+        } else {
+          // File was deleted
+          this.removeFile(file);
+          removed.push(file);
+        }
+      } catch (error) {
+        errors.push(
+          `${file}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    // Update git hash
+    this.stats.lastGitHash = currentHash;
+    this.stats.lastUpdated = new Date();
+
+    return { updated, removed, errors };
+  }
+
+  /**
+   * Check if a file needs re-indexing
+   */
+  async needsReindex(filePath: string): Promise<boolean> {
+    const absolutePath = resolve(this.rootPath, filePath);
+    const uri = pathToFileURL(absolutePath).toString();
+
+    const fileSymbols = this.fileIndex.get(uri);
+    if (!fileSymbols) {
+      return true; // Not indexed yet
+    }
+
+    // Check file modification time
+    try {
+      const stats = await this.fileSystem.stat(absolutePath);
+      const mtime = stats.mtime.getTime();
+
+      if (mtime > fileSymbols.lastIndexed) {
+        return true; // File modified since last index
+      }
+    } catch {
+      return true; // Can't stat file, assume needs reindex
+    }
+
+    // Check git hash if available
+    const currentFileHash = getFileGitHash(this.rootPath, absolutePath);
+    if (
+      currentFileHash &&
+      fileSymbols.gitHash &&
+      currentFileHash !== fileSymbols.gitHash
+    ) {
+      return true; // Git hash changed
+    }
+
+    return false;
   }
 
   // Private methods
 
-  private storeSymbols(uri: string, symbols: IndexedSymbol[]): void {
+  private storeSymbols(
+    uri: string,
+    symbols: IndexedSymbol[],
+    gitHash?: string,
+  ): void {
     // Store in file index
     this.fileIndex.set(uri, {
       uri,
       lastModified: Date.now(),
+      lastIndexed: Date.now(),
+      gitHash,
       symbols,
     });
 

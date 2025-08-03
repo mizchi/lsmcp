@@ -23,6 +23,8 @@ export interface IndexedSymbol {
 export interface FileSymbols {
   uri: string;
   lastModified: number;
+  lastIndexed: number;
+  gitHash?: string;
   symbols: IndexedSymbol[];
 }
 
@@ -45,6 +47,7 @@ export interface IndexStats {
   totalSymbols: number;
   indexingTime: number;
   lastUpdated: Date;
+  lastGitHash?: string;
 }
 
 /**

@@ -10,39 +10,45 @@ export interface OnboardingParams {
 export const symbolIndexOnboardingPrompt = ({
   system,
   rootPath,
-}: OnboardingParams) => `You are viewing a code project for the first time using lsmcp's symbol indexing capabilities.
-Your task is to understand the project structure and build an efficient symbol index.
+}: OnboardingParams) => `You are setting up lsmcp's symbol indexing for a code project.
+This will enable fast symbol search and navigation without repeatedly parsing files.
 
-Project location: ${rootPath}
+Project: ${rootPath}
 System: ${system}
 
-Step 1: Understand the project structure
-- Use list_dir to explore the directory structure
-- Use find_file to locate code files matching patterns (e.g., "*.ts", "*.js", "*.py")
-- Identify the main source directories and file types
+## Quick Start Guide
 
-Step 2: Build the symbol index
-- Use new_index_files to index the codebase with appropriate glob patterns
-- Start with common patterns like "**/*.ts", "**/*.js" for TypeScript/JavaScript projects
-- For Python projects, use "**/*.py"
-- Monitor the indexing progress and check for any errors
+### 1. Explore Project Structure (30 seconds)
+- Run: list_dir { "relativePath": ".", "recursive": false }
+- Look for source directories like src/, lib/, app/, or similar
+- Run: find_file { "fileMask": "*.ts", "relativePath": "." } (adjust extension based on project)
 
-Step 3: Verify the index
-- Use new_get_index_stats to check how many files and symbols were indexed
-- Use new_search_symbol to test searching for common symbol names
-- Use new_get_file_symbols to examine symbols in key files
+### 2. Index the Codebase (1-2 minutes)
+Based on what you find, index files with appropriate patterns:
+- TypeScript/JavaScript: new_index_files { "pattern": "**/*.{ts,tsx,js,jsx}", "root": "${rootPath}" }
+- Python: new_index_files { "pattern": "**/*.py", "root": "${rootPath}" }
+- Go: new_index_files { "pattern": "**/*.go", "root": "${rootPath}" }
+- Mixed: new_index_files { "pattern": "**/*.{ts,js,py,go}", "root": "${rootPath}" }
 
-Step 4: Test symbol operations
-- Try finding a class or function definition
-- Search for symbols by kind (e.g., all classes, all functions)
-- Verify that the symbol hierarchy is correctly captured
+Exclude test/vendor files if needed:
+- new_index_files { "pattern": "src/**/*.ts", "root": "${rootPath}" }
 
-After completing these steps, write a summary to memory including:
-- The project's main programming language(s)
-- Key directories containing source code
-- Recommended glob patterns for indexing
-- Total number of files and symbols indexed
-- Any performance considerations or limitations discovered`;
+### 3. Verify Index Success
+- Run: new_get_index_stats { "root": "${rootPath}" }
+- You should see total files and symbols indexed
+- If 0 symbols, check if LSP server supports the file type
+
+### 4. Test Symbol Search
+Try these commands:
+- new_search_symbol { "name": "main", "root": "${rootPath}" }
+- new_search_symbol { "kind": [5, 12], "root": "${rootPath}" } (Classes and Functions)
+- new_get_file_symbols { "filePath": "path/to/main/file", "root": "${rootPath}" }
+
+### 5. Save Configuration
+Write to memory the successful configuration:
+- write_memory { "memoryName": "symbol_index_info", "content": "...", "root": "${rootPath}" }
+
+Include: language, glob pattern used, total files/symbols, and any issues encountered.`;
 
 export const symbolSearchGuidancePrompt =
   () => `When searching for symbols in the indexed codebase:
