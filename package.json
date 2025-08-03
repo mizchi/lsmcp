@@ -44,14 +44,12 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@types/glob": "^8.1.0",
     "@types/micromatch": "^4.0.9",
-    "@types/minimatch": "^5.1.2",
-    "glob": "^11.0.3",
+    "glob": "^10.4.5",
     "ignore": "^7.0.5",
     "linguist-languages": "^8.0.0",
     "micromatch": "^4.0.8",
-    "minimatch": "^10.0.3",
+    "minimatch": "^9.0.5",
     "neverthrow": "^8.2.0",
     "ts-blank-space": "^0.6.1",
     "zod": "^3.25.56"
@@ -60,6 +58,8 @@
     "@biomejs/biome": "^2.0.6",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@moonbit/moonbit-lsp": "^0.1.202506241",
+    "@types/glob": "^8.1.0",
+    "@types/minimatch": "^5.1.2",
     "@types/node": "^22.15.30",
     "@types/ws": "^8.18.1",
     "@typescript/native-preview": "7.0.0-dev.20250629.1",

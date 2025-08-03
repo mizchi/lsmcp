@@ -21,6 +21,8 @@ import {
   loadCachedSymbols,
   getSymbolCacheManager,
 } from "../../serenity/cache/symbolCacheIntegration.ts";
+import { withTemporaryDocument } from "../../lsp/utils/documentManager.ts";
+import { readFile } from "fs/promises";
 
 export interface SymbolEntry {
   name: string;
@@ -97,10 +99,11 @@ function createSymbolIndexState(rootPath: string): SymbolIndexState {
 export async function initializeSymbolIndex(
   state: SymbolIndexState,
 ): Promise<void> {
-  state.client = getLSPClient() || null;
-  if (!state.client) {
+  const client = getLSPClient();
+  if (!client) {
     throw new Error("LSP client not initialized");
   }
+  state.client = client;
 }
 
 /**
@@ -310,7 +313,7 @@ export async function indexFile(
   filePath: string,
 ): Promise<void> {
   if (!state.client) {
-    throw new Error("Symbol index not initialized");
+    throw new Error("Symbol index not initialized - LSP client is null");
   }
 
   const absolutePath = resolve(state.rootPath, filePath);
@@ -349,10 +352,19 @@ export async function indexFile(
       return;
     }
 
-    // Get document symbols from LSP
-    const symbols = await state.client.getDocumentSymbols(uri);
+    // Read file content
+    const content = await readFile(absolutePath, "utf-8");
+
+    // Get document symbols from LSP with temporary document
+    const symbols = await withTemporaryDocument(uri, content, async () => {
+      return await state.client!.getDocumentSymbols(uri);
+    });
 
     if (!symbols || symbols.length === 0) {
+      state.eventEmitter.emit("indexError", {
+        uri,
+        error: new Error("No symbols returned from LSP"),
+      });
       return;
     }
 
@@ -386,7 +398,10 @@ export async function indexFile(
       fromCache: false,
     });
   } catch (error) {
-    state.eventEmitter.emit("indexError", { uri, error });
+    state.eventEmitter.emit("indexError", {
+      uri,
+      error: error instanceof Error ? error : new Error(String(error)),
+    });
   }
 }
 
@@ -396,15 +411,27 @@ export async function indexFile(
 export async function indexFiles(
   state: SymbolIndexState,
   filePaths: string[],
-  concurrency: number = 5,
+  options?: { concurrency?: number },
 ): Promise<void> {
+  const concurrency = options?.concurrency || 5;
   const chunks = [];
   for (let i = 0; i < filePaths.length; i += concurrency) {
     chunks.push(filePaths.slice(i, i + concurrency));
   }
 
+  let processedCount = 0;
   for (const chunk of chunks) {
-    await Promise.all(chunk.map((file) => indexFile(state, file)));
+    await Promise.all(
+      chunk.map(async (file) => {
+        try {
+          await indexFile(state, file);
+          processedCount++;
+        } catch (error) {
+          // Error is already emitted in indexFile
+          console.error(`Failed to index ${file}:`, error);
+        }
+      }),
+    );
   }
 }
 
@@ -515,6 +542,31 @@ export function querySymbols(
 
   if (query.containerName && query.name) {
     results = results.filter((s) => s.containerName === query.containerName);
+  }
+
+  // Apply kind filter if both name and kind are specified
+  if (query.name && query.kind) {
+    const kinds = Array.isArray(query.kind) ? query.kind : [query.kind];
+    results = results.filter((s) => kinds.includes(s.kind));
+  }
+
+  // Include children if requested
+  if (query.includeChildren) {
+    const additionalResults: SymbolEntry[] = [];
+    for (const symbol of results) {
+      if (symbol.children) {
+        const addChildren = (children: SymbolEntry[]) => {
+          for (const child of children) {
+            additionalResults.push(child);
+            if (child.children) {
+              addChildren(child.children);
+            }
+          }
+        };
+        addChildren(symbol.children);
+      }
+    }
+    results = [...results, ...additionalResults];
   }
 
   return results;

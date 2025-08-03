@@ -3,10 +3,6 @@
     "lsmcp-dev": {
       "command": "node",
       "args": ["dist/lsmcp.js", "-p", "typescript"]
-    },
-    "lsmcp-tsgo-dev": {
-      "command": "node",
-      "args": ["dist/lsmcp.js", "-p", "tsgo"]
     }
   }
 }

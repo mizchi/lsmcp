@@ -1,20 +1,16 @@
 /**
- * High-level MCP analysis tools using symbol index
+ * MCP analysis tools using the new indexer implementation
  */
 
 import { z } from "zod";
 import { SymbolKind } from "vscode-languageserver-types";
 import type { ToolDef } from "../utils/mcpHelpers.ts";
 import {
-  getSymbolIndex,
-  initializeSymbolIndex,
+  clearIndex,
   indexFiles,
   querySymbols,
-  getFileSymbols as getFileSymbolsFromIndex,
   getIndexStats,
-  clearIndex,
-  type SymbolQuery,
-} from "./symbolIndex.ts";
+} from "../../indexer/mcp/IndexerAdapter.ts";
 import { glob } from "glob";
 import { relative } from "path";
 import { fileURLToPath } from "url";
@@ -37,27 +33,12 @@ const indexFilesSchema = z.object({
 });
 
 export const indexFilesTool: ToolDef<typeof indexFilesSchema> = {
-  name: "index_files",
+  name: "new_index_files",
   description:
     "Build or update the symbol index for files matching the pattern. This enables fast symbol queries.",
   schema: indexFilesSchema,
   execute: async ({ pattern, root, concurrency }) => {
     const rootPath = root || process.cwd();
-    const index = getSymbolIndex(rootPath);
-
-    // Initialize if needed
-    if (!index.client) {
-      try {
-        await initializeSymbolIndex(index);
-      } catch (error) {
-        const debugInfo = {
-          hasClient: !!index.client,
-          rootPath: index.rootPath,
-          fileIndexSize: index.fileIndex.size,
-        };
-        return `Failed to initialize symbol index: ${error instanceof Error ? error.message : String(error)}\nDebug: ${JSON.stringify(debugInfo)}`;
-      }
-    }
 
     // Find files matching pattern
     const files = await glob(pattern, {
@@ -69,46 +50,24 @@ export const indexFilesTool: ToolDef<typeof indexFilesSchema> = {
       return `No files found matching pattern: ${pattern}`;
     }
 
-    // Listen for index errors
-    const errors: string[] = [];
-    index.eventEmitter.on("indexError", (event) => {
-      const errorMsg =
-        event.error instanceof Error
-          ? event.error.message
-          : String(event.error);
-      errors.push(`${event.uri}: ${errorMsg}`);
-    });
-
     // Index files
-    const startTime = Date.now();
-    let indexedCount = 0;
+    const result = await indexFiles(rootPath, files, { concurrency });
 
-    // Track successful and failed indexing
-    index.eventEmitter.on("fileIndexed", () => {
-      indexedCount++;
-    });
+    let output = `Indexed ${files.length} files in ${result.duration}ms
+Total files in index: ${result.totalFiles}
+Total symbols: ${result.totalSymbols}`;
 
-    try {
-      await indexFiles(index, files, { concurrency });
-    } catch (error) {
-      return `Failed to index files: ${error instanceof Error ? error.message : String(error)}`;
-    }
-    const duration = Date.now() - startTime;
-
-    const stats = getIndexStats(index);
-    let result = `Indexed ${files.length} files in ${duration}ms
-Successfully indexed: ${indexedCount} files
-Total files in index: ${stats.totalFiles}
-Total symbols: ${stats.totalSymbols}`;
-
-    if (errors.length > 0) {
-      result += `\n\nErrors encountered:\n${errors.slice(0, 10).join("\n")}`;
-      if (errors.length > 10) {
-        result += `\n... and ${errors.length - 10} more errors`;
+    if (result.errors.length > 0) {
+      output += `\n\nErrors encountered:\n`;
+      result.errors.slice(0, 10).forEach((err) => {
+        output += `  ${err.file}: ${err.error}\n`;
+      });
+      if (result.errors.length > 10) {
+        output += `  ... and ${result.errors.length - 10} more errors`;
       }
     }
 
-    return result;
+    return output;
   },
 };
 
@@ -143,7 +102,7 @@ const symbolKindSchema = z.enum([
   "TypeParameter",
 ]);
 
-const findSymbolSchema = z.object({
+const searchSymbolSchema = z.object({
   name: z
     .string()
     .describe("Symbol name to search for (supports partial matching)")
@@ -167,11 +126,11 @@ const findSymbolSchema = z.object({
   root: z.string().describe("Root directory for the project").optional(),
 });
 
-export const findSymbolTool: ToolDef<typeof findSymbolSchema> = {
-  name: "search_symbol",
+export const searchSymbolTool: ToolDef<typeof searchSymbolSchema> = {
+  name: "new_search_symbol",
   description:
     "Search symbols in the indexed codebase using various filters. Much faster than file-based search.",
-  schema: findSymbolSchema,
+  schema: searchSymbolSchema,
   execute: async ({
     name,
     kind,
@@ -181,18 +140,19 @@ export const findSymbolTool: ToolDef<typeof findSymbolSchema> = {
     root,
   }) => {
     const rootPath = root || process.cwd();
-    const index = getSymbolIndex(rootPath);
 
-    const stats = getIndexStats(index);
+    // Get index stats first
+    const stats = getIndexStats(rootPath);
     if (stats.totalFiles === 0) {
       return "No files indexed. Please run index_files first.";
     }
 
     // Build query
-    const query: SymbolQuery = {
+    const query: any = {
       name,
       containerName,
       includeChildren,
+      file,
     };
 
     if (kind) {
@@ -232,12 +192,8 @@ export const findSymbolTool: ToolDef<typeof findSymbolSchema> = {
       }
     }
 
-    if (file) {
-      query.file = file;
-    }
-
     // Execute query
-    const results = querySymbols(index, query);
+    const results = querySymbols(rootPath, query);
 
     if (results.length === 0) {
       return "No symbols found matching the query.";
@@ -247,7 +203,6 @@ export const findSymbolTool: ToolDef<typeof findSymbolSchema> = {
     let output = `Found ${results.length} symbol(s):\n\n`;
 
     for (const symbol of results.slice(0, 50)) {
-      // Limit to 50 results
       const filePath = fileURLToPath(symbol.location.uri);
       const relativePath = relative(rootPath, filePath);
       const range = symbol.location.range;
@@ -274,58 +229,6 @@ export const findSymbolTool: ToolDef<typeof findSymbolSchema> = {
   },
 };
 
-// File analysis tools
-
-const getFileSymbolsSchema = z.object({
-  filePath: z
-    .string()
-    .describe("File path to get symbols for (relative to root)"),
-  root: z.string().describe("Root directory for the project").optional(),
-});
-
-export const getFileSymbolsTool: ToolDef<typeof getFileSymbolsSchema> = {
-  name: "get_file_symbols",
-  description:
-    "Get all symbols in a specific file from the index. Fast alternative to get_document_symbols.",
-  schema: getFileSymbolsSchema,
-  execute: async ({ filePath, root }) => {
-    const rootPath = root || process.cwd();
-    const index = getSymbolIndex(rootPath);
-
-    const symbols = getFileSymbolsFromIndex(index, filePath);
-
-    if (symbols.length === 0) {
-      return `No symbols found in file: ${filePath}. The file may not be indexed yet.`;
-    }
-
-    // Format symbols hierarchically
-    let output = `Symbols in ${filePath}:\n\n`;
-
-    const formatSymbol = (symbol: any, indent: number = 0) => {
-      const prefix = "  ".repeat(indent);
-      const range = symbol.location.range;
-      output += `${prefix}${symbol.name} [${symbolKindSchema.options[symbol.kind - 1]}]`;
-      output += ` (${range.start.line + 1}:${range.start.character + 1})`;
-      if (symbol.deprecated) {
-        output += " deprecated";
-      }
-      output += "\n";
-
-      if (symbol.children) {
-        for (const child of symbol.children) {
-          formatSymbol(child, indent + 1);
-        }
-      }
-    };
-
-    for (const symbol of symbols) {
-      formatSymbol(symbol);
-    }
-
-    return output;
-  },
-};
-
 // Statistics tool
 
 const getIndexStatsSchema = z.object({
@@ -333,15 +236,13 @@ const getIndexStatsSchema = z.object({
 });
 
 export const getIndexStatsTool: ToolDef<typeof getIndexStatsSchema> = {
-  name: "get_index_stats",
+  name: "new_get_index_stats",
   description:
     "Get statistics about the symbol index including file count, symbol count, and performance metrics.",
   schema: getIndexStatsSchema,
   execute: async ({ root }) => {
     const rootPath = root || process.cwd();
-    const index = getSymbolIndex(rootPath);
-
-    const stats = getIndexStats(index);
+    const stats = getIndexStats(rootPath);
 
     return `Symbol Index Statistics:
 - Total files indexed: ${stats.totalFiles}
@@ -359,16 +260,15 @@ const clearIndexSchema = z.object({
 });
 
 export const clearIndexTool: ToolDef<typeof clearIndexSchema> = {
-  name: "clear_index",
+  name: "new_clear_index",
   description:
     "Clear the symbol index and stop all file watchers. Use this to free memory or before re-indexing.",
   schema: clearIndexSchema,
   execute: async ({ root }) => {
     const rootPath = root || process.cwd();
-    const index = getSymbolIndex(rootPath);
+    const stats = getIndexStats(rootPath);
 
-    const stats = getIndexStats(index);
-    clearIndex(index);
+    clearIndex(rootPath);
 
     return `Cleared symbol index:
 - Removed ${stats.totalFiles} files
@@ -377,11 +277,10 @@ export const clearIndexTool: ToolDef<typeof clearIndexSchema> = {
   },
 };
 
-// Export all analysis tools
-export const analysisTools = [
+// Export new analysis tools
+export const newAnalysisTools = [
   indexFilesTool,
-  findSymbolTool,
-  getFileSymbolsTool,
+  searchSymbolTool,
   getIndexStatsTool,
   clearIndexTool,
 ];

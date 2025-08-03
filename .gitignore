@@ -162,3 +162,7 @@ tests/adapters/fixtures/moonbit/target/
 tests/adapters/fixtures/fsharp/obj/
 tests/adapters/fixtures/fsharp/bin/
 tests/adapters/fixtures/python/.venv
+.serena
+examples/fsharp-project/bin/
+examples/fsharp-project/obj/
+.serenity

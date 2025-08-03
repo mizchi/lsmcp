@@ -21,10 +21,14 @@ import { lspGetWorkspaceSymbolsTool } from "../../lsp/tools/lspGetWorkspaceSymbo
 import { lspCheckCapabilitiesTool } from "../../lsp/tools/lspCheckCapabilities.ts";
 
 // Import analysis tools
-import { analysisTools } from "../analysis/analysisTools.ts";
+import { newAnalysisTools } from "../analysis/newAnalysisTools.ts";
+import { compressionTools } from "../analysis/compressionTools.ts";
 
 // Import serenity tools
 import { serenityTools } from "../../serenity/tools/index.ts";
+
+// Import onboarding tools
+import { indexOnboardingTools } from "../../indexer/onboarding/onboardingTools.ts";
 
 // Define LSP-only tools
 export const lspTools: ToolDef<any>[] = [
@@ -45,10 +49,17 @@ export const lspTools: ToolDef<any>[] = [
 ];
 
 // Define high-level analysis tools (not affected by LSP capabilities)
-export const highLevelTools: ToolDef<any>[] = analysisTools;
+// Use new analysis tools instead of old ones
+export const highLevelTools: ToolDef<any>[] = [
+  ...newAnalysisTools,
+  ...compressionTools,
+];
 
 // Define serenity tools
 export const serenityToolsList: ToolDef<any>[] = Object.values(serenityTools);
+
+// Define onboarding tools
+export const onboardingToolsList: ToolDef<any>[] = indexOnboardingTools;
 
 // Tool name mapping for unsupported filtering
 const toolNameMap: Record<string, string> = {

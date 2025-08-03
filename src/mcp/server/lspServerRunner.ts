@@ -14,11 +14,14 @@ import {
   filterUnsupportedTools,
   lspTools,
   highLevelTools,
+  serenityToolsList,
+  onboardingToolsList,
 } from "../registry/toolRegistry.ts";
 import { createCapabilityFilter } from "../registry/capabilityFilter.ts";
 import { resolveAdapterCommand } from "../../adapters/utils.ts";
 import type { ResolvedConfig } from "../../core/config/configLoader.ts";
 import type { AdapterRegistry } from "../../core/config/configLoader.ts";
+import type { LspAdapter } from "../../types.ts";
 
 export async function runLanguageServerWithConfig(
   config: ResolvedConfig,
@@ -33,7 +36,19 @@ export async function runLanguageServerWithConfig(
 
   try {
     const projectRoot = process.cwd();
-    const lspProcess = spawn(config.bin, config.args, {
+
+    // Resolve the command for node_modules binaries
+    const resolved = resolveAdapterCommand(
+      {
+        id: config.id,
+        name: config.name,
+        bin: config.bin,
+        args: config.args,
+      } as LspAdapter,
+      projectRoot,
+    );
+
+    const lspProcess = spawn(resolved.command, resolved.args, {
       cwd: projectRoot,
       env: {
         ...process.env,
@@ -68,6 +83,8 @@ export async function runLanguageServerWithConfig(
     const allTools: ToolDef<import("zod").ZodType>[] = [
       ...filteredLspTools,
       ...highLevelTools, // Analysis tools are always available
+      ...serenityToolsList, // Serenity tools for symbol editing and memory
+      ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];
 
     // Add custom tools if available (note: would need adapter lookup for this)
@@ -79,9 +96,9 @@ export async function runLanguageServerWithConfig(
 
     // Handle LSP process errors
     const fullCommand =
-      config.args.length > 0
-        ? `${config.bin} ${config.args.join(" ")}`
-        : config.bin;
+      resolved.args.length > 0
+        ? `${resolved.command} ${resolved.args.join(" ")}`
+        : resolved.command;
 
     lspProcess.on("error", (error) => {
       const context: ErrorContext = {
@@ -195,6 +212,8 @@ export async function runLanguageServer(
     const allTools: ToolDef<import("zod").ZodType>[] = [
       ...filteredLspTools,
       ...highLevelTools, // Analysis tools are always available
+      ...serenityToolsList, // Serenity tools for symbol editing and memory
+      ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];
     if (adapter?.customTools) {
       allTools.push(...adapter.customTools);
@@ -270,6 +289,8 @@ export async function runCustomLspServer(
     const allTools: ToolDef<import("zod").ZodType>[] = [
       ...filteredLspTools,
       ...highLevelTools, // Analysis tools are always available
+      ...serenityToolsList, // Serenity tools for symbol editing and memory
+      ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];
     server.registerTools(allTools);
 
