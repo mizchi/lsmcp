@@ -348,36 +348,11 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       state.serverCharacteristics,
     );
 
-    // Create a minimal test document to verify server readiness
-    const testUri = `file://${state.rootPath}/__lsmcp_test__.ts`;
-    const testContent =
-      "// Test document for server readiness check\nconst x = 1;\n";
-
-    try {
-      // Open a test document with the appropriate language ID
-      openDocument(testUri, testContent, state.languageId || "typescript");
-
-      // Try to get diagnostics with server-specific timeout
-      // This verifies the server is processing documents
-      if (characteristics.sendsInitialDiagnostics) {
-        await diagnosticsManager
-          .waitForDiagnostics(testUri, characteristics.readinessCheckTimeout)
-          .catch(() => {
-            // Ignore timeout - some servers don't send diagnostics for simple files
-          });
-      } else {
-        // For servers that don't send initial diagnostics, just wait a bit
-        await new Promise((resolve) =>
-          setTimeout(resolve, characteristics.readinessCheckTimeout),
-        );
-      }
-
-      // Close the test document
-      closeDocument(testUri);
-    } catch (error) {
-      // If this fails, the server might not be ready yet
-      debug(`Server readiness check failed: ${error}`);
-    }
+    // Simply wait for the server to be ready based on its characteristics
+    // Some servers need time to initialize after the "initialized" notification
+    await new Promise((resolve) =>
+      setTimeout(resolve, characteristics.readinessCheckTimeout),
+    );
   }
 
   async function initialize(): Promise<void> {
