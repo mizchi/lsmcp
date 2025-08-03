@@ -13,9 +13,14 @@ import {
 } from "vscode-languageserver-types";
 import { pathToFileURL } from "url";
 import { watch, FSWatcher } from "fs";
-import { resolve } from "path";
+import { resolve, relative } from "path";
 import { getLSPClient } from "../../lsp/lspClient.ts";
 import type { LSPClient } from "../../lsp/lspTypes.ts";
+import {
+  cacheSymbolsFromIndex,
+  loadCachedSymbols,
+  getSymbolCacheManager,
+} from "../../serenity/cache/symbolCacheIntegration.ts";
 
 export interface SymbolEntry {
   name: string;
@@ -237,6 +242,18 @@ function watchFile(state: SymbolIndexState, filePath: string): void {
 function queueReindex(state: SymbolIndexState, filePath: string): void {
   state.indexingQueue.add(filePath);
 
+  // Invalidate cache for this file
+  try {
+    const manager = getSymbolCacheManager(state.rootPath);
+    const relativePath = relative(
+      state.rootPath,
+      resolve(state.rootPath, filePath),
+    );
+    manager.invalidateFile(relativePath);
+  } catch (error) {
+    // Ignore cache errors
+  }
+
   if (!state.isIndexing) {
     processIndexingQueue(state);
   }
@@ -296,10 +313,42 @@ export async function indexFile(
     throw new Error("Symbol index not initialized");
   }
 
-  const uri = pathToFileURL(resolve(state.rootPath, filePath)).toString();
+  const absolutePath = resolve(state.rootPath, filePath);
+  const uri = pathToFileURL(absolutePath).toString();
   const startTime = Date.now();
 
   try {
+    // Try to load from cache first
+    const cachedSymbols = loadCachedSymbols(state, absolutePath);
+
+    if (cachedSymbols) {
+      // Use cached symbols
+      state.fileIndex.set(uri, {
+        uri,
+        lastModified: Date.now(),
+        symbols: cachedSymbols,
+      });
+
+      // Update symbol indices
+      updateIndices(state, cachedSymbols, uri);
+
+      // Setup file watcher
+      watchFile(state, filePath);
+
+      // Update stats
+      state.stats.indexingTime += Date.now() - startTime;
+      state.stats.lastUpdated = new Date();
+      updateStats(state);
+
+      state.eventEmitter.emit("fileIndexed", {
+        uri,
+        symbolCount: cachedSymbols.length,
+        fromCache: true,
+      });
+
+      return;
+    }
+
     // Get document symbols from LSP
     const symbols = await state.client.getDocumentSymbols(uri);
 
@@ -320,6 +369,9 @@ export async function indexFile(
     // Update symbol indices
     updateIndices(state, entries, uri);
 
+    // Cache the symbols
+    await cacheSymbolsFromIndex(state, absolutePath);
+
     // Setup file watcher
     watchFile(state, filePath);
 
@@ -331,6 +383,7 @@ export async function indexFile(
     state.eventEmitter.emit("fileIndexed", {
       uri,
       symbolCount: entries.length,
+      fromCache: false,
     });
   } catch (error) {
     state.eventEmitter.emit("indexError", { uri, error });

@@ -23,6 +23,9 @@ import { lspCheckCapabilitiesTool } from "../../lsp/tools/lspCheckCapabilities.t
 // Import analysis tools
 import { analysisTools } from "../analysis/analysisTools.ts";
 
+// Import serenity tools
+import { serenityTools } from "../../serenity/tools/index.ts";
+
 // Define LSP-only tools
 export const lspTools: ToolDef<any>[] = [
   lspGetHoverTool,
@@ -43,6 +46,9 @@ export const lspTools: ToolDef<any>[] = [
 
 // Define high-level analysis tools (not affected by LSP capabilities)
 export const highLevelTools: ToolDef<any>[] = analysisTools;
+
+// Define serenity tools
+export const serenityToolsList: ToolDef<any>[] = Object.values(serenityTools);
 
 // Tool name mapping for unsupported filtering
 const toolNameMap: Record<string, string> = {

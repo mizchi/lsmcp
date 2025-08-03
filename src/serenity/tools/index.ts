@@ -1,0 +1,74 @@
+export * from "./symbolEditTools.ts";
+export * from "./regexEditTools.ts";
+export * from "./memoryTools.ts";
+export * from "./cacheTools.ts";
+export * from "./workflowTools.ts";
+export * from "./fileSystemTools.ts";
+export * from "./symbolTools.ts";
+
+// Re-export all tools as a collection
+import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
+import {
+  replaceSymbolBodyTool,
+  insertBeforeSymbolTool,
+  insertAfterSymbolTool,
+} from "./symbolEditTools.ts";
+import { replaceRegexTool } from "./regexEditTools.ts";
+import {
+  listMemoriesTool,
+  readMemoryTool,
+  writeMemoryTool,
+  deleteMemoryTool,
+} from "./memoryTools.ts";
+import {
+  searchCachedSymbolsTool,
+  getCacheStatsTool,
+  clearCacheTool,
+} from "./cacheTools.ts";
+import {
+  checkOnboardingPerformedTool,
+  onboardingTool,
+  thinkAboutCollectedInformationTool,
+  thinkAboutTaskAdherenceTool,
+  thinkAboutWhetherYouAreDoneTool,
+  switchModesTool,
+} from "./workflowTools.ts";
+import {
+  listDirTool,
+  findFileTool,
+  searchForPatternTool,
+} from "./fileSystemTools.ts";
+import {
+  getSymbolsOverviewTool,
+  findSymbolTool,
+  findReferencingSymbolsTool,
+} from "./symbolTools.ts";
+
+export const serenityTools = {
+  replaceSymbolBody: replaceSymbolBodyTool,
+  insertBeforeSymbol: insertBeforeSymbolTool,
+  insertAfterSymbol: insertAfterSymbolTool,
+  replaceRegex: replaceRegexTool,
+  listMemories: listMemoriesTool,
+  readMemory: readMemoryTool,
+  writeMemory: writeMemoryTool,
+  deleteMemory: deleteMemoryTool,
+  searchCachedSymbols: searchCachedSymbolsTool,
+  getCacheStats: getCacheStatsTool,
+  clearCache: clearCacheTool,
+  checkOnboardingPerformed: checkOnboardingPerformedTool,
+  onboarding: onboardingTool,
+  thinkAboutCollectedInformation: thinkAboutCollectedInformationTool,
+  thinkAboutTaskAdherence: thinkAboutTaskAdherenceTool,
+  thinkAboutWhetherYouAreDone: thinkAboutWhetherYouAreDoneTool,
+  switchModes: switchModesTool,
+  listDir: listDirTool,
+  findFile: findFileTool,
+  searchForPattern: searchForPatternTool,
+  getSymbolsOverview: getSymbolsOverviewTool,
+  findSymbol: findSymbolTool,
+  findReferencingSymbols: findReferencingSymbolsTool,
+};
+
+// Export as a list for easy registration
+export const serenityToolsList: ToolDef<any>[] = Object.values(serenityTools);
