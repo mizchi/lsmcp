@@ -14,7 +14,7 @@ import { vi } from "vitest";
 const TEST_DIR = "test-symbols-overview-fixtures";
 const TEST_ROOT = join(process.cwd(), TEST_DIR);
 
-describe("symbolTools real file tests", () => {
+describe.skipIf(!process.env.WITH_LSP)("symbolTools real file tests", () => {
   beforeAll(() => {
     // Create test directory structure
     if (existsSync(TEST_ROOT)) {

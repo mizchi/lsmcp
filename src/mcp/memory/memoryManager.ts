@@ -32,32 +32,35 @@ export class MemoryManager {
     await this.ensureMemoriesDir();
     const filePath = join(this.memoriesPath, `${name}.md`);
 
-    if (!existsSync(filePath)) {
-      return null;
+    try {
+      const content = await readFile(filePath, "utf-8");
+
+      // Parse metadata from content if present
+      const metadataMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
+      let createdAt = new Date();
+      let updatedAt = new Date();
+
+      if (metadataMatch) {
+        const metadata = metadataMatch[1];
+        const createdMatch = metadata.match(/created: (.+)/);
+        const updatedMatch = metadata.match(/updated: (.+)/);
+
+        if (createdMatch) createdAt = new Date(createdMatch[1]);
+        if (updatedMatch) updatedAt = new Date(updatedMatch[1]);
+      }
+
+      return {
+        name,
+        content: content.replace(/^---\n[\s\S]*?\n---\n/, "").trim(),
+        createdAt,
+        updatedAt,
+      };
+    } catch (error: any) {
+      if (error.code === "ENOENT") {
+        return null;
+      }
+      throw error;
     }
-
-    const content = await readFile(filePath, "utf-8");
-
-    // Parse metadata from content if present
-    const metadataMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
-    let createdAt = new Date();
-    let updatedAt = new Date();
-
-    if (metadataMatch) {
-      const metadata = metadataMatch[1];
-      const createdMatch = metadata.match(/created: (.+)/);
-      const updatedMatch = metadata.match(/updated: (.+)/);
-
-      if (createdMatch) createdAt = new Date(createdMatch[1]);
-      if (updatedMatch) updatedAt = new Date(updatedMatch[1]);
-    }
-
-    return {
-      name,
-      content: content.replace(/^---\n[\s\S]*?\n---\n/, "").trim(),
-      createdAt,
-      updatedAt,
-    };
   }
 
   async writeMemory(name: string, content: string): Promise<void> {
@@ -80,11 +83,14 @@ updated: ${now}
   async deleteMemory(name: string): Promise<boolean> {
     const filePath = join(this.memoriesPath, `${name}.md`);
 
-    if (existsSync(filePath)) {
+    try {
       await unlink(filePath);
       return true;
+    } catch (error: any) {
+      if (error.code === "ENOENT") {
+        return false;
+      }
+      throw error;
     }
-
-    return false;
   }
 }

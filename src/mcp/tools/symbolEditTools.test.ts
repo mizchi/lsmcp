@@ -306,7 +306,11 @@ function standalone() {
       ]);
 
       // Delete the file to cause read error
-      await fs.unlink(testFile);
+      try {
+        await fs.unlink(testFile);
+      } catch (error) {
+        // File might not exist, which is fine for this test
+      }
 
       const result = await replaceSymbolBodyTool.execute({
         root: testDir,
@@ -322,14 +326,10 @@ function standalone() {
   });
 });
 
-if (import.meta.vitest) {
-  const { describe, it, expect } = import.meta.vitest;
-
-  describe("symbolEditTools module", () => {
-    it("exports all tools", () => {
-      expect(replaceSymbolBodyTool).toBeDefined();
-      expect(insertBeforeSymbolTool).toBeDefined();
-      expect(insertAfterSymbolTool).toBeDefined();
-    });
+describe("symbolEditTools module", () => {
+  it("exports all tools", () => {
+    expect(replaceSymbolBodyTool).toBeDefined();
+    expect(insertBeforeSymbolTool).toBeDefined();
+    expect(insertAfterSymbolTool).toBeDefined();
   });
-}
+});

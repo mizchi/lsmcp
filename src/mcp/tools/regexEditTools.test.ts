@@ -10,8 +10,11 @@ describe("regexEditTools", () => {
   let testFile: string;
 
   beforeEach(async () => {
-    // Create temporary test directory
-    testDir = join(tmpdir(), `serenity-regex-test-${Date.now()}`);
+    // Create temporary test directory with unique name
+    testDir = join(
+      tmpdir(),
+      `serenity-regex-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    );
     mkdirSync(testDir, { recursive: true });
     testFile = join(testDir, "test.ts");
   });
@@ -170,13 +173,9 @@ const b = 1;`;
   });
 });
 
-if (import.meta.vitest) {
-  const { describe, it, expect } = import.meta.vitest;
-
-  describe("regexEditTools module", () => {
-    it("exports replaceRegexTool", () => {
-      expect(replaceRegexTool).toBeDefined();
-      expect(replaceRegexTool.name).toBe("replace_regex");
-    });
+describe("regexEditTools module", () => {
+  it("exports replaceRegexTool", () => {
+    expect(replaceRegexTool).toBeDefined();
+    expect(replaceRegexTool.name).toBe("replace_regex");
   });
-}
+});

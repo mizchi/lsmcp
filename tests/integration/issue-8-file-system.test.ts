@@ -34,10 +34,7 @@ describe("Issue #8 - Real File System Tests", () => {
   it("should handle file creation, modification, and deletion cycle", async () => {
     const transport = new StdioClientTransport({
       command: "node",
-      args: [
-        path.join(__dirname, "../../dist/lsmcp.js"),
-        "--language=typescript",
-      ],
+      args: [path.join(__dirname, "../../dist/lsmcp.js"), "-p", "typescript"],
       env: Object.fromEntries(
         Object.entries(process.env).filter(([_, v]) => v !== undefined),
       ) as Record<string, string>,
@@ -137,10 +134,7 @@ const num: number = "not a number";
     // Skip in CI due to LSP not detecting errors through symlinks
     const transport = new StdioClientTransport({
       command: "node",
-      args: [
-        path.join(__dirname, "../../dist/lsmcp.js"),
-        "--language=typescript",
-      ],
+      args: [path.join(__dirname, "../../dist/lsmcp.js"), "-p", "typescript"],
       env: Object.fromEntries(
         Object.entries(process.env).filter(([_, v]) => v !== undefined),
       ) as Record<string, string>,
@@ -206,10 +200,7 @@ const num: number = "not a number";
     // Skip in CI due to LSP not detecting errors in files with unicode
     const transport = new StdioClientTransport({
       command: "node",
-      args: [
-        path.join(__dirname, "../../dist/lsmcp.js"),
-        "--language=typescript",
-      ],
+      args: [path.join(__dirname, "../../dist/lsmcp.js"), "-p", "typescript"],
       env: Object.fromEntries(
         Object.entries(process.env).filter(([_, v]) => v !== undefined),
       ) as Record<string, string>,

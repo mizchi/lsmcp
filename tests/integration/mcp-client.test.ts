@@ -47,7 +47,7 @@ describe("MCP TypeScript Tools", () => {
 
     transport = new StdioClientTransport({
       command: "node",
-      args: [SERVER_PATH, "--language=typescript"],
+      args: [SERVER_PATH, "-p", "typescript"],
       env: cleanEnv,
       cwd: tmpDir, // Use cwd instead of --project-root
     });

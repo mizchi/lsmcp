@@ -154,26 +154,35 @@ describe("Incremental Index Updates", () => {
 
     it("should return false for unchanged files", async () => {
       // First index a file
-      mockSymbolProvider.getDocumentSymbols.mockResolvedValue([]);
+      mockSymbolProvider.getDocumentSymbols.mockResolvedValue([
+        {
+          name: "TestSymbol",
+          kind: SymbolKind.Function,
+          range: {
+            start: { line: 0, character: 0 },
+            end: { line: 1, character: 0 },
+          },
+          selectionRange: {
+            start: { line: 0, character: 0 },
+            end: { line: 0, character: 10 },
+          },
+        },
+      ]);
 
-      // Mock current time for indexing
-      const indexTime = Date.now();
+      // Mock git to return a hash
+      vi.mocked(gitUtils.getFileGitHash).mockReturnValue("abc123");
 
-      // Mock file system to return a past mtime (file was modified before indexing)
-      const fileMtime = new Date(indexTime - 60000); // File was modified 1 minute before indexing
-      mockFileSystem.stat.mockResolvedValue({
-        mtime: fileMtime,
-      });
-
+      // Index the file first
       await symbolIndex.indexFile("test.ts");
 
-      // Return the same mtime when checking if reindex is needed
-      // The file mtime is still before the index time, so no reindex needed
+      // File hasn't changed - same git hash
+      vi.mocked(gitUtils.getFileGitHash).mockReturnValue("abc123");
+
+      // Mock stat to return any time (doesn't matter since git hash is same)
       mockFileSystem.stat.mockResolvedValue({
-        mtime: fileMtime,
+        mtime: new Date(),
       });
 
-      // File hasn't changed since indexing
       const needsReindex = await symbolIndex.needsReindex("test.ts");
       expect(needsReindex).toBe(false);
     });

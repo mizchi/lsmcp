@@ -41,6 +41,8 @@ describe("MemoryManager", () => {
 
   describe("listMemories", () => {
     it("should return empty array when no memories exist", async () => {
+      // Ensure the directory exists first
+      await manager.ensureMemoriesDir();
       const memories = await manager.listMemories();
       expect(memories).toEqual([]);
     });
@@ -173,12 +175,8 @@ This is the actual content`;
   });
 });
 
-if (import.meta.vitest) {
-  const { describe, it, expect } = import.meta.vitest;
-
-  describe("MemoryManager module", () => {
-    it("exports MemoryManager class", () => {
-      expect(MemoryManager).toBeDefined();
-    });
+describe("MemoryManager module", () => {
+  it("exports MemoryManager class", () => {
+    expect(MemoryManager).toBeDefined();
   });
-}
+});
