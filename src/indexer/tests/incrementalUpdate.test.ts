@@ -71,10 +71,11 @@ describe("Incremental Index Updates", () => {
     });
 
     it("should update modified files", async () => {
-      // Setup git mocks
+      // Setup git mocks - set up the sequence correctly
       vi.mocked(gitUtils.getGitHash)
-        .mockReturnValue("def456")
-        .mockReturnValueOnce("abc123"); // Initial hash
+        .mockReturnValueOnce("abc123") // First call during indexFiles
+        .mockReturnValue("def456"); // All subsequent calls
+
       vi.mocked(gitUtils.getModifiedFiles).mockReturnValue([
         "src/file1.ts",
         "src/file2.ts",
@@ -97,14 +98,8 @@ describe("Incremental Index Updates", () => {
         },
       ]);
 
-      // Mock initial git hash
-      vi.mocked(gitUtils.getGitHash).mockReturnValueOnce("abc123");
-
       // Index initial files - this will set lastGitHash
       await symbolIndex.indexFiles(["src/file1.ts"]);
-
-      // Now mock the new hash for incremental update
-      vi.mocked(gitUtils.getGitHash).mockReturnValue("def456");
 
       // Run incremental update
       const result = await symbolIndex.updateIncremental();
@@ -119,16 +114,16 @@ describe("Incremental Index Updates", () => {
     });
 
     it("should handle deleted files", async () => {
-      vi.mocked(gitUtils.getGitHash).mockReturnValue("def456");
+      // Setup git mocks - set up the sequence correctly
+      vi.mocked(gitUtils.getGitHash)
+        .mockReturnValueOnce("abc123") // First call during indexFiles
+        .mockReturnValue("def456"); // All subsequent calls
+
       vi.mocked(gitUtils.getModifiedFiles).mockReturnValue(["deleted.ts"]);
       mockFileSystem.exists.mockResolvedValue(false); // File doesn't exist
 
-      // Mock initial git hash and index a file
-      vi.mocked(gitUtils.getGitHash).mockReturnValueOnce("abc123");
+      // Index initial files - this will set lastGitHash
       await symbolIndex.indexFiles(["dummy.ts"]);
-
-      // Now set the new hash for incremental update
-      vi.mocked(gitUtils.getGitHash).mockReturnValue("def456");
 
       const result = await symbolIndex.updateIncremental();
 
@@ -158,15 +153,21 @@ describe("Incremental Index Updates", () => {
     });
 
     it("should return false for unchanged files", async () => {
-      // Mock file system to return a specific mtime
-      const fileTime = new Date(Date.now() - 10000); // 10 seconds ago
+      // First index a file
+      mockSymbolProvider.getDocumentSymbols.mockResolvedValue([]);
+
+      // Mock file system to return a specific mtime during indexing
+      const indexTime = new Date();
       mockFileSystem.stat.mockResolvedValue({
-        mtime: fileTime,
+        mtime: new Date(indexTime.getTime() - 10000), // File was modified 10 seconds before indexing
       });
 
-      // Index a file
-      mockSymbolProvider.getDocumentSymbols.mockResolvedValue([]);
       await symbolIndex.indexFile("test.ts");
+
+      // Return the same mtime when checking if reindex is needed
+      mockFileSystem.stat.mockResolvedValue({
+        mtime: new Date(indexTime.getTime() - 10000), // Still the same mtime
+      });
 
       // File hasn't changed since indexing
       const needsReindex = await symbolIndex.needsReindex("test.ts");

@@ -36,11 +36,24 @@ vi.mock("./cache/symbolCacheIntegration.ts", () => ({
   }),
 }));
 
-// Mock fs module for file watching
+// Mock fs module for file watching and promises
 vi.mock("fs", () => ({
   watch: vi.fn().mockReturnValue({
     close: vi.fn(),
   }),
+}));
+
+vi.mock("fs/promises", () => ({
+  readFile: vi.fn().mockResolvedValue("test content"),
+}));
+
+// Mock withTemporaryDocument
+vi.mock("../lsp/utils/documentManager.ts", () => ({
+  withTemporaryDocument: vi
+    .fn()
+    .mockImplementation(async (_uri, _content, callback) => {
+      return await callback();
+    }),
 }));
 
 // Mock glob module
