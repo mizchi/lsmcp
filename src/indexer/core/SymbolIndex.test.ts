@@ -53,6 +53,10 @@ describe("SymbolIndex", () => {
             start: { line: 0, character: 0 },
             end: { line: 10, character: 0 },
           },
+          selectionRange: {
+            start: { line: 0, character: 6 },
+            end: { line: 0, character: 15 },
+          },
           children: [
             {
               name: "testMethod",
@@ -60,6 +64,10 @@ describe("SymbolIndex", () => {
               range: {
                 start: { line: 2, character: 2 },
                 end: { line: 4, character: 2 },
+              },
+              selectionRange: {
+                start: { line: 2, character: 2 },
+                end: { line: 2, character: 12 },
               },
             },
           ],
@@ -82,7 +90,7 @@ describe("SymbolIndex", () => {
       // Verify stats
       const stats = symbolIndex.getStats();
       expect(stats.totalFiles).toBe(1);
-      expect(stats.totalSymbols).toBe(1); // Only counts top-level symbols
+      expect(stats.totalSymbols).toBe(2); // TestClass + testMethod (counts all symbols)
     });
 
     it("should use cache when available", async () => {
@@ -170,6 +178,10 @@ describe("SymbolIndex", () => {
             start: { line: 0, character: 0 },
             end: { line: 20, character: 0 },
           },
+          selectionRange: {
+            start: { line: 0, character: 6 },
+            end: { line: 0, character: 15 },
+          },
           children: [
             {
               name: "constructor",
@@ -178,6 +190,10 @@ describe("SymbolIndex", () => {
                 start: { line: 2, character: 2 },
                 end: { line: 4, character: 2 },
               },
+              selectionRange: {
+                start: { line: 2, character: 2 },
+                end: { line: 2, character: 13 },
+              },
             },
             {
               name: "testMethod",
@@ -185,6 +201,10 @@ describe("SymbolIndex", () => {
               range: {
                 start: { line: 6, character: 2 },
                 end: { line: 8, character: 2 },
+              },
+              selectionRange: {
+                start: { line: 6, character: 2 },
+                end: { line: 6, character: 12 },
               },
             },
           ],
@@ -196,6 +216,10 @@ describe("SymbolIndex", () => {
             start: { line: 22, character: 0 },
             end: { line: 24, character: 0 },
           },
+          selectionRange: {
+            start: { line: 22, character: 9 },
+            end: { line: 22, character: 21 },
+          },
         },
         {
           name: "TestInterface",
@@ -203,6 +227,10 @@ describe("SymbolIndex", () => {
           range: {
             start: { line: 26, character: 0 },
             end: { line: 28, character: 0 },
+          },
+          selectionRange: {
+            start: { line: 26, character: 10 },
+            end: { line: 26, character: 23 },
           },
         },
       ];
@@ -216,12 +244,14 @@ describe("SymbolIndex", () => {
         name: "test",
         includeChildren: true,
       });
-      // When includeChildren is true, we get: TestClass, testMethod, testFunction
-      expect(results.length).toBe(3);
+
+      // When includeChildren is true, we get: TestClass, testMethod, testFunction, TestInterface
+      expect(results.length).toBe(4);
       const names = results.map((s) => s.name);
       expect(names).toContain("TestClass"); // contains "test"
       expect(names).toContain("testMethod");
       expect(names).toContain("testFunction");
+      expect(names).toContain("TestInterface"); // also contains "test"
     });
 
     it("should query by kind", () => {
