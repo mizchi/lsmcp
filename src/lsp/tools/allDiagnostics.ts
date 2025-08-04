@@ -10,6 +10,11 @@ import { pathToFileURL } from "url";
 import { Diagnostic } from "vscode-languageserver-types";
 import { exec } from "child_process";
 import { createGitignoreFilter } from "../../core/io/gitignoreUtils.ts";
+import {
+  DIAGNOSTICS_BATCH_SIZE,
+  MAX_FILES_TO_SHOW,
+  MAX_DIAGNOSTICS_PER_FILE,
+} from "../../constants/diagnostics.ts";
 
 const execAsync = promisify(exec);
 
@@ -221,9 +226,8 @@ async function getAllDiagnosticsWithLSP(
   let totalWarnings = 0;
 
   // Process files in batches to avoid overwhelming the LSP server
-  const BATCH_SIZE = 5; // Reduced batch size for stability
-  for (let i = 0; i < files.length; i += BATCH_SIZE) {
-    const batch = files.slice(i, i + BATCH_SIZE);
+  for (let i = 0; i < files.length; i += DIAGNOSTICS_BATCH_SIZE) {
+    const batch = files.slice(i, i + DIAGNOSTICS_BATCH_SIZE);
 
     await Promise.all(
       batch.map(async (filePath) => {
@@ -319,7 +323,7 @@ async function getAllDiagnosticsWithLSP(
     );
 
     // Small delay between batches
-    if (i + BATCH_SIZE < files.length) {
+    if (i + DIAGNOSTICS_BATCH_SIZE < files.length) {
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
   }
@@ -355,7 +359,6 @@ export const lspGetAllDiagnosticsTool: ToolDef<typeof schema> = {
       messages.push("");
 
       // If there are too many files with diagnostics, show a summary
-      const MAX_FILES_TO_SHOW = 20;
       if (result.files.length > MAX_FILES_TO_SHOW) {
         messages.push(
           `Showing first ${MAX_FILES_TO_SHOW} files with diagnostics (${result.files.length} total):`,
@@ -369,8 +372,7 @@ export const lspGetAllDiagnosticsTool: ToolDef<typeof schema> = {
         messages.push(`${file.filePath}:`);
 
         // Limit diagnostics per file to avoid extremely long output
-        const MAX_DIAGS_PER_FILE = 10;
-        const diagsToShow = file.diagnostics.slice(0, MAX_DIAGS_PER_FILE);
+        const diagsToShow = file.diagnostics.slice(0, MAX_DIAGNOSTICS_PER_FILE);
 
         for (const diag of diagsToShow) {
           const prefix = diag.severity === "error" ? "  ❌" : "  ⚠️";
@@ -379,10 +381,10 @@ export const lspGetAllDiagnosticsTool: ToolDef<typeof schema> = {
           );
         }
 
-        if (file.diagnostics.length > MAX_DIAGS_PER_FILE) {
+        if (file.diagnostics.length > MAX_DIAGNOSTICS_PER_FILE) {
           messages.push(
             `  ... and ${
-              file.diagnostics.length - MAX_DIAGS_PER_FILE
+              file.diagnostics.length - MAX_DIAGNOSTICS_PER_FILE
             } more diagnostics`,
           );
         }

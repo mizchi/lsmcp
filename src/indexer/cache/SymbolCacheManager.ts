@@ -2,6 +2,7 @@ import { DatabaseSync, type StatementSync } from "node:sqlite";
 import { join } from "node:path";
 import { mkdirSync, existsSync } from "node:fs";
 import type { SymbolEntry } from "../symbolIndex.ts";
+import { SYMBOL_CACHE_SCHEMA_VERSION } from "../../constants/indexer.ts";
 
 // Define CachedSymbol type locally
 export interface CachedSymbol {
@@ -17,9 +18,6 @@ export interface CachedSymbol {
   lastModified: number;
   projectRoot: string;
 }
-
-// Current schema version
-const SCHEMA_VERSION = 2;
 
 export class SymbolCacheManager {
   private db: DatabaseSync;
@@ -93,10 +91,10 @@ export class SymbolCacheManager {
 
     const currentVersion = versionResult?.version || 0;
 
-    if (currentVersion < SCHEMA_VERSION) {
+    if (currentVersion < SYMBOL_CACHE_SCHEMA_VERSION) {
       // Need to update schema
       console.log(
-        `Updating schema from version ${currentVersion} to ${SCHEMA_VERSION}`,
+        `Updating schema from version ${currentVersion} to ${SYMBOL_CACHE_SCHEMA_VERSION}`,
       );
       this.schemaUpdated = true;
 
@@ -135,7 +133,7 @@ export class SymbolCacheManager {
       // Update schema version
       this.db.exec(`
         INSERT INTO schema_version (version, updated_at) 
-        VALUES (${SCHEMA_VERSION}, ${Date.now()})
+        VALUES (${SYMBOL_CACHE_SCHEMA_VERSION}, ${Date.now()})
       `);
     } else {
       // Schema is up to date, just ensure tables exist
@@ -288,6 +286,6 @@ export class SymbolCacheManager {
   }
 
   getSchemaVersion(): number {
-    return SCHEMA_VERSION;
+    return SYMBOL_CACHE_SCHEMA_VERSION;
   }
 }

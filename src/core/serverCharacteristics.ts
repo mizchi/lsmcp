@@ -3,17 +3,22 @@
  */
 
 import type { ServerCharacteristics } from "../types/lsp.ts";
+import {
+  DEFAULT_DOCUMENT_OPEN_DELAY,
+  DEFAULT_READINESS_CHECK_TIMEOUT,
+  DEFAULT_OPERATION_TIMEOUT,
+} from "../constants/lsp.ts";
 
 /**
  * Default characteristics for unknown servers
  */
 const DEFAULT_CHARACTERISTICS: Required<ServerCharacteristics> = {
-  documentOpenDelay: 1000,
-  readinessCheckTimeout: 500,
+  documentOpenDelay: DEFAULT_DOCUMENT_OPEN_DELAY,
+  readinessCheckTimeout: DEFAULT_READINESS_CHECK_TIMEOUT,
   initialDiagnosticsTimeout: 2000,
   requiresProjectInit: false,
   sendsInitialDiagnostics: true,
-  operationTimeout: 10000,
+  operationTimeout: DEFAULT_OPERATION_TIMEOUT,
 };
 
 /**
