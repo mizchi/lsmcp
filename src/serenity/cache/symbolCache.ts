@@ -17,6 +17,9 @@ export interface CachedSymbol {
 }
 import type { SymbolEntry } from "../../mcp/analysis/symbolIndex.ts";
 
+// Current schema version
+const SCHEMA_VERSION = 2;
+
 export class SymbolCacheManager {
   private db: DatabaseSync;
   private insertStmt: StatementSync;
@@ -24,6 +27,7 @@ export class SymbolCacheManager {
   private selectByNameStmt: StatementSync;
   private deleteByFileStmt: StatementSync;
   private searchStmt: StatementSync;
+  private schemaUpdated = false;
 
   constructor(private rootPath: string) {
     const cacheDir = join(rootPath, ".lsmcp", "cache");
@@ -71,31 +75,69 @@ export class SymbolCacheManager {
   }
 
   private initializeDatabase(): void {
+    // Create schema version table
     this.db.exec(`
-      CREATE TABLE IF NOT EXISTS symbols (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        filePath TEXT NOT NULL,
-        namePath TEXT NOT NULL,
-        kind INTEGER NOT NULL,
-        containerName TEXT,
-        startLine INTEGER NOT NULL,
-        startCharacter INTEGER NOT NULL,
-        endLine INTEGER NOT NULL,
-        endCharacter INTEGER NOT NULL,
-        lastModified INTEGER NOT NULL,
-        projectRoot TEXT NOT NULL,
-        UNIQUE(filePath, namePath, startLine, startCharacter, projectRoot)
+      CREATE TABLE IF NOT EXISTS schema_version (
+        version INTEGER PRIMARY KEY,
+        updated_at INTEGER NOT NULL
       );
-
-      CREATE INDEX IF NOT EXISTS idx_symbols_file 
-        ON symbols(filePath, projectRoot);
-      
-      CREATE INDEX IF NOT EXISTS idx_symbols_name 
-        ON symbols(namePath, projectRoot);
-      
-      CREATE INDEX IF NOT EXISTS idx_symbols_container 
-        ON symbols(containerName, projectRoot);
     `);
+
+    // Check current schema version
+    const versionResult = this.db
+      .prepare(
+        "SELECT version FROM schema_version ORDER BY version DESC LIMIT 1",
+      )
+      .get() as { version: number } | undefined;
+
+    const currentVersion = versionResult?.version || 0;
+
+    if (currentVersion < SCHEMA_VERSION) {
+      // Need to update schema
+      console.log(
+        `Updating schema from version ${currentVersion} to ${SCHEMA_VERSION}`,
+      );
+      this.schemaUpdated = true;
+
+      // Drop existing tables if schema is outdated
+      if (currentVersion > 0) {
+        this.db.exec(`DROP TABLE IF EXISTS symbols;`);
+      }
+
+      // Create symbols table with new schema
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS symbols (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          filePath TEXT NOT NULL,
+          namePath TEXT NOT NULL,
+          kind INTEGER NOT NULL,
+          containerName TEXT,
+          startLine INTEGER NOT NULL,
+          startCharacter INTEGER NOT NULL,
+          endLine INTEGER NOT NULL,
+          endCharacter INTEGER NOT NULL,
+          lastModified INTEGER NOT NULL,
+          projectRoot TEXT NOT NULL,
+          UNIQUE(filePath, namePath, startLine, startCharacter, projectRoot)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_symbols_file 
+          ON symbols(filePath, projectRoot);
+        
+        CREATE INDEX IF NOT EXISTS idx_symbols_name 
+          ON symbols(namePath, projectRoot);
+        
+        CREATE INDEX IF NOT EXISTS idx_symbols_container 
+          ON symbols(containerName, projectRoot);
+      `);
+
+      // Update schema version
+      this.db
+        .prepare(
+          "INSERT OR REPLACE INTO schema_version (version, updated_at) VALUES (?, ?)",
+        )
+        .run(SCHEMA_VERSION, Date.now());
+    }
   }
 
   async cacheSymbols(
@@ -202,5 +244,19 @@ export class SymbolCacheManager {
       totalSymbols: result.totalSymbols || 0,
       totalFiles: result.totalFiles || 0,
     };
+  }
+
+  /**
+   * Check if schema was updated during initialization
+   */
+  wasSchemaUpdated(): boolean {
+    return this.schemaUpdated;
+  }
+
+  /**
+   * Get current schema version
+   */
+  getSchemaVersion(): number {
+    return SCHEMA_VERSION;
   }
 }

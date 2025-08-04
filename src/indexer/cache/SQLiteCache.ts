@@ -11,12 +11,25 @@ import { pathToFileURL } from "url";
 
 export class SQLiteCache implements SymbolCache {
   private manager: SymbolCacheManager;
+  private needsReindexing: boolean;
 
   constructor(private rootPath: string) {
     this.manager = new SymbolCacheManager(rootPath);
+    this.needsReindexing = this.manager.wasSchemaUpdated();
+
+    if (this.needsReindexing) {
+      console.log(
+        `Schema updated to version ${this.manager.getSchemaVersion()}, full reindexing required`,
+      );
+    }
   }
 
   async get(filePath: string): Promise<IndexedSymbol[] | null> {
+    // If schema was updated, always return null to force re-indexing
+    if (this.needsReindexing) {
+      return null;
+    }
+
     try {
       const relativePath = relative(this.rootPath, filePath);
       const stats = statSync(filePath);
@@ -144,5 +157,19 @@ export class SQLiteCache implements SymbolCache {
    */
   close(): void {
     this.manager.close();
+  }
+
+  /**
+   * Check if full reindexing is required due to schema update
+   */
+  requiresReindexing(): boolean {
+    return this.needsReindexing;
+  }
+
+  /**
+   * Mark reindexing as completed
+   */
+  markReindexingComplete(): void {
+    this.needsReindexing = false;
   }
 }
