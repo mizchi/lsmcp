@@ -4,7 +4,7 @@ import {
   initialize as initializeLSPClient,
   shutdown as shutdownLSPClient,
 } from "../../src/lsp/lspClient.ts";
-import { lspRenameSymbolTool } from "../../src/lsp/tools/lspRenameSymbol.ts";
+import { lspRenameSymbolTool } from "../../src/lsp/tools/rename.ts";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";

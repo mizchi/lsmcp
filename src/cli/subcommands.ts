@@ -5,8 +5,12 @@
 import { readFile, writeFile, appendFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
-import type { LSMCPConfig } from "../core/config/lsmcpConfig.ts";
-import { DEFAULT_CONFIG } from "../core/config/lsmcpConfig.ts";
+import {
+  type LSMCPConfig,
+  DEFAULT_CONFIG,
+  validateConfig,
+  createConfigFromAdapter,
+} from "../core/config/lsmcpConfig.ts";
 import type { AdapterRegistry } from "../core/config/configLoader.ts";
 import {
   getOrCreateIndex,
@@ -45,37 +49,43 @@ export async function initCommand(
 
   // 3. Create config.json
   const configPath = join(lsmcpDir, "config.json");
-  const config: LSMCPConfig = { ...DEFAULT_CONFIG };
+  let config: LSMCPConfig;
 
   // If preset is provided, expand adapter configuration
   if (preset && adapterRegistry) {
     const adapter = adapterRegistry.get(preset);
-    if (adapter) {
-      config.adapter = adapter;
-
-      // Set appropriate index patterns based on language
-      switch (preset) {
-        case "pyright":
-        case "ruff":
-          config.indexFiles = ["**/*.py"];
-          break;
-        case "rust-analyzer":
-          config.indexFiles = ["**/*.rs"];
-          break;
-        case "gopls":
-          config.indexFiles = ["**/*.go"];
-          break;
-        case "fsharp":
-          config.indexFiles = ["**/*.fs", "**/*.fsx", "**/*.fsi"];
-          break;
-        case "moonbit":
-          config.indexFiles = ["**/*.mbt"];
-          break;
-        default:
-          // Keep default TypeScript/JavaScript patterns
-          break;
-      }
+    if (!adapter) {
+      console.error(`❌ Unknown preset: ${preset}`);
+      process.exit(1);
     }
+
+    // Set appropriate index patterns based on language
+    let indexPatterns: string[] | undefined;
+    switch (preset) {
+      case "pyright":
+      case "ruff":
+        indexPatterns = ["**/*.py"];
+        break;
+      case "rust-analyzer":
+        indexPatterns = ["**/*.rs"];
+        break;
+      case "gopls":
+        indexPatterns = ["**/*.go"];
+        break;
+      case "fsharp":
+        indexPatterns = ["**/*.fs", "**/*.fsx", "**/*.fsi"];
+        break;
+      case "moonbit":
+        indexPatterns = ["**/*.mbt"];
+        break;
+      default:
+        // Keep default TypeScript/JavaScript patterns
+        break;
+    }
+
+    config = createConfigFromAdapter(adapter, indexPatterns);
+  } else {
+    config = { ...DEFAULT_CONFIG };
   }
 
   await writeFile(configPath, JSON.stringify(config, null, 2));
@@ -119,9 +129,18 @@ export async function indexCommand(projectRoot: string): Promise<void> {
     process.exit(1);
   }
 
-  // Load config
+  // Load and validate config
   const configContent = await readFile(configPath, "utf-8");
-  const config: LSMCPConfig = JSON.parse(configContent);
+  let config: LSMCPConfig;
+  try {
+    config = validateConfig(JSON.parse(configContent));
+  } catch (error) {
+    console.error(
+      "❌ Invalid config.json:",
+      error instanceof Error ? error.message : String(error),
+    );
+    process.exit(1);
+  }
 
   if (!config.indexFiles || config.indexFiles.length === 0) {
     console.error("❌ No indexFiles patterns found in config.json");

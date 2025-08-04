@@ -18,11 +18,11 @@ export const checkOnboardingPerformedTool: ToolDef<
     "Checks whether project onboarding was already performed.\nYou should always call this tool before beginning to actually work on the project/after activating a project,\nbut after calling the initial instructions tool.",
   schema: checkOnboardingPerformedSchema,
   execute: async () => {
-    // Check if .serena/memories directory exists with memory files
+    // Check if .lsmcp/memories directory exists with memory files
     const { existsSync } = await import("node:fs");
     const { join } = await import("node:path");
 
-    const memoriesPath = join(process.cwd(), ".serena", "memories");
+    const memoriesPath = join(process.cwd(), ".lsmcp", "memories");
     const hasMemories =
       existsSync(memoriesPath) &&
       existsSync(join(memoriesPath, "suggested_commands.md"));
@@ -90,25 +90,5 @@ export const thinkAboutWhetherYouAreDoneTool: ToolDef<
   schema: thinkAboutWhetherYouAreDoneSchema,
   execute: async () => {
     return thinkAboutWhetherYouAreDonePrompt();
-  },
-};
-
-const switchModesSchema = z.object({
-  modes: z.array(z.string()).describe("The names of the modes to activate."),
-});
-
-export const switchModesTool: ToolDef<typeof switchModesSchema> = {
-  name: "switch_modes",
-  description:
-    'Activates the desired modes, like ["editing", "interactive"] or ["planning", "one-shot"].',
-  schema: switchModesSchema,
-  execute: async ({ modes }) => {
-    // This would be integrated with the actual mode system
-    // For now, just return acknowledgment
-    return JSON.stringify({
-      success: true,
-      activeModes: modes,
-      message: `Switched to modes: ${modes.join(", ")}`,
-    });
   },
 };

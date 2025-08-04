@@ -4,7 +4,7 @@ import {
   initialize as initializeLSPClient,
   shutdown as shutdownLSPClient,
 } from "../../src/lsp/lspClient.ts";
-import { lspDeleteSymbolTool } from "../../src/lsp/tools/lspDeleteSymbol.ts";
+import { lspDeleteSymbolTool } from "../../src/lsp/tools/deleteSymbol.ts";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";

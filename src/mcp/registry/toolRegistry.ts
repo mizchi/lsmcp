@@ -5,20 +5,20 @@
 import type { ToolDef } from "../utils/mcpHelpers.ts";
 
 // Import LSP tools
-import { lspGetHoverTool } from "../../lsp/tools/lspGetHover.ts";
-import { lspFindReferencesTool } from "../../lsp/tools/lspFindReferences.ts";
-import { lspGetDefinitionsTool } from "../../lsp/tools/lspGetDefinitions.ts";
-import { lspGetDiagnosticsTool } from "../../lsp/tools/lspGetDiagnostics.ts";
-import { lspGetAllDiagnosticsTool } from "../../lsp/tools/lspGetAllDiagnostics.ts";
-import { lspRenameSymbolTool } from "../../lsp/tools/lspRenameSymbol.ts";
-import { lspDeleteSymbolTool } from "../../lsp/tools/lspDeleteSymbol.ts";
-import { lspGetDocumentSymbolsTool } from "../../lsp/tools/lspGetDocumentSymbols.ts";
-import { lspGetCompletionTool } from "../../lsp/tools/lspGetCompletion.ts";
-import { lspGetSignatureHelpTool } from "../../lsp/tools/lspGetSignatureHelp.ts";
-import { lspFormatDocumentTool } from "../../lsp/tools/lspFormatDocument.ts";
-import { lspGetCodeActionsTool } from "../../lsp/tools/lspGetCodeActions.ts";
-import { lspGetWorkspaceSymbolsTool } from "../../lsp/tools/lspGetWorkspaceSymbols.ts";
-import { lspCheckCapabilitiesTool } from "../../lsp/tools/lspCheckCapabilities.ts";
+import { lspGetHoverTool } from "../../lsp/tools/hover.ts";
+import { lspFindReferencesTool } from "../../lsp/tools/references.ts";
+import { lspGetDefinitionsTool } from "../../lsp/tools/definitions.ts";
+import { lspGetDiagnosticsTool } from "../../lsp/tools/diagnostics.ts";
+import { lspGetAllDiagnosticsTool } from "../../lsp/tools/allDiagnostics.ts";
+import { lspRenameSymbolTool } from "../../lsp/tools/rename.ts";
+import { lspDeleteSymbolTool } from "../../lsp/tools/deleteSymbol.ts";
+import { lspGetDocumentSymbolsTool } from "../../lsp/tools/documentSymbols.ts";
+import { lspGetCompletionTool } from "../../lsp/tools/completion.ts";
+import { lspGetSignatureHelpTool } from "../../lsp/tools/signatureHelp.ts";
+import { lspFormatDocumentTool } from "../../lsp/tools/formatting.ts";
+import { lspGetCodeActionsTool } from "../../lsp/tools/codeActions.ts";
+import { lspGetWorkspaceSymbolsTool } from "../../lsp/tools/workspaceSymbols.ts";
+import { lspCheckCapabilitiesTool } from "../../lsp/tools/checkCapabilities.ts";
 
 // Import analysis tools
 import { indexTools } from "../tools/indexTools.ts";

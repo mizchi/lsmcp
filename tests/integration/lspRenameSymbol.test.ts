@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import path from "path";
 import fs from "fs/promises";
 import { randomBytes } from "crypto";
-import { lspRenameSymbolTool } from "../../src/lsp/tools/lspRenameSymbol.ts";
+import { lspRenameSymbolTool } from "../../src/lsp/tools/rename.ts";
 import { ChildProcess, spawn } from "child_process";
 import {
   initialize as initializeLSPClient,

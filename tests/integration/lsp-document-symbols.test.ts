@@ -4,7 +4,7 @@ import {
   initialize as initializeLSPClient,
   shutdown as shutdownLSPClient,
 } from "../../src/lsp/lspClient.ts";
-import { lspGetDocumentSymbolsTool } from "../../src/lsp/tools/lspGetDocumentSymbols.ts";
+import { lspGetDocumentSymbolsTool } from "../../src/lsp/tools/documentSymbols.ts";
 import path from "path";
 
 const FIXTURES_DIR = path.join(__dirname, "fixtures");

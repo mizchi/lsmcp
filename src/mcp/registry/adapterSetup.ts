@@ -5,12 +5,12 @@
 import { AdapterRegistry } from "../../core/config/configLoader.ts";
 
 // Import all adapters
-import { typescriptAdapter } from "../../adapters/typescript-language-server.ts";
+import { typescriptAdapter } from "../../adapters/typescriptLanguageServer.ts";
 import { tsgoAdapter } from "../../adapters/tsgo.ts";
 import { denoAdapter } from "../../adapters/deno.ts";
 import { pyrightAdapter } from "../../adapters/pyright.ts";
 import { ruffAdapter } from "../../adapters/ruff.ts";
-import { rustAnalyzerAdapter } from "../../adapters/rust-analyzer.ts";
+import { rustAnalyzerAdapter } from "../../adapters/rustAnalyzer.ts";
 import { fsharpAdapter } from "../../adapters/fsharp.ts";
 import { moonbitAdapter } from "../../adapters/moonbit.ts";
 import { goplsAdapter } from "../../adapters/gopls.ts";
