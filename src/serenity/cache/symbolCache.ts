@@ -1,7 +1,20 @@
 import { DatabaseSync, type StatementSync } from "node:sqlite";
 import { join } from "node:path";
 import { mkdirSync, existsSync } from "node:fs";
-import type { CachedSymbol } from "../types/index.ts";
+// Define CachedSymbol type locally
+export interface CachedSymbol {
+  id?: number;
+  filePath: string;
+  namePath: string;
+  kind: number;
+  containerName?: string;
+  startLine: number;
+  startCharacter: number;
+  endLine: number;
+  endCharacter: number;
+  lastModified: number;
+  projectRoot: string;
+}
 import type { SymbolEntry } from "../../mcp/analysis/symbolIndex.ts";
 
 export class SymbolCacheManager {
@@ -71,7 +84,7 @@ export class SymbolCacheManager {
         endCharacter INTEGER NOT NULL,
         lastModified INTEGER NOT NULL,
         projectRoot TEXT NOT NULL,
-        UNIQUE(filePath, namePath, projectRoot)
+        UNIQUE(filePath, namePath, startLine, startCharacter, projectRoot)
       );
 
       CREATE INDEX IF NOT EXISTS idx_symbols_file 

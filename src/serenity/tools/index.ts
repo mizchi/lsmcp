@@ -21,9 +21,9 @@ import {
   deleteMemoryTool,
 } from "./memoryTools.ts";
 import {
-  searchCachedSymbolsTool,
-  getCacheStatsTool,
-  clearCacheTool,
+  searchCachedSymbolsFromIndexTool,
+  getCacheStatsFromIndexTool,
+  clearCacheFromIndexTool,
 } from "./cacheTools.ts";
 import {
   checkOnboardingPerformedTool,
@@ -53,9 +53,9 @@ export const serenityTools = {
   readMemory: readMemoryTool,
   writeMemory: writeMemoryTool,
   deleteMemory: deleteMemoryTool,
-  searchCachedSymbols: searchCachedSymbolsTool,
-  getCacheStats: getCacheStatsTool,
-  clearCache: clearCacheTool,
+  searchCachedSymbols: searchCachedSymbolsFromIndexTool,
+  getCacheStats: getCacheStatsFromIndexTool,
+  clearCache: clearCacheFromIndexTool,
   checkOnboardingPerformed: checkOnboardingPerformedTool,
   onboarding: onboardingTool,
   thinkAboutCollectedInformation: thinkAboutCollectedInformationTool,

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
-import type { SerenityEditResult } from "../types/index.ts";
+import type { SerenityEditResult } from "./regexEditTools.ts";
 import {
   getSymbolIndex,
   querySymbols,

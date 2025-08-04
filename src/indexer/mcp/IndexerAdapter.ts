@@ -5,7 +5,7 @@
 import { SymbolIndex } from "../core/SymbolIndex.ts";
 import { LSPSymbolProvider } from "../lsp/LSPSymbolProvider.ts";
 import { NodeFileSystem } from "../core/NodeFileSystem.ts";
-import { MemoryCache } from "../cache/MemoryCache.ts";
+import { SQLiteCache } from "../cache/SQLiteCache.ts";
 import { getLSPClient } from "../../lsp/lspClient.ts";
 import { fileURLToPath } from "url";
 import { readFile } from "fs/promises";
@@ -24,6 +24,10 @@ export function getOrCreateIndex(rootPath: string): SymbolIndex | null {
     return index;
   }
 
+  // Create components
+  const fileSystem = new NodeFileSystem();
+  const cache = new SQLiteCache(rootPath);
+
   // Get LSP client
   const client = getLSPClient();
   if (!client) {
@@ -36,10 +40,7 @@ export function getOrCreateIndex(rootPath: string): SymbolIndex | null {
     return await readFile(path, "utf-8");
   };
 
-  // Create components
   const symbolProvider = new LSPSymbolProvider(client, fileContentProvider);
-  const fileSystem = new NodeFileSystem();
-  const cache = new MemoryCache();
 
   // Create index
   index = new SymbolIndex(rootPath, symbolProvider, fileSystem, cache);

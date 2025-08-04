@@ -9,8 +9,14 @@ export function showHelp(): void {
 🌍 LSMCP - Language Service MCP for Multi-Language Support
 
 Usage:
-  lsmcp -p <preset> [options]
-  lsmcp --bin <command> --extensions=<extensions> [options]
+  lsmcp -p <preset> [options]              Start MCP server
+  lsmcp --bin <command> [options]          Start with custom LSP
+  lsmcp init [-p <preset>]                 Initialize project
+  lsmcp index                              Build symbol index
+
+Commands:
+  init      Initialize lsmcp project configuration
+  index     Build symbol index from config.json
 
 Options:
   -p, --preset <preset>     Language adapter to use (e.g., tsgo, deno, pyright)
@@ -21,12 +27,11 @@ Options:
   -h, --help               Show this help message
 
 Examples:
+  lsmcp init -p typescript     Initialize TypeScript project
+  lsmcp index                  Build symbol index
   lsmcp -p typescript          Use TypeScript MCP server
   lsmcp -p tsgo                Use tsgo TypeScript preset
-  lsmcp -p deno                Use Deno language server
-  lsmcp -p rust                Use Rust MCP server
   lsmcp --bin "deno lsp"       Use custom LSP server
-  lsmcp --include "src/**/*.ts" -p typescript  Get diagnostics for TypeScript files
 `);
 }
 

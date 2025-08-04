@@ -1,5 +1,6 @@
 /**
  * Core symbol index implementation
+ * With incremental update support
  */
 
 import { EventEmitter } from "events";
@@ -176,11 +177,17 @@ export class SymbolIndex extends EventEmitter {
       fileUris = new Set(this.fileIndex.keys());
     }
 
-    // Filter by name
+    // Filter by name (partial match)
     if (query.name) {
-      const nameUris = this.symbolIndex.get(query.name) || new Set();
+      const nameUris = new Set<string>();
+      // Check all symbol names for partial match
+      for (const [symbolName, uris] of this.symbolIndex) {
+        if (symbolName.includes(query.name)) {
+          uris.forEach((uri) => nameUris.add(uri));
+        }
+      }
       if (fileUris.size === 0) {
-        fileUris = new Set(nameUris);
+        fileUris = nameUris;
       } else {
         fileUris = new Set([...fileUris].filter((uri) => nameUris.has(uri)));
       }
@@ -221,10 +228,29 @@ export class SymbolIndex extends EventEmitter {
       const targetUri = pathToFileURL(
         resolve(this.rootPath, query.file),
       ).toString();
-      if (fileUris.has(targetUri)) {
-        fileUris = new Set([targetUri]);
+      // Check if the file exists in the index
+      if (this.fileIndex.has(targetUri)) {
+        // If no other filters were applied, start with this file
+        if (
+          fileUris.size === 0 &&
+          !query.name &&
+          !query.kind &&
+          !query.containerName
+        ) {
+          fileUris = new Set([targetUri]);
+        } else if (fileUris.has(targetUri)) {
+          fileUris = new Set([targetUri]);
+        } else {
+          fileUris = new Set();
+        }
       } else {
-        fileUris = new Set();
+        // Try to find a matching file by relative path
+        for (const [uri] of this.fileIndex) {
+          if (uri.endsWith(query.file) || uri.includes(query.file)) {
+            fileUris = new Set([uri]);
+            break;
+          }
+        }
       }
     }
 
@@ -521,22 +547,28 @@ export class SymbolIndex extends EventEmitter {
     return rawSymbols.map((symbol) => this.convertSymbol(symbol, uri));
   }
 
-  private convertSymbol(symbol: any, uri: string): IndexedSymbol {
+  private convertSymbol(
+    symbol: any,
+    uri: string,
+    containerName?: string,
+  ): IndexedSymbol {
     // Handle DocumentSymbol format
     if ("selectionRange" in symbol) {
-      return {
+      const converted: IndexedSymbol = {
         name: symbol.name,
         kind: symbol.kind,
         location: {
           uri,
           range: symbol.range,
         },
+        containerName,
         deprecated: symbol.deprecated,
         detail: symbol.detail,
         children: symbol.children?.map((child: any) =>
-          this.convertSymbol(child, uri),
+          this.convertSymbol(child, uri, symbol.name),
         ),
       };
+      return converted;
     }
 
     // Handle SymbolInformation format

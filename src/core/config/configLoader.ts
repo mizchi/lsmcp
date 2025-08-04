@@ -8,6 +8,9 @@
 import { readFile } from "fs/promises";
 import type { LspAdapter } from "../../types.ts";
 
+// Export AdapterConfig as alias for LspAdapter
+export type AdapterConfig = LspAdapter;
+
 /**
  * Runtime configuration after resolving all sources
  */

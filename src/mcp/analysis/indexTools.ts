@@ -110,8 +110,8 @@ const searchSymbolSchema = z.object({
   root: z.string().describe("Root directory for the project").optional(),
 });
 
-export const searchSymbolTool: ToolDef<typeof searchSymbolSchema> = {
-  name: "search_symbol",
+export const searchSymbolFromIndexTool: ToolDef<typeof searchSymbolSchema> = {
+  name: "search_symbol_from_index",
   description:
     "Search symbols in the indexed codebase using various filters. Much faster than file-based search. " +
     "Use 'kind' parameter with values like: File, Module, Namespace, Package, Class, Method, Property, Field, " +
@@ -224,8 +224,8 @@ const getIndexStatsSchema = z.object({
   root: z.string().describe("Root directory for the project").optional(),
 });
 
-export const getIndexStatsTool: ToolDef<typeof getIndexStatsSchema> = {
-  name: "get_index_stats",
+export const getIndexStatsFromIndexTool: ToolDef<typeof getIndexStatsSchema> = {
+  name: "get_index_stats_from_index",
   description:
     "Get statistics about the symbol index including file count, symbol count, and performance metrics.",
   schema: getIndexStatsSchema,
@@ -274,7 +274,7 @@ const updateIndexIncrementalSchema = z.object({
 export const updateIndexIncrementalTool: ToolDef<
   typeof updateIndexIncrementalSchema
 > = {
-  name: "update_index",
+  name: "update_index_from_index",
   description:
     "Update symbol index incrementally based on git changes. Only re-indexes modified files.",
   schema: updateIndexIncrementalSchema,
@@ -344,8 +344,8 @@ export const forceClearIndexTool: ToolDef<typeof forceClearIndexSchema> = {
 // Export index tools
 export const indexTools = [
   indexFilesTool,
-  searchSymbolTool,
-  getIndexStatsTool,
+  searchSymbolFromIndexTool,
+  getIndexStatsFromIndexTool,
   clearIndexTool,
   updateIndexIncrementalTool,
   forceClearIndexTool,

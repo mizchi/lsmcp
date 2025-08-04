@@ -6,7 +6,7 @@ import type {
 import { statSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { relative } from "node:path";
-import type { CachedSymbol } from "../types/index.ts";
+import type { CachedSymbol } from "./symbolCache.ts";
 import { SymbolKind } from "vscode-languageserver-types";
 
 // Global cache managers per project root

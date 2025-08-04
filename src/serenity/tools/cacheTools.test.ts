@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
-  searchCachedSymbolsTool,
-  getCacheStatsTool,
-  clearCacheTool,
+  searchCachedSymbolsFromIndexTool,
+  getCacheStatsFromIndexTool,
+  clearCacheFromIndexTool,
 } from "./cacheTools.ts";
 import * as cacheIntegration from "../cache/symbolCacheIntegration.ts";
 
@@ -60,7 +60,7 @@ describe("cacheTools", () => {
         mockSymbols,
       );
 
-      const result = await searchCachedSymbolsTool.execute({
+      const result = await searchCachedSymbolsFromIndexTool.execute({
         root: "/test",
         pattern: "format",
       });
@@ -89,7 +89,7 @@ describe("cacheTools", () => {
     it("should handle empty results", async () => {
       vi.mocked(cacheIntegration.searchSymbolsInCache).mockReturnValue([]);
 
-      const result = await searchCachedSymbolsTool.execute({
+      const result = await searchCachedSymbolsFromIndexTool.execute({
         root: "/test",
         pattern: "nonexistent",
       });
@@ -107,7 +107,7 @@ describe("cacheTools", () => {
         },
       );
 
-      const result = await searchCachedSymbolsTool.execute({
+      const result = await searchCachedSymbolsFromIndexTool.execute({
         root: "/test",
         pattern: "test",
       });
@@ -127,7 +127,7 @@ describe("cacheTools", () => {
 
       mockCacheManager.getStats.mockReturnValue(mockStats);
 
-      const result = await getCacheStatsTool.execute({
+      const result = await getCacheStatsFromIndexTool.execute({
         root: "/test",
       });
 
@@ -142,7 +142,7 @@ describe("cacheTools", () => {
         throw new Error("Stats error");
       });
 
-      const result = await getCacheStatsTool.execute({
+      const result = await getCacheStatsFromIndexTool.execute({
         root: "/test",
       });
 
@@ -156,7 +156,7 @@ describe("cacheTools", () => {
     it("should clear cache successfully", async () => {
       mockCacheManager.clearCache.mockReturnValue(undefined);
 
-      const result = await clearCacheTool.execute({
+      const result = await clearCacheFromIndexTool.execute({
         root: "/test",
       });
 
@@ -171,7 +171,7 @@ describe("cacheTools", () => {
         throw new Error("Clear error");
       });
 
-      const result = await clearCacheTool.execute({
+      const result = await clearCacheFromIndexTool.execute({
         root: "/test",
       });
 
@@ -187,21 +187,27 @@ if (import.meta.vitest) {
 
   describe("cacheTools module", () => {
     it("exports all cache tools", () => {
-      expect(searchCachedSymbolsTool).toBeDefined();
-      expect(getCacheStatsTool).toBeDefined();
-      expect(clearCacheTool).toBeDefined();
+      expect(searchCachedSymbolsFromIndexTool).toBeDefined();
+      expect(getCacheStatsFromIndexTool).toBeDefined();
+      expect(clearCacheFromIndexTool).toBeDefined();
     });
 
     it("tools have correct names", () => {
-      expect(searchCachedSymbolsTool.name).toBe("search_cached_symbols");
-      expect(getCacheStatsTool.name).toBe("get_cache_stats");
-      expect(clearCacheTool.name).toBe("clear_symbol_cache");
+      expect(searchCachedSymbolsFromIndexTool.name).toBe(
+        "search_cached_symbols_from_index",
+      );
+      expect(getCacheStatsFromIndexTool.name).toBe(
+        "get_cache_stats_from_index",
+      );
+      expect(clearCacheFromIndexTool.name).toBe(
+        "clear_symbol_cache_from_index",
+      );
     });
 
     it("tools have appropriate descriptions", () => {
-      expect(searchCachedSymbolsTool.description).toContain("Search");
-      expect(getCacheStatsTool.description).toContain("statistics");
-      expect(clearCacheTool.description).toContain("Clear");
+      expect(searchCachedSymbolsFromIndexTool.description).toContain("Search");
+      expect(getCacheStatsFromIndexTool.description).toContain("statistics");
+      expect(clearCacheFromIndexTool.description).toContain("Clear");
     });
   });
 }

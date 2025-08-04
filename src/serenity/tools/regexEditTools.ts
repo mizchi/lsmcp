@@ -1,6 +1,11 @@
 import { z } from "zod";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
-import type { SerenityEditResult } from "../types/index.ts";
+// Define SerenityEditResult type locally
+export interface SerenityEditResult {
+  success: boolean;
+  error?: string;
+  filesChanged?: string[];
+}
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 

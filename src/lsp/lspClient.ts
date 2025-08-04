@@ -1,3 +1,4 @@
+// LSP Client implementation
 import { EventEmitter } from "events";
 import {
   getErrorMessage,

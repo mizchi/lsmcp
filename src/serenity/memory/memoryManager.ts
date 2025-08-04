@@ -1,13 +1,19 @@
 import { readFile, writeFile, readdir, unlink, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
-import type { SerenityMemory } from "../types/index.ts";
+// Define SerenityMemory type locally
+export interface SerenityMemory {
+  name: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export class MemoryManager {
   private memoriesPath: string;
 
   constructor(rootPath: string) {
-    this.memoriesPath = join(rootPath, ".serena", "memories");
+    this.memoriesPath = join(rootPath, ".lsmcp", "memories");
   }
 
   async ensureMemoriesDir(): Promise<void> {

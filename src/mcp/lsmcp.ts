@@ -26,6 +26,9 @@ const configLoader = new ConfigLoader(adapterRegistry);
 // Register all adapters
 registerBuiltinAdapters(adapterRegistry);
 
+// Import subcommands
+import { initCommand, indexCommand } from "./cli/subcommands.ts";
+
 // Parse command line arguments
 const { values, positionals } = parseArgs({
   options: {
@@ -74,6 +77,19 @@ async function main() {
       values,
     )}, positionals: ${JSON.stringify(positionals)}`,
   );
+
+  // Handle subcommands
+  const subcommand = positionals[0];
+
+  if (subcommand === "init") {
+    await initCommand(process.cwd(), values.preset, adapterRegistry);
+    process.exit(0);
+  }
+
+  if (subcommand === "index") {
+    await indexCommand(process.cwd());
+    process.exit(0);
+  }
 
   // Always use new configuration system
   return await mainWithConfigLoader();

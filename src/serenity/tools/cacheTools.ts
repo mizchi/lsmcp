@@ -10,10 +10,10 @@ const searchCachedSymbolsSchema = z.object({
   pattern: z.string().describe("Search pattern for symbol names"),
 });
 
-export const searchCachedSymbolsTool: ToolDef<
+export const searchCachedSymbolsFromIndexTool: ToolDef<
   typeof searchCachedSymbolsSchema
 > = {
-  name: "search_cached_symbols",
+  name: "search_cached_symbols_from_index",
   description: "Search for symbols in the SQLite cache",
   schema: searchCachedSymbolsSchema,
   execute: async ({ root, pattern }) => {
@@ -48,8 +48,8 @@ const getCacheStatsSchema = z.object({
   root: z.string().describe("Root directory for the project"),
 });
 
-export const getCacheStatsTool: ToolDef<typeof getCacheStatsSchema> = {
-  name: "get_cache_stats",
+export const getCacheStatsFromIndexTool: ToolDef<typeof getCacheStatsSchema> = {
+  name: "get_cache_stats_from_index",
   description: "Get statistics about the symbol cache",
   schema: getCacheStatsSchema,
   execute: async ({ root }) => {
@@ -74,8 +74,8 @@ const clearCacheSchema = z.object({
   root: z.string().describe("Root directory for the project"),
 });
 
-export const clearCacheTool: ToolDef<typeof clearCacheSchema> = {
-  name: "clear_symbol_cache",
+export const clearCacheFromIndexTool: ToolDef<typeof clearCacheSchema> = {
+  name: "clear_symbol_cache_from_index",
   description: "Clear the SQLite symbol cache for the project",
   schema: clearCacheSchema,
   execute: async ({ root }) => {

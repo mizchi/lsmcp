@@ -166,3 +166,5 @@ tests/adapters/fixtures/python/.venv
 examples/fsharp-project/bin/
 examples/fsharp-project/obj/
 .lsmcp
+# lsmcp cache
+.lsmcp/cache

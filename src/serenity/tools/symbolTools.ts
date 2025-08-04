@@ -1,17 +1,16 @@
 import { z } from "zod";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import {
-  getSymbolIndex,
-  querySymbols,
-  indexFile,
-  type SymbolEntry,
-} from "../../mcp/analysis/symbolIndex.ts";
-import { readFile } from "node:fs/promises";
-import { resolve, relative } from "node:path";
+  getOrCreateIndex,
+  indexFiles,
+  querySymbols as queryIndexSymbols,
+} from "../../indexer/mcp/IndexerAdapter.ts";
+import type { SymbolQuery } from "../../indexer/core/types.ts";
+import { resolve } from "node:path";
 import { existsSync } from "node:fs";
 import { SymbolKind } from "vscode-languageserver-types";
 import { createGitignoreFilter } from "../../core/io/gitignoreUtils.ts";
-import { glob } from "glob";
+import { globSync } from "glob";
 
 const getSymbolsOverviewSchema = z.object({
   relativePath: z
@@ -42,7 +41,14 @@ export const getSymbolsOverviewTool: ToolDef<typeof getSymbolsOverviewSchema> =
           return JSON.stringify({ error: `Path not found: ${relativePath}` });
         }
 
-        const index = getSymbolIndex(rootPath);
+        // Try to get or create index
+        const index = getOrCreateIndex(rootPath);
+        if (!index) {
+          return JSON.stringify({
+            error: "Failed to create symbol index. Make sure LSP is running.",
+          });
+        }
+
         const gitignoreFilter = await createGitignoreFilter(rootPath);
         const stats = await import("node:fs/promises").then((fs) =>
           fs.stat(absolutePath),
@@ -52,15 +58,44 @@ export const getSymbolsOverviewTool: ToolDef<typeof getSymbolsOverviewSchema> =
 
         if (stats.isDirectory()) {
           // Get all code files in directory
-          const pattern = `${relativePath}/**/*.{ts,tsx,js,jsx,py,java,cpp,c,h,hpp,cs,rb,go,rs,php,swift,kt,scala,r,m,mm}`;
-          const foundFiles = await glob(pattern, {
-            cwd: rootPath,
-            ignore: ["**/node_modules/**", "**/.git/**"],
-            nodir: true,
-          });
-          files.push(...foundFiles.filter((f) => !gitignoreFilter(f)));
+          // Normalize the relative path by removing trailing slashes
+          const normalizedPath = relativePath.replace(/\/+$/, "");
+          const pattern = normalizedPath
+            ? `${normalizedPath}/**/*.{ts,tsx,js,jsx,py,java,cpp,c,h,hpp,cs,rb,go,rs,php,swift,kt,scala,r,m,mm}`
+            : `**/*.{ts,tsx,js,jsx,py,java,cpp,c,h,hpp,cs,rb,go,rs,php,swift,kt,scala,r,m,mm}`;
+
+          try {
+            const foundFiles = globSync(pattern, {
+              cwd: rootPath,
+              ignore: ["**/node_modules/**", "**/.git/**"],
+              nodir: true,
+            });
+
+            if (!Array.isArray(foundFiles)) {
+              return JSON.stringify({
+                error: `globSync returned non-array: ${typeof foundFiles}`,
+              });
+            }
+
+            const filteredFiles = foundFiles.filter((f) => !gitignoreFilter(f));
+            files.push(...filteredFiles);
+          } catch (error) {
+            return JSON.stringify({
+              error: `Glob error: ${error instanceof Error ? error.message : String(error)}`,
+            });
+          }
         } else {
           files.push(relativePath);
+        }
+
+        // Index all files first
+        if (files.length > 0) {
+          const indexResult = await indexFiles(rootPath, files);
+          if (!indexResult.success) {
+            return JSON.stringify({
+              error: `Failed to index files: ${indexResult.errors.map((e) => e.error).join(", ")}`,
+            });
+          }
         }
 
         const overview: Record<
@@ -69,11 +104,8 @@ export const getSymbolsOverviewTool: ToolDef<typeof getSymbolsOverviewSchema> =
         > = {};
 
         for (const file of files) {
-          // Ensure file is indexed
-          await indexFile(index, file);
-
-          // Query top-level symbols
-          const symbols = querySymbols(index, { file });
+          // Query top-level symbols - file parameter expects relative path from root
+          const symbols = queryIndexSymbols(rootPath, { file });
           const topLevelSymbols = symbols.filter((s) => !s.containerName);
 
           overview[file] = topLevelSymbols.map((s) => ({
@@ -155,91 +187,129 @@ export const findSymbolTool: ToolDef<typeof findSymbolSchema> = {
     substringMatching = false,
     includeKinds,
     excludeKinds,
-    depth = 0,
-    includeBody = false,
+    depth: _depth = 0, // TODO: implement depth support
+    includeBody: _includeBody = false, // TODO: implement includeBody support
     maxAnswerChars = 200000,
   }) => {
     try {
       const rootPath = process.cwd();
-      const index = getSymbolIndex(rootPath);
 
-      // Normalize name path
-      namePath = namePath.replace(/\/$/, ""); // Remove trailing slash
-      const segments = namePath.split("/").filter((s) => s);
+      // Get or create index
+      const index = getOrCreateIndex(rootPath);
+      if (!index) {
+        return JSON.stringify({
+          error: "Failed to create symbol index. Make sure LSP is running.",
+        });
+      }
+
+      // Parse the name path
+      const segments = namePath.split("/").filter((s) => s.length > 0);
+      if (segments.length === 0) {
+        return JSON.stringify({ error: "Empty name path provided" });
+      }
+
       const targetName = segments[segments.length - 1];
       const isAbsolute = namePath.startsWith("/");
 
-      // Get all symbols matching the target name
-      let symbols = querySymbols(index, {
-        name: targetName,
-        file: relativePath,
-      });
+      // Build query
+      const query: SymbolQuery = {};
 
-      // Filter by name path pattern
+      // For substring matching, we'll query all and filter later
+      if (!substringMatching) {
+        query.name = targetName;
+      }
+
+      if (relativePath) {
+        query.file = relativePath;
+      }
+
+      if (includeKinds) {
+        query.kind = includeKinds as SymbolKind[];
+      }
+
+      // Query symbols
+      let symbols = queryIndexSymbols(rootPath, query);
+
+      // Filter by name pattern
       symbols = symbols.filter((symbol) => {
-        if (!substringMatching && symbol.name !== targetName) {
-          return false;
-        }
-        if (substringMatching && !symbol.name.includes(targetName)) {
-          return false;
+        // Check name match
+        if (substringMatching) {
+          if (!symbol.name.includes(targetName)) return false;
+        } else {
+          if (symbol.name !== targetName) return false;
         }
 
-        // Check ancestors if path has multiple segments
+        // Check path pattern
         if (segments.length > 1) {
-          const ancestors = getAncestors(symbol, symbols);
+          const symbolPath = symbol.containerName
+            ? `${symbol.containerName}/${symbol.name}`
+            : symbol.name;
+
+          const symbolSegments = symbolPath.split("/");
 
           if (isAbsolute) {
-            // Must match exact path from root
-            return matchesAbsolutePath(ancestors, segments.slice(0, -1));
+            // Absolute path - must match from start
+            if (segments.length > symbolSegments.length) return false;
+            for (let i = 0; i < segments.length; i++) {
+              if (segments[i] !== symbolSegments[i]) return false;
+            }
           } else {
-            // Must have the pattern somewhere in ancestors
-            return matchesRelativePath(ancestors, segments.slice(0, -1));
+            // Relative path - find matching subsequence
+            let found = false;
+            for (let i = 0; i <= symbolSegments.length - segments.length; i++) {
+              let match = true;
+              for (let j = 0; j < segments.length; j++) {
+                if (segments[j] !== symbolSegments[i + j]) {
+                  match = false;
+                  break;
+                }
+              }
+              if (match) {
+                found = true;
+                break;
+              }
+            }
+            if (!found) return false;
           }
         }
 
         return true;
       });
 
-      // Filter by kinds
-      if (includeKinds) {
-        symbols = symbols.filter((s) => includeKinds.includes(s.kind));
-      }
+      // Apply exclude kinds filter
       if (excludeKinds) {
         symbols = symbols.filter((s) => !excludeKinds.includes(s.kind));
       }
 
-      // Build results with optional body and children
-      const results = await Promise.all(
-        symbols.map(async (symbol) => {
-          const result: any = {
-            name_path: buildNamePath(symbol, symbols),
-            kind: symbolKindToString(symbol.kind),
-            location: {
-              file: relative(
-                rootPath,
-                symbol.location.uri.replace("file://", ""),
-              ),
-              range: symbol.location.range,
-            },
-          };
+      // Format results
+      const results = symbols.map((symbol) => {
+        const result: any = {
+          name_path: symbol.containerName
+            ? `${symbol.containerName}/${symbol.name}`
+            : symbol.name,
+          kind: symbolKindToString(symbol.kind),
+          location: {
+            file: symbol.location.uri
+              .replace("file://", "")
+              .replace(rootPath + "/", ""),
+            line: symbol.location.range.start.line + 1,
+            character: symbol.location.range.start.character,
+          },
+        };
 
-          if (includeBody) {
-            result.body = await getSymbolBody(symbol, rootPath);
-          }
+        if (symbol.detail) {
+          result.detail = symbol.detail;
+        }
 
-          if (depth > 0 && symbol.children) {
-            result.children = await getChildrenWithDepth(
-              symbol.children,
-              depth - 1,
-              includeBody,
-              rootPath,
-              symbols,
-            );
-          }
+        if (symbol.deprecated) {
+          result.deprecated = true;
+        }
 
-          return result;
-        }),
-      );
+        // TODO: Add support for depth > 0 to include children
+        // TODO: Add support for includeBody
+
+        return result;
+      });
 
       const output = JSON.stringify(results, null, 2);
       if (output.length > maxAnswerChars) {
@@ -336,114 +406,4 @@ function symbolKindToString(kind: SymbolKind): string {
     [SymbolKind.TypeParameter]: "type_parameter",
   };
   return kinds[kind] || "unknown";
-}
-
-function getAncestors(
-  symbol: SymbolEntry,
-  allSymbols: SymbolEntry[],
-): string[] {
-  const ancestors: string[] = [];
-  let current = symbol;
-
-  while (current.containerName) {
-    ancestors.unshift(current.containerName);
-    const parent = allSymbols.find((s) => s.name === current.containerName);
-    if (!parent) break;
-    current = parent;
-  }
-
-  return ancestors;
-}
-
-function matchesAbsolutePath(ancestors: string[], pattern: string[]): boolean {
-  if (ancestors.length < pattern.length) return false;
-
-  for (let i = 0; i < pattern.length; i++) {
-    if (ancestors[i] !== pattern[i]) return false;
-  }
-
-  return true;
-}
-
-function matchesRelativePath(ancestors: string[], pattern: string[]): boolean {
-  if (pattern.length === 0) return true;
-  if (ancestors.length < pattern.length) return false;
-
-  // Find pattern as subsequence in ancestors
-  for (let start = 0; start <= ancestors.length - pattern.length; start++) {
-    let matches = true;
-    for (let i = 0; i < pattern.length; i++) {
-      if (ancestors[start + i] !== pattern[i]) {
-        matches = false;
-        break;
-      }
-    }
-    if (matches) return true;
-  }
-
-  return false;
-}
-
-function buildNamePath(symbol: SymbolEntry, allSymbols: SymbolEntry[]): string {
-  const parts = [symbol.name];
-  let current = symbol;
-
-  while (current.containerName) {
-    parts.unshift(current.containerName);
-    const parent = allSymbols.find((s) => s.name === current.containerName);
-    if (!parent) break;
-    current = parent;
-  }
-
-  return parts.join("/");
-}
-
-async function getSymbolBody(
-  symbol: SymbolEntry,
-  _rootPath: string,
-): Promise<string> {
-  const filePath = symbol.location.uri.replace("file://", "");
-  const content = await readFile(filePath, "utf-8");
-  const lines = content.split("\n");
-
-  const startLine = symbol.location.range.start.line;
-  const endLine = symbol.location.range.end.line;
-
-  return lines.slice(startLine, endLine + 1).join("\n");
-}
-
-async function getChildrenWithDepth(
-  children: SymbolEntry[],
-  remainingDepth: number,
-  includeBody: boolean,
-  rootPath: string,
-  allSymbols: SymbolEntry[],
-): Promise<any[]> {
-  return Promise.all(
-    children.map(async (child) => {
-      const result: any = {
-        name_path: child.name,
-        kind: symbolKindToString(child.kind),
-        location: {
-          range: child.location.range,
-        },
-      };
-
-      if (includeBody) {
-        result.body = await getSymbolBody(child, rootPath);
-      }
-
-      if (remainingDepth > 0 && child.children) {
-        result.children = await getChildrenWithDepth(
-          child.children,
-          remainingDepth - 1,
-          includeBody,
-          rootPath,
-          allSymbols,
-        );
-      }
-
-      return result;
-    }),
-  );
 }

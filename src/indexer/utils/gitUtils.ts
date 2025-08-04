@@ -34,15 +34,42 @@ export function getModifiedFiles(
   sinceHash: string,
 ): string[] {
   try {
-    const output = execSync(`git diff --name-only ${sinceHash} HEAD`, {
+    // Get files changed between commits
+    const committedChanges = execSync(
+      `git diff --name-only ${sinceHash} HEAD`,
+      {
+        cwd: rootPath,
+        encoding: "utf-8",
+      },
+    );
+
+    // Get uncommitted changes (both staged and unstaged)
+    const unstagedChanges = execSync("git diff --name-only", {
       cwd: rootPath,
       encoding: "utf-8",
     });
 
-    return output
-      .split("\n")
-      .filter((file) => file.length > 0)
-      .map((file) => file.trim());
+    const stagedChanges = execSync("git diff --name-only --cached", {
+      cwd: rootPath,
+      encoding: "utf-8",
+    });
+
+    // Combine all changes and deduplicate
+    const allChanges = new Set<string>();
+
+    const addChanges = (output: string) => {
+      output
+        .split("\n")
+        .filter((file) => file.length > 0)
+        .map((file) => file.trim())
+        .forEach((file) => allChanges.add(file));
+    };
+
+    addChanges(committedChanges);
+    addChanges(unstagedChanges);
+    addChanges(stagedChanges);
+
+    return Array.from(allChanges);
   } catch {
     return [];
   }
