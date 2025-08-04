@@ -25,24 +25,24 @@ System: ${system}
 
 ### 2. Index the Codebase (1-2 minutes)
 Based on what you find, index files with appropriate patterns:
-- TypeScript/JavaScript: new_index_files { "pattern": "**/*.{ts,tsx,js,jsx}", "root": "${rootPath}" }
-- Python: new_index_files { "pattern": "**/*.py", "root": "${rootPath}" }
-- Go: new_index_files { "pattern": "**/*.go", "root": "${rootPath}" }
-- Mixed: new_index_files { "pattern": "**/*.{ts,js,py,go}", "root": "${rootPath}" }
+- TypeScript/JavaScript: index_files { "pattern": "**/*.{ts,tsx,js,jsx}", "root": "${rootPath}" }
+- Python: index_files { "pattern": "**/*.py", "root": "${rootPath}" }
+- Go: index_files { "pattern": "**/*.go", "root": "${rootPath}" }
+- Mixed: index_files { "pattern": "**/*.{ts,js,py,go}", "root": "${rootPath}" }
 
 Exclude test/vendor files if needed:
-- new_index_files { "pattern": "src/**/*.ts", "root": "${rootPath}" }
+- index_files { "pattern": "src/**/*.ts", "root": "${rootPath}" }
 
 ### 3. Verify Index Success
-- Run: new_get_index_stats { "root": "${rootPath}" }
+- Run: get_index_stats { "root": "${rootPath}" }
 - You should see total files and symbols indexed
 - If 0 symbols, check if LSP server supports the file type
 
 ### 4. Test Symbol Search
 Try these commands:
-- new_search_symbol { "name": "main", "root": "${rootPath}" }
-- new_search_symbol { "kind": [5, 12], "root": "${rootPath}" } (Classes and Functions)
-- new_get_file_symbols { "filePath": "path/to/main/file", "root": "${rootPath}" }
+- search_symbol { "name": "main", "root": "${rootPath}" }
+- search_symbol { "kind": [5, 12], "root": "${rootPath}" } (Classes and Functions)
+- get_file_symbols { "filePath": "path/to/main/file", "root": "${rootPath}" }
 
 ### 5. Save Configuration
 Write to memory the successful configuration:
@@ -53,7 +53,7 @@ Include: language, glob pattern used, total files/symbols, and any issues encoun
 export const symbolSearchGuidancePrompt =
   () => `When searching for symbols in the indexed codebase:
 
-1. Use new_search_symbol for finding symbols by name:
+1. Use search_symbol for finding symbols by name:
    - Partial matching is supported
    - Filter by symbol kind (Class, Method, Function, etc.)
    - Limit search to specific files or directories

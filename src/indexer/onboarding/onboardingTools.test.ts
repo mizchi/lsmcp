@@ -66,7 +66,7 @@ describe("Onboarding Tools", () => {
       const result = await getSymbolSearchGuidanceTool.execute({});
 
       expect(result).toContain("searching for symbols");
-      expect(result).toContain("new_search_symbol");
+      expect(result).toContain("search_symbol");
       expect(result).toContain("Symbol kinds");
       expect(result).toContain("5: Class");
       expect(result).toContain("12: Function");

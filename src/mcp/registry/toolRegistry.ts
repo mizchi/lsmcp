@@ -21,7 +21,7 @@ import { lspGetWorkspaceSymbolsTool } from "../../lsp/tools/lspGetWorkspaceSymbo
 import { lspCheckCapabilitiesTool } from "../../lsp/tools/lspCheckCapabilities.ts";
 
 // Import analysis tools
-import { newAnalysisTools } from "../analysis/newAnalysisTools.ts";
+import { indexTools } from "../analysis/indexTools.ts";
 import { compressionTools } from "../analysis/compressionTools.ts";
 
 // Import serenity tools
@@ -49,9 +49,8 @@ export const lspTools: ToolDef<any>[] = [
 ];
 
 // Define high-level analysis tools (not affected by LSP capabilities)
-// Use new analysis tools instead of old ones
 export const highLevelTools: ToolDef<any>[] = [
-  ...newAnalysisTools,
+  ...indexTools,
   ...compressionTools,
 ];
 
