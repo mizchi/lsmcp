@@ -384,7 +384,14 @@ export class SymbolIndex extends EventEmitter {
       return true; // Not indexed yet
     }
 
-    // Check file modification time
+    // Check git hash first if available (more reliable than mtime)
+    const currentFileHash = getFileGitHash(this.rootPath, absolutePath);
+    if (currentFileHash && fileSymbols.gitHash) {
+      // Both have git hashes, compare them
+      return currentFileHash !== fileSymbols.gitHash;
+    }
+
+    // Fall back to file modification time if git hash not available
     try {
       const stats = await this.fileSystem.stat(absolutePath);
       const mtime = stats.mtime.getTime();
@@ -394,16 +401,6 @@ export class SymbolIndex extends EventEmitter {
       }
     } catch {
       return true; // Can't stat file, assume needs reindex
-    }
-
-    // Check git hash if available
-    const currentFileHash = getFileGitHash(this.rootPath, absolutePath);
-    if (
-      currentFileHash &&
-      fileSymbols.gitHash &&
-      currentFileHash !== fileSymbols.gitHash
-    ) {
-      return true; // Git hash changed
     }
 
     return false;
