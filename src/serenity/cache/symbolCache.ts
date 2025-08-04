@@ -13,7 +13,7 @@ export class SymbolCacheManager {
   private searchStmt: StatementSync;
 
   constructor(private rootPath: string) {
-    const cacheDir = join(rootPath, ".serenity", "cache");
+    const cacheDir = join(rootPath, ".lsmcp", "cache");
     const dbPath = join(cacheDir, "symbols.db");
 
     // Ensure cache directory exists
