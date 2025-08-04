@@ -11,31 +11,33 @@ intelligent step-by-step acquisition of information. Use the symbol indexing too
 
 IMPORTANT: Always use the symbol indexing tools to minimize code reading:
 
-- Use `search_symbol` to find specific symbols quickly
+- Use `search_symbol_from_index` to find specific symbols quickly (after indexing)
 - Use `get_document_symbols` to understand file structure
-- Use `get_references` to trace symbol usage
+- Use `find_references` to trace symbol usage
 - Only read full files when absolutely necessary
 
 You can achieve intelligent code reading by:
 
-1. Using `search_symbol` with filters (name, kind, file, container) to find symbols
-2. Using `get_document_symbols` to understand file structure
-3. Using `get_definition`, `get_references`, and `get_implementations` to trace relationships
-4. Using standard file operations when needed
+1. Using `index_files` to build symbol index for fast searching
+2. Using `search_symbol_from_index` with filters (name, kind, file, container) to find symbols
+3. Using `get_document_symbols` to understand file structure
+4. Using `get_definitions`, `find_references` to trace relationships
+5. Using standard file operations when needed
 
 ## Working with Symbols
 
 Symbols are identified by their name, kind, file location, and container. Use these tools:
 
-- `search_symbol` - Search by name, kind (Class, Function, etc.), file pattern, or container
+- `index_files` - Build symbol index for files matching pattern (e.g., '**/*.ts')
+- `search_symbol_from_index` - Fast search by name, kind (Class, Function, etc.), file pattern, or container
 - `get_document_symbols` - Get all symbols in a specific file with hierarchical structure
-- `get_definition` - Navigate to symbol definitions
-- `get_references` - Find all references to a symbol
-- `get_implementations` - Find implementations of interfaces/abstract classes
-- `get_type_definition` - Get type information
+- `get_definitions` - Navigate to symbol definitions
+- `find_references` - Find all references to a symbol
+- `get_hover` - Get hover information (type signature, documentation)
+- `get_diagnostics` - Get errors and warnings for a file
 - `get_workspace_symbols` - Search symbols across the entire workspace
 
-Always prefer these indexed searches over reading entire files.
+Always prefer indexed searches (tools with `_from_index` suffix) over reading entire files.
 
 ## Memory System
 
@@ -78,8 +80,11 @@ This ensures consistency and makes the project accessible to the global develope
 
 ## Coding Rules
 
-- file: lowerCamelCase
+- file naming: lowerCamelCase (e.g., `symbolIndex.ts`, `lspClient.ts`)
 - add `.ts` extensions to import. eg. `import {} from "./x.ts"` for deno compatibility.
+- use TypeScript strict mode
+- prefer interface over type for object definitions
+- use async/await over promises
 
 ## Git Workflow
 
@@ -97,3 +102,20 @@ When working with this project:
 - You are NOT permitted to modify timeout settings without user permission
 - Always run `pnpm build` before integration tests
 - Use `rg` (ripgrep) instead of `grep` for searching code
+- Run `pnpm test` to ensure all tests pass before committing
+- Use `pnpm lint` and `pnpm typecheck` to check code quality
+
+## Testing Strategy
+
+- Unit tests: Fast, isolated tests for individual functions
+- Integration tests: Test MCP server functionality with real LSP servers
+- Adapter tests: Test language-specific LSP adapter configurations
+- Always add tests for new features or bug fixes
+
+## Common Commands
+
+- `pnpm build` - Build the project
+- `pnpm test` - Run all tests
+- `pnpm lint` - Run linter
+- `pnpm typecheck` - Type check with tsgo
+- `pnpm format` - Format code with Biome
