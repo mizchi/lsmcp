@@ -1,5 +1,5 @@
 import { getNodeModulesCommand } from "../core/io/nodeModulesUtils.ts";
-import type { LanguageConfig, LspAdapter } from "../types.ts";
+import type { LanguageConfig, LspAdapter } from "../types/lsp.ts";
 
 /**
  * Convert an LSP adapter to a language configuration, resolving node_modules binaries

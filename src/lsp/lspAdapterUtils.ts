@@ -1,6 +1,6 @@
 import { ChildProcess, spawn } from "child_process";
 import { LSPValidationResult, LSPValidator } from "./lspValidator.ts";
-import { LspAdapter } from "../types.ts";
+import { LspAdapter } from "../types/lsp.ts";
 import { debugLog } from "../mcp/utils/errorHandler.ts";
 
 export interface AdapterValidationOptions {

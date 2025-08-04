@@ -1,8 +1,13 @@
-import type { ToolDef } from "./mcp/utils/mcpHelpers.ts";
+/**
+ * LSP-related type definitions
+ */
+
+import type { ToolDef } from "../mcp/utils/mcpHelpers.ts";
 import type { ZodType } from "zod";
 
 /**
  * Server characteristics that affect LSP client behavior
+ * These are runtime characteristics, not capabilities
  */
 export interface ServerCharacteristics {
   /** Time to wait after opening a document before sending requests (ms) */
@@ -22,6 +27,27 @@ export interface ServerCharacteristics {
 
   /** Maximum timeout for general operations (ms) */
   operationTimeout?: number;
+}
+
+/**
+ * LSP server capabilities
+ * What features the LSP server supports
+ */
+export interface ServerCapabilities {
+  supportsRename?: boolean;
+  supportsReferences?: boolean;
+  supportsDefinition?: boolean;
+  supportsHover?: boolean;
+  supportsDocumentSymbol?: boolean;
+  supportsWorkspaceSymbol?: boolean;
+  supportsCompletion?: boolean;
+  supportsSignatureHelp?: boolean;
+  supportsDocumentFormatting?: boolean;
+  supportsRangeFormatting?: boolean;
+  supportsCodeAction?: boolean;
+  supportsDiagnostics?: boolean;
+  supportsInlayHint?: boolean;
+  supportsSemanticTokens?: boolean;
 }
 
 /**
@@ -64,6 +90,9 @@ export interface LspAdapter {
 
   /** Server-specific behavior characteristics */
   serverCharacteristics?: ServerCharacteristics;
+
+  /** Server capabilities */
+  serverCapabilities?: ServerCapabilities;
 }
 
 /**

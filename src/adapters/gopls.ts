@@ -1,4 +1,4 @@
-import type { LspAdapter } from "../types.ts";
+import type { LspAdapter } from "../types/lsp.ts";
 import { execSync } from "child_process";
 
 /**

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { join } from "path";
-import { rustAnalyzerAdapter } from "../../../src/adapters/rust-analyzer.ts";
+import { rustAnalyzerAdapter } from "../../../src/adapters/rustAnalyzer.ts";
 import { testLspConnection } from "../testHelpers.ts";
 
 describe("Rust Analyzer Adapter", () => {

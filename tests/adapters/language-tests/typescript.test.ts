@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { join } from "path";
-import { typescriptAdapter } from "../../../src/adapters/typescript-language-server.ts";
+import { typescriptAdapter } from "../../../src/adapters/typescriptLanguageServer.ts";
 import { testLspConnection } from "../testHelpers.ts";
 
 describe("TypeScript Adapter", () => {

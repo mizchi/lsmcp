@@ -6,10 +6,10 @@
  */
 
 import { readFile } from "fs/promises";
-import type { LspAdapter } from "../../types.ts";
+import type { LspAdapter as LspAdapterFromTypes } from "../../types/lsp.ts";
 
-// Export AdapterConfig as alias for LspAdapter
-export type AdapterConfig = LspAdapter;
+// Export AdapterConfig as alias for the full LspAdapter
+export type AdapterConfig = LspAdapterFromTypes;
 
 /**
  * Runtime configuration after resolving all sources
@@ -23,7 +23,8 @@ export interface ResolvedConfig {
   description?: string;
   unsupported?: string[];
   initializationOptions?: unknown;
-  serverCharacteristics?: import("../../types.ts").ServerCharacteristics;
+  serverCharacteristics?: import("../../types/lsp.ts").ServerCharacteristics;
+  serverCapabilities?: import("../../types/lsp.ts").ServerCapabilities;
 }
 
 /**
@@ -48,17 +49,17 @@ export interface ConfigSources {
  * Predefined adapters registry
  */
 export class AdapterRegistry {
-  private adapters = new Map<string, LspAdapter>();
+  private adapters = new Map<string, LspAdapterFromTypes>();
 
-  register(adapter: LspAdapter): void {
+  register(adapter: LspAdapterFromTypes): void {
     this.adapters.set(adapter.id, adapter);
   }
 
-  get(id: string): LspAdapter | undefined {
+  get(id: string): LspAdapterFromTypes | undefined {
     return this.adapters.get(id);
   }
 
-  list(): LspAdapter[] {
+  list(): LspAdapterFromTypes[] {
     return Array.from(this.adapters.values());
   }
 
@@ -144,7 +145,7 @@ export class ConfigLoader {
   /**
    * Convert LspAdapter to ResolvedConfig format
    */
-  private adapterToConfig(adapter: LspAdapter): ResolvedConfig {
+  private adapterToConfig(adapter: LspAdapterFromTypes): ResolvedConfig {
     return {
       id: adapter.id,
       name: adapter.name,

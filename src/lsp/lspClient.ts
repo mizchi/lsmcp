@@ -133,7 +133,7 @@ export async function initialize(
   process: ChildProcess,
   languageId?: string,
   initializationOptions?: unknown,
-  serverCharacteristics?: import("../types.ts").ServerCharacteristics,
+  serverCharacteristics?: import("../types/lsp.ts").ServerCharacteristics,
 ): Promise<LSPClient> {
   // Stop existing client if any
   if (activeClient) {

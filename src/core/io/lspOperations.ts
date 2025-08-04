@@ -33,7 +33,7 @@ export interface LSPOperationOptions<T> {
   errorContext?: ErrorContext;
 
   /** Override server characteristics for this operation */
-  serverCharacteristics?: import("../../types.ts").ServerCharacteristics;
+  serverCharacteristics?: import("../../types/lsp.ts").ServerCharacteristics;
 }
 
 /**

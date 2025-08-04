@@ -113,7 +113,8 @@ const searchSymbolSchema = z.object({
 export const searchSymbolFromIndexTool: ToolDef<typeof searchSymbolSchema> = {
   name: "search_symbol_from_index",
   description:
-    "Search symbols in the indexed codebase using various filters. Much faster than file-based search. " +
+    "Search symbols in the indexed codebase using various filters. Much faster than file-based search when you need to search for symbols across many files. " +
+    "IMPORTANT: This uses a pre-built index for speed. If results seem outdated, run 'index_files' first to update the index. " +
     "Use 'kind' parameter with values like: File, Module, Namespace, Package, Class, Method, Property, Field, " +
     "Constructor, Enum, Interface, Function, Variable, Constant, String, Number, Boolean, Array, Object, Key, " +
     "Null, EnumMember, Struct, Event, Operator, TypeParameter.",
@@ -227,7 +228,8 @@ const getIndexStatsSchema = z.object({
 export const getIndexStatsFromIndexTool: ToolDef<typeof getIndexStatsSchema> = {
   name: "get_index_stats_from_index",
   description:
-    "Get statistics about the symbol index including file count, symbol count, and performance metrics.",
+    "Get statistics about the symbol index including file count, symbol count, and performance metrics. " +
+    "This shows information about the pre-built index used for fast symbol searches.",
   schema: getIndexStatsSchema,
   execute: async ({ root }) => {
     const rootPath = root || process.cwd();
@@ -246,23 +248,38 @@ export const getIndexStatsFromIndexTool: ToolDef<typeof getIndexStatsSchema> = {
 
 const clearIndexSchema = z.object({
   root: z.string().describe("Root directory for the project").optional(),
+  force: z
+    .boolean()
+    .default(false)
+    .describe(
+      "Force clear all caches including SQLite cache. Use this to completely reset the index.",
+    ),
 });
 
 export const clearIndexTool: ToolDef<typeof clearIndexSchema> = {
   name: "clear_index",
   description:
-    "Clear the symbol index and stop all file watchers. Use this to free memory or before re-indexing.",
+    "Clear the symbol index and stop all file watchers. Use this to free memory or before re-indexing. " +
+    "Use force=true to completely reset the index including all caches.",
   schema: clearIndexSchema,
-  execute: async ({ root }) => {
+  execute: async ({ root, force }) => {
     const rootPath = root || process.cwd();
     const stats = getIndexStats(rootPath);
 
-    clearIndex(rootPath);
-
-    return `Cleared symbol index:
+    if (force) {
+      await forceClearIndex(rootPath);
+      return `Force cleared symbol index:
+- Removed ${stats.totalFiles} files
+- Removed ${stats.totalSymbols} symbols
+- Cleared all caches
+- Reset all watchers`;
+    } else {
+      clearIndex(rootPath);
+      return `Cleared symbol index:
 - Removed ${stats.totalFiles} files
 - Removed ${stats.totalSymbols} symbols
 - Stopped all file watchers`;
+    }
   },
 };
 
@@ -276,7 +293,8 @@ export const updateIndexIncrementalTool: ToolDef<
 > = {
   name: "update_index_from_index",
   description:
-    "Update symbol index incrementally based on git changes. Only re-indexes modified files.",
+    "Update symbol index incrementally based on git changes. Only re-indexes modified files. " +
+    "This is faster than full re-indexing and should be used after making code changes.",
   schema: updateIndexIncrementalSchema,
   execute: async ({ root }) => {
     const rootPath = root || process.cwd();
@@ -317,30 +335,6 @@ export const updateIndexIncrementalTool: ToolDef<
   },
 };
 
-// Force clear tool
-const forceClearIndexSchema = z.object({
-  root: z.string().describe("Root directory for the project").optional(),
-});
-
-export const forceClearIndexTool: ToolDef<typeof forceClearIndexSchema> = {
-  name: "force_clear_index",
-  description:
-    "Force clear the symbol index including all caches. Use this to completely reset the index.",
-  schema: forceClearIndexSchema,
-  execute: async ({ root }) => {
-    const rootPath = root || process.cwd();
-    const stats = getIndexStats(rootPath);
-
-    await forceClearIndex(rootPath);
-
-    return `Force cleared symbol index:
-- Removed ${stats.totalFiles} files
-- Removed ${stats.totalSymbols} symbols
-- Cleared all caches
-- Reset all watchers`;
-  },
-};
-
 // Export index tools
 export const indexTools = [
   indexFilesTool,
@@ -348,5 +342,4 @@ export const indexTools = [
   getIndexStatsFromIndexTool,
   clearIndexTool,
   updateIndexIncrementalTool,
-  forceClearIndexTool,
 ];

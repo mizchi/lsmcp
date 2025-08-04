@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import type { LspAdapter } from "../types.ts";
+import type { LspAdapter } from "../types/lsp.ts";
 
 /**
  * Pyright adapter - Microsoft's Python language server

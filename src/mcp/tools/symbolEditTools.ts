@@ -4,6 +4,7 @@ import type { SerenityEditResult } from "./regexEditTools.ts";
 import { getSymbolIndex, querySymbols } from "../../indexer/symbolIndex.ts";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { markFileModified } from "../../indexer/utils/autoIndex.ts";
 
 const replaceSymbolBodySchema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -91,6 +92,9 @@ export const replaceSymbolBodyTool: ToolDef<typeof replaceSymbolBodySchema> = {
       // Write back to file
       await writeFile(absolutePath, lines.join("\n"), "utf-8");
 
+      // Mark file as modified for auto-indexing
+      markFileModified(root, absolutePath);
+
       return JSON.stringify({
         success: true,
         filesChanged: [relativePath],
@@ -166,6 +170,9 @@ export const insertBeforeSymbolTool: ToolDef<typeof insertBeforeSymbolSchema> =
         // Write back
         await writeFile(absolutePath, lines.join("\n"), "utf-8");
 
+        // Mark file as modified for auto-indexing
+        markFileModified(root, absolutePath);
+
         return JSON.stringify({
           success: true,
           filesChanged: [relativePath],
@@ -239,6 +246,9 @@ export const insertAfterSymbolTool: ToolDef<typeof insertAfterSymbolSchema> = {
 
       // Write back
       await writeFile(absolutePath, lines.join("\n"), "utf-8");
+
+      // Mark file as modified for auto-indexing
+      markFileModified(root, absolutePath);
 
       return JSON.stringify({
         success: true,

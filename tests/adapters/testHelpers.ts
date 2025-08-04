@@ -2,7 +2,7 @@ import { spawn } from "child_process";
 import { join } from "path";
 import { readFileSync } from "fs";
 import { createLSPClient } from "../../src/lsp/lspClient.ts";
-import type { LanguageConfig, LspAdapter } from "../../src/types.ts";
+import type { LanguageConfig, LspAdapter } from "../../src/types/lsp.ts";
 import { resolveAdapterCommand } from "../../src/adapters/utils.ts";
 import {
   processDefaultDiagnostics,

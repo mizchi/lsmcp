@@ -14,7 +14,9 @@ export const searchCachedSymbolsFromIndexTool: ToolDef<
   typeof searchCachedSymbolsSchema
 > = {
   name: "search_cached_symbols_from_index",
-  description: "Search for symbols in the SQLite cache",
+  description:
+    "Search for symbols in the SQLite cache. This is an internal cache used by the index system for persistence. " +
+    "For normal symbol searches, use 'search_symbol_from_index' instead.",
   schema: searchCachedSymbolsSchema,
   execute: async ({ root, pattern }) => {
     try {
@@ -50,7 +52,8 @@ const getCacheStatsSchema = z.object({
 
 export const getCacheStatsFromIndexTool: ToolDef<typeof getCacheStatsSchema> = {
   name: "get_cache_stats_from_index",
-  description: "Get statistics about the symbol cache",
+  description:
+    "Get statistics about the symbol cache. This shows information about the internal SQLite cache used for persistence.",
   schema: getCacheStatsSchema,
   execute: async ({ root }) => {
     try {
@@ -76,7 +79,9 @@ const clearCacheSchema = z.object({
 
 export const clearCacheFromIndexTool: ToolDef<typeof clearCacheSchema> = {
   name: "clear_symbol_cache_from_index",
-  description: "Clear the SQLite symbol cache for the project",
+  description:
+    "Clear the SQLite symbol cache for the project. This is usually handled automatically. " +
+    "Use 'clear_index' with force=true for complete index reset.",
   schema: clearCacheSchema,
   execute: async ({ root }) => {
     try {

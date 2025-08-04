@@ -22,6 +22,8 @@ You need to identify at least the following information:
 * the util commands for the system, like \`git\`, \`ls\`, \`cd\`, \`grep\`, \`find\`, etc. Keep in mind that the system is ${system},
   so the commands might be different than on a regular unix system.
 * whether there are particular guidelines, styles, design patterns, etc. that one should know about
+* the .lsmcp/config.json configuration if it exists (including LSP adapter settings, index patterns, and other settings)
+* how the symbol indexing system works and which tools benefit from pre-built indexes
 
 This list is not exhaustive, you can add more information if you think it is relevant.
 
@@ -34,6 +36,13 @@ A particularly important memory file will be the \`suggested_commands.md\` file,
 a list of commands that the user should know about to develop code in this project.
 Moreover, you should create memory files for the style and conventions and a dedicated memory file for
 what should be done when a task is completed.
+
+For lsmcp-based projects, also check if .lsmcp/config.json exists and document:
+* The configured LSP adapter and its capabilities
+* The indexFiles patterns for symbol indexing
+* Any custom settings like autoIndex, concurrency, etc.
+* Which tools use the pre-built index (those with _from_index suffix) for fast searching
+
 **Important**: after done with the onboarding task, remember to call the \`write_memory\` to save the collected information!`;
 
 export const thinkAboutCollectedInformationPrompt =
@@ -56,6 +65,7 @@ export const thinkAboutWhetherYouAreDonePrompt =
   () => `Have you already performed all the steps required by the task? Is it appropriate to run tests and linting, and if so,
 have you done that already? Is it appropriate to adjust non-code files like documentation and config and have you done that already?
 Should new tests be written to cover the changes?
+If you've made significant changes to code files, consider whether the symbol index needs updating.
 Note that a task that is just about exploring the codebase does not require running tests or linting.
 Read the corresponding memory files to see what should be done when a task is completed.`;
 

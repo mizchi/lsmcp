@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "indexFiles": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  "adapter": {
+    "id": "typescript",
+    "name": "TypeScript Language Server",
+    "bin": "typescript-language-server",
+    "args": ["--stdio"],
+    "baseLanguage": "typescript",
+    "description": "Official TypeScript language server",
+    "unsupported": [],
+    "initializationOptions": {},
+    "serverCharacteristics": {
+      "supportsRename": true,
+      "supportsReferences": true,
+      "supportsDefinition": true,
+      "supportsHover": true,
+      "supportsDocumentSymbol": true,
+      "supportsWorkspaceSymbol": true,
+      "supportsCompletion": true,
+      "supportsSignatureHelp": true,
+      "supportsDocumentFormatting": true,
+      "supportsRangeFormatting": true,
+      "supportsCodeAction": true,
+      "supportsDiagnostics": true
+    }
+  },
+  "settings": {
+    "autoIndex": false,
+    "indexConcurrency": 5,
+    "autoIndexDelay": 500,
+    "enableWatchers": true,
+    "memoryLimit": 1024
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.git/**",
+    "**/build/**",
+    "**/coverage/**"
+  ]
+}

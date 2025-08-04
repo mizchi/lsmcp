@@ -3,7 +3,7 @@ import { mkdir, rm, writeFile } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
 import { AdapterRegistry, ConfigLoader } from "./configLoader.ts";
-import type { LspAdapter } from "../../types.ts";
+import type { LspAdapter } from "../../types/lsp.ts";
 
 // Test adapters
 const testAdapter: LspAdapter = {

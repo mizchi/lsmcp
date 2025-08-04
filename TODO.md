@@ -32,17 +32,17 @@
 ### 🎯 Phase 2: 型定義の整理 (優先度: 中)
 
 #### 型定義ディレクトリの作成
-- [ ] `src/types/` ディレクトリを作成
-- [ ] `src/types/lsp.ts` - LSP関連型を集約
-- [ ] `src/types/mcp.ts` - MCP関連型を集約
-- [ ] `src/types/config.ts` - 設定関連型を集約
-- [ ] `src/types/index.ts` - 再エクスポート用
+- [x] `src/types/` ディレクトリを作成
+- [x] `src/types/lsp.ts` - LSP関連型を集約
+- [x] `src/types/mcp.ts` - MCP関連型を集約
+- [x] `src/types/config.ts` - 設定関連型を集約
+- [x] `src/types/index.ts` - 再エクスポート用
 
 #### 既存型定義の移行
-- [ ] `src/core/pure/types.ts` から共通型を移行
-- [ ] `src/lsp/lspTypes.ts` から LSP 型を移行
-- [ ] `src/core/config/configSchema.ts` から設定型を移行
-- [ ] 重複する型定義の統合
+- [x] `src/types.ts` から型定義を移行
+- [x] ServerCharacteristics と ServerCapabilities を分離
+- [x] configSchema.ts を新しい型定義に対応
+- [x] 古い types.ts を削除
 
 ### 🎯 Phase 3: 定数の整理 (優先度: 中)
 

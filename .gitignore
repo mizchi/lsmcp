@@ -165,6 +165,6 @@ tests/adapters/fixtures/python/.venv
 .serena
 examples/fsharp-project/bin/
 examples/fsharp-project/obj/
-.lsmcp
+# .lsmcp
 # lsmcp cache
 .lsmcp/cache

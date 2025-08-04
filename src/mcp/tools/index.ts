@@ -33,7 +33,6 @@ import {
   thinkAboutCollectedInformationTool,
   thinkAboutTaskAdherenceTool,
   thinkAboutWhetherYouAreDoneTool,
-  switchModesTool,
 } from "./workflowTools.ts";
 import {
   listDirTool,
@@ -63,7 +62,6 @@ export const serenityTools = {
   thinkAboutCollectedInformation: thinkAboutCollectedInformationTool,
   thinkAboutTaskAdherence: thinkAboutTaskAdherenceTool,
   thinkAboutWhetherYouAreDone: thinkAboutWhetherYouAreDoneTool,
-  switchModes: switchModesTool,
   listDir: listDirTool,
   findFile: findFileTool,
   searchForPattern: searchForPatternTool,

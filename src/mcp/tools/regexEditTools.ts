@@ -8,6 +8,7 @@ export interface SerenityEditResult {
 }
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { markFileModified } from "../../indexer/utils/autoIndex.ts";
 
 const replaceRegexSchema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -82,6 +83,9 @@ export const replaceRegexTool: ToolDef<typeof replaceRegexSchema> = {
 
       // Write back
       await writeFile(absolutePath, newContent, "utf-8");
+
+      // Mark file as modified for auto-indexing
+      markFileModified(root, absolutePath);
 
       return JSON.stringify({
         success: true,

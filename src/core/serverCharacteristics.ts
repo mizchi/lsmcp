@@ -2,7 +2,7 @@
  * Default server characteristics and per-server overrides
  */
 
-import type { ServerCharacteristics } from "../types.ts";
+import type { ServerCharacteristics } from "../types/lsp.ts";
 
 /**
  * Default characteristics for unknown servers
