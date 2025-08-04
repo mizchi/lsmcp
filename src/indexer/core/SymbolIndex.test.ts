@@ -216,9 +216,12 @@ describe("SymbolIndex", () => {
         name: "test",
         includeChildren: true,
       });
-      expect(results.length).toBe(2); // testMethod, testFunction
-      expect(results.map((s) => s.name)).toContain("testMethod");
-      expect(results.map((s) => s.name)).toContain("testFunction");
+      // When includeChildren is true, we get: TestClass, testMethod, testFunction
+      expect(results.length).toBe(3);
+      const names = results.map((s) => s.name);
+      expect(names).toContain("TestClass"); // contains "test"
+      expect(names).toContain("testMethod");
+      expect(names).toContain("testFunction");
     });
 
     it("should query by kind", () => {
@@ -237,14 +240,17 @@ describe("SymbolIndex", () => {
     });
 
     it("should query by container name", () => {
-      // First get the class
-      const classResults = symbolIndex.querySymbols({ name: "TestClass" });
-      expect(classResults.length).toBe(1);
+      // Query for symbols inside TestClass container
+      const results = symbolIndex.querySymbols({
+        containerName: "TestClass",
+        includeChildren: true,
+      });
 
-      // Check it has children
-      const testClass = classResults[0];
-      expect(testClass.children).toBeDefined();
-      expect(testClass.children?.length).toBe(2); // constructor, testMethod
+      // Should find constructor and testMethod that are inside TestClass
+      expect(results.length).toBe(2);
+      const names = results.map((s) => s.name);
+      expect(names).toContain("constructor");
+      expect(names).toContain("testMethod");
     });
 
     it("should query with multiple filters", () => {

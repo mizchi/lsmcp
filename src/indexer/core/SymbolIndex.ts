@@ -173,7 +173,7 @@ export class SymbolIndex extends EventEmitter {
     let fileUris = new Set<string>();
 
     // Start with all files if no specific filters
-    if (!query.name && !query.kind && !query.file && !query.containerName) {
+    if (!query.name && !query.kind && !query.file) {
       fileUris = new Set(this.fileIndex.keys());
     }
 
@@ -506,8 +506,11 @@ export class SymbolIndex extends EventEmitter {
     const processSymbol = (symbol: IndexedSymbol, containerName?: string) => {
       let matches = true;
 
-      // Check name
-      if (query.name && !symbol.name.includes(query.name)) {
+      // Check name (case-insensitive)
+      if (
+        query.name &&
+        !symbol.name.toLowerCase().includes(query.name.toLowerCase())
+      ) {
         matches = false;
       }
 

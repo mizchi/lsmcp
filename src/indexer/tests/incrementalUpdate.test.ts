@@ -156,17 +156,21 @@ describe("Incremental Index Updates", () => {
       // First index a file
       mockSymbolProvider.getDocumentSymbols.mockResolvedValue([]);
 
-      // Mock file system to return a specific mtime during indexing
-      const indexTime = new Date();
+      // Mock current time for indexing
+      const indexTime = Date.now();
+
+      // Mock file system to return a past mtime (file was modified before indexing)
+      const fileMtime = new Date(indexTime - 60000); // File was modified 1 minute before indexing
       mockFileSystem.stat.mockResolvedValue({
-        mtime: new Date(indexTime.getTime() - 10000), // File was modified 10 seconds before indexing
+        mtime: fileMtime,
       });
 
       await symbolIndex.indexFile("test.ts");
 
       // Return the same mtime when checking if reindex is needed
+      // The file mtime is still before the index time, so no reindex needed
       mockFileSystem.stat.mockResolvedValue({
-        mtime: new Date(indexTime.getTime() - 10000), // Still the same mtime
+        mtime: fileMtime,
       });
 
       // File hasn't changed since indexing

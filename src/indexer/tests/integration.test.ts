@@ -123,9 +123,9 @@ describe("Indexer Integration", () => {
     const allSymbols = symbolIndex.querySymbols({});
     expect(allSymbols.length).toBe(4); // Class + constructor + method + function
 
-    // Query by name
+    // Query by name (case-insensitive, so includes TestClass)
     const testSymbols = symbolIndex.querySymbols({ name: "test" });
-    expect(testSymbols.length).toBe(2); // testMethod + testFunction
+    expect(testSymbols.length).toBe(3); // TestClass + testMethod + testFunction
 
     // Query by kind
     const methods = symbolIndex.querySymbols({ kind: SymbolKind.Method });
