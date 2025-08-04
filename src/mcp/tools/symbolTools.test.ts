@@ -24,6 +24,7 @@ vi.mock("node:fs", () => ({
 
 vi.mock("node:fs/promises", () => ({
   stat: vi.fn(),
+  readdir: vi.fn(),
 }));
 
 vi.mock("glob", () => ({
@@ -70,7 +71,7 @@ describe("getSymbolsOverviewTool", () => {
       vi.mocked(existsSync).mockReturnValue(true);
       vi.mocked(IndexerAdapter.getOrCreateIndex).mockReturnValue({} as any);
       vi.mocked(gitignoreUtils.createGitignoreFilter).mockResolvedValue(
-        () => false,
+        () => true, // gitignoreFilter returns true if file should be included
       );
     });
 
@@ -80,12 +81,18 @@ describe("getSymbolsOverviewTool", () => {
         isDirectory: () => true,
       } as any);
 
-      // Mock glob to return TypeScript files
-      vi.mocked(globSync).mockReturnValue([
-        "src/serenity/tools/index.ts",
-        "src/serenity/tools/symbolTools.ts",
-        "src/serenity/tools/fileSystemTools.ts",
-      ]);
+      // Mock readdir to return files and subdirectories
+      vi.mocked(fs.readdir)
+        .mockResolvedValueOnce([
+          { name: "index.ts", isDirectory: () => false },
+          { name: "subdir", isDirectory: () => true },
+          { name: "fileSystemTools.ts", isDirectory: () => false },
+        ] as any)
+        .mockResolvedValueOnce([
+          { name: "symbolTools.ts", isDirectory: () => false },
+          { name: "node_modules", isDirectory: () => true }, // Should be skipped
+          { name: "test.txt", isDirectory: () => false }, // Should be skipped
+        ] as any);
 
       // Mock indexFiles to return success
       vi.mocked(IndexerAdapter.indexFiles).mockResolvedValue({
@@ -97,83 +104,90 @@ describe("getSymbolsOverviewTool", () => {
       });
 
       // Mock querySymbols to return symbols for each file
-      vi.mocked(IndexerAdapter.querySymbols)
-        .mockReturnValueOnce([
-          {
-            name: "exportedFunction",
-            containerName: undefined,
-            kind: SymbolKind.Function,
-            location: {
-              uri: "file:///test/src/serenity/tools/index.ts",
-              range: {
-                start: { line: 0, character: 0 },
-                end: { line: 0, character: 10 },
+      vi.mocked(IndexerAdapter.querySymbols).mockImplementation((_, query) => {
+        const file = query?.file;
+        if (file === "src/serenity/tools/index.ts") {
+          return [
+            {
+              name: "exportedFunction",
+              containerName: undefined,
+              kind: SymbolKind.Function,
+              location: {
+                uri: "file:///test/src/serenity/tools/index.ts",
+                range: {
+                  start: { line: 0, character: 0 },
+                  end: { line: 0, character: 10 },
+                },
               },
+              detail: undefined,
+              deprecated: false,
             },
-            detail: undefined,
-            deprecated: false,
-          },
-          {
-            name: "exportedClass",
-            containerName: undefined,
-            kind: SymbolKind.Class,
-            location: {
-              uri: "file:///test/src/serenity/tools/index.ts",
-              range: {
-                start: { line: 1, character: 0 },
-                end: { line: 1, character: 10 },
+            {
+              name: "exportedClass",
+              containerName: undefined,
+              kind: SymbolKind.Class,
+              location: {
+                uri: "file:///test/src/serenity/tools/index.ts",
+                range: {
+                  start: { line: 1, character: 0 },
+                  end: { line: 1, character: 10 },
+                },
               },
+              detail: undefined,
+              deprecated: false,
             },
-            detail: undefined,
-            deprecated: false,
-          },
-        ])
-        .mockReturnValueOnce([
-          {
-            name: "getSymbolsOverviewTool",
-            containerName: undefined,
-            kind: SymbolKind.Variable,
-            location: {
-              uri: "file:///test/src/serenity/tools/symbolTools.ts",
-              range: {
-                start: { line: 0, character: 0 },
-                end: { line: 0, character: 10 },
+          ];
+        } else if (file === "src/serenity/tools/fileSystemTools.ts") {
+          return [
+            {
+              name: "readFileTool",
+              containerName: undefined,
+              kind: SymbolKind.Variable,
+              location: {
+                uri: "file:///test/src/serenity/tools/fileSystemTools.ts",
+                range: {
+                  start: { line: 0, character: 0 },
+                  end: { line: 0, character: 10 },
+                },
               },
+              detail: undefined,
+              deprecated: false,
             },
-            detail: undefined,
-            deprecated: false,
-          },
-        ])
-        .mockReturnValueOnce([
-          {
-            name: "readFileTool",
-            containerName: undefined,
-            kind: SymbolKind.Variable,
-            location: {
-              uri: "file:///test/src/serenity/tools/fileSystemTools.ts",
-              range: {
-                start: { line: 0, character: 0 },
-                end: { line: 0, character: 10 },
+            {
+              name: "writeFileTool",
+              containerName: undefined,
+              kind: SymbolKind.Variable,
+              location: {
+                uri: "file:///test/src/serenity/tools/fileSystemTools.ts",
+                range: {
+                  start: { line: 1, character: 0 },
+                  end: { line: 1, character: 10 },
+                },
               },
+              detail: undefined,
+              deprecated: false,
             },
-            detail: undefined,
-            deprecated: false,
-          },
-          {
-            name: "writeFileTool",
-            containerName: undefined,
-            kind: SymbolKind.Variable,
-            location: {
-              uri: "file:///test/src/serenity/tools/fileSystemTools.ts",
-              range: {
-                start: { line: 1, character: 0 },
-                end: { line: 1, character: 10 },
+          ];
+        } else if (file === "src/serenity/tools/subdir/symbolTools.ts") {
+          return [
+            {
+              name: "getSymbolsOverviewTool",
+              containerName: undefined,
+              kind: SymbolKind.Variable,
+              location: {
+                uri: "file:///test/src/serenity/tools/subdir/symbolTools.ts",
+                range: {
+                  start: { line: 0, character: 0 },
+                  end: { line: 0, character: 10 },
+                },
               },
+              detail: undefined,
+              deprecated: false,
             },
-            detail: undefined,
-            deprecated: false,
-          },
-        ]);
+          ];
+        }
+        return [];
+      });
 
       const result = await getSymbolsOverviewTool.execute({
         relativePath: "src/serenity/tools",
@@ -186,7 +200,7 @@ describe("getSymbolsOverviewTool", () => {
           { name_path: "exportedFunction", kind: "function" },
           { name_path: "exportedClass", kind: "class" },
         ],
-        "src/serenity/tools/symbolTools.ts": [
+        "src/serenity/tools/subdir/symbolTools.ts": [
           { name_path: "getSymbolsOverviewTool", kind: "variable" },
         ],
         "src/serenity/tools/fileSystemTools.ts": [
@@ -195,21 +209,17 @@ describe("getSymbolsOverviewTool", () => {
         ],
       });
 
-      // Verify glob was called with correct pattern
-      expect(globSync).toHaveBeenCalledWith(
-        "src/serenity/tools/**/*.{ts,tsx,js,jsx,py,java,cpp,c,h,hpp,cs,rb,go,rs,php,swift,kt,scala,r,m,mm}",
-        {
-          cwd: process.cwd(),
-          ignore: ["**/node_modules/**", "**/.git/**"],
-          nodir: true,
-        },
-      );
+      // Verify readdir was called
+      expect(fs.readdir).toHaveBeenCalledTimes(2);
 
-      // Verify indexFiles was called
-      expect(IndexerAdapter.indexFiles).toHaveBeenCalledWith(process.cwd(), [
-        "src/serenity/tools/index.ts",
-        "src/serenity/tools/symbolTools.ts",
+      // Verify indexFiles was called (order may vary)
+      expect(IndexerAdapter.indexFiles).toHaveBeenCalled();
+      const callArgs = vi.mocked(IndexerAdapter.indexFiles).mock.calls[0];
+      expect(callArgs[0]).toBe(process.cwd());
+      expect(callArgs[1].sort()).toEqual([
         "src/serenity/tools/fileSystemTools.ts",
+        "src/serenity/tools/index.ts",
+        "src/serenity/tools/subdir/symbolTools.ts",
       ]);
     });
 
@@ -256,8 +266,8 @@ describe("getSymbolsOverviewTool", () => {
         "src/someFile.ts": [{ name_path: "someFunction", kind: "function" }],
       });
 
-      // Verify glob was NOT called for single file
-      expect(globSync).not.toHaveBeenCalled();
+      // Verify readdir was NOT called for single file
+      expect(fs.readdir).not.toHaveBeenCalled();
     });
 
     it("should handle empty directory", async () => {
@@ -266,15 +276,16 @@ describe("getSymbolsOverviewTool", () => {
         isDirectory: () => true,
       } as any);
 
-      // Mock glob to return empty array
-      vi.mocked(globSync).mockReturnValue([]);
+      // Mock readdir to return empty array
+      vi.mocked(fs.readdir).mockResolvedValue([]);
 
       const result = await getSymbolsOverviewTool.execute({
         relativePath: "src/empty-dir",
         maxAnswerChars: 200000,
       });
 
-      expect(result).toBe("{}");
+      const parsed = JSON.parse(result);
+      expect(parsed.error).toBe("No files found in src/empty-dir");
 
       // Verify indexFiles was NOT called with empty file list
       expect(IndexerAdapter.indexFiles).not.toHaveBeenCalled();
@@ -286,16 +297,16 @@ describe("getSymbolsOverviewTool", () => {
         isDirectory: () => true,
       } as any);
 
-      // Mock glob to return files including gitignored ones
-      vi.mocked(globSync).mockReturnValue([
-        "src/file1.ts",
-        "src/node_modules/file2.ts",
-        "src/file3.ts",
-      ]);
+      // Mock readdir to return files including gitignored ones
+      vi.mocked(fs.readdir).mockResolvedValue([
+        { name: "file1.ts", isDirectory: () => false },
+        { name: "file2.ts", isDirectory: () => false },
+        { name: "file3.ts", isDirectory: () => false },
+      ] as any);
 
-      // Mock gitignore filter to filter out node_modules
+      // Mock gitignore filter to filter out file2
       vi.mocked(gitignoreUtils.createGitignoreFilter).mockResolvedValue(
-        (path: string) => path.includes("node_modules"),
+        (path: string) => !path.includes("file2"), // returns false for file2 (ignored)
       );
 
       // Mock indexFiles
@@ -322,20 +333,27 @@ describe("getSymbolsOverviewTool", () => {
       ]);
     });
 
-    it("should handle trailing slashes in directory path", async () => {
+    it("should handle nested directories", async () => {
       // Mock file system stat to return directory
       vi.mocked(fs.stat).mockResolvedValue({
         isDirectory: () => true,
       } as any);
 
-      // Mock glob to return files
-      vi.mocked(globSync).mockReturnValue(["src/tools/file.ts"]);
+      // Mock readdir to return nested structure
+      vi.mocked(fs.readdir)
+        .mockResolvedValueOnce([
+          { name: "dir1", isDirectory: () => true },
+          { name: "file.ts", isDirectory: () => false },
+        ] as any)
+        .mockResolvedValueOnce([
+          { name: "nested.ts", isDirectory: () => false },
+        ] as any);
 
       // Mock indexFiles
       vi.mocked(IndexerAdapter.indexFiles).mockResolvedValue({
         success: true,
-        totalFiles: 1,
-        totalSymbols: 3,
+        totalFiles: 2,
+        totalSymbols: 5,
         duration: 50,
         errors: [],
       });
@@ -343,15 +361,18 @@ describe("getSymbolsOverviewTool", () => {
       vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([]);
 
       await getSymbolsOverviewTool.execute({
-        relativePath: "src/tools/", // Note trailing slash
+        relativePath: "src/tools",
         maxAnswerChars: 200000,
       });
 
-      // Verify glob was called with normalized path (no trailing slash)
-      expect(globSync).toHaveBeenCalledWith(
-        "src/tools/**/*.{ts,tsx,js,jsx,py,java,cpp,c,h,hpp,cs,rb,go,rs,php,swift,kt,scala,r,m,mm}",
-        expect.any(Object),
-      );
+      // Verify indexFiles was called with all found files (order may vary)
+      expect(IndexerAdapter.indexFiles).toHaveBeenCalled();
+      const callArgs = vi.mocked(IndexerAdapter.indexFiles).mock.calls[0];
+      expect(callArgs[0]).toBe(process.cwd());
+      expect(callArgs[1].sort()).toEqual([
+        "src/tools/dir1/nested.ts",
+        "src/tools/file.ts",
+      ]);
     });
   });
 
@@ -360,7 +381,7 @@ describe("getSymbolsOverviewTool", () => {
       vi.mocked(existsSync).mockReturnValue(true);
       vi.mocked(IndexerAdapter.getOrCreateIndex).mockReturnValue({} as any);
       vi.mocked(gitignoreUtils.createGitignoreFilter).mockResolvedValue(
-        () => false,
+        () => true, // gitignoreFilter returns true if file should be included
       );
       vi.mocked(fs.stat).mockResolvedValue({
         isDirectory: () => true,
@@ -391,11 +412,13 @@ describe("getSymbolsOverviewTool", () => {
       );
     });
 
-    it("should handle glob errors", async () => {
-      // Mock glob to throw error
-      vi.mocked(globSync).mockImplementation(() => {
-        throw new Error("Glob pattern error");
-      });
+    it("should handle readdir errors", async () => {
+      vi.mocked(fs.stat).mockResolvedValue({
+        isDirectory: () => true,
+      } as any);
+
+      // Mock readdir to throw error
+      vi.mocked(fs.readdir).mockRejectedValue(new Error("Permission denied"));
 
       const result = await getSymbolsOverviewTool.execute({
         relativePath: "src",
@@ -404,13 +427,15 @@ describe("getSymbolsOverviewTool", () => {
 
       expect(result).toBe(
         JSON.stringify({
-          error: "Glob error: Glob pattern error",
+          error: "Directory scan error: Permission denied",
         }),
       );
     });
 
     it("should handle output size limit", async () => {
-      vi.mocked(globSync).mockReturnValue(["src/file.ts"]);
+      vi.mocked(fs.stat).mockResolvedValue({
+        isDirectory: () => false,
+      } as any);
 
       vi.mocked(IndexerAdapter.indexFiles).mockResolvedValue({
         success: true,
@@ -441,7 +466,7 @@ describe("getSymbolsOverviewTool", () => {
       vi.mocked(IndexerAdapter.querySymbols).mockReturnValue(manySymbols);
 
       const result = await getSymbolsOverviewTool.execute({
-        relativePath: "src",
+        relativePath: "src/file.ts",
         maxAnswerChars: 100, // Very small limit
       });
 

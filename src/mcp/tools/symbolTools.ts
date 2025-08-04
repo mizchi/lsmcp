@@ -10,7 +10,74 @@ import { resolve } from "node:path";
 import { existsSync } from "node:fs";
 import { SymbolKind } from "vscode-languageserver-types";
 import { createGitignoreFilter } from "../../core/io/gitignoreUtils.ts";
-import { globSync } from "glob";
+
+// Export for testing
+export async function getFilesRecursively(
+  dir: string,
+  rootPath: string,
+  gitignoreFilter: (path: string) => boolean,
+): Promise<string[]> {
+  const extensions = [
+    "ts",
+    "tsx",
+    "js",
+    "jsx",
+    "py",
+    "java",
+    "cpp",
+    "c",
+    "h",
+    "hpp",
+    "cs",
+    "rb",
+    "go",
+    "rs",
+    "php",
+    "swift",
+    "kt",
+    "scala",
+    "r",
+    "m",
+    "mm",
+  ];
+
+  const dirents = await import("node:fs/promises").then((fs) =>
+    fs.readdir(dir, { withFileTypes: true }),
+  );
+
+  const files = await Promise.all(
+    dirents.map(async (dirent) => {
+      const res = resolve(dir, dirent.name);
+      // Fix: Ensure consistent path replacement
+      const relPath = res.startsWith(rootPath + "/")
+        ? res.substring(rootPath.length + 1)
+        : res.replace(rootPath, "").replace(/^\//, "");
+
+      // Skip gitignored files
+      // gitignoreFilter returns true if file should be included
+      if (!gitignoreFilter(relPath)) {
+        return [];
+      }
+
+      if (dirent.isDirectory()) {
+        // Skip common ignored directories
+        if (dirent.name === "node_modules" || dirent.name === ".git") {
+          return [];
+        }
+        return getFilesRecursively(res, rootPath, gitignoreFilter);
+      } else {
+        // Check if file has a supported extension
+        const ext = dirent.name.split(".").pop()?.toLowerCase();
+        if (ext && extensions.includes(ext)) {
+          return [relPath];
+        }
+        return [];
+      }
+    }),
+  );
+
+  return files.flat();
+}
 
 const getSymbolsOverviewSchema = z.object({
   relativePath: z
@@ -57,31 +124,16 @@ export const getSymbolsOverviewTool: ToolDef<typeof getSymbolsOverviewSchema> =
         const files: string[] = [];
 
         if (stats.isDirectory()) {
-          // Get all code files in directory
-          // Normalize the relative path by removing trailing slashes
-          const normalizedPath = relativePath.replace(/\/+$/, "");
-          const pattern = normalizedPath
-            ? `${normalizedPath}/**/*.{ts,tsx,js,jsx,py,java,cpp,c,h,hpp,cs,rb,go,rs,php,swift,kt,scala,r,m,mm}`
-            : `**/*.{ts,tsx,js,jsx,py,java,cpp,c,h,hpp,cs,rb,go,rs,php,swift,kt,scala,r,m,mm}`;
-
           try {
-            const foundFiles = globSync(pattern, {
-              cwd: rootPath,
-              ignore: ["**/node_modules/**", "**/.git/**"],
-              nodir: true,
-            });
-
-            if (!Array.isArray(foundFiles)) {
-              return JSON.stringify({
-                error: `globSync returned non-array: ${typeof foundFiles}`,
-              });
-            }
-
-            const filteredFiles = foundFiles.filter((f) => !gitignoreFilter(f));
-            files.push(...filteredFiles);
+            const foundFiles = await getFilesRecursively(
+              absolutePath,
+              rootPath,
+              gitignoreFilter,
+            );
+            files.push(...foundFiles);
           } catch (error) {
             return JSON.stringify({
-              error: `Glob error: ${error instanceof Error ? error.message : String(error)}`,
+              error: `Directory scan error: ${error instanceof Error ? error.message : String(error)}`,
             });
           }
         } else {
@@ -96,6 +148,10 @@ export const getSymbolsOverviewTool: ToolDef<typeof getSymbolsOverviewSchema> =
               error: `Failed to index files: ${indexResult.errors.map((e) => e.error).join(", ")}`,
             });
           }
+        } else {
+          return JSON.stringify({
+            error: `No files found in ${relativePath}`,
+          });
         }
 
         const overview: Record<

@@ -1,6 +1,7 @@
 import { dirname, join, relative } from "path";
 import ignore, { type Ignore } from "ignore";
 import type { FileSystem } from "./fs-interface.ts";
+import * as nodeFs from "fs";
 
 /**
  * GitignoreManager handles .gitignore files in a directory tree
@@ -12,7 +13,7 @@ export class GitignoreManager {
 
   constructor(
     private rootPath: string,
-    private fs: FileSystem = require("fs"),
+    private fs: FileSystem = nodeFs as FileSystem,
   ) {
     this.loadGitignoreHierarchy(rootPath);
   }
