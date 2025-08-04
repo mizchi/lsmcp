@@ -8,9 +8,9 @@ import {
   insertBeforeSymbolTool,
   insertAfterSymbolTool,
 } from "./symbolEditTools.ts";
-import * as symbolIndex from "../../mcp/analysis/symbolIndex.ts";
+import * as symbolIndex from "../../indexer/symbolIndex.ts";
 
-vi.mock("../../mcp/analysis/symbolIndex.ts");
+vi.mock("../../indexer/symbolIndex.ts");
 
 describe("symbolEditTools", () => {
   let testDir: string;

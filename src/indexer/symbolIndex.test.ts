@@ -21,14 +21,14 @@ import { EventEmitter } from "events";
 // Mock LSP client
 const mockGetDocumentSymbols = vi.fn();
 
-vi.mock("../../lsp/lspClient.ts", () => ({
+vi.mock("../lsp/lspClient.ts", () => ({
   getLSPClient: () => ({
     getDocumentSymbols: mockGetDocumentSymbols,
   }),
 }));
 
 // Mock cache integration
-vi.mock("../../serenity/cache/symbolCacheIntegration.ts", () => ({
+vi.mock("./cache/symbolCacheIntegration.ts", () => ({
   cacheSymbolsFromIndex: vi.fn(),
   loadCachedSymbols: vi.fn().mockReturnValue(null), // Always return null to force LSP lookup
   getSymbolCacheManager: vi.fn().mockReturnValue({
@@ -143,7 +143,7 @@ describe("SymbolIndex", () => {
 
       const stats = getIndexStats(state);
       expect(stats.totalFiles).toBe(1);
-      expect(stats.totalSymbols).toBe(4); // TestClass + constructor + testMethod + testFunction
+      expect(stats.totalSymbols).toBe(4); // TestClass + constructor + testMethod + testFunction (includes nested)
     });
 
     it("should emit fileIndexed event", async () => {
@@ -156,7 +156,7 @@ describe("SymbolIndex", () => {
 
       expect(fileIndexedHandler).toHaveBeenCalledWith({
         uri: "file:///test/project/test.ts",
-        symbolCount: 2, // Top-level symbols only
+        symbolCount: 2, // Top-level symbols only (TestClass, testFunction)
         fromCache: false,
       });
     });

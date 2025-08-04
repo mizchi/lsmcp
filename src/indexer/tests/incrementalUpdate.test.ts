@@ -97,9 +97,14 @@ describe("Incremental Index Updates", () => {
         },
       ]);
 
-      // Index initial files to set lastGitHash
-      await symbolIndex.indexFile("src/file1.ts");
-      symbolIndex.getStats().lastGitHash = "abc123";
+      // Mock initial git hash
+      vi.mocked(gitUtils.getGitHash).mockReturnValueOnce("abc123");
+
+      // Index initial files - this will set lastGitHash
+      await symbolIndex.indexFiles(["src/file1.ts"]);
+
+      // Now mock the new hash for incremental update
+      vi.mocked(gitUtils.getGitHash).mockReturnValue("def456");
 
       // Run incremental update
       const result = await symbolIndex.updateIncremental();
@@ -118,8 +123,12 @@ describe("Incremental Index Updates", () => {
       vi.mocked(gitUtils.getModifiedFiles).mockReturnValue(["deleted.ts"]);
       mockFileSystem.exists.mockResolvedValue(false); // File doesn't exist
 
-      // Set initial git hash
-      symbolIndex.getStats().lastGitHash = "abc123";
+      // Mock initial git hash and index a file
+      vi.mocked(gitUtils.getGitHash).mockReturnValueOnce("abc123");
+      await symbolIndex.indexFiles(["dummy.ts"]);
+
+      // Now set the new hash for incremental update
+      vi.mocked(gitUtils.getGitHash).mockReturnValue("def456");
 
       const result = await symbolIndex.updateIncremental();
 
@@ -149,16 +158,17 @@ describe("Incremental Index Updates", () => {
     });
 
     it("should return false for unchanged files", async () => {
+      // Mock file system to return a specific mtime
+      const fileTime = new Date(Date.now() - 10000); // 10 seconds ago
+      mockFileSystem.stat.mockResolvedValue({
+        mtime: fileTime,
+      });
+
       // Index a file
-      const indexTime = Date.now();
       mockSymbolProvider.getDocumentSymbols.mockResolvedValue([]);
       await symbolIndex.indexFile("test.ts");
 
-      // Mock file system to return older mtime
-      mockFileSystem.stat.mockResolvedValue({
-        mtime: new Date(indexTime - 10000), // 10 seconds before index
-      });
-
+      // File hasn't changed since indexing
       const needsReindex = await symbolIndex.needsReindex("test.ts");
       expect(needsReindex).toBe(false);
     });

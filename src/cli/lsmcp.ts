@@ -7,7 +7,7 @@
  */
 
 import { parseArgs } from "node:util";
-import { debug as debugLog } from "./utils/mcpHelpers.ts";
+import { debug as debugLog } from "../mcp/utils/mcpHelpers.ts";
 import {
   AdapterRegistry,
   ConfigLoader,
@@ -15,9 +15,9 @@ import {
 } from "../core/config/configLoader.ts";
 
 // Import modular components
-import { registerBuiltinAdapters } from "./registry/adapterSetup.ts";
-import { showHelp, showListWithConfigLoader } from "./cli/help.ts";
-import { runLanguageServerWithConfig } from "./server/lspServerRunner.ts";
+import { registerBuiltinAdapters } from "../mcp/registry/adapterSetup.ts";
+import { showHelp, showListWithConfigLoader } from "./help.ts";
+import { runLanguageServerWithConfig } from "../mcp/server/lspServerRunner.ts";
 
 // Initialize configuration system
 const adapterRegistry = new AdapterRegistry();
@@ -27,7 +27,7 @@ const configLoader = new ConfigLoader(adapterRegistry);
 registerBuiltinAdapters(adapterRegistry);
 
 // Import subcommands
-import { initCommand, indexCommand } from "./cli/subcommands.ts";
+import { initCommand, indexCommand } from "./subcommands.ts";
 
 // Parse command line arguments
 const { values, positionals } = parseArgs({

@@ -1,9 +1,9 @@
 import { z } from "zod";
-import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
+import type { ToolDef } from "../utils/mcpHelpers.ts";
 import {
   searchSymbolsInCache,
   getSymbolCacheManager,
-} from "../cache/symbolCacheIntegration.ts";
+} from "../../indexer/cache/symbolCacheIntegration.ts";
 
 const searchCachedSymbolsSchema = z.object({
   root: z.string().describe("Root directory for the project"),

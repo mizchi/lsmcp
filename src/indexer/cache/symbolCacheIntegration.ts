@@ -1,12 +1,8 @@
-import { SymbolCacheManager } from "./symbolCache.ts";
-import type {
-  SymbolIndexState,
-  SymbolEntry,
-} from "../../mcp/analysis/symbolIndex.ts";
+import { SymbolCacheManager, type CachedSymbol } from "./SymbolCacheManager.ts";
+import type { SymbolIndexState, SymbolEntry } from "../symbolIndex.ts";
 import { statSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { relative } from "node:path";
-import type { CachedSymbol } from "./symbolCache.ts";
 import { SymbolKind } from "vscode-languageserver-types";
 
 // Global cache managers per project root

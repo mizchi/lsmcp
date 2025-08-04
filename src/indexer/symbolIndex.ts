@@ -14,14 +14,14 @@ import {
 import { pathToFileURL } from "url";
 import { watch, FSWatcher } from "fs";
 import { resolve, relative } from "path";
-import { getLSPClient } from "../../lsp/lspClient.ts";
-import type { LSPClient } from "../../lsp/lspTypes.ts";
+import { getLSPClient } from "../lsp/lspClient.ts";
+import type { LSPClient } from "../lsp/lspTypes.ts";
 import {
   cacheSymbolsFromIndex,
   loadCachedSymbols,
   getSymbolCacheManager,
-} from "../../serenity/cache/symbolCacheIntegration.ts";
-import { withTemporaryDocument } from "../../lsp/utils/documentManager.ts";
+} from "./cache/symbolCacheIntegration.ts";
+import { withTemporaryDocument } from "../lsp/utils/documentManager.ts";
 import { readFile } from "fs/promises";
 
 export interface SymbolEntry {

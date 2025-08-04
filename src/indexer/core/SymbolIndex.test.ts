@@ -76,13 +76,13 @@ describe("SymbolIndex", () => {
 
       const event = await fileIndexedPromise;
       expect(event.type).toBe("fileIndexed");
-      expect(event.symbolCount).toBe(2); // Class + Method
+      expect(event.symbolCount).toBe(1); // Only top-level symbols (Class)
       expect(event.fromCache).toBe(false);
 
       // Verify stats
       const stats = symbolIndex.getStats();
       expect(stats.totalFiles).toBe(1);
-      expect(stats.totalSymbols).toBe(2);
+      expect(stats.totalSymbols).toBe(1); // Only counts top-level symbols
     });
 
     it("should use cache when available", async () => {
@@ -236,6 +236,7 @@ describe("SymbolIndex", () => {
     it("should query by container name", () => {
       const results = symbolIndex.querySymbols({
         containerName: "TestClass",
+        includeChildren: true,
       });
       expect(results.length).toBe(2); // constructor, testMethod
       expect(results.every((s) => s.containerName === "TestClass")).toBe(true);
@@ -245,6 +246,7 @@ describe("SymbolIndex", () => {
       const results = symbolIndex.querySymbols({
         name: "test",
         kind: SymbolKind.Method,
+        includeChildren: true,
       });
       expect(results.length).toBe(1);
       expect(results[0].name).toBe("testMethod");

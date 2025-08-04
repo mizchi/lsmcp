@@ -4,9 +4,9 @@ import {
   getCacheStatsFromIndexTool,
   clearCacheFromIndexTool,
 } from "./cacheTools.ts";
-import * as cacheIntegration from "../cache/symbolCacheIntegration.ts";
+import * as cacheIntegration from "../../indexer/cache/symbolCacheIntegration.ts";
 
-vi.mock("../cache/symbolCacheIntegration.ts");
+vi.mock("../../indexer/cache/symbolCacheIntegration.ts");
 
 describe("cacheTools", () => {
   let mockCacheManager: any;

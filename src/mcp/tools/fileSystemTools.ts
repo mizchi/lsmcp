@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
+import type { ToolDef } from "../utils/mcpHelpers.ts";
 import { readdir, stat } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { existsSync } from "node:fs";

@@ -1,6 +1,8 @@
 import { DatabaseSync, type StatementSync } from "node:sqlite";
 import { join } from "node:path";
 import { mkdirSync, existsSync } from "node:fs";
+import type { SymbolEntry } from "../symbolIndex.ts";
+
 // Define CachedSymbol type locally
 export interface CachedSymbol {
   id?: number;
@@ -15,7 +17,6 @@ export interface CachedSymbol {
   lastModified: number;
   projectRoot: string;
 }
-import type { SymbolEntry } from "../../mcp/analysis/symbolIndex.ts";
 
 // Current schema version
 const SCHEMA_VERSION = 2;
@@ -120,73 +121,104 @@ export class SymbolCacheManager {
           projectRoot TEXT NOT NULL,
           UNIQUE(filePath, namePath, startLine, startCharacter, projectRoot)
         );
-
+        
         CREATE INDEX IF NOT EXISTS idx_symbols_file 
-          ON symbols(filePath, projectRoot);
+        ON symbols(filePath, projectRoot);
         
         CREATE INDEX IF NOT EXISTS idx_symbols_name 
-          ON symbols(namePath, projectRoot);
+        ON symbols(namePath, projectRoot);
         
-        CREATE INDEX IF NOT EXISTS idx_symbols_container 
-          ON symbols(containerName, projectRoot);
+        CREATE INDEX IF NOT EXISTS idx_symbols_project 
+        ON symbols(projectRoot);
       `);
 
       // Update schema version
-      this.db
-        .prepare(
-          "INSERT OR REPLACE INTO schema_version (version, updated_at) VALUES (?, ?)",
-        )
-        .run(SCHEMA_VERSION, Date.now());
+      this.db.exec(`
+        INSERT INTO schema_version (version, updated_at) 
+        VALUES (${SCHEMA_VERSION}, ${Date.now()})
+      `);
+    } else {
+      // Schema is up to date, just ensure tables exist
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS symbols (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          filePath TEXT NOT NULL,
+          namePath TEXT NOT NULL,
+          kind INTEGER NOT NULL,
+          containerName TEXT,
+          startLine INTEGER NOT NULL,
+          startCharacter INTEGER NOT NULL,
+          endLine INTEGER NOT NULL,
+          endCharacter INTEGER NOT NULL,
+          lastModified INTEGER NOT NULL,
+          projectRoot TEXT NOT NULL,
+          UNIQUE(filePath, namePath, startLine, startCharacter, projectRoot)
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_symbols_file 
+        ON symbols(filePath, projectRoot);
+        
+        CREATE INDEX IF NOT EXISTS idx_symbols_name 
+        ON symbols(namePath, projectRoot);
+        
+        CREATE INDEX IF NOT EXISTS idx_symbols_project 
+        ON symbols(projectRoot);
+      `);
     }
   }
 
-  async cacheSymbols(
+  cacheSymbols(
     filePath: string,
     symbols: SymbolEntry[],
     lastModified: number,
-  ): Promise<void> {
-    // Start transaction
+  ): void {
+    // Start transaction for better performance
     this.db.exec("BEGIN TRANSACTION");
 
     try {
-      // Delete existing symbols for this file
+      // Clear existing symbols for this file
       this.deleteByFileStmt.run(filePath, this.rootPath);
 
       // Insert new symbols
-      for (const symbol of symbols) {
-        this.insertSymbol(filePath, symbol, lastModified);
+      const stack: Array<{ symbol: SymbolEntry; path: string }> = symbols.map(
+        (s) => ({ symbol: s, path: s.name }),
+      );
+
+      while (stack.length > 0) {
+        const item = stack.pop()!;
+        const { symbol, path } = item;
+
+        // Extract location info
+        const { start, end } = symbol.location.range;
+
+        this.insertStmt.run(
+          filePath,
+          path,
+          symbol.kind,
+          symbol.containerName || null,
+          start.line,
+          start.character,
+          end.line,
+          end.character,
+          lastModified,
+          this.rootPath,
+        );
+
+        // Process children
+        if (symbol.children) {
+          for (const child of symbol.children) {
+            stack.push({
+              symbol: child,
+              path: `${path}/${child.name}`,
+            });
+          }
+        }
       }
 
       this.db.exec("COMMIT");
     } catch (error) {
       this.db.exec("ROLLBACK");
       throw error;
-    }
-  }
-
-  private insertSymbol(
-    filePath: string,
-    symbol: SymbolEntry,
-    lastModified: number,
-  ): void {
-    this.insertStmt.run(
-      filePath,
-      symbol.name,
-      symbol.kind,
-      symbol.containerName || null,
-      symbol.location.range.start.line,
-      symbol.location.range.start.character,
-      symbol.location.range.end.line,
-      symbol.location.range.end.character,
-      lastModified,
-      this.rootPath,
-    );
-
-    // Recursively insert children
-    if (symbol.children) {
-      for (const child of symbol.children) {
-        this.insertSymbol(filePath, child, lastModified);
-      }
     }
   }
 
@@ -207,10 +239,14 @@ export class SymbolCacheManager {
   }
 
   searchSymbols(pattern: string): CachedSymbol[] {
-    const searchPattern = `*${pattern}*`;
+    // Convert user pattern to GLOB pattern
+    const globPattern = pattern
+      .replace(/\*/g, "*") // Keep wildcards
+      .replace(/\?/g, "?"); // Keep single char wildcards
+
     const rows = this.searchStmt.all(
       this.rootPath,
-      searchPattern,
+      globPattern,
     ) as unknown as CachedSymbol[];
     return rows;
   }
@@ -220,42 +256,37 @@ export class SymbolCacheManager {
   }
 
   clearCache(): void {
-    const stmt = this.db.prepare(`DELETE FROM symbols WHERE projectRoot = ?`);
-    stmt.run(this.rootPath);
-  }
-
-  close(): void {
-    // Statements don't have finalize method in node:sqlite
-    this.db.close();
+    this.db.exec("DELETE FROM symbols WHERE projectRoot = ?");
+    this.db
+      .prepare("DELETE FROM symbols WHERE projectRoot = ?")
+      .run(this.rootPath);
   }
 
   getStats(): { totalSymbols: number; totalFiles: number } {
-    const result = this.db
-      .prepare(`
-      SELECT 
-        COUNT(*) as totalSymbols,
-        COUNT(DISTINCT filePath) as totalFiles
-      FROM symbols
-      WHERE projectRoot = ?
-    `)
-      .get(this.rootPath) as any;
+    const symbolCount = this.db
+      .prepare("SELECT COUNT(*) as count FROM symbols WHERE projectRoot = ?")
+      .get(this.rootPath) as { count: number };
+
+    const fileCount = this.db
+      .prepare(
+        "SELECT COUNT(DISTINCT filePath) as count FROM symbols WHERE projectRoot = ?",
+      )
+      .get(this.rootPath) as { count: number };
 
     return {
-      totalSymbols: result.totalSymbols || 0,
-      totalFiles: result.totalFiles || 0,
+      totalSymbols: symbolCount.count,
+      totalFiles: fileCount.count,
     };
   }
 
-  /**
-   * Check if schema was updated during initialization
-   */
+  close(): void {
+    this.db.close();
+  }
+
   wasSchemaUpdated(): boolean {
     return this.schemaUpdated;
   }
 
-  /**
-   * Get current schema version
-   */
   getSchemaVersion(): number {
     return SCHEMA_VERSION;
   }

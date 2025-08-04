@@ -1,12 +1,12 @@
 import { z } from "zod";
-import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
+import type { ToolDef } from "../utils/mcpHelpers.ts";
 import { platform } from "node:os";
 import {
   onboardingPrompt,
   thinkAboutCollectedInformationPrompt,
   thinkAboutTaskAdherencePrompt,
   thinkAboutWhetherYouAreDonePrompt,
-} from "../prompts/workflow.ts";
+} from "../../prompts/workflow.ts";
 
 const checkOnboardingPerformedSchema = z.object({});
 

@@ -3,8 +3,8 @@
  */
 
 import type { SymbolCache, IndexedSymbol } from "../core/types.ts";
-import { SymbolCacheManager } from "../../serenity/cache/symbolCache.ts";
-import type { SymbolEntry } from "../../mcp/analysis/symbolIndex.ts";
+import { SymbolCacheManager } from "./SymbolCacheManager.ts";
+import type { SymbolEntry } from "../symbolIndex.ts";
 import { relative } from "path";
 import { statSync } from "fs";
 import { pathToFileURL } from "url";

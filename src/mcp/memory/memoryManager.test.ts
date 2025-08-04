@@ -23,7 +23,7 @@ describe("MemoryManager", () => {
 
   describe("ensureMemoriesDir", () => {
     it("should create memories directory if it doesn't exist", async () => {
-      const memoriesPath = join(testDir, ".serena", "memories");
+      const memoriesPath = join(testDir, ".lsmcp", "memories");
       expect(existsSync(memoriesPath)).toBe(false);
 
       await manager.ensureMemoriesDir();
@@ -32,7 +32,7 @@ describe("MemoryManager", () => {
     });
 
     it("should not throw if directory already exists", async () => {
-      const memoriesPath = join(testDir, ".serena", "memories");
+      const memoriesPath = join(testDir, ".lsmcp", "memories");
       mkdirSync(memoriesPath, { recursive: true });
 
       await expect(manager.ensureMemoriesDir()).resolves.not.toThrow();
@@ -60,7 +60,7 @@ describe("MemoryManager", () => {
     it("should only return .md files", async () => {
       // Ensure directories exist before writing files
       await manager.ensureMemoriesDir();
-      const memoriesPath = join(testDir, ".serena", "memories");
+      const memoriesPath = join(testDir, ".lsmcp", "memories");
 
       // Create various files
       await fs.writeFile(join(memoriesPath, "memory.md"), "content");
@@ -92,7 +92,7 @@ describe("MemoryManager", () => {
 
     it("should parse metadata correctly", async () => {
       await manager.ensureMemoriesDir();
-      const memoriesPath = join(testDir, ".serena", "memories");
+      const memoriesPath = join(testDir, ".lsmcp", "memories");
 
       const created = new Date("2024-01-01T00:00:00Z");
       const updated = new Date("2024-01-15T12:00:00Z");
@@ -118,7 +118,7 @@ This is the actual content`;
       const content = "New memory content";
       await manager.writeMemory("new-memory", content);
 
-      const filePath = join(testDir, ".serena", "memories", "new-memory.md");
+      const filePath = join(testDir, ".lsmcp", "memories", "new-memory.md");
       expect(existsSync(filePath)).toBe(true);
 
       const fileContent = await fs.readFile(filePath, "utf-8");
@@ -151,12 +151,16 @@ This is the actual content`;
 
   describe("deleteMemory", () => {
     it("should delete existing memory", async () => {
+      await manager.ensureMemoriesDir();
       await manager.writeMemory("to-delete", "Content");
-      expect(await manager.readMemory("to-delete")).not.toBeNull();
+      const beforeDelete = await manager.readMemory("to-delete");
+      expect(beforeDelete).not.toBeNull();
 
       const deleted = await manager.deleteMemory("to-delete");
       expect(deleted).toBe(true);
-      expect(await manager.readMemory("to-delete")).toBeNull();
+
+      const afterDelete = await manager.readMemory("to-delete");
+      expect(afterDelete).toBeNull();
     });
 
     it("should return false when deleting non-existent memory", async () => {

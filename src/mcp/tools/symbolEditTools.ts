@@ -1,10 +1,7 @@
 import { z } from "zod";
-import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
+import type { ToolDef } from "../utils/mcpHelpers.ts";
 import type { SerenityEditResult } from "./regexEditTools.ts";
-import {
-  getSymbolIndex,
-  querySymbols,
-} from "../../mcp/analysis/symbolIndex.ts";
+import { getSymbolIndex, querySymbols } from "../../indexer/symbolIndex.ts";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 

@@ -21,11 +21,11 @@ import { lspGetWorkspaceSymbolsTool } from "../../lsp/tools/lspGetWorkspaceSymbo
 import { lspCheckCapabilitiesTool } from "../../lsp/tools/lspCheckCapabilities.ts";
 
 // Import analysis tools
-import { indexTools } from "../analysis/indexTools.ts";
-import { compressionTools } from "../analysis/compressionTools.ts";
+import { indexTools } from "../tools/indexTools.ts";
+import { compressionTools } from "../tools/compressionTools.ts";
 
 // Import serenity tools
-import { serenityTools } from "../../serenity/tools/index.ts";
+import { serenityTools } from "../tools/index.ts";
 
 // Import onboarding tools
 import { indexOnboardingTools } from "../../indexer/onboarding/onboardingTools.ts";

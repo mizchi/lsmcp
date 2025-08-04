@@ -5,13 +5,13 @@
 import { readFile, writeFile, appendFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
-import type { LSMCPConfig } from "../../core/config/lsmcpConfig.ts";
-import { DEFAULT_CONFIG } from "../../core/config/lsmcpConfig.ts";
-import type { AdapterRegistry } from "../../core/config/configLoader.ts";
+import type { LSMCPConfig } from "../core/config/lsmcpConfig.ts";
+import { DEFAULT_CONFIG } from "../core/config/lsmcpConfig.ts";
+import type { AdapterRegistry } from "../core/config/configLoader.ts";
 import {
   getOrCreateIndex,
   indexFiles as indexFilesAdapter,
-} from "../../indexer/mcp/IndexerAdapter.ts";
+} from "../indexer/mcp/IndexerAdapter.ts";
 import { glob } from "glob";
 
 /**
@@ -95,7 +95,7 @@ export async function initCommand(
       console.log(
         "\nℹ️  Consider adding the following system prompt to the beginning of CLAUDE.md:",
       );
-      console.log("   (from src/serenity/prompts/system.ts)");
+      console.log("   (from src/prompts/system.ts)");
       console.log(
         "\n   This helps AI agents understand how to use the semantic coding tools effectively.",
       );

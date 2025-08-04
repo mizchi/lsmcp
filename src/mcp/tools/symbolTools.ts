@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
+import type { ToolDef } from "../utils/mcpHelpers.ts";
 import {
   getOrCreateIndex,
   indexFiles,
