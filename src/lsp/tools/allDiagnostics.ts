@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { promisify } from "util";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { minimatch } from "minimatch";
@@ -8,15 +7,13 @@ import { getActiveClient } from "../lspClient.ts";
 import { debug } from "../../mcp/utils/mcpHelpers.ts";
 import { pathToFileURL } from "url";
 import { Diagnostic } from "vscode-languageserver-types";
-import { exec } from "child_process";
-import { createGitignoreFilter } from "../../core/io/gitignoreUtils.ts";
+import { glob as gitawareGlob } from "gitaware-glob";
+import { glob as standardGlob } from "glob";
 import {
   DIAGNOSTICS_BATCH_SIZE,
   MAX_FILES_TO_SHOW,
   MAX_DIAGNOSTICS_PER_FILE,
 } from "../../constants/diagnostics.ts";
-
-const execAsync = promisify(exec);
 
 const schema = z.object({
   root: z.string().describe("Root directory for the project"),
@@ -76,8 +73,8 @@ const SEVERITY_MAP: Record<
 };
 
 /**
- * Get all project files using combination of git ls-files and glob
- * This respects .gitignore while also including untracked files
+ * Get all project files using gitaware-glob
+ * This automatically respects .gitignore
  */
 async function getProjectFiles(
   root: string,
@@ -88,106 +85,66 @@ async function getProjectFiles(
   debug(
     `[lspGetAllDiagnostics] getProjectFiles called with root=${root}, pattern=${pattern}, exclude=${exclude}, useGitignore=${useGitignore}`,
   );
-  const fileSet = new Set<string>();
 
-  // First, try to get tracked files from git
   try {
-    const { stdout } = await execAsync("git ls-files", { cwd: root });
-    const gitFiles = stdout
-      .split("\n")
-      .filter((f: string) => f.trim().length > 0)
-      .filter((f: string) => minimatch(f, pattern));
+    let files: string[];
 
-    gitFiles.forEach((f) => fileSet.add(f));
-    debug(
-      `[lspGetAllDiagnostics] Found ${gitFiles.length} tracked files from git`,
-    );
-  } catch (error) {
-    debug("Not a git repository or git ls-files failed:", error);
-  }
-
-  // Then, use glob to find all files (including untracked ones)
-  try {
-    const { glob } = await import("glob");
-
-    // Basic ignore patterns that always apply
-    let ignorePatterns: string[] = ["**/node_modules/**", "**/.git/**"];
-
-    if (exclude) {
-      ignorePatterns.push(exclude);
+    if (useGitignore) {
+      // Use gitaware-glob which automatically respects .gitignore
+      files = await gitawareGlob(pattern, {
+        cwd: root,
+      });
+    } else {
+      // Use standard glob when gitignore should be ignored
+      files = await standardGlob(pattern, {
+        cwd: root,
+        nodir: true,
+        ignore: ["**/node_modules/**", "**/.git/**"],
+      });
     }
 
-    const globFiles = await glob(pattern, {
-      cwd: root,
-      ignore: ignorePatterns,
-      nodir: true,
-    });
+    debug(`[lspGetAllDiagnostics] Found ${files.length} files from glob`);
 
-    globFiles.forEach((f) => fileSet.add(f));
-    debug(`[lspGetAllDiagnostics] Found ${globFiles.length} files from glob`);
-  } catch (globError) {
-    debug("Failed to use glob:", globError);
-    // If glob fails but we have git files, continue with those
-    if (fileSet.size === 0) {
-      throw new Error(
-        `Failed to list project files: ${
-          globError instanceof Error ? globError.message : String(globError)
-        }`,
+    let filteredFiles = files;
+
+    // Apply exclude pattern if provided
+    if (exclude) {
+      filteredFiles = filteredFiles.filter(
+        (f: string) => !minimatch(f, exclude),
       );
     }
-  }
 
-  // Convert set to array and apply filters
-  let files = Array.from(fileSet);
+    // Additional safety filter for common directories that should be excluded
+    filteredFiles = filteredFiles.filter(
+      (f: string) =>
+        !f.includes("/obj/") && // Exclude build artifacts
+        !f.includes("/bin/"), // Exclude build outputs
+    );
 
-  debug(`[lspGetAllDiagnostics] Files before filtering: ${files.length}`);
-  debug(`[lspGetAllDiagnostics] Sample files: ${files.slice(0, 5).join(", ")}`);
-
-  // Include pattern is already applied in git files and glob,
-  // but we apply it again to the combined results for consistency
-  debug(`[lspGetAllDiagnostics] Applying include pattern: ${pattern}`);
-  files = files.filter((f: string) => minimatch(f, pattern));
-
-  // Apply gitignore filtering if enabled
-  if (useGitignore) {
-    const gitignoreFilter = createGitignoreFilter(root);
-    const originalCount = files.length;
-    files = files.filter((file) => gitignoreFilter(file, false));
     debug(
-      `[lspGetAllDiagnostics] Gitignore filtered out ${
-        originalCount - files.length
-      } files`,
+      `[lspGetAllDiagnostics] Total files to check: ${filteredFiles.length}`,
+    );
+    if (filteredFiles.length > 0) {
+      debug(
+        `[lspGetAllDiagnostics] File extensions found: ${[
+          ...new Set(
+            filteredFiles.map((f) => {
+              const ext = f.lastIndexOf(".");
+              return ext > 0 ? f.substring(ext) : "no-ext";
+            }),
+          ),
+        ].join(", ")}`,
+      );
+    }
+    return filteredFiles;
+  } catch (error) {
+    debug("Failed to use glob:", error);
+    throw new Error(
+      `Failed to list project files: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
     );
   }
-
-  // Apply exclude pattern if provided
-  if (exclude) {
-    files = files.filter((f: string) => !minimatch(f, exclude));
-  }
-
-  // Final filter to exclude common directories (redundant but safe)
-  files = files.filter(
-    (f: string) =>
-      !f.includes("node_modules/") &&
-      !f.includes(".git/") &&
-      !f.includes("/obj/") && // Exclude build artifacts
-      !f.includes("/bin/"), // Exclude build outputs
-  );
-
-  debug(`[lspGetAllDiagnostics] Total unique files to check: ${files.length}`);
-  if (files.length > 0) {
-    debug(
-      `[lspGetAllDiagnostics] File extensions found: ${[
-        ...new Set(
-          files.map((f) => {
-            const ext = f.lastIndexOf(".");
-            return ext > 0 ? f.substring(ext) : "no-ext";
-          }),
-        ),
-      ].join(", ")}`,
-    );
-  }
-  return files;
 }
 
 /**

@@ -3,7 +3,7 @@ import type { ToolDef } from "../utils/mcpHelpers.ts";
 import { readdir, stat } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { existsSync } from "node:fs";
-import { glob } from "glob";
+import { glob as gitawareGlob } from "gitaware-glob";
 import { minimatch } from "minimatch";
 import { createGitignoreFilter } from "../../core/io/gitignoreUtils.ts";
 
@@ -123,26 +123,17 @@ export const findFileTool: ToolDef<typeof findFileSchema> = {
         });
       }
 
-      const gitignoreFilter = createGitignoreFilter(rootPath);
-
       // Convert file mask to glob pattern
       const pattern =
         relativePath === "."
           ? `**/${fileMask}`
           : `${relativePath}/**/${fileMask}`;
 
-      const files = await glob(pattern, {
+      const files = await gitawareGlob(pattern, {
         cwd: rootPath,
-        ignore: ["**/node_modules/**", "**/.git/**"],
-        nodir: true,
       });
 
-      // Filter out gitignored files
-      const filteredFiles = files.filter((file) =>
-        gitignoreFilter(file, false),
-      );
-
-      return JSON.stringify({ files: filteredFiles }, null, 2);
+      return JSON.stringify({ files }, null, 2);
     } catch (error) {
       return JSON.stringify({
         error: error instanceof Error ? error.message : String(error),
@@ -218,8 +209,6 @@ export const searchForPatternTool: ToolDef<typeof searchForPatternSchema> = {
         throw new Error(`Path not found: ${relativePath}`);
       }
 
-      const gitignoreFilter = createGitignoreFilter(rootPath);
-
       // Get files to search
       let searchPattern = relativePath ? `${relativePath}/**/*` : "**/*";
       if (restrictSearchToCodeFiles) {
@@ -229,14 +218,12 @@ export const searchForPatternTool: ToolDef<typeof searchForPatternSchema> = {
           : "**/*.{ts,tsx,js,jsx,py,java,cpp,c,h,hpp,cs,rb,go,rs,php,swift,kt,scala,r,m,mm,fs,fsx,ml,mli}";
       }
 
-      const files = await glob(searchPattern, {
+      const files = await gitawareGlob(searchPattern, {
         cwd: rootPath,
-        ignore: ["**/node_modules/**", "**/.git/**"],
-        nodir: true,
       });
 
       // Apply filters
-      let filteredFiles = files.filter((file) => gitignoreFilter(file, false));
+      let filteredFiles = files;
 
       if (pathsIncludeGlob) {
         filteredFiles = filteredFiles.filter((file) =>

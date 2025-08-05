@@ -45,6 +45,7 @@
   ],
   "dependencies": {
     "@types/micromatch": "^4.0.9",
+    "gitaware-glob": "^0.1.0",
     "glob": "^10.4.5",
     "ignore": "^7.0.5",
     "linguist-languages": "^8.0.0",

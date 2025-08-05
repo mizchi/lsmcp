@@ -13,7 +13,7 @@ import {
   getIndexStats,
   updateIndexIncremental,
 } from "../../indexer/mcp/IndexerAdapter.ts";
-import { glob } from "glob";
+import { glob } from "gitaware-glob";
 import { relative } from "path";
 import { fileURLToPath } from "url";
 import {
@@ -50,7 +50,6 @@ export const indexFilesTool: ToolDef<typeof indexFilesSchema> = {
     // Find files matching pattern
     const files = await glob(pattern, {
       cwd: rootPath,
-      ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
     });
 
     if (files.length === 0) {

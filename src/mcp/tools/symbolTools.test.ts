@@ -1,21 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { getSymbolsOverviewTool } from "./symbolTools.ts";
 import * as IndexerAdapter from "../../indexer/mcp/IndexerAdapter.ts";
-import * as gitignoreUtils from "../../core/io/gitignoreUtils.ts";
 import { existsSync } from "node:fs";
 import * as fs from "node:fs/promises";
-import { globSync } from "glob";
 import { SymbolKind } from "vscode-languageserver-types";
+import { glob } from "gitaware-glob";
 
 // Mock modules
 vi.mock("../../indexer/mcp/IndexerAdapter.ts", () => ({
   getOrCreateIndex: vi.fn(),
   indexFiles: vi.fn(),
   querySymbols: vi.fn(),
-}));
-
-vi.mock("../../core/io/gitignoreUtils.ts", () => ({
-  createGitignoreFilter: vi.fn(),
 }));
 
 vi.mock("node:fs", () => ({
@@ -27,8 +22,8 @@ vi.mock("node:fs/promises", () => ({
   readdir: vi.fn(),
 }));
 
-vi.mock("glob", () => ({
-  globSync: vi.fn(),
+vi.mock("gitaware-glob", () => ({
+  glob: vi.fn(),
 }));
 
 describe("getSymbolsOverviewTool", () => {
@@ -70,9 +65,6 @@ describe("getSymbolsOverviewTool", () => {
     beforeEach(() => {
       vi.mocked(existsSync).mockReturnValue(true);
       vi.mocked(IndexerAdapter.getOrCreateIndex).mockReturnValue({} as any);
-      vi.mocked(gitignoreUtils.createGitignoreFilter).mockResolvedValue(
-        () => true, // gitignoreFilter returns true if file should be included
-      );
     });
 
     it("should handle directory with TypeScript files", async () => {
@@ -81,18 +73,12 @@ describe("getSymbolsOverviewTool", () => {
         isDirectory: () => true,
       } as any);
 
-      // Mock readdir to return files and subdirectories
-      vi.mocked(fs.readdir)
-        .mockResolvedValueOnce([
-          { name: "index.ts", isDirectory: () => false },
-          { name: "subdir", isDirectory: () => true },
-          { name: "fileSystemTools.ts", isDirectory: () => false },
-        ] as any)
-        .mockResolvedValueOnce([
-          { name: "symbolTools.ts", isDirectory: () => false },
-          { name: "node_modules", isDirectory: () => true }, // Should be skipped
-          { name: "test.txt", isDirectory: () => false }, // Should be skipped
-        ] as any);
+      // Mock glob to return files (now used instead of readdir)
+      vi.mocked(glob).mockResolvedValue([
+        "index.ts",
+        "subdir/symbolTools.ts",
+        "fileSystemTools.ts",
+      ]);
 
       // Mock indexFiles to return success
       vi.mocked(IndexerAdapter.indexFiles).mockResolvedValue({
@@ -209,8 +195,11 @@ describe("getSymbolsOverviewTool", () => {
         ],
       });
 
-      // Verify readdir was called
-      expect(fs.readdir).toHaveBeenCalledTimes(2);
+      // Verify glob was called
+      expect(glob).toHaveBeenCalledWith(
+        "**/*.{ts,tsx,js,jsx,py,java,cpp,c,h,hpp,cs,rb,go,rs,php,swift,kt,scala,r,m,mm,fs,fsx,ml,mli}",
+        { cwd: expect.stringContaining("src/serenity/tools") },
+      );
 
       // Verify indexFiles was called (order may vary)
       expect(IndexerAdapter.indexFiles).toHaveBeenCalled();
@@ -276,8 +265,8 @@ describe("getSymbolsOverviewTool", () => {
         isDirectory: () => true,
       } as any);
 
-      // Mock readdir to return empty array
-      vi.mocked(fs.readdir).mockResolvedValue([]);
+      // Mock glob to return empty array
+      vi.mocked(glob).mockResolvedValue([]);
 
       const result = await getSymbolsOverviewTool.execute({
         relativePath: "src/empty-dir",
@@ -297,17 +286,12 @@ describe("getSymbolsOverviewTool", () => {
         isDirectory: () => true,
       } as any);
 
-      // Mock readdir to return files including gitignored ones
-      vi.mocked(fs.readdir).mockResolvedValue([
-        { name: "file1.ts", isDirectory: () => false },
-        { name: "file2.ts", isDirectory: () => false },
-        { name: "file3.ts", isDirectory: () => false },
-      ] as any);
-
-      // Mock gitignore filter to filter out file2
-      vi.mocked(gitignoreUtils.createGitignoreFilter).mockResolvedValue(
-        (path: string) => !path.includes("file2"), // returns false for file2 (ignored)
-      );
+      // Mock glob to return files (gitaware-glob automatically filters gitignored files)
+      vi.mocked(glob).mockResolvedValue([
+        "file1.ts",
+        "file3.ts",
+        // file2.ts is not included (gitignored)
+      ]);
 
       // Mock indexFiles
       vi.mocked(IndexerAdapter.indexFiles).mockResolvedValue({
@@ -339,15 +323,8 @@ describe("getSymbolsOverviewTool", () => {
         isDirectory: () => true,
       } as any);
 
-      // Mock readdir to return nested structure
-      vi.mocked(fs.readdir)
-        .mockResolvedValueOnce([
-          { name: "dir1", isDirectory: () => true },
-          { name: "file.ts", isDirectory: () => false },
-        ] as any)
-        .mockResolvedValueOnce([
-          { name: "nested.ts", isDirectory: () => false },
-        ] as any);
+      // Mock glob to return nested structure
+      vi.mocked(glob).mockResolvedValue(["dir1/nested.ts", "file.ts"]);
 
       // Mock indexFiles
       vi.mocked(IndexerAdapter.indexFiles).mockResolvedValue({
@@ -380,16 +357,14 @@ describe("getSymbolsOverviewTool", () => {
     beforeEach(() => {
       vi.mocked(existsSync).mockReturnValue(true);
       vi.mocked(IndexerAdapter.getOrCreateIndex).mockReturnValue({} as any);
-      vi.mocked(gitignoreUtils.createGitignoreFilter).mockResolvedValue(
-        () => true, // gitignoreFilter returns true if file should be included
-      );
       vi.mocked(fs.stat).mockResolvedValue({
         isDirectory: () => true,
       } as any);
     });
 
     it("should handle indexFiles failure", async () => {
-      vi.mocked(globSync).mockReturnValue(["src/file.ts"]);
+      // Mock glob to return a file
+      vi.mocked(glob).mockResolvedValue(["file.ts"]);
 
       // Mock indexFiles to return failure
       vi.mocked(IndexerAdapter.indexFiles).mockResolvedValue({
@@ -417,8 +392,8 @@ describe("getSymbolsOverviewTool", () => {
         isDirectory: () => true,
       } as any);
 
-      // Mock readdir to throw error
-      vi.mocked(fs.readdir).mockRejectedValue(new Error("Permission denied"));
+      // Mock glob to throw error
+      vi.mocked(glob).mockRejectedValue(new Error("Permission denied"));
 
       const result = await getSymbolsOverviewTool.execute({
         relativePath: "src",

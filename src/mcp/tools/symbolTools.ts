@@ -9,13 +9,12 @@ import type { SymbolQuery } from "../../indexer/core/types.ts";
 import { resolve } from "node:path";
 import { existsSync } from "node:fs";
 import { SymbolKind } from "vscode-languageserver-types";
-import { createGitignoreFilter } from "../../core/io/gitignoreUtils.ts";
+import { glob } from "gitaware-glob";
 
 // Export for testing
 export async function getFilesRecursively(
   dir: string,
   rootPath: string,
-  gitignoreFilter: (path: string) => boolean,
 ): Promise<string[]> {
   const extensions = [
     "ts",
@@ -39,46 +38,26 @@ export async function getFilesRecursively(
     "r",
     "m",
     "mm",
+    "fs",
+    "fsx",
+    "ml",
+    "mli",
   ];
 
-  const dirents = await import("node:fs/promises").then((fs) =>
-    fs.readdir(dir, { withFileTypes: true }),
-  );
+  // Use gitaware-glob for file discovery
+  const pattern = `**/*.{${extensions.join(",")}}`;
 
-  const files = await Promise.all(
-    dirents.map(async (dirent) => {
-      const res = resolve(dir, dirent.name);
-      // Fix: Ensure consistent path replacement
-      const relPath = res.startsWith(rootPath + "/")
-        ? res.substring(rootPath.length + 1)
-        : res.replace(rootPath, "").replace(/^\//, "");
+  const files = await glob(pattern, {
+    cwd: dir,
+  });
 
-      // Skip gitignored files
-      // gitignoreFilter returns true if file should be included
-      if (gitignoreFilter(relPath)) {
-        // File is included (not gitignored), continue processing
-      } else {
-        return [];
-      }
-
-      if (dirent.isDirectory()) {
-        // Skip common ignored directories
-        if (dirent.name === "node_modules" || dirent.name === ".git") {
-          return [];
-        }
-        return getFilesRecursively(res, rootPath, gitignoreFilter);
-      } else {
-        // Check if file has a supported extension
-        const ext = dirent.name.split(".").pop()?.toLowerCase();
-        if (ext && extensions.includes(ext)) {
-          return [relPath];
-        }
-        return [];
-      }
-    }),
-  );
-
-  return files.flat();
+  // Convert to relative paths from rootPath
+  return files.map((file) => {
+    const fullPath = resolve(dir, file);
+    return fullPath.startsWith(rootPath + "/")
+      ? fullPath.substring(rootPath.length + 1)
+      : fullPath.replace(rootPath, "").replace(/^\//, "");
+  });
 }
 
 const getSymbolsOverviewSchema = z.object({
@@ -118,7 +97,6 @@ export const getSymbolsOverviewTool: ToolDef<typeof getSymbolsOverviewSchema> =
           });
         }
 
-        const gitignoreFilter = await createGitignoreFilter(rootPath);
         const stats = await import("node:fs/promises").then((fs) =>
           fs.stat(absolutePath),
         );
@@ -130,7 +108,6 @@ export const getSymbolsOverviewTool: ToolDef<typeof getSymbolsOverviewSchema> =
             const foundFiles = await getFilesRecursively(
               absolutePath,
               rootPath,
-              gitignoreFilter,
             );
             files.push(...foundFiles);
           } catch (error) {

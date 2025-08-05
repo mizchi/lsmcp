@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { createGitignoreFilter } from "../../core/io/gitignoreUtils.ts";
 import { getFilesRecursively, getSymbolsOverviewTool } from "./symbolTools.ts";
 import {
   getOrCreateIndex,
@@ -68,13 +67,8 @@ describe.skipIf(!process.env.WITH_LSP)("symbolTools real file tests", () => {
 
   describe("Level 1: getFilesRecursively", () => {
     it("should recursively find all TypeScript/TSX files", async () => {
-      const gitignoreFilter = await createGitignoreFilter(TEST_ROOT);
       const srcPath = join(TEST_ROOT, "src");
-      const files = await getFilesRecursively(
-        srcPath,
-        TEST_ROOT,
-        gitignoreFilter,
-      );
+      const files = await getFilesRecursively(srcPath, TEST_ROOT);
 
       // Sort for consistent comparison
       files.sort();
@@ -89,12 +83,7 @@ describe.skipIf(!process.env.WITH_LSP)("symbolTools real file tests", () => {
     });
 
     it("should skip node_modules and .git directories", async () => {
-      const gitignoreFilter = await createGitignoreFilter(TEST_ROOT);
-      const files = await getFilesRecursively(
-        TEST_ROOT,
-        TEST_ROOT,
-        gitignoreFilter,
-      );
+      const files = await getFilesRecursively(TEST_ROOT, TEST_ROOT);
 
       // Should not include any files from node_modules
       expect(files.some((f) => f.includes("node_modules"))).toBe(false);
@@ -102,12 +91,7 @@ describe.skipIf(!process.env.WITH_LSP)("symbolTools real file tests", () => {
     });
 
     it("should filter files by extension", async () => {
-      const gitignoreFilter = await createGitignoreFilter(TEST_ROOT);
-      const files = await getFilesRecursively(
-        TEST_ROOT,
-        TEST_ROOT,
-        gitignoreFilter,
-      );
+      const files = await getFilesRecursively(TEST_ROOT, TEST_ROOT);
 
       // Should not include README.md
       expect(files.some((f) => f.includes("README.md"))).toBe(false);

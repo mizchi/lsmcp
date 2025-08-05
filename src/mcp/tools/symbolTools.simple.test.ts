@@ -1,19 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { getFilesRecursively } from "./symbolTools.ts";
-import { createGitignoreFilter } from "../../core/io/gitignoreUtils.ts";
 import { resolve } from "node:path";
 
 describe("getFilesRecursively simple test", () => {
   it("should find TypeScript files in current project", async () => {
     const rootPath = process.cwd();
-    const gitignoreFilter = await createGitignoreFilter(rootPath);
 
     // Test on a known directory in the project
     const testDir = resolve(rootPath, "src/core/pure");
     console.log("Testing directory:", testDir);
     console.log("Root path:", rootPath);
 
-    const files = await getFilesRecursively(testDir, rootPath, gitignoreFilter);
+    const files = await getFilesRecursively(testDir, rootPath);
     console.log("Found files:", files);
 
     // Should find some TypeScript files
