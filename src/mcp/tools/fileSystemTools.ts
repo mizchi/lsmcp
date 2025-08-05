@@ -40,7 +40,7 @@ export const listDirTool: ToolDef<typeof listDirSchema> = {
         });
       }
 
-      const gitignoreFilter = await createGitignoreFilter(rootPath);
+      const gitignoreFilter = createGitignoreFilter(rootPath);
       const result: { directories: string[]; files: string[] } = {
         directories: [],
         files: [],
@@ -58,12 +58,14 @@ export const listDirTool: ToolDef<typeof listDirSchema> = {
           const fullPath = join(dirPath, entry);
           const relPath = relative(rootPath, fullPath);
 
-          // Skip if gitignored
-          if (gitignoreFilter(relPath)) continue;
-
           const stats = await stat(fullPath);
+          const isDirectory = stats.isDirectory();
 
-          if (stats.isDirectory()) {
+          // Skip if gitignored
+          const isIncluded = gitignoreFilter(relPath, isDirectory);
+          if (!isIncluded) continue;
+
+          if (isDirectory) {
             result.directories.push(relPath);
             if (recursive) {
               await scanDir(fullPath, depth + 1);
@@ -121,7 +123,7 @@ export const findFileTool: ToolDef<typeof findFileSchema> = {
         });
       }
 
-      const gitignoreFilter = await createGitignoreFilter(rootPath);
+      const gitignoreFilter = createGitignoreFilter(rootPath);
 
       // Convert file mask to glob pattern
       const pattern =
@@ -136,7 +138,9 @@ export const findFileTool: ToolDef<typeof findFileSchema> = {
       });
 
       // Filter out gitignored files
-      const filteredFiles = files.filter((file) => !gitignoreFilter(file));
+      const filteredFiles = files.filter((file) =>
+        gitignoreFilter(file, false),
+      );
 
       return JSON.stringify({ files: filteredFiles }, null, 2);
     } catch (error) {
@@ -214,7 +218,7 @@ export const searchForPatternTool: ToolDef<typeof searchForPatternSchema> = {
         throw new Error(`Path not found: ${relativePath}`);
       }
 
-      const gitignoreFilter = await createGitignoreFilter(rootPath);
+      const gitignoreFilter = createGitignoreFilter(rootPath);
 
       // Get files to search
       let searchPattern = relativePath ? `${relativePath}/**/*` : "**/*";
@@ -232,7 +236,7 @@ export const searchForPatternTool: ToolDef<typeof searchForPatternSchema> = {
       });
 
       // Apply filters
-      let filteredFiles = files.filter((file) => !gitignoreFilter(file));
+      let filteredFiles = files.filter((file) => gitignoreFilter(file, false));
 
       if (pathsIncludeGlob) {
         filteredFiles = filteredFiles.filter((file) =>

@@ -152,7 +152,7 @@ async function getProjectFiles(
   if (useGitignore) {
     const gitignoreFilter = createGitignoreFilter(root);
     const originalCount = files.length;
-    files = files.filter(gitignoreFilter);
+    files = files.filter((file) => gitignoreFilter(file, false));
     debug(
       `[lspGetAllDiagnostics] Gitignore filtered out ${
         originalCount - files.length

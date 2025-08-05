@@ -65,7 +65,7 @@ export class GitignoreManager {
   /**
    * Check if a file should be ignored based on all applicable .gitignore files
    */
-  isIgnored(filePath: string): boolean {
+  isIgnored(filePath: string, isDirectory: boolean = false): boolean {
     // Always ignore .git directory
     if (
       filePath.includes("/.git/") ||
@@ -89,8 +89,13 @@ export class GitignoreManager {
 
     // Check root .gitignore
     const rootIgnore = this.ignoreInstances.get(currentPath);
-    if (rootIgnore && rootIgnore.ignores(relativePath)) {
-      return true;
+    if (rootIgnore) {
+      // For directories, always check with trailing slash
+      // because gitignore patterns like "node_modules/" only match directories
+      const pathToCheck = isDirectory ? relativePath + "/" : relativePath;
+      if (rootIgnore.ignores(pathToCheck)) {
+        return true;
+      }
     }
 
     // Check each subdirectory's .gitignore
@@ -105,7 +110,13 @@ export class GitignoreManager {
       if (ig) {
         // Calculate relative path from this .gitignore's directory
         const remainingPath = pathSegments.slice(i + 1).join("/");
-        if (ig.ignores(remainingPath)) {
+        // For directories at the end of the path, check with trailing slash
+        const isLastSegmentDirectory =
+          isDirectory && i === pathSegments.length - 2;
+        const pathToCheck = isLastSegmentDirectory
+          ? remainingPath + "/"
+          : remainingPath;
+        if (ig.ignores(pathToCheck)) {
           return true;
         }
       }
@@ -128,7 +139,8 @@ export class GitignoreManager {
 export function createGitignoreFilter(
   rootPath: string,
   fs?: FileSystem,
-): (filePath: string) => boolean {
+): (filePath: string, isDirectory?: boolean) => boolean {
   const manager = new GitignoreManager(rootPath, fs);
-  return (filePath: string) => !manager.isIgnored(filePath);
+  return (filePath: string, isDirectory: boolean = false) =>
+    !manager.isIgnored(filePath, isDirectory);
 }
