@@ -15,16 +15,10 @@ export const tsgoAdapter: LspAdapter = {
   name: "tsgo",
   baseLanguage: "typescript",
   description: "Fast TypeScript language server by tsgo",
-  bin: "tsgo",
-  args: ["--lsp", "--stdio"],
+  bin: "npx",
+  args: ["tsgo", "--lsp", "--stdio"],
 
-  unsupported: [
-    "get_document_symbols",
-    "get_workspace_symbols", // TSGo doesn't support workspace symbols
-    "get_code_actions",
-    "rename_symbol",
-    "delete_symbol",
-  ],
+  unsupported: ["get_code_actions", "rename_symbol", "delete_symbol"],
   needsDiagnosticDeduplication: true,
 
   serverCharacteristics: {
