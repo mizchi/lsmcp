@@ -55,7 +55,9 @@ export async function getFilesRecursively(
 
       // Skip gitignored files
       // gitignoreFilter returns true if file should be included
-      if (!gitignoreFilter(relPath)) {
+      if (gitignoreFilter(relPath)) {
+        // File is included (not gitignored), continue processing
+      } else {
         return [];
       }
 

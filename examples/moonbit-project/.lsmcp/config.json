@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "indexFiles": [
+    "**/*.mbt"
+  ],
+  "settings": {
+    "autoIndex": false,
+    "indexConcurrency": 5,
+    "autoIndexDelay": 500,
+    "enableWatchers": true,
+    "memoryLimit": 1024
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.git/**"
+  ],
+  "adapter": {
+    "id": "moonbit",
+    "name": "MoonBit Language Server",
+    "baseLanguage": "moonbit",
+    "description": "moonbit lsp",
+    "bin": "moonbit-lsp",
+    "args": [],
+    "unsupported": []
+  }
+}

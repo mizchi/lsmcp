@@ -1,12 +1,8 @@
 {
   "mcpServers": {
     "rust": {
-      "command": "node",
-      "args": ["../../dist/lsmcp.js", "-p", "rust-analyzer"]
-    },
-    "rust-minimum-setup": {
-      "command": "node",
-      "args": ["../../dist/lsmcp.js", "--bin", "rust-analyzer"]
+      "command": "npx",
+      "args": ["-y", "@mizchi/lsmcp", "-p", "rust-analyzer"]
     }
   }
 }

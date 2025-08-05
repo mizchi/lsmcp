@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "indexFiles": [
+    "**/*.rs"
+  ],
+  "settings": {
+    "autoIndex": false,
+    "indexConcurrency": 5,
+    "autoIndexDelay": 500,
+    "enableWatchers": true,
+    "memoryLimit": 1024
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.git/**"
+  ],
+  "adapter": {
+    "id": "rust-analyzer",
+    "name": "rust-analyzer",
+    "baseLanguage": "rust",
+    "description": "Official Rust language server",
+    "bin": "rust-analyzer",
+    "args": [],
+    "initializationOptions": {
+      "cargo": {
+        "features": "all"
+      }
+    }
+  }
+}

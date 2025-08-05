@@ -36,11 +36,11 @@ $ claude mcp add lsmcp npx -- lsmcp -p tsgo
 
 最初にオンボーディングを有効にしましょう。
 
-## 初期設定と推奨プロンプト
-
 ```
 > start lsmcp onboarding
 ```
+
+## 初期設定と推奨プロンプト
 
 かなり強い言葉でツールの仕様を促す必要があります。
 

@@ -1,2 +1,4 @@
 target
 .mooncakes
+# lsmcp cache
+.lsmcp/cache
