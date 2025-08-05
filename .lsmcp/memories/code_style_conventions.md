@@ -1,50 +1,79 @@
 ---
-created: 2025-08-04T06:34:26.926Z
-updated: 2025-08-04T06:34:26.926Z
+created: 2025-08-05T08:16:17.815Z
+updated: 2025-08-05T08:16:17.815Z
 ---
 
 # Code Style and Conventions
 
+## Language Requirements
+- **All code, comments, and documentation must be in English**
+- This ensures global accessibility and consistency
+
+## File Naming
+- Use **lowerCamelCase** for TypeScript files (e.g., `symbolIndex.ts`, `lspClient.ts`)
+- Adapter files use lowerCamelCase (e.g., `typescriptLanguageServer.ts`, `rustAnalyzer.ts`)
+- Test files follow pattern: `<name>.test.ts`
+
+## Import Style
+- **Always add `.ts` extension to imports** for Deno compatibility
+  - ✅ `import { foo } from "./bar.ts"`
+  - ❌ `import { foo } from "./bar"`
+- Use TypeScript consistent type imports:
+  - `import type { Foo } from "./types.ts"`
+  - `import { type Bar, baz } from "./module.ts"`
+
 ## TypeScript Conventions
-- **File Extensions**: Always use `.ts` extension in imports (for Deno compatibility)
-  ```typescript
-  import { foo } from "./bar.ts";  // ✓ Correct
-  import { foo } from "./bar";     // ✗ Wrong
-  ```
+- **Use strict mode** (enabled in tsconfig.json)
+- **Prefer `interface` over `type`** for object definitions
+- **Use `async/await`** over raw promises
+- Avoid `any` type - use `unknown` or specific types
+- Use underscore prefix for unused variables: `_unusedVar`
 
 ## Naming Conventions
-- **Files**: lowerCamelCase (e.g., `symbolIndex.ts`, `lspClient.ts`)
-- **Classes**: PascalCase (e.g., `SymbolIndex`, `LSPClient`)
-- **Functions/Methods**: camelCase (e.g., `getSymbols`, `indexFiles`)
-- **Constants**: UPPER_SNAKE_CASE or PascalCase for exported constants
-- **Interfaces/Types**: PascalCase with descriptive names
+- **Constants**: UPPER_SNAKE_CASE (e.g., `DEFAULT_TIMEOUT`)
+- **Interfaces**: PascalCase with descriptive names
+- **Functions**: camelCase, verb-based (e.g., `getDefinitions`, `findReferences`)
+- **Variables**: camelCase, noun-based
+- **Private fields**: underscore prefix (e.g., `_privateField`)
 
 ## Code Organization
-- No inline comments unless explicitly requested
-- Prefer interfaces over type aliases for object shapes
-- Use `type` imports for type-only imports
-- Group imports: external packages → relative imports → type imports
+- Group related imports together
+- Order: external deps, internal deps, types
+- Keep functions focused and single-purpose
+- Max complexity per function: 7 (enforced by linter)
 
 ## Error Handling
-- Use custom error types extending base error classes
-- Always include context in error messages
-- Handle errors at appropriate levels (don't catch and rethrow unnecessarily)
-
-## Testing
-- Tests are colocated with source files or in `tests/` directory
-- Use descriptive test names
-- Mock external dependencies appropriately
+- Use `neverthrow` Result types for recoverable errors
+- Throw only for unrecoverable errors
+- Always handle promises (no floating promises)
+- Use descriptive error messages
 
 ## Documentation
-- JSDoc comments for public APIs
-- README files for major modules
-- Type definitions should be self-documenting
+- Document complex logic with inline comments
+- Use JSDoc for public APIs
+- Keep comments concise and relevant
+- Update comments when code changes
 
-## Git Commit Convention
-- Use conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
-- Include emoji and co-author when using AI assistance:
-  ```
-  🤖 Generated with [Claude Code](https://claude.ai/code)
-  
-  Co-Authored-By: Claude <noreply@anthropic.com>
-  ```
+## Testing
+- Write tests for new features
+- Test file location mirrors source structure
+- Use descriptive test names
+- Mock external dependencies
+
+## Git Conventions
+- **Commit messages**: Use conventional commits
+  - `feat:` for new features
+  - `fix:` for bug fixes
+  - `docs:` for documentation
+  - `refactor:` for code refactoring
+  - `test:` for test changes
+  - `chore:` for maintenance
+- **Branch naming**: `fix/issue-name` or `feat/feature-name`
+- Target `main` branch for PRs
+
+## Formatting
+- **Indentation**: 2 spaces (enforced by Biome)
+- **Quotes**: Double quotes for strings
+- **Semicolons**: Required
+- **Line length**: Reasonable (no hard limit)
+- Run `pnpm format` before committing

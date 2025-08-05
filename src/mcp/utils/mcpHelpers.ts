@@ -20,12 +20,16 @@ import { MCPToolError } from "../../core/pure/mcpErrors.ts";
  * This function provides a convenient way to output debug messages that won't
  * interfere with MCP communication.
  *
+ * Debug output is only shown when LSMCP_DEBUG=1 environment variable is set.
+ *
  * @example
  * debug("Server started");
  * debug("Processing request:", requestData);
  */
 export function debug(...args: unknown[]): void {
-  console.error(...args);
+  if (process.env.LSMCP_DEBUG === "1") {
+    console.error(...args);
+  }
 }
 
 // Re-export commonly used types

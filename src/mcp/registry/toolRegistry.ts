@@ -22,7 +22,6 @@ import { lspCheckCapabilitiesTool } from "../../lsp/tools/checkCapabilities.ts";
 
 // Import analysis tools
 import { indexTools } from "../tools/indexTools.ts";
-import { compressionTools } from "../tools/compressionTools.ts";
 
 // Import serenity tools
 import { serenityTools } from "../tools/index.ts";
@@ -49,10 +48,7 @@ export const lspTools: ToolDef<any>[] = [
 ];
 
 // Define high-level analysis tools (not affected by LSP capabilities)
-export const highLevelTools: ToolDef<any>[] = [
-  ...indexTools,
-  ...compressionTools,
-];
+export const highLevelTools: ToolDef<any>[] = [...indexTools];
 
 // Define serenity tools
 export const serenityToolsList: ToolDef<any>[] = Object.values(serenityTools);

@@ -5,7 +5,6 @@ export * from "./cacheTools.ts";
 export * from "./workflowTools.ts";
 export * from "./fileSystemTools.ts";
 export * from "./symbolTools.ts";
-export * from "./compressionTools.ts";
 export * from "./indexTools.ts";
 
 // Re-export all tools as a collection

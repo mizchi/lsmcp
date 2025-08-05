@@ -7,6 +7,8 @@
  */
 
 import { parseArgs } from "node:util";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { debug as debugLog } from "../mcp/utils/mcpHelpers.ts";
 import {
   AdapterRegistry,
@@ -16,7 +18,7 @@ import {
 
 // Import modular components
 import { registerBuiltinAdapters } from "../mcp/registry/adapterSetup.ts";
-import { showHelp, showListWithConfigLoader } from "./help.ts";
+import { showHelp, showListWithConfigLoader, showNoArgsHelp } from "./help.ts";
 import { runLanguageServerWithConfig } from "../mcp/server/lspServerRunner.ts";
 
 // Initialize configuration system
@@ -28,6 +30,7 @@ registerBuiltinAdapters(adapterRegistry);
 
 // Import subcommands
 import { initCommand, indexCommand } from "./subcommands.ts";
+import { detectProjectType } from "./projectDetector.ts";
 
 // Parse command line arguments
 const { values, positionals } = parseArgs({
@@ -67,6 +70,10 @@ const { values, positionals } = parseArgs({
       type: "boolean",
       description: "List supported languages and presets",
     },
+    "auto-index": {
+      type: "boolean",
+      description: "Automatically build symbol index after init",
+    },
   },
   allowPositionals: true,
 });
@@ -82,13 +89,62 @@ async function main() {
   const subcommand = positionals[0];
 
   if (subcommand === "init") {
-    await initCommand(process.cwd(), values.preset, adapterRegistry);
+    await initCommand(
+      process.cwd(),
+      values.preset,
+      adapterRegistry,
+      configLoader,
+      values["auto-index"],
+    );
     process.exit(0);
   }
 
   if (subcommand === "index") {
-    await indexCommand(process.cwd());
+    await indexCommand(process.cwd(), false, configLoader, adapterRegistry);
     process.exit(0);
+  }
+
+  // If no arguments provided and no config exists, try auto-detection
+  if (
+    !values.preset &&
+    !values.config &&
+    !values.bin &&
+    !values.help &&
+    !values.list &&
+    positionals.length === 0
+  ) {
+    // Check if .lsmcp/config.json exists
+    const configPath = join(process.cwd(), ".lsmcp", "config.json");
+    if (!existsSync(configPath)) {
+      // Try auto-detection
+      debugLog("[lsmcp] No config found, attempting auto-detection");
+      const detected = await detectProjectType(process.cwd());
+
+      if (detected.length === 1) {
+        // Single match - use it automatically
+        debugLog(
+          `[lsmcp] Auto-detected ${detected[0].preset}: ${detected[0].reason}`,
+        );
+        values.preset = detected[0].preset;
+      } else if (detected.length === 0) {
+        // No detection - show help
+        showNoArgsHelp(adapterRegistry);
+        process.exit(0);
+      } else {
+        // Multiple matches - show help with detected info
+        console.log("\n🌍 LSMCP - Language Service MCP\n");
+        console.log("Multiple project types detected:");
+        detected.forEach((d) => {
+          console.log(`  • ${d.preset}: ${d.reason}`);
+        });
+        console.log("\nPlease specify which preset to use:");
+        detected.forEach((d) => {
+          console.log(`  lsmcp -p ${d.preset}`);
+        });
+        console.log("\nOr initialize with: lsmcp init");
+        process.exit(0);
+      }
+    }
   }
 
   // Always use new configuration system
@@ -113,6 +169,18 @@ async function mainWithConfigLoader() {
   try {
     // Prepare configuration sources
     const sources: ConfigSources = {};
+
+    // Check for .lsmcp/config.json
+    const configPath = join(process.cwd(), ".lsmcp", "config.json");
+    if (
+      existsSync(configPath) &&
+      !values.preset &&
+      !values.config &&
+      !values.bin
+    ) {
+      debugLog("[lsmcp] Loading config from .lsmcp/config.json");
+      sources.configFile = configPath;
+    }
 
     if (values.preset) {
       sources.preset = values.preset;

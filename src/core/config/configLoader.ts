@@ -169,6 +169,20 @@ export class ConfigLoader {
       const content = await readFile(filepath, "utf-8");
       const json = JSON.parse(content);
 
+      // Check if this is a .lsmcp/config.json with adapter field
+      if (json.adapter && json.adapter.id) {
+        return {
+          id: json.adapter.id,
+          name: json.adapter.name,
+          bin: json.adapter.bin,
+          args: json.adapter.args || [],
+          baseLanguage: json.adapter.baseLanguage,
+          description: json.adapter.description,
+          unsupported: json.adapter.unsupported,
+          initializationOptions: json.adapter.initializationOptions,
+        };
+      }
+
       return {
         id: json.id,
         name: json.name,

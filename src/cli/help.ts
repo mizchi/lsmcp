@@ -51,3 +51,39 @@ export function showListWithConfigLoader(
   console.log('  --bin "clangd" for C/C++');
   console.log('  --bin "jdtls" for Java');
 }
+
+export function showNoArgsHelp(adapterRegistry: AdapterRegistry): void {
+  console.log(`
+🌍 LSMCP - Language Service MCP
+
+No configuration found. Please initialize your project first:
+
+  lsmcp init -p <preset>
+
+Available presets:`);
+
+  const adapterList = adapterRegistry.list();
+  const primaryAdapters = [
+    "typescript",
+    "tsgo",
+    "pyright",
+    "rust-analyzer",
+    "gopls",
+  ];
+
+  // Show primary adapters first
+  for (const id of primaryAdapters) {
+    const adapter = adapterList.find((a) => a.id === id);
+    if (adapter) {
+      console.log(`  ${adapter.id.padEnd(20)} - ${adapter.description}`);
+    }
+  }
+
+  console.log(`
+For a complete list of presets:
+  lsmcp --list
+
+For help:
+  lsmcp --help
+`);
+}

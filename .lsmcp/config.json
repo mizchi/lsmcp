@@ -1,30 +1,11 @@
 {
   "version": "1.0",
-  "indexFiles": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
-  "adapter": {
-    "id": "typescript",
-    "name": "TypeScript Language Server",
-    "bin": "typescript-language-server",
-    "args": ["--stdio"],
-    "baseLanguage": "typescript",
-    "description": "Official TypeScript language server",
-    "unsupported": [],
-    "initializationOptions": {},
-    "serverCharacteristics": {
-      "supportsRename": true,
-      "supportsReferences": true,
-      "supportsDefinition": true,
-      "supportsHover": true,
-      "supportsDocumentSymbol": true,
-      "supportsWorkspaceSymbol": true,
-      "supportsCompletion": true,
-      "supportsSignatureHelp": true,
-      "supportsDocumentFormatting": true,
-      "supportsRangeFormatting": true,
-      "supportsCodeAction": true,
-      "supportsDiagnostics": true
-    }
-  },
+  "indexFiles": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx"
+  ],
   "settings": {
     "autoIndex": false,
     "indexConcurrency": 5,
@@ -35,8 +16,47 @@
   "ignorePatterns": [
     "**/node_modules/**",
     "**/dist/**",
-    "**/.git/**",
-    "**/build/**",
-    "**/coverage/**"
-  ]
+    "**/.git/**"
+  ],
+  "adapter": {
+    "id": "tsgo",
+    "name": "tsgo",
+    "baseLanguage": "typescript",
+    "description": "Fast TypeScript language server by tsgo",
+    "bin": "npx",
+    "args": [
+      "-y",
+      "tsgo",
+      "--lsp",
+      "--stdio"
+    ],
+    "unsupported": [
+      "get_document_symbols",
+      "get_workspace_symbols",
+      "get_code_actions",
+      "rename_symbol",
+      "delete_symbol"
+    ],
+    "needsDiagnosticDeduplication": true,
+    "serverCharacteristics": {
+      "documentOpenDelay": 500,
+      "readinessCheckTimeout": 200,
+      "initialDiagnosticsTimeout": 1000,
+      "requiresProjectInit": false,
+      "sendsInitialDiagnostics": false,
+      "operationTimeout": 5000
+    },
+    "initializationOptions": {
+      "preferences": {
+        "includeInlayParameterNameHints": "none",
+        "includeInlayParameterNameHintsWhenArgumentMatchesName": false,
+        "includeInlayFunctionParameterTypeHints": false,
+        "includeInlayVariableTypeHints": false,
+        "includeInlayPropertyDeclarationTypeHints": false,
+        "includeInlayFunctionLikeReturnTypeHints": false,
+        "includeInlayEnumMemberValueHints": false
+      },
+      "maxTsServerMemory": 4096
+    }
+  }
 }

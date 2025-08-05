@@ -1,57 +1,68 @@
 ---
-created: 2025-08-04T06:34:55.727Z
-updated: 2025-08-04T06:34:55.727Z
+created: 2025-08-05T08:16:35.139Z
+updated: 2025-08-05T08:16:35.139Z
 ---
 
 # Task Completion Checklist
 
-When completing any code modification task, always run these commands:
+When completing any coding task in the lsmcp project, follow this checklist:
 
-## 1. Format Code (Automatic in pre-commit hook)
-```bash
-pnpm format
-# or
-pnpm biome format --write src/ tests/
-```
+## Before Starting
+1. Read relevant memory files for context
+2. Check `.lsmcp/config.json` for current configuration
+3. Use `pnpm typecheck` to ensure baseline type safety
 
-## 2. Type Check
-```bash
-pnpm typecheck
-```
+## During Development
+1. Follow code style conventions (see code_style_conventions.md)
+2. Add `.ts` extension to all imports
+3. Use English for all code, comments, and documentation
+4. Prefer interfaces over types for objects
+5. Use async/await instead of raw promises
 
-## 3. Lint
-```bash
-pnpm lint
-```
+## After Making Changes
+1. **Run type checking**
+   - `pnpm typecheck` - Fast check with tsgo
+   - `pnpm typecheck:tsc` - Comprehensive check if needed
 
-## 4. Run Tests
-```bash
-# For quick validation
-pnpm test:unit
+2. **Run linting**
+   - `pnpm lint` - Check for code quality issues
+   - Fix any errors or warnings
 
-# For thorough validation
-pnpm test
-```
+3. **Format code**
+   - `pnpm format` - Auto-format with Biome
+   - Ensure consistent code style
 
-## 5. Build
-```bash
-pnpm build
-```
+4. **Run tests**
+   - `pnpm test:unit` - Quick unit test feedback
+   - `pnpm build` - MUST build before integration tests
+   - `pnpm test:integration` - Test MCP functionality
+   - `pnpm test` - Run all tests
 
-## Pre-commit Hook
-The project has a Husky pre-commit hook that automatically:
-1. Checks code formatting (fails if not formatted)
-2. Runs linting
-3. Runs type checking
-
-If the hook fails:
-- For formatting errors: Run `pnpm biome format --write src/ tests/`
-- For lint errors: Fix the reported issues
-- For type errors: Fix the type issues
-
-## Before Creating PR
+## Before Committing
 1. Ensure all tests pass
-2. Update documentation if needed
-3. Add/update tests for new functionality
-4. Follow conventional commit format
-5. Check that the build succeeds
+2. Check `git status` for unintended changes
+3. Review changes with `git diff`
+4. Write descriptive commit message using conventional commits
+5. Do NOT commit unless explicitly asked by user
+
+## Important Reminders
+- **NEVER modify timeout settings** in tests
+- **ALWAYS run `pnpm build`** before integration tests
+- **Use `rg` (ripgrep)** instead of grep for searching
+- **Check for console.log** statements (linter will warn)
+- **Verify no floating promises** (enforced by linter)
+
+## Common Issues to Check
+- Missing `.ts` extensions in imports
+- Unused variables (prefix with `_` if intentional)
+- Complexity exceeding 7 (refactor if needed)
+- Any TypeScript errors or warnings
+- Proper error handling with Result types
+
+## Final Verification
+Run this sequence to ensure everything is correct:
+```bash
+pnpm typecheck && pnpm lint && pnpm format && pnpm test
+```
+
+If all commands pass, the task is complete!
