@@ -25,8 +25,8 @@ describe("tsgoAdapter", () => {
       expect(tsgoAdapter.id).toBe("tsgo");
       expect(tsgoAdapter.name).toBe("tsgo");
       expect(tsgoAdapter.baseLanguage).toBe("typescript");
-      expect(tsgoAdapter.bin).toBe("tsgo");
-      expect(tsgoAdapter.args).toEqual(["--lsp", "--stdio"]);
+      expect(tsgoAdapter.bin).toBe("npx");
+      expect(tsgoAdapter.args).toEqual(["-y", "tsgo", "--lsp", "--stdio"]);
     });
 
     it("should have appropriate unsupported tools", () => {
@@ -69,42 +69,27 @@ describe("tsgoAdapter", () => {
   });
 
   describe("resolveAdapterCommand", () => {
-    it("should resolve tsgo to node_modules/.bin/tsgo when available", () => {
-      const mockGetNodeModulesCommand = vi.mocked(
-        nodeModulesUtils.getNodeModulesCommand,
-      );
-      mockGetNodeModulesCommand.mockReturnValue({
-        command: "/project/node_modules/.bin/tsgo",
-        args: ["--lsp", "--stdio"],
-      });
-
+    it("should return npx command with args as configured", () => {
+      // Since tsgoAdapter.bin is "npx", it won't go through nodeModulesBinaries resolution
       const result = resolveAdapterCommand(tsgoAdapter, "/project");
 
-      expect(mockGetNodeModulesCommand).toHaveBeenCalledWith(
-        "tsgo",
-        ["--lsp", "--stdio"],
-        "/project",
-      );
       expect(result).toEqual({
-        command: "/project/node_modules/.bin/tsgo",
-        args: ["--lsp", "--stdio"],
+        command: "npx",
+        args: ["-y", "tsgo", "--lsp", "--stdio"],
       });
     });
 
-    it("should fall back to npx when tsgo is not in node_modules", () => {
+    it("should not call getNodeModulesCommand for npx bin", () => {
       const mockGetNodeModulesCommand = vi.mocked(
         nodeModulesUtils.getNodeModulesCommand,
       );
-      mockGetNodeModulesCommand.mockReturnValue({
-        command: "npx",
-        args: ["tsgo", "--lsp", "--stdio"],
-      });
 
       const result = resolveAdapterCommand(tsgoAdapter, "/project");
 
+      expect(mockGetNodeModulesCommand).not.toHaveBeenCalled();
       expect(result).toEqual({
         command: "npx",
-        args: ["tsgo", "--lsp", "--stdio"],
+        args: ["-y", "tsgo", "--lsp", "--stdio"],
       });
     });
   });
