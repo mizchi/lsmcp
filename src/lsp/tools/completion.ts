@@ -125,7 +125,15 @@ async function handleGetCompletion({
   resolve,
   includeAutoImport,
 }: z.infer<typeof schema>): Promise<string> {
-  const { fileUri, content } = await loadFileContext(root, filePath);
+  const client = getLSPClient();
+  if (!client) {
+    throw new Error("LSP client not initialized");
+  }
+  const { fileUri, content } = await loadFileContext(
+    root,
+    filePath,
+    client.fileSystemApi,
+  );
   const lineIndex = resolveLineIndexOrThrow(content, line, filePath);
 
   // Determine character position
@@ -142,11 +150,6 @@ async function handleGetCompletion({
   }
 
   return withTemporaryDocument(fileUri, content, async () => {
-    const client = getLSPClient();
-    if (!client) {
-      throw new Error("LSP client not initialized");
-    }
-
     // Use the advanced completion handler
     const handler = createAdvancedCompletionHandler(client);
 

@@ -48,13 +48,25 @@ export const indexFilesTool: ToolDef<typeof indexFilesSchema> = {
     const rootPath = root || process.cwd();
 
     // Find files matching pattern
-    const files = await glob(pattern, {
+    const filesIterator = await glob(pattern, {
       cwd: rootPath,
     });
+
+    // Convert async iterator to array
+    const files: string[] = [];
+    for await (const file of filesIterator) {
+      files.push(file);
+    }
 
     if (files.length === 0) {
       return `No files found matching pattern: ${pattern}`;
     }
+
+    // Debug: log files found
+    console.error(
+      `[index_files] Found ${files.length} files matching pattern ${pattern}`,
+    );
+    console.error(`[index_files] First few files:`, files.slice(0, 5));
 
     // Index files
     const result = await indexFiles(rootPath, files, { concurrency });
@@ -334,11 +346,15 @@ export const updateIndexIncrementalTool: ToolDef<
   },
 };
 
-// Export index tools
+// Import unified tool
+import { indexSymbolsTool } from "./indexToolsUnified.ts";
+
+// Export index tools - now includes the unified index_symbols tool
 export const indexTools = [
-  indexFilesTool,
+  indexSymbolsTool, // New unified tool that replaces index_files and update_index_from_index
   searchSymbolFromIndexTool,
   getIndexStatsFromIndexTool,
   clearIndexTool,
-  updateIndexIncrementalTool,
+  // updateIndexIncrementalTool, // Removed - functionality merged into indexSymbolsTool
+  // indexFilesTool, // Removed - replaced by indexSymbolsTool
 ];

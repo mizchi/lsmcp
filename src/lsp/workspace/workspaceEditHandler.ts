@@ -2,7 +2,6 @@
  * Workspace edit handling for LSP
  */
 
-import { promises as fs } from "fs";
 import { fileURLToPath } from "url";
 import type {
   WorkspaceEdit,
@@ -11,12 +10,15 @@ import type {
   ApplyWorkspaceEditResponse,
 } from "../lspTypes.ts";
 import { getErrorMessage } from "../../core/pure/types.ts";
+import type { FileSystemApi } from "../../core/io/FileSystemApi.ts";
+import { nodeFileSystemApi } from "../../core/io/NodeFileSystemApi.ts";
 
 /**
  * Apply a workspace edit manually (when server doesn't support workspace/applyEdit)
  */
 export async function applyWorkspaceEditManually(
   edit: WorkspaceEdit,
+  fs: FileSystemApi = nodeFileSystemApi,
 ): Promise<void> {
   if (!edit.changes) {
     return;

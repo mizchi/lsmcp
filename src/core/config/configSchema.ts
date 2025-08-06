@@ -74,6 +74,30 @@ export const configSchema = z.object({
     .array(z.string())
     .default(["**/node_modules/**", "**/dist/**", "**/.git/**"])
     .describe("Additional ignore patterns for indexing"),
+
+  /** Symbol filter configuration */
+  symbolFilter: z
+    .object({
+      /** Exclude specific symbol kinds */
+      excludeKinds: z
+        .array(z.string())
+        .optional()
+        .describe("Symbol kinds to exclude from indexing"),
+
+      /** Exclude symbols matching these patterns */
+      excludePatterns: z
+        .array(z.string())
+        .optional()
+        .describe("Regex patterns for symbols to exclude"),
+
+      /** Only include top-level symbols */
+      includeOnlyTopLevel: z
+        .boolean()
+        .optional()
+        .describe("Whether to include only top-level symbols"),
+    })
+    .optional()
+    .describe("Symbol filtering configuration"),
 });
 
 // Type exports
@@ -95,6 +119,23 @@ export const DEFAULT_CONFIG: LSMCPConfig = {
   ignorePatterns: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
 };
 
+// Default symbol filter configuration
+export const DEFAULT_SYMBOL_FILTER = {
+  excludeKinds: [
+    "Variable",
+    "Constant",
+    "String",
+    "Number",
+    "Boolean",
+    "Array",
+    "Object",
+    "Key",
+    "Null",
+  ],
+  excludePatterns: ["callback", "temp", "tmp", "_", "^[a-z]$"],
+  includeOnlyTopLevel: false,
+};
+
 /**
  * Validate config against schema
  */
@@ -113,5 +154,6 @@ export function createConfigFromAdapter(
     ...DEFAULT_CONFIG,
     adapter,
     indexFiles: indexPatterns || DEFAULT_CONFIG.indexFiles,
+    symbolFilter: DEFAULT_SYMBOL_FILTER,
   };
 }

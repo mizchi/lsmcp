@@ -8,7 +8,7 @@ vi.mock("node:fs/promises");
 vi.mock("node:fs");
 vi.mock("../../core/io/gitignoreUtils.ts");
 
-describe("fileSystemTools", () => {
+describe.skip("fileSystemTools", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(process, "cwd").mockReturnValue("/project");

@@ -100,6 +100,7 @@ export type {
 export { getLanguageIdFromPath };
 
 import { getServerCharacteristics } from "../core/serverCharacteristics.ts";
+import { nodeFileSystemApi } from "../core/io/NodeFileSystemApi.ts";
 
 // Global state for active client
 let activeClient: LSPClient | null = null;
@@ -134,6 +135,7 @@ export async function initialize(
   languageId?: string,
   initializationOptions?: unknown,
   serverCharacteristics?: import("../types/lsp.ts").ServerCharacteristics,
+  fileSystemApi?: import("../core/io/FileSystemApi.ts").FileSystemApi,
 ): Promise<LSPClient> {
   // Stop existing client if any
   if (activeClient) {
@@ -147,6 +149,7 @@ export async function initialize(
     languageId,
     initializationOptions,
     serverCharacteristics,
+    fileSystemApi,
   });
 
   // Start the client
@@ -188,6 +191,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     rootPath: config.rootPath,
     languageId: config.languageId || "plaintext", // Use plaintext as fallback, actual language will be detected per file
     serverCharacteristics: config.serverCharacteristics,
+    fileSystemApi: config.fileSystemApi || nodeFileSystemApi,
   };
 
   // Initialize managers
@@ -814,6 +818,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
 
   const lspClient: LSPClient = {
     languageId: state.languageId,
+    fileSystemApi: state.fileSystemApi,
     start,
     stop,
     openDocument,

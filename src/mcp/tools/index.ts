@@ -38,11 +38,7 @@ import {
   findFileTool,
   searchForPatternTool,
 } from "./fileSystemTools.ts";
-import {
-  getSymbolsOverviewTool,
-  findSymbolTool,
-  findReferencingSymbolsTool,
-} from "./symbolTools.ts";
+import { getSymbolsOverviewTool, querySymbolsTool } from "./symbolTools.ts";
 
 export const serenityTools = {
   replaceSymbolBody: replaceSymbolBodyTool,
@@ -65,8 +61,7 @@ export const serenityTools = {
   findFile: findFileTool,
   searchForPattern: searchForPatternTool,
   getSymbolsOverview: getSymbolsOverviewTool,
-  findSymbol: findSymbolTool,
-  findReferencingSymbols: findReferencingSymbolsTool,
+  querySymbols: querySymbolsTool,
 };
 
 // Export as a list for easy registration

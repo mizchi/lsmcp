@@ -18,10 +18,16 @@ import type {
 } from "./types.ts";
 import { SymbolKind } from "vscode-languageserver-types";
 import {
-  getGitHash,
-  getModifiedFiles,
+  getGitHashAsync,
+  getModifiedFilesAsync,
   getFileGitHash,
+  getUntrackedFilesAsync,
 } from "../utils/gitUtils.ts";
+import {
+  loadIndexConfig,
+  shouldExcludeSymbol,
+  type IndexConfig,
+} from "./config.ts";
 
 export class SymbolIndex extends EventEmitter {
   private fileIndex: Map<string, FileSymbols> = new Map();
@@ -34,6 +40,7 @@ export class SymbolIndex extends EventEmitter {
     indexingTime: 0,
     lastUpdated: new Date(),
   };
+  private config?: IndexConfig;
 
   constructor(
     private rootPath: string,
@@ -82,10 +89,11 @@ export class SymbolIndex extends EventEmitter {
       const symbols = this.convertSymbols(rawSymbols, uri);
 
       // Get git hash for the file
-      const gitHash = getFileGitHash(this.rootPath, absolutePath);
+      const gitHashResult = await getFileGitHash(this.rootPath, absolutePath);
+      const gitHash = gitHashResult.isOk() ? gitHashResult.value : undefined;
 
       // Store in index
-      this.storeSymbols(uri, symbols, gitHash || undefined);
+      this.storeSymbols(uri, symbols, gitHash);
 
       // Update cache
       if (this.cache) {
@@ -113,29 +121,82 @@ export class SymbolIndex extends EventEmitter {
   }
 
   /**
+   * Initialize index with configuration
+   */
+  async initialize(): Promise<void> {
+    this.config = await loadIndexConfig(this.rootPath);
+    console.error(`[SymbolIndex] Loaded config:`, this.config?.symbolFilter);
+  }
+
+  /**
    * Index multiple files
    */
-  async indexFiles(filePaths: string[], concurrency = 5): Promise<void> {
+  async indexFiles(
+    filePaths: string[],
+    concurrency = 5,
+    options?: {
+      onProgress?: (progress: { current: number; total: number }) => void;
+      skipFailures?: boolean;
+    },
+  ): Promise<void> {
+    // Load configuration if not already loaded
+    if (!this.config) {
+      await this.initialize();
+    }
+
     this.emit("indexingStarted", {
       type: "indexingStarted",
       fileCount: filePaths.length,
     } as IndexEvent);
 
     const startTime = Date.now();
+    const totalFiles = filePaths.length;
+    let processedFiles = 0;
+    let failedFiles = 0;
 
     // Process in chunks
     for (let i = 0; i < filePaths.length; i += concurrency) {
       const chunk = filePaths.slice(i, i + concurrency);
-      await Promise.all(chunk.map((file) => this.indexFile(file)));
+
+      const promises = chunk.map(async (file) => {
+        try {
+          await this.indexFile(file);
+          processedFiles++;
+        } catch (error) {
+          failedFiles++;
+          console.error(
+            `[SymbolIndex] Failed to index ${file}: ${error instanceof Error ? error.message : String(error)}`,
+          );
+          if (!options?.skipFailures) {
+            throw error;
+          }
+        }
+      });
+
+      await Promise.all(promises);
+
+      // Report progress
+      if (options?.onProgress) {
+        options.onProgress({ current: processedFiles, total: totalFiles });
+      }
+
+      // Add a small delay between batches to prevent overwhelming the system
+      if (i + concurrency < filePaths.length) {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      }
     }
 
     const duration = Date.now() - startTime;
 
     // Save current git hash
-    const gitHash = getGitHash(this.rootPath);
-    if (gitHash) {
-      this.stats.lastGitHash = gitHash;
+    const gitHashResult = await getGitHashAsync(this.rootPath);
+    if (gitHashResult.isOk()) {
+      this.stats.lastGitHash = gitHashResult.value;
     }
+
+    console.error(
+      `[SymbolIndex] Indexed ${processedFiles}/${totalFiles} files in ${duration}ms (${failedFiles} failures)`,
+    );
 
     this.emit("indexingCompleted", {
       type: "indexingCompleted",
@@ -318,18 +379,39 @@ export class SymbolIndex extends EventEmitter {
   /**
    * Update index incrementally based on git changes
    */
-  async updateIncremental(): Promise<{
+  async updateIncremental(options?: {
+    batchSize?: number;
+    onProgress?: (progress: { current: number; total: number }) => void;
+  }): Promise<{
     updated: string[];
     removed: string[];
     errors: string[];
   }> {
-    const currentHash = getGitHash(this.rootPath);
-    if (!currentHash) {
-      // Not a git repository, fall back to full index
-      return { updated: [], removed: [], errors: ["Not a git repository"] };
+    const batchSize = options?.batchSize || 5; // Reduced from 10 to 5 for better stability
+    console.error(
+      `[SymbolIndex] updateIncremental started for ${this.rootPath}`,
+    );
+
+    const currentHashResult = await getGitHashAsync(this.rootPath);
+
+    if (currentHashResult.isErr()) {
+      console.error(
+        `[SymbolIndex] Git hash error: ${currentHashResult.error.message}`,
+      );
+      // Not a git repository or error, fall back to full index
+      return {
+        updated: [],
+        removed: [],
+        errors: [currentHashResult.error.message],
+      };
     }
 
+    const currentHash = currentHashResult.value;
+    console.error(`[SymbolIndex] Current git hash: ${currentHash}`);
+
     const lastHash = this.stats.lastGitHash;
+    console.error(`[SymbolIndex] Last git hash: ${lastHash}`);
+
     if (!lastHash) {
       // First time, do full index
       return {
@@ -339,35 +421,148 @@ export class SymbolIndex extends EventEmitter {
       };
     }
 
-    const modifiedFiles = getModifiedFiles(this.rootPath, lastHash);
+    console.error(`[SymbolIndex] Getting modified files since ${lastHash}`);
+    const modifiedFilesResult = await getModifiedFilesAsync(
+      this.rootPath,
+      lastHash,
+    );
+
+    if (modifiedFilesResult.isErr()) {
+      console.error(
+        `[SymbolIndex] Error getting modified files: ${modifiedFilesResult.error.message}`,
+      );
+      // If we can't get diff, fall back to full reindex
+      return {
+        updated: [],
+        removed: [],
+        errors: [modifiedFilesResult.error.message],
+      };
+    }
+
+    const modifiedFiles = modifiedFilesResult.value;
+    console.error(`[SymbolIndex] Found ${modifiedFiles.length} modified files`);
+
+    console.error(`[SymbolIndex] Getting untracked files`);
+    const untrackedFilesResult = await getUntrackedFilesAsync(this.rootPath);
+
+    if (untrackedFilesResult.isErr()) {
+      console.error(
+        `[SymbolIndex] Error getting untracked files: ${untrackedFilesResult.error.message}`,
+      );
+      // Continue with just modified files if untracked fails
+    }
+
+    const untrackedFiles = untrackedFilesResult.isOk()
+      ? untrackedFilesResult.value
+      : [];
+    console.error(
+      `[SymbolIndex] Found ${untrackedFiles.length} untracked files`,
+    );
+
+    // Filter both modified and untracked files to only include TypeScript/JavaScript files
+    const supportedExtensions = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".mts"];
+
+    const isSupported = (file: string): boolean => {
+      return supportedExtensions.some((ext) => file.endsWith(ext));
+    };
+
+    const tsModifiedFiles = modifiedFiles.filter(isSupported);
+    const tsUntrackedFiles = untrackedFiles.filter(isSupported);
+
+    console.error(
+      `[SymbolIndex] Filtered to ${tsModifiedFiles.length} modified TS/JS files`,
+    );
+    console.error(
+      `[SymbolIndex] Filtered to ${tsUntrackedFiles.length} untracked TS/JS files`,
+    );
+
+    // Combine modified and untracked files
+    const allFiles = [...new Set([...tsModifiedFiles, ...tsUntrackedFiles])];
+    const totalFiles = allFiles.length;
+
     const updated: string[] = [];
     const removed: string[] = [];
     const errors: string[] = [];
 
-    for (const file of modifiedFiles) {
-      const absolutePath = resolve(this.rootPath, file);
+    // Process files in batches to avoid memory issues
+    // Use more efficient batch processing with memory management
+    let processedCount = 0;
 
-      try {
-        // Check if file still exists
-        if (await this.fileSystem.exists(absolutePath)) {
-          // Re-index the file
-          await this.indexFile(file);
-          updated.push(file);
-        } else {
-          // File was deleted
-          this.removeFile(file);
-          removed.push(file);
-        }
-      } catch (error) {
-        errors.push(
-          `${file}: ${error instanceof Error ? error.message : String(error)}`,
-        );
+    for (let i = 0; i < allFiles.length; i += batchSize) {
+      const batch = allFiles.slice(i, Math.min(i + batchSize, allFiles.length));
+
+      // Report progress before processing batch
+      if (options?.onProgress) {
+        options.onProgress({ current: processedCount, total: totalFiles });
       }
+
+      // Process batch concurrently with controlled memory usage
+      const batchPromises = batch.map(async (file) => {
+        const absolutePath = resolve(this.rootPath, file);
+
+        try {
+          // Check if file still exists
+          if (await this.fileSystem.exists(absolutePath)) {
+            // Re-index the file
+            await this.indexFile(file);
+            return { type: "updated" as const, file };
+          } else {
+            // File was deleted
+            this.removeFile(file);
+            return { type: "removed" as const, file };
+          }
+        } catch (error) {
+          return {
+            type: "error" as const,
+            file,
+            error: `${file}: ${error instanceof Error ? error.message : String(error)}`,
+          };
+        }
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+
+      // Collect results immediately to free memory
+      for (const result of batchResults) {
+        switch (result.type) {
+          case "updated":
+            updated.push(result.file);
+            break;
+          case "removed":
+            removed.push(result.file);
+            break;
+          case "error":
+            errors.push(result.error);
+            break;
+        }
+      }
+
+      processedCount += batch.length;
+
+      // For very large batches, add a small yield to prevent blocking
+      // Only add delay for very large sets of files
+      if (allFiles.length > 1000 && i + batchSize < allFiles.length) {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+
+      // Clear references to help garbage collection for large batches
+      if (processedCount % 500 === 0 && global.gc) {
+        global.gc();
+      }
+    }
+
+    // Final progress report
+    if (options?.onProgress) {
+      options.onProgress({ current: totalFiles, total: totalFiles });
     }
 
     // Update git hash
     this.stats.lastGitHash = currentHash;
     this.stats.lastUpdated = new Date();
+
+    console.error(
+      `[SymbolIndex] Incremental update completed: ${updated.length} updated, ${removed.length} removed, ${errors.length} errors`,
+    );
 
     return { updated, removed, errors };
   }
@@ -385,10 +580,10 @@ export class SymbolIndex extends EventEmitter {
     }
 
     // Check git hash first if available (more reliable than mtime)
-    const currentFileHash = getFileGitHash(this.rootPath, absolutePath);
-    if (currentFileHash && fileSymbols.gitHash) {
+    const hashResult = await getFileGitHash(this.rootPath, absolutePath);
+    if (hashResult.isOk() && fileSymbols.gitHash) {
       // Both have git hashes, compare them
-      return currentFileHash !== fileSymbols.gitHash;
+      return hashResult.value !== fileSymbols.gitHash;
     }
 
     // Fall back to file modification time if git hash not available
@@ -544,7 +739,47 @@ export class SymbolIndex extends EventEmitter {
   }
 
   private convertSymbols(rawSymbols: any[], uri: string): IndexedSymbol[] {
-    return rawSymbols.map((symbol) => this.convertSymbol(symbol, uri));
+    const symbols = rawSymbols.map((symbol) => this.convertSymbol(symbol, uri));
+
+    // Apply symbol filtering if configured
+    if (this.config?.symbolFilter) {
+      return this.filterSymbolsByConfig(symbols);
+    }
+
+    return symbols;
+  }
+
+  private filterSymbolsByConfig(symbols: IndexedSymbol[]): IndexedSymbol[] {
+    const filter = this.config?.symbolFilter;
+    if (!filter) return symbols;
+
+    const filtered: IndexedSymbol[] = [];
+
+    for (const symbol of symbols) {
+      // Check if symbol should be excluded
+      if (shouldExcludeSymbol(symbol, filter)) {
+        continue;
+      }
+
+      // If symbol has children, filter them recursively
+      let filteredSymbol = symbol;
+      if (symbol.children) {
+        const filteredChildren = this.filterSymbolsByConfig(symbol.children);
+        if (filteredChildren.length > 0 || !filter.includeOnlyTopLevel) {
+          filteredSymbol = {
+            ...symbol,
+            children: filteredChildren,
+          };
+        } else {
+          // Skip parent if all children were filtered out
+          continue;
+        }
+      }
+
+      filtered.push(filteredSymbol);
+    }
+
+    return filtered;
   }
 
   private convertSymbol(

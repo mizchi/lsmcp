@@ -1,7 +1,7 @@
 import path from "path";
-import fs from "fs/promises";
 import { pathToFileURL } from "url";
 import { ErrorContext, formatError } from "../../mcp/utils/errorHandler.ts";
+import type { FileSystemApi } from "../../core/io/FileSystemApi.ts";
 
 /**
  * File context information for LSP operations
@@ -20,11 +20,13 @@ export interface FileContext {
  *
  * @param root - Root directory for resolving relative paths
  * @param filePath - File path (can be relative or absolute)
+ * @param fs - FileSystem API instance
  * @returns File context with absolute path, URI, and content
  */
 export async function loadFileContext(
   root: string,
   filePath: string,
+  fs: FileSystemApi,
 ): Promise<FileContext> {
   // Convert to absolute path
   const absolutePath = path.isAbsolute(filePath)
@@ -32,14 +34,12 @@ export async function loadFileContext(
     : path.join(root, filePath);
 
   // Check if file exists
-  try {
-    await fs.access(absolutePath);
-  } catch (error) {
+  if (!(await fs.exists(absolutePath))) {
     const context: ErrorContext = {
       operation: "file access",
       filePath: path.relative(root, absolutePath),
     };
-    throw new Error(formatError(error, context));
+    throw new Error(formatError(new Error("File not found"), context));
   }
 
   // Convert to file URI

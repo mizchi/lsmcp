@@ -138,6 +138,27 @@ export function generateManualConfigBoilerplate(): string {
     "enableWatchers": true,
     "memoryLimit": 1024
   },
+  "symbolFilter": {
+    "excludeKinds": [
+      "Variable",
+      "Constant",
+      "String",
+      "Number",
+      "Boolean",
+      "Array",
+      "Object",
+      "Key",
+      "Null"
+    ],
+    "excludePatterns": [
+      "callback",
+      "temp",
+      "tmp",
+      "_",
+      "^[a-z]$"
+    ],
+    "includeOnlyTopLevel": false
+  },
   "ignorePatterns": [
     "**/node_modules/**",
     "**/dist/**",

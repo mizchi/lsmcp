@@ -48,6 +48,17 @@ export default defineConfig({
           retry: 0, // No retry for adapter tests
         },
       },
+      {
+        extends: true,
+        test: {
+          name: "bench",
+          include: ["src/**/*.bench.ts"],
+          exclude: [...GLOBAL_IGNORED_FILES],
+          benchmark: {
+            outputFile: "./bench-results.json",
+          },
+        },
+      },
     ],
   },
 });

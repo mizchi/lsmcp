@@ -31,8 +31,12 @@ export function getOrCreateIndex(rootPath: string): SymbolIndex | null {
   // Get LSP client
   const client = getLSPClient();
   if (!client) {
+    console.error(`[IndexerAdapter] No LSP client available for ${rootPath}`);
     return null;
   }
+  console.error(
+    `[IndexerAdapter] Creating index for ${rootPath} with LSP client`,
+  );
 
   // Create file content provider
   const fileContentProvider = async (uri: string): Promise<string> => {

@@ -1,11 +1,6 @@
 {
   "version": "1.0",
-  "indexFiles": [
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.js",
-    "**/*.jsx"
-  ],
+  "indexFiles": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
   "settings": {
     "autoIndex": false,
     "indexConcurrency": 5,
@@ -13,25 +8,30 @@
     "enableWatchers": true,
     "memoryLimit": 1024
   },
-  "ignorePatterns": [
-    "**/node_modules/**",
-    "**/dist/**",
-    "**/.git/**"
-  ],
+  "symbolFilter": {
+    "excludeKinds": [
+      "Variable",
+      "Constant",
+      "String",
+      "Number",
+      "Boolean",
+      "Array",
+      "Object",
+      "Key",
+      "Null"
+    ],
+    "excludePatterns": ["callback", "temp", "tmp", "_", "^[a-z]$"],
+    "includeOnlyTopLevel": false
+  },
+  "ignorePatterns": ["**/node_modules/**", "**/dist/**", "**/.git/**"],
   "adapter": {
     "id": "tsgo",
     "name": "tsgo",
     "baseLanguage": "typescript",
     "description": "Fast TypeScript language server by tsgo",
     "bin": "npx",
-    "args": [
-      "-y",
-      "tsgo",
-      "--lsp",
-      "--stdio"
-    ],
+    "args": ["-y", "tsgo", "--lsp", "--stdio"],
     "unsupported": [
-      "get_document_symbols",
       "get_workspace_symbols",
       "get_code_actions",
       "rename_symbol",

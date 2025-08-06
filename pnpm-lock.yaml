@@ -12,8 +12,8 @@ importers:
         specifier: ^4.0.9
         version: 4.0.9
       gitaware-glob:
-        specifier: ^0.1.0
-        version: 0.1.0
+        specifier: ^0.2.0
+        version: 0.2.0
       glob:
         specifier: ^10.4.5
         version: 10.4.5
@@ -1337,8 +1337,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  gitaware-glob@0.1.0:
-    resolution: {integrity: sha512-KsW5aWFzVfFV9SF4QASfap4i3pk90B9NV6richIs2xFjDtILPkwUfzcRt1n9zPq1oawcs3aaoQaRy+ZYvuAxPQ==}
+  gitaware-glob@0.2.0:
+    resolution: {integrity: sha512-86QjEcbFxPBsmi9hv0wPnQRgv5aXx8yHl40AkEZk1OBLSp42GUEz6jzDoADh7B/YH6/5dAumHDJH2WM0nYPMig==}
 
   gitignore-to-glob@0.3.0:
     resolution: {integrity: sha512-mk74BdnK7lIwDHnotHddx1wsjMOFIThpLY3cPNniJ/2fA/tlLzHnFxIdR+4sLOu5KGgQJdij4kjJ2RoUNnCNMA==}
@@ -3489,7 +3489,7 @@ snapshots:
       - conventional-commits-filter
       - conventional-commits-parser
 
-  gitaware-glob@0.1.0:
+  gitaware-glob@0.2.0:
     dependencies:
       minimatch: 10.0.3
 

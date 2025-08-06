@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z, ZodObject, type ZodType } from "zod";
 import type { ToolDef } from "./mcpHelpers.ts";
+import type { FileSystemApi } from "../../core/io/FileSystemApi.ts";
 
 /**
  * MCP Server configuration options
@@ -15,15 +16,17 @@ export interface McpServerOptions {
     resources?: boolean;
     prompts?: boolean;
   };
+  fileSystemApi?: FileSystemApi;
 }
 
 /**
  * MCP Server state
  */
-interface McpServerState {
+export interface McpServerState {
   server: McpServer;
   tools: Map<string, ToolDef<ZodType>>;
   defaultRoot?: string;
+  fileSystemApi?: FileSystemApi;
 }
 
 /**
@@ -79,6 +82,7 @@ export function createMcpServer(options: McpServerOptions): McpServerState {
     server,
     tools: new Map(),
     defaultRoot: undefined,
+    fileSystemApi: options.fileSystemApi,
   };
 }
 

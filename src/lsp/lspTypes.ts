@@ -39,6 +39,7 @@ export {
 };
 import { ChildProcess } from "child_process";
 import { EventEmitter } from "events";
+import type { FileSystemApi } from "../core/io/FileSystemApi.ts";
 
 // LSP Message types
 export interface LSPRequest {
@@ -312,6 +313,7 @@ export interface LSPClientState {
   languageId: string;
   serverCapabilities?: ServerCapabilities;
   serverCharacteristics?: import("../types/lsp.ts").ServerCharacteristics;
+  fileSystemApi: FileSystemApi;
 }
 
 export interface LSPClientConfig {
@@ -322,10 +324,12 @@ export interface LSPClientConfig {
   clientVersion?: string; // Default: "0.1.0"
   initializationOptions?: unknown; // Language-specific initialization options
   serverCharacteristics?: import("../types/lsp.ts").ServerCharacteristics;
+  fileSystemApi?: FileSystemApi; // Optional FileSystem API instance
 }
 
 export type LSPClient = {
   languageId: string;
+  fileSystemApi: FileSystemApi;
   start: () => Promise<void>;
   stop: () => Promise<void>;
   openDocument: (uri: string, text: string, languageId?: string) => void;

@@ -27,6 +27,8 @@
     "test:all": "vitest --run",
     "test:watch": "vitest",
     "test:examples": "tsx scripts/check-examples.ts",
+    "bench": "vitest bench --run",
+    "bench:watch": "vitest bench",
     "build:supported-table": "node scripts/build-supported-table.ts",
     "coverage": "vitest run --coverage",
     "format": "biome format --write src/ tests/",
@@ -45,7 +47,7 @@
   ],
   "dependencies": {
     "@types/micromatch": "^4.0.9",
-    "gitaware-glob": "^0.1.0",
+    "gitaware-glob": "^0.2.0",
     "glob": "^10.4.5",
     "ignore": "^7.0.5",
     "linguist-languages": "^8.0.0",
