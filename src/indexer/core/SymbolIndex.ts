@@ -6,6 +6,7 @@
 import { EventEmitter } from "events";
 import { pathToFileURL } from "url";
 import { resolve } from "path";
+import { getFileContentHash, getContentHash } from "./contentHash.ts";
 import type {
   IndexedSymbol,
   FileSymbols,
@@ -60,11 +61,28 @@ export class SymbolIndex extends EventEmitter {
     const startTime = Date.now();
 
     try {
-      // Try cache first
+      // Read file content first (we need it for content hash)
+      const content = await this.fileSystem.readFile(absolutePath);
+      const contentHash = getContentHash(content);
+
+      // Check if we have this exact content already indexed
+      const existingFile = this.fileIndex.get(uri);
+      if (existingFile && existingFile.contentHash === contentHash) {
+        // Content hasn't changed, skip reindexing
+        this.emit("fileIndexed", {
+          type: "fileIndexed",
+          uri,
+          symbolCount: existingFile.symbols.length,
+          fromCache: true,
+        } as IndexEvent);
+        return;
+      }
+
+      // Try cache
       if (this.cache) {
         const cachedSymbols = await this.cache.get(absolutePath);
         if (cachedSymbols) {
-          this.storeSymbols(uri, cachedSymbols);
+          this.storeSymbols(uri, cachedSymbols, undefined, contentHash);
           this.emit("fileIndexed", {
             type: "fileIndexed",
             uri,
@@ -74,9 +92,6 @@ export class SymbolIndex extends EventEmitter {
           return;
         }
       }
-
-      // Read file content
-      await this.fileSystem.readFile(absolutePath);
 
       // Get symbols from provider
       const rawSymbols = await this.symbolProvider.getDocumentSymbols(uri);
@@ -92,8 +107,8 @@ export class SymbolIndex extends EventEmitter {
       const gitHashResult = await getFileGitHash(this.rootPath, absolutePath);
       const gitHash = gitHashResult.isOk() ? gitHashResult.value : undefined;
 
-      // Store in index
-      this.storeSymbols(uri, symbols, gitHash);
+      // Store in index with content hash (already calculated above)
+      this.storeSymbols(uri, symbols, gitHash, contentHash);
 
       // Update cache
       if (this.cache) {
@@ -607,6 +622,7 @@ export class SymbolIndex extends EventEmitter {
     uri: string,
     symbols: IndexedSymbol[],
     gitHash?: string,
+    contentHash?: string,
   ): void {
     // Store in file index
     this.fileIndex.set(uri, {
@@ -614,6 +630,7 @@ export class SymbolIndex extends EventEmitter {
       lastModified: Date.now(),
       lastIndexed: Date.now(),
       gitHash,
+      contentHash,
       symbols,
     });
 

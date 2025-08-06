@@ -25,6 +25,7 @@ export interface FileSymbols {
   lastModified: number;
   lastIndexed: number;
   gitHash?: string;
+  contentHash?: string;
   symbols: IndexedSymbol[];
 }
 
