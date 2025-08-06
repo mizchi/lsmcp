@@ -84,6 +84,7 @@ describe("MCP Server with memfs", () => {
       const result = await listDirTool.execute({
         relativePath: ".",
         recursive: false,
+        maxAnswerChars: 200000,
       });
 
       const parsed = JSON.parse(result);
@@ -152,6 +153,7 @@ describe("MCP Server with memfs", () => {
       const result = await listDirTool.execute({
         relativePath: ".",
         recursive: true,
+        maxAnswerChars: 200000,
       });
 
       const parsed = JSON.parse(result);
@@ -206,6 +208,7 @@ describe("MCP Server with memfs", () => {
       const result = await listDirTool.execute({
         relativePath: "non-existent",
         recursive: false,
+        maxAnswerChars: 200000,
       });
 
       const parsed = JSON.parse(result);

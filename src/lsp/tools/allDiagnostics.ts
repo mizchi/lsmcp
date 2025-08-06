@@ -91,9 +91,13 @@ async function getProjectFiles(
 
     if (useGitignore) {
       // Use gitaware-glob which automatically respects .gitignore
-      files = await gitawareGlob(pattern, {
+      const filesGen = await gitawareGlob(pattern, {
         cwd: root,
       });
+      files = [];
+      for await (const file of filesGen) {
+        files.push(file);
+      }
     } else {
       // Use standard glob when gitignore should be ignored
       files = await standardGlob(pattern, {

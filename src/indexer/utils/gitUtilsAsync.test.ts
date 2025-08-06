@@ -15,7 +15,7 @@ class MockProcess extends EventEmitter {
   stdout = new EventEmitter();
   stderr = new EventEmitter();
 
-  kill(signal: string) {
+  kill(_signal?: string) {
     // Mock kill
   }
 }
@@ -60,7 +60,7 @@ describe("gitUtils (async)", () => {
         mockProc.emit("error", new Error("Command timed out"));
       }, 10);
 
-      const result = await resultPromise.catch((e) => null);
+      await resultPromise.catch(() => null);
 
       // Since we can't easily test real timeout, we'll skip this test
       expect(true).toBe(true);

@@ -5,22 +5,13 @@
 import { z } from "zod";
 import type { ToolDef } from "../utils/mcpHelpers.ts";
 import {
-  clearIndex,
   forceClearIndex,
-  getIndexStats,
   getOrCreateIndex,
 } from "../../indexer/mcp/IndexerAdapter.ts";
 import { glob } from "gitaware-glob";
 import { getLSPClient } from "../../lsp/lspClient.ts";
-import {
-  getDefaultIndexPattern,
-  getDefaultConcurrency,
-  loadIndexConfig,
-} from "../../indexer/core/configLoader.ts";
-import {
-  getAdapterDefaultPattern,
-  getAdapterDefaultConcurrency,
-} from "../../indexer/core/adapterDefaults.ts";
+import { loadIndexConfig } from "../../indexer/core/configLoader.ts";
+import { getAdapterDefaultPattern } from "../../indexer/core/adapterDefaults.ts";
 
 // Unified index_symbols schema
 const indexSymbolsSchema = z.object({
@@ -137,7 +128,7 @@ export const indexSymbolsTool: ToolDef<typeof indexSymbolsSchema> = {
 
     let output = "";
     let filesIndexed = 0;
-    let totalSymbols = 0;
+    // let totalSymbols = 0;
     let duration = 0;
     let errors: Array<{ file: string; error: string }> = [];
 
@@ -266,7 +257,6 @@ export const indexSymbolsTool: ToolDef<typeof indexSymbolsSchema> = {
 
     // Get final stats
     const statsAfter = index.getStats();
-    totalSymbols = statsAfter.totalSymbols;
 
     output += `\nIndex Statistics:\n`;
     output += `- Total files in index: ${statsAfter.totalFiles}\n`;

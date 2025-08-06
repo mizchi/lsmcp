@@ -269,10 +269,12 @@ export async function indexCommand(
   // Find all files matching patterns
   const allFiles: string[] = [];
   for (const pattern of config.indexFiles) {
-    const files = await glob(pattern, {
+    const filesGen = await glob(pattern, {
       cwd: projectRoot,
     });
-    allFiles.push(...files);
+    for await (const file of filesGen) {
+      allFiles.push(file);
+    }
   }
 
   // Remove duplicates

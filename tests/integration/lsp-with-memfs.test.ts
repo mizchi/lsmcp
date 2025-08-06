@@ -68,7 +68,7 @@ export interface User {
     await fs.writeFile(filePath, fileContent, "utf-8");
 
     // Find TypeScript language server
-    const tsServerPath = await findTypescriptLanguageServer();
+    const tsServerPath = await findTypescriptLanguageServer(rootPath);
     if (!tsServerPath) {
       throw new Error("TypeScript language server not found");
     }
@@ -151,7 +151,7 @@ export class UserService {
     );
 
     // Start TypeScript language server
-    const tsServerPath = await findTypescriptLanguageServer();
+    const tsServerPath = await findTypescriptLanguageServer(rootPath);
     if (!tsServerPath) {
       throw new Error("TypeScript language server not found");
     }
@@ -199,7 +199,9 @@ export class UserService {
 
     expect(definition).toBeTruthy();
     const defLocation = Array.isArray(definition) ? definition[0] : definition;
-    expect(defLocation?.uri).toBe(userUri);
+    expect(
+      "uri" in defLocation ? defLocation.uri : (defLocation as any).targetUri,
+    ).toBe(userUri);
 
     // Cleanup
     client.closeDocument(userUri);
@@ -221,7 +223,7 @@ const result = add("not", "numbers"); // Type error: string is not assignable to
     );
 
     // Start TypeScript language server
-    const tsServerPath = await findTypescriptLanguageServer();
+    const tsServerPath = await findTypescriptLanguageServer(rootPath);
     if (!tsServerPath) {
       throw new Error("TypeScript language server not found");
     }

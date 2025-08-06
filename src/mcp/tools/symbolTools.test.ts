@@ -302,7 +302,7 @@ describe("getSymbolsOverviewTool with memfs", () => {
         totalFiles: 1,
         totalSymbols: 0,
         duration: 50,
-        errors: ["Failed to parse error.ts"],
+        errors: [{ file: "error.ts", error: "Failed to parse" }],
       });
 
       const result = await getSymbolsOverviewTool.execute({

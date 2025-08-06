@@ -6,12 +6,14 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { SymbolIndex } from "../core/SymbolIndex.ts";
 import { SymbolKind } from "vscode-languageserver-types";
 import * as gitUtils from "../utils/gitUtils.ts";
+import { ok } from "neverthrow";
 
 // Mock git utilities
 vi.mock("../utils/gitUtils.ts", () => ({
-  getGitHash: vi.fn(),
-  getModifiedFiles: vi.fn(),
+  getGitHashAsync: vi.fn(),
+  getModifiedFilesAsync: vi.fn(),
   getFileGitHash: vi.fn(),
+  getUntrackedFilesAsync: vi.fn(),
 }));
 
 describe("Incremental Index Updates", () => {
@@ -48,11 +50,14 @@ describe("Incremental Index Updates", () => {
       mockFileSystem,
       mockCache,
     );
+
+    // Default mock for getUntrackedFilesAsync
+    vi.mocked(gitUtils.getUntrackedFilesAsync).mockResolvedValue(ok([]));
   });
 
   describe("updateIncremental", () => {
     it("should handle non-git repository", async () => {
-      vi.mocked(gitUtils.getGitHash).mockReturnValue(null);
+      vi.mocked(gitUtils.getGitHashAsync).mockResolvedValue(ok(null as any));
 
       const result = await symbolIndex.updateIncremental();
 
@@ -62,7 +67,7 @@ describe("Incremental Index Updates", () => {
     });
 
     it("should handle first-time indexing", async () => {
-      vi.mocked(gitUtils.getGitHash).mockReturnValue("abc123");
+      vi.mocked(gitUtils.getGitHashAsync).mockResolvedValue(ok("abc123"));
       // No previous hash in stats
 
       const result = await symbolIndex.updateIncremental();
@@ -72,15 +77,14 @@ describe("Incremental Index Updates", () => {
 
     it("should update modified files", async () => {
       // Setup git mocks - set up the sequence correctly
-      vi.mocked(gitUtils.getGitHash)
-        .mockReturnValueOnce("abc123") // First call during indexFiles
-        .mockReturnValue("def456"); // All subsequent calls
+      vi.mocked(gitUtils.getGitHashAsync)
+        .mockResolvedValueOnce(ok("abc123")) // First call during indexFiles
+        .mockResolvedValue(ok("def456")); // All subsequent calls
 
-      vi.mocked(gitUtils.getModifiedFiles).mockReturnValue([
-        "src/file1.ts",
-        "src/file2.ts",
-      ]);
-      vi.mocked(gitUtils.getFileGitHash).mockReturnValue("file123");
+      vi.mocked(gitUtils.getModifiedFilesAsync).mockResolvedValue(
+        ok(["src/file1.ts", "src/file2.ts"]),
+      );
+      vi.mocked(gitUtils.getFileGitHash).mockResolvedValue(ok("file123"));
 
       // Mock symbol provider to return symbols
       mockSymbolProvider.getDocumentSymbols.mockResolvedValue([
@@ -115,11 +119,13 @@ describe("Incremental Index Updates", () => {
 
     it("should handle deleted files", async () => {
       // Setup git mocks - set up the sequence correctly
-      vi.mocked(gitUtils.getGitHash)
-        .mockReturnValueOnce("abc123") // First call during indexFiles
-        .mockReturnValue("def456"); // All subsequent calls
+      vi.mocked(gitUtils.getGitHashAsync)
+        .mockResolvedValueOnce(ok("abc123")) // First call during indexFiles
+        .mockResolvedValue(ok("def456")); // All subsequent calls
 
-      vi.mocked(gitUtils.getModifiedFiles).mockReturnValue(["deleted.ts"]);
+      vi.mocked(gitUtils.getModifiedFilesAsync).mockResolvedValue(
+        ok(["deleted.ts"]),
+      );
       mockFileSystem.exists.mockResolvedValue(false); // File doesn't exist
 
       // Index initial files - this will set lastGitHash
@@ -170,13 +176,13 @@ describe("Incremental Index Updates", () => {
       ]);
 
       // Mock git to return a hash
-      vi.mocked(gitUtils.getFileGitHash).mockReturnValue("abc123");
+      vi.mocked(gitUtils.getFileGitHash).mockResolvedValue(ok("abc123"));
 
       // Index the file first
       await symbolIndex.indexFile("test.ts");
 
       // File hasn't changed - same git hash
-      vi.mocked(gitUtils.getFileGitHash).mockReturnValue("abc123");
+      vi.mocked(gitUtils.getFileGitHash).mockResolvedValue(ok("abc123"));
 
       // Mock stat to return any time (doesn't matter since git hash is same)
       mockFileSystem.stat.mockResolvedValue({

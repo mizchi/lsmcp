@@ -123,7 +123,7 @@ describe("FileSystemApi implementations", () => {
       readFile: ((path: string, encoding?: BufferEncoding) =>
         fs.readFile(
           join(tempDir, path),
-          encoding,
+          encoding!,
         )) as FileSystemApi["readFile"],
       writeFile: (path, data, encoding) =>
         fs.writeFile(join(tempDir, path), data, encoding),

@@ -138,9 +138,7 @@ export function createGetSymbolsOverviewTool(
         }
 
         // Index the files
-        const indexResult = await indexFiles(rootPath, {
-          specificFiles: filesToIndex,
-        });
+        const indexResult = await indexFiles(rootPath, filesToIndex);
 
         if (!indexResult.success && indexResult.errors.length > 0) {
           return JSON.stringify({
@@ -160,7 +158,7 @@ export function createGetSymbolsOverviewTool(
             includeChildren: false, // Only top-level symbols
           };
 
-          const symbols = queryIndexSymbols(index, query);
+          const symbols = queryIndexSymbols(rootPath, query);
 
           // Convert to simplified format
           result[file] = symbols.map((symbol) => {
@@ -220,7 +218,7 @@ const querySymbolsSchema = z.object({
 });
 
 export function createQuerySymbolsTool(
-  fileSystemApi: FileSystemApi = nodeFileSystemApi,
+  _fileSystemApi: FileSystemApi = nodeFileSystemApi,
 ): ToolDef<typeof querySymbolsSchema> {
   return {
     name: "query_symbols",
@@ -256,7 +254,7 @@ export function createQuerySymbolsTool(
           includeChildren,
         };
 
-        const symbols = queryIndexSymbols(index, query);
+        const symbols = queryIndexSymbols(rootPath, query);
 
         return JSON.stringify(symbols, null, 2);
       } catch (error) {

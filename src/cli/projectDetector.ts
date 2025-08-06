@@ -65,7 +65,11 @@ export async function detectProjectType(
   const files = ["*.fsproj"];
   for (const pattern of files) {
     const { glob } = await import("gitaware-glob");
-    const matches = await glob(pattern, { cwd: projectRoot });
+    const matchesGen = await glob(pattern, { cwd: projectRoot });
+    const matches = [];
+    for await (const match of matchesGen) {
+      matches.push(match);
+    }
     if (matches.length > 0) {
       detected.push({
         preset: "fsharp",

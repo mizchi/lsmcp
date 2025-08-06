@@ -6,7 +6,7 @@
 import { EventEmitter } from "events";
 import { pathToFileURL } from "url";
 import { resolve } from "path";
-import { getFileContentHash, getContentHash } from "./contentHash.ts";
+import { getContentHash } from "./contentHash.ts";
 import type {
   IndexedSymbol,
   FileSymbols,
@@ -105,7 +105,9 @@ export class SymbolIndex extends EventEmitter {
 
       // Get git hash for the file
       const gitHashResult = await getFileGitHash(this.rootPath, absolutePath);
-      const gitHash = gitHashResult.isOk() ? gitHashResult.value : undefined;
+      const gitHash = gitHashResult.isOk()
+        ? (gitHashResult.value ?? undefined)
+        : undefined;
 
       // Store in index with content hash (already calculated above)
       this.storeSymbols(uri, symbols, gitHash, contentHash);
@@ -423,6 +425,15 @@ export class SymbolIndex extends EventEmitter {
 
     const currentHash = currentHashResult.value;
     console.error(`[SymbolIndex] Current git hash: ${currentHash}`);
+
+    // Check if not a git repository
+    if (!currentHash) {
+      return {
+        updated: [],
+        removed: [],
+        errors: ["Not a git repository"],
+      };
+    }
 
     const lastHash = this.stats.lastGitHash;
     console.error(`[SymbolIndex] Last git hash: ${lastHash}`);
