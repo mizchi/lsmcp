@@ -3,7 +3,6 @@
  */
 
 import { z } from "zod";
-import { SymbolKind } from "vscode-languageserver-types";
 import type { ToolDef } from "../utils/mcpHelpers.ts";
 import {
   clearIndex,
@@ -19,7 +18,7 @@ import { fileURLToPath } from "url";
 import {
   SYMBOL_KIND_NAMES,
   getSymbolKindName,
-  getSymbolKindsList,
+  parseSymbolKind,
 } from "../../indexer/core/symbolKindTypes.ts";
 
 // Index management tools
@@ -91,6 +90,7 @@ Total symbols: ${result.totalSymbols}`;
 
 // Symbol query tools
 
+// Accept string names for symbol kinds (case-insensitive)
 const symbolKindSchema = z.enum(
   SYMBOL_KIND_NAMES as unknown as readonly [string, ...string[]],
 );
@@ -103,7 +103,7 @@ const searchSymbolSchema = z.object({
   kind: z
     .union([symbolKindSchema, z.array(symbolKindSchema)])
     .describe(
-      `Symbol kind(s) to filter by. Valid kinds: ${getSymbolKindsList()}`,
+      `Symbol kind(s) to filter by. Case-insensitive strings (e.g., 'Class', 'class', 'CLASS'). Valid kinds: ${SYMBOL_KIND_NAMES.join(", ")}`,
     )
     .optional(),
   file: z
@@ -154,40 +154,35 @@ export const searchSymbolFromIndexTool: ToolDef<typeof searchSymbolSchema> = {
       file,
     };
 
+    // Use the parseSymbolKind function to handle case-insensitive strings
     if (kind) {
-      const kindMap: Record<string, SymbolKind> = {
-        File: SymbolKind.File,
-        Module: SymbolKind.Module,
-        Namespace: SymbolKind.Namespace,
-        Package: SymbolKind.Package,
-        Class: SymbolKind.Class,
-        Method: SymbolKind.Method,
-        Property: SymbolKind.Property,
-        Field: SymbolKind.Field,
-        Constructor: SymbolKind.Constructor,
-        Enum: SymbolKind.Enum,
-        Interface: SymbolKind.Interface,
-        Function: SymbolKind.Function,
-        Variable: SymbolKind.Variable,
-        Constant: SymbolKind.Constant,
-        String: SymbolKind.String,
-        Number: SymbolKind.Number,
-        Boolean: SymbolKind.Boolean,
-        Array: SymbolKind.Array,
-        Object: SymbolKind.Object,
-        Key: SymbolKind.Key,
-        Null: SymbolKind.Null,
-        EnumMember: SymbolKind.EnumMember,
-        Struct: SymbolKind.Struct,
-        Event: SymbolKind.Event,
-        Operator: SymbolKind.Operator,
-        TypeParameter: SymbolKind.TypeParameter,
-      };
+      try {
+        const parsedKinds = parseSymbolKind(kind);
+        query.kind =
+          parsedKinds && parsedKinds.length === 1
+            ? parsedKinds[0]
+            : parsedKinds;
+      } catch (error) {
+        // Provide helpful error message
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        return (
+          `Error parsing symbol kind: ${errorMessage}
 
-      if (Array.isArray(kind)) {
-        query.kind = kind.map((k) => kindMap[k]);
-      } else {
-        query.kind = kindMap[kind];
+` +
+          `Valid values (case-insensitive): ${SYMBOL_KIND_NAMES.join(", ")}
+
+` +
+          `Examples:
+` +
+          `  - { "kind": "Class" }
+` +
+          `  - { "kind": "class" }  // Case-insensitive
+` +
+          `  - { "kind": ["Class", "Interface", "Function"] }
+` +
+          `  - { "kind": ["CLASS", "interface", "FUNCTION"] }  // Mixed case works`
+        );
       }
     }
 

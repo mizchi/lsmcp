@@ -60,3 +60,34 @@ export function getSymbolKindsList(): string {
     ", ",
   );
 }
+
+/**
+ * Parse symbol kind input (string or array of strings) to SymbolKind values
+ * Accepts string values with case-insensitive matching (e.g., "Class", "class", "CLASS")
+ */
+export function parseSymbolKind(
+  input: string | string[] | undefined,
+): SymbolKind[] | undefined {
+  if (input === undefined || input === null) return undefined;
+
+  const kinds = Array.isArray(input) ? input : [input];
+
+  return kinds.map((k) => {
+    if (typeof k !== "string") {
+      throw new Error(`Invalid kind type: ${typeof k}. Expected string.`);
+    }
+
+    // Case-insensitive matching - find exact match regardless of case
+    const kindName = SYMBOL_KIND_NAMES.find(
+      (name) => name.toLowerCase() === k.toLowerCase(),
+    );
+
+    if (kindName) {
+      return SYMBOL_KINDS[kindName];
+    }
+
+    throw new Error(
+      `Unknown symbol kind: "${k}". Valid options: ${SYMBOL_KIND_NAMES.join(", ")}`,
+    );
+  });
+}
