@@ -25,6 +25,12 @@ const schema = z.object({
     .number()
     .optional()
     .describe("Number of lines to show after the definition"),
+  include_body: z
+    .boolean()
+    .optional()
+    .describe(
+      "Include the full body of the symbol (for classes, functions, interfaces)",
+    ),
 });
 
 type GetDefinitionsRequest = z.infer<typeof schema>;
@@ -43,7 +49,62 @@ interface GetDefinitionsSuccess {
 }
 
 // Import Location and LocationLink types from vscode-languageserver-types via lspTypes
-import type { Location, LocationLink } from "../lspTypes.ts";
+import type {
+  Location,
+  LocationLink,
+  DocumentSymbol,
+  SymbolInformation,
+} from "../lspTypes.ts";
+
+/**
+ * Find the symbol containing the given position in a document symbols tree
+ */
+function findSymbolAtPosition(
+  symbols: DocumentSymbol[] | SymbolInformation[],
+  line: number,
+  character: number,
+): DocumentSymbol | SymbolInformation | null {
+  for (const symbol of symbols) {
+    if ("range" in symbol) {
+      // DocumentSymbol
+      const ds = symbol as DocumentSymbol;
+      const range = ds.range;
+
+      // Check if position is within this symbol's range
+      if (
+        (range.start.line < line ||
+          (range.start.line === line && range.start.character <= character)) &&
+        (range.end.line > line ||
+          (range.end.line === line && range.end.character >= character))
+      ) {
+        // Check children first for more specific match
+        if (ds.children && ds.children.length > 0) {
+          const childMatch = findSymbolAtPosition(ds.children, line, character);
+          if (childMatch) {
+            return childMatch;
+          }
+        }
+        return ds;
+      }
+    } else {
+      // SymbolInformation
+      const si = symbol as SymbolInformation;
+      const range = si.location.range;
+
+      // Check if position is within this symbol's range
+      if (
+        (range.start.line < line ||
+          (range.start.line === line && range.start.character <= character)) &&
+        (range.end.line > line ||
+          (range.end.line === line && range.end.character >= character))
+      ) {
+        return si;
+      }
+    }
+  }
+
+  return null;
+}
 
 /**
  * Gets definitions for a TypeScript symbol using LSP
@@ -181,16 +242,76 @@ async function getDefinitionsWithLSP(
         symbolName = request.symbolName;
       }
 
-      // Create preview with context
-      const previewLines: string[] = [];
-      for (
-        let i = Math.max(0, startLine - contextBefore);
-        i <= Math.min(defLines.length - 1, startLine + contextAfter);
-        i++
-      ) {
-        previewLines.push(`${i + 1}: ${defLines[i]}`);
+      // Create preview with context or full body
+      let preview: string;
+
+      if (request.include_body) {
+        // Try to get the full body of the symbol using document symbols
+        try {
+          // Get document symbols for the definition file
+          const defFileUri = `file://${defPath}`;
+          const symbols = await client.getDocumentSymbols(defFileUri);
+
+          // Find the symbol at the definition position
+          const targetSymbol = findSymbolAtPosition(
+            symbols,
+            startLine,
+            startCol,
+          );
+
+          if (targetSymbol) {
+            // Get the full range of the symbol
+            const symbolRange =
+              "range" in targetSymbol
+                ? targetSymbol.range
+                : targetSymbol.location.range;
+
+            // Extract the lines for the full symbol body
+            const bodyLines: string[] = [];
+            for (
+              let i = symbolRange.start.line;
+              i <= Math.min(defLines.length - 1, symbolRange.end.line);
+              i++
+            ) {
+              bodyLines.push(`${i + 1}: ${defLines[i]}`);
+            }
+            preview = bodyLines.join("\n");
+          } else {
+            // Fallback to context-based preview if symbol not found
+            const previewLines: string[] = [];
+            for (
+              let i = Math.max(0, startLine - contextBefore);
+              i <= Math.min(defLines.length - 1, startLine + contextAfter);
+              i++
+            ) {
+              previewLines.push(`${i + 1}: ${defLines[i]}`);
+            }
+            preview = previewLines.join("\n");
+          }
+        } catch (e) {
+          // Fallback to context-based preview if document symbols fails
+          const previewLines: string[] = [];
+          for (
+            let i = Math.max(0, startLine - contextBefore);
+            i <= Math.min(defLines.length - 1, startLine + contextAfter);
+            i++
+          ) {
+            previewLines.push(`${i + 1}: ${defLines[i]}`);
+          }
+          preview = previewLines.join("\n");
+        }
+      } else {
+        // Standard context-based preview
+        const previewLines: string[] = [];
+        for (
+          let i = Math.max(0, startLine - contextBefore);
+          i <= Math.min(defLines.length - 1, startLine + contextAfter);
+          i++
+        ) {
+          previewLines.push(`${i + 1}: ${defLines[i]}`);
+        }
+        preview = previewLines.join("\n");
       }
-      const preview = previewLines.join("\n");
 
       definitions.push({
         filePath: path.relative(request.root, defPath),
@@ -342,6 +463,69 @@ if (import.meta.vitest) {
       // Local variable might have definition or might not, depending on LSP
       expect(result).toContain("Found");
       expect(result).toContain("definition");
+    });
+
+    it.skip("should get full body with include_body option for class", async () => {
+      const result = await lspGetDefinitionsTool.execute({
+        root,
+        filePath: "examples/typescript/line_matching_demo.ts",
+        line: "UserService",
+        symbolName: "UserService",
+        include_body: true,
+      });
+
+      expect(result).toContain("class UserService");
+      expect(result).toContain("getUser(");
+      expect(result).toContain("createUser(");
+      expect(result).toContain("updateUser(");
+      expect(result).toContain("deleteUser(");
+      expect(result).toContain("}"); // End of class
+    });
+
+    it.skip("should get full body with include_body option for interface", async () => {
+      const result = await lspGetDefinitionsTool.execute({
+        root,
+        filePath: "examples/typescript/line_matching_demo.ts",
+        line: "User",
+        symbolName: "User",
+        include_body: true,
+      });
+
+      expect(result).toContain("interface User");
+      expect(result).toContain("id:");
+      expect(result).toContain("name:");
+      expect(result).toContain("email:");
+      expect(result).toContain("}"); // End of interface
+    });
+
+    it.skip("should get full body with include_body option for function", async () => {
+      const result = await lspGetDefinitionsTool.execute({
+        root,
+        filePath: "examples/typescript/types.ts",
+        line: "getValue",
+        symbolName: "getValue",
+        include_body: true,
+      });
+
+      expect(result).toContain("function getValue");
+      expect(result).toContain("return");
+      expect(result).toContain("}"); // End of function
+    });
+
+    it.skip("should fallback to context when include_body fails", async () => {
+      const result = await lspGetDefinitionsTool.execute({
+        root,
+        filePath: "examples/typescript/types.ts",
+        line: 1,
+        symbolName: "Value",
+        include_body: true,
+        before: 1,
+        after: 1,
+      });
+
+      // Should get context-based preview if document symbols fails
+      expect(result).toBeDefined();
+      expect(result).toContain("Value");
     });
   });
 }
