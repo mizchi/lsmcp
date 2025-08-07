@@ -14,11 +14,11 @@
 
 - ✅ `mcp__lsmcp__get_project_overview` - Quick project analysis and structure overview
 - ✅ `mcp__lsmcp__search_symbol_from_index` - Primary tool for symbol searches (auto-creates index if needed)
-- ✅ `mcp__lsmcp__get_document_symbols` - Get all symbols in a file
-- ✅ `mcp__lsmcp__get_definitions` - Navigate to symbol definitions
+- ✅ `mcp__lsmcp__get_definitions` - Navigate to symbol definitions. Use `include_body: true` to get code.
 - ✅ `mcp__lsmcp__find_references` - Find all references to a symbol
 - ✅ `mcp__lsmcp__get_hover` - Get type information and documentation
 - ✅ `mcp__lsmcp__get_diagnostics` - Check for errors and warnings
+- ✅ `mcp__lsmcp__get_document_symbols` - Get all symbols in a file
 - ✅ `mcp__lsmcp__list_dir` - Explore directory structure
 - ✅ `mcp__lsmcp__find_file` - Locate specific files
 - ✅ `mcp__lsmcp__search_for_pattern` - Search for text patterns
