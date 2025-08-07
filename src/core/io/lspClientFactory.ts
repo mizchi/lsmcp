@@ -105,15 +105,6 @@ export function openDocument(
 }
 
 /**
- * Wait for LSP to process a document
- * @param delay Delay in milliseconds (default: 1000)
- * @deprecated Use waitForDocumentProcessed instead for more efficient waiting
- */
-export async function waitForLSP(delay: number = 1000): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, delay));
-}
-
-/**
  * Wait for a document to be processed by the LSP server
  * @param client The LSP client
  * @param fileUri The file URI to wait for

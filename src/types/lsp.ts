@@ -96,21 +96,6 @@ export interface LspAdapter {
 }
 
 /**
- * Legacy language configuration type
- * @deprecated Use LspAdapter instead
- */
-export interface LanguageConfig {
-  id: string;
-  name: string;
-  bin: string;
-  args?: string[];
-  initializationOptions?: unknown;
-  preInitialize?: (projectRoot: string) => Promise<void>;
-  customTools?: ToolDef<ZodType>[];
-  doctor?: () => Promise<{ ok: boolean; message?: string }>;
-}
-
-/**
  * Configuration file format (JSON-serializable subset of LspAdapter)
  */
 export type LanguageConfigJson = Omit<LspAdapter, "customTools" | "doctor">;

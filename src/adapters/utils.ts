@@ -1,5 +1,5 @@
 import { getNodeModulesCommand } from "../core/io/nodeModulesUtils.ts";
-import type { LanguageConfig, LspAdapter } from "../types/lsp.ts";
+import type { LspAdapter } from "../types/lsp.ts";
 
 /**
  * Convert an LSP adapter to a language configuration, resolving node_modules binaries
@@ -7,7 +7,7 @@ import type { LanguageConfig, LspAdapter } from "../types/lsp.ts";
 export function adapterToLanguageConfig(
   adapter: LspAdapter,
   projectRoot?: string,
-): LanguageConfig {
+): LspAdapter {
   // Check if this is a node_modules binary that should be resolved
   const nodeModulesBinaries = [
     "typescript-language-server",
@@ -26,11 +26,9 @@ export function adapterToLanguageConfig(
   }
 
   return {
-    id: adapter.id,
-    name: adapter.name,
+    ...adapter,
     bin,
     args,
-    initializationOptions: adapter.initializationOptions,
   };
 }
 

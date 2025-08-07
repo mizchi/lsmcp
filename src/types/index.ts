@@ -8,7 +8,6 @@ export type {
   ServerCharacteristics,
   ServerCapabilities,
   LspAdapter,
-  LanguageConfig,
   LanguageConfigJson,
 } from "./lsp.ts";
 

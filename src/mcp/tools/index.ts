@@ -1,8 +1,9 @@
 export * from "./symbolEditTools.ts";
 export * from "./regexEditTools.ts";
 export * from "./memoryTools.ts";
-export * from "./cacheTools.ts";
-export * from "./workflowTools.ts";
+// Internal tools - not exported
+// export * from "./cacheTools.ts";
+// export * from "./workflowTools.ts";
 export * from "./fileSystemTools.ts";
 export * from "./symbolTools.ts";
 export * from "./indexTools.ts";
@@ -21,18 +22,9 @@ import {
   writeMemoryTool,
   deleteMemoryTool,
 } from "./memoryTools.ts";
-import {
-  searchCachedSymbolsFromIndexTool,
-  getCacheStatsFromIndexTool,
-  clearCacheFromIndexTool,
-} from "./cacheTools.ts";
-import {
-  checkOnboardingPerformedTool,
-  onboardingTool,
-  thinkAboutCollectedInformationTool,
-  thinkAboutTaskAdherenceTool,
-  thinkAboutWhetherYouAreDoneTool,
-} from "./workflowTools.ts";
+// Internal tools - not exported as MCP tools
+// import { ... } from "./cacheTools.ts";
+// import { ... } from "./workflowTools.ts";
 import {
   listDirTool,
   findFileTool,
@@ -41,27 +33,36 @@ import {
 import { getSymbolsOverviewTool, querySymbolsTool } from "./symbolTools.ts";
 
 export const serenityTools = {
+  // Symbol editing tools
   replaceSymbolBody: replaceSymbolBodyTool,
   insertBeforeSymbol: insertBeforeSymbolTool,
   insertAfterSymbol: insertAfterSymbolTool,
   replaceRegex: replaceRegexTool,
+
+  // Memory tools
   listMemories: listMemoriesTool,
   readMemory: readMemoryTool,
   writeMemory: writeMemoryTool,
   deleteMemory: deleteMemoryTool,
-  searchCachedSymbols: searchCachedSymbolsFromIndexTool,
-  getCacheStats: getCacheStatsFromIndexTool,
-  clearCache: clearCacheFromIndexTool,
-  checkOnboardingPerformed: checkOnboardingPerformedTool,
-  onboarding: onboardingTool,
-  thinkAboutCollectedInformation: thinkAboutCollectedInformationTool,
-  thinkAboutTaskAdherence: thinkAboutTaskAdherenceTool,
-  thinkAboutWhetherYouAreDone: thinkAboutWhetherYouAreDoneTool,
+
+  // File system tools
   listDir: listDirTool,
   findFile: findFileTool,
   searchForPattern: searchForPatternTool,
+
+  // Symbol overview tools
   getSymbolsOverview: getSymbolsOverviewTool,
   querySymbols: querySymbolsTool,
+
+  // Internal tools removed - not for MCP exposure:
+  // - searchCachedSymbols
+  // - getCacheStats
+  // - clearCache
+  // - checkOnboardingPerformed
+  // - onboarding
+  // - thinkAboutCollectedInformation
+  // - thinkAboutTaskAdherence
+  // - thinkAboutWhetherYouAreDone
 };
 
 // Export as a list for easy registration

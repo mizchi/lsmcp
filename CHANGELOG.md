@@ -5,15 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.9.0](https://github.com/mizchi/lsmcp/compare/v0.8.1...v0.9.0) (2025-08-07)
 
 ### 🚀 Features
+
+* **Symbol Indexing**: Unified `index_symbols` tool with smart incremental updates
+  - Automatic git-based change detection for efficient re-indexing
+  - Support for parallel indexing with configurable concurrency
+  - SQLite-backed cache for persistence across sessions
+  - Memory-efficient batch processing for large codebases
 
 * **Go Support**: Add gopls adapter for Go language support
   - Official Go language server (gopls) integration
   - Full LSP tool support for Go development
   - Comprehensive initialization options for enhanced functionality
   - Doctor command to verify Go and gopls installation
+
+* **JSON Schema Configuration**: Add comprehensive configuration schema
+  - Full validation and auto-completion support in editors
+  - Centralized configuration in `.lsmcp/config.json`
+  - Support for preset, LSP settings, and symbol filtering options
+
+### 🐛 Bug Fixes
+
+* **Test Stability**: Fix timing-related test failures in symbol index tests
+* **MCP Tools**: Remove internal tools from public MCP API
+  - Removed cache management tools (internal use only)
+  - Removed workflow tools (internal use only)
+  - Cleaner public API surface
+
+### ♻️ Code Refactoring
+
+* **Directory Structure**: Reorganize codebase for better separation of concerns
+  - Move adapters to dedicated directory
+  - Centralize configuration loading
+  - Improve module organization
+
+### 📚 Documentation
+
+* **CLAUDE.md**: Update with current tool names and best practices
+* **README.md**: Reorganize tools documentation by category
+  - Symbol Indexing & Search
+  - LSP Tools
+  - Code Editing Tools
+  - Memory System
+  - File System Tools
+
+### ⚡ Performance
+
+* **Build Size**: Reduce bundle size from 505KB to 494KB
+* **Symbol Indexing**: Improve indexing performance with batch processing
 
 ## [0.8.1](https://github.com/mizchi/lsmcp/compare/v0.8.0...v0.8.1) (2025-07-03)
 

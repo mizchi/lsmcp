@@ -4,11 +4,7 @@
 
 import { spawn } from "child_process";
 import { initialize as initializeLSPClient } from "../../lsp/lspClient.ts";
-import {
-  BaseMcpServer,
-  debug as debugLog,
-  type ToolDef,
-} from "../utils/mcpHelpers.ts";
+import { debug as debugLog, type ToolDef } from "../utils/mcpHelpers.ts";
 import { ErrorContext, formatError } from "../utils/errorHandler.ts";
 import {
   filterUnsupportedTools,
@@ -66,7 +62,10 @@ export async function runLanguageServerWithConfig(
     );
 
     // Start MCP server
-    const server = new BaseMcpServer({
+    const { createMcpServerManager } = await import(
+      "../utils/mcpServerHelpers.ts"
+    );
+    const server = createMcpServerManager({
       name: `lsmcp (${config.name})`,
       version: "0.1.0",
     });
@@ -192,7 +191,10 @@ export async function runLanguageServer(
     );
 
     // Start MCP server
-    const server = new BaseMcpServer({
+    const { createMcpServerManager } = await import(
+      "../utils/mcpServerHelpers.ts"
+    );
+    const server = createMcpServerManager({
       name: `lsmcp (${language})`,
       version: "0.1.0",
     });
@@ -276,7 +278,10 @@ export async function runCustomLspServer(
     await initializeLSPClient(projectRoot, lspProcess);
 
     // Start MCP server
-    const server = new BaseMcpServer({
+    const { createMcpServerManager } = await import(
+      "../utils/mcpServerHelpers.ts"
+    );
+    const server = createMcpServerManager({
       name: `lsmcp (custom)`,
       version: "0.1.0",
     });

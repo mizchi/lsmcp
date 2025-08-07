@@ -9,7 +9,7 @@ import {
   createTypescriptLSPClient,
   openDocument,
   stopLSPClient,
-  waitForLSP,
+  waitForDocumentProcessed,
 } from "../../core/io/lspClientFactory.ts";
 import { validateLineAndSymbol } from "../../core/pure/validation.ts";
 
@@ -52,7 +52,7 @@ export const generateAccessorsTool: ToolDef<typeof schema> = {
       openDocument(client, fileUri, content);
 
       // Wait for LSP to process the document
-      await waitForLSP();
+      await waitForDocumentProcessed(client, fileUri);
 
       // Create range for the property
       const range: Range = {

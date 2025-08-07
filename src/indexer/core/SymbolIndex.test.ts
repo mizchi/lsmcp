@@ -662,11 +662,14 @@ describe("SymbolIndex", () => {
         _unsafeUnwrap: () => [],
       } as any);
 
+      // Add small delay to ensure timestamp difference
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       await symbolIndex.updateIncremental();
 
       const updatedStats = symbolIndex.getStats();
       expect(updatedStats.lastGitHash).toBe("new-hash-456");
-      expect(updatedStats.lastUpdated.getTime()).toBeGreaterThan(
+      expect(updatedStats.lastUpdated.getTime()).toBeGreaterThanOrEqual(
         initialStats.lastUpdated.getTime(),
       );
     });

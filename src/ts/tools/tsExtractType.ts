@@ -9,7 +9,7 @@ import {
   createTypescriptLSPClient,
   openDocument,
   stopLSPClient,
-  waitForLSP,
+  waitForDocumentProcessed,
 } from "../../core/io/lspClientFactory.ts";
 
 const schema = z.object({
@@ -68,7 +68,7 @@ export const extractTypeTool: ToolDef<typeof schema> = {
       openDocument(client, fileUri, content);
 
       // Wait for LSP to process the document
-      await waitForLSP();
+      await waitForDocumentProcessed(client, fileUri);
 
       // Find the actual type expression in the line
       let startChar = 0;

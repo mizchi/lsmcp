@@ -16,23 +16,43 @@ A unified MCP (Model Context Protocol) server that provides advanced code manipu
 - 🔍 **Semantic Code Analysis** - Go to definition, find references, type information
 - 🤖 **AI-Optimized** - Designed for LLMs with line and symbol-based interfaces
 
-### LSP Tools (Language Server Protocol)
+### Core Tools
 
-These tools work with any language that has an LSP server:
+#### Symbol Indexing & Search
+- **index_symbols** - Build/update symbol index with smart incremental updates based on git changes
+- **search_symbol_from_index** - Fast search for symbols by name, kind, file, or container
+- **get_index_stats_from_index** - Get statistics about the symbol index
+- **clear_index** - Clear the symbol index and free memory
 
+#### LSP Tools (Language Server Protocol)
 - **get_hover** - Get hover information (type signature, documentation) using LSP
 - **find_references** - Find all references to symbol across the codebase using LSP
 - **get_definitions** - Get the definition(s) of a symbol using LSP
 - **get_diagnostics** - Get diagnostics (errors, warnings) for a file using LSP
-- **get_all_diagnostics** - Get diagnostics (errors, warnings) for all files in the project
-- **rename_symbol** - Rename a symbol across the codebase using Language Server Protocol
-- **delete_symbol** - Delete a symbol and optionally all its references using LSP
-- **get_document_symbols** - Get all symbols (functions, classes, variables, etc.) in a document using LSP
+- **get_all_diagnostics** - Get diagnostics for all files matching a pattern
+- **get_document_symbols** - Get all symbols in a document with hierarchical structure
 - **get_workspace_symbols** - Search for symbols across the entire workspace using LSP
 - **get_completion** - Get code completion suggestions at a specific position using LSP
 - **get_signature_help** - Get signature help (parameter hints) for function calls using LSP
-- **get_code_actions** - Get available code actions (quick fixes, refactorings, etc.) using LSP
 - **format_document** - Format an entire document using the language server's formatting provider
+
+#### Code Editing Tools
+- **replace_symbol_body** - Replace the entire body of a symbol
+- **insert_before_symbol** - Insert content before a symbol definition
+- **insert_after_symbol** - Insert content after a symbol definition
+- **replace_regex** - Replace content using regular expressions with dotall and multiline flags
+
+#### Memory System
+- **list_memories** - List available memories for the current project
+- **read_memory** - Read a specific memory from the project
+- **write_memory** - Write or update a memory for the project
+- **delete_memory** - Delete a memory from the project
+
+#### File System Tools
+- **list_dir** - List files and directories in a given path
+- **find_file** - Find files matching a pattern within a directory
+- **search_for_pattern** - Search for regex patterns in the codebase
+- **get_symbols_overview** - Get an overview of symbols in a file or directory
 
 See [examples/](examples/) for working examples of each supported language configuration.
 

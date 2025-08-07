@@ -11,14 +11,15 @@ intelligent step-by-step acquisition of information. Use the symbol indexing too
 
 IMPORTANT: Always use the symbol indexing tools to minimize code reading:
 
-- Use `search_symbol_from_index` to find specific symbols quickly (after indexing)
+- Use `index_symbols` first to build the symbol index
+- Use `search_symbol_from_index` to find specific symbols quickly
 - Use `get_document_symbols` to understand file structure
 - Use `find_references` to trace symbol usage
 - Only read full files when absolutely necessary
 
 You can achieve intelligent code reading by:
 
-1. Using `index_files` to build symbol index for fast searching
+1. Using `index_symbols` to build symbol index for fast searching
 2. Using `search_symbol_from_index` with filters (name, kind, file, container) to find symbols
 3. Using `get_document_symbols` to understand file structure
 4. Using `get_definitions`, `find_references` to trace relationships
@@ -28,16 +29,24 @@ You can achieve intelligent code reading by:
 
 Symbols are identified by their name, kind, file location, and container. Use these tools:
 
-- `index_files` - Build symbol index for files matching pattern (e.g., '**/*.ts')
+### Symbol Indexing
+- `index_symbols` - Build/update symbol index with smart incremental updates (required before search)
 - `search_symbol_from_index` - Fast search by name, kind (Class, Function, etc.), file pattern, or container
+- `get_index_stats_from_index` - Get statistics about the symbol index
+
+### LSP Tools
 - `get_document_symbols` - Get all symbols in a specific file with hierarchical structure
 - `get_definitions` - Navigate to symbol definitions
 - `find_references` - Find all references to a symbol
 - `get_hover` - Get hover information (type signature, documentation)
 - `get_diagnostics` - Get errors and warnings for a file
+- `get_all_diagnostics` - Get diagnostics for all files matching a pattern
 - `get_workspace_symbols` - Search symbols across the entire workspace
+- `get_completion` - Get code completion suggestions at a specific position
+- `get_signature_help` - Get signature help (parameter hints) for function calls
+- `format_document` - Format an entire document using the language server
 
-Always prefer indexed searches (tools with `_from_index` suffix) over reading entire files.
+Always build the index first with `index_symbols`, then use `search_symbol_from_index` for fast searches.
 
 ## Memory System
 
