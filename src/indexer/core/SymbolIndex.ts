@@ -24,11 +24,7 @@ import {
   getFileGitHash,
   getUntrackedFilesAsync,
 } from "../utils/gitUtils.ts";
-import {
-  loadIndexConfig,
-  shouldExcludeSymbol,
-  type IndexConfig,
-} from "./config.ts";
+import { shouldExcludeSymbol, type IndexConfig } from "./config.ts";
 
 export class SymbolIndex extends EventEmitter {
   private fileIndex: Map<string, FileSymbols> = new Map();
@@ -141,7 +137,9 @@ export class SymbolIndex extends EventEmitter {
    * Initialize index with configuration
    */
   async initialize(): Promise<void> {
-    this.config = await loadIndexConfig(this.rootPath);
+    // Use synchronous config loader
+    const { loadIndexConfig: loadConfig } = await import("./configLoader.ts");
+    this.config = loadConfig(this.rootPath);
     console.error(`[SymbolIndex] Loaded config:`, this.config?.symbolFilter);
   }
 

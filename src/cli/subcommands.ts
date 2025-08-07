@@ -5,11 +5,8 @@
 import { readFile, writeFile, appendFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
-import {
-  type LSMCPConfig,
-  validateConfig,
-  createConfigFromAdapter,
-} from "../core/config/lsmcpConfig.ts";
+import type { LSMCPConfig } from "../core/config/configSchema.ts";
+import { ConfigLoader as MainConfigLoader } from "../config/loader.ts";
 import type {
   AdapterRegistry,
   ConfigLoader,
@@ -141,9 +138,9 @@ export async function initCommand(
 
   // 3. Create config.json
   const configPath = join(lsmcpDir, "config.json");
-  let config: LSMCPConfig;
+  let configContent: any;
 
-  // If preset is provided, expand adapter configuration
+  // If preset is provided, create minimal config with preset field
   if (preset && adapterRegistry) {
     const adapter = adapterRegistry.get(preset);
     if (!adapter) {
@@ -151,7 +148,12 @@ export async function initCommand(
       process.exit(1);
     }
 
-    // Set appropriate index patterns based on language
+    // Create minimal config with just preset
+    configContent = {
+      preset: preset,
+    };
+
+    // Set appropriate index patterns based on language if needed
     let indexPatterns: string[] | undefined;
     switch (preset) {
       case "pyright":
@@ -175,14 +177,16 @@ export async function initCommand(
         break;
     }
 
-    config = createConfigFromAdapter(adapter, indexPatterns);
+    if (indexPatterns) {
+      configContent.indexFiles = indexPatterns;
+    }
   } else {
     // No preset - create boilerplate config
     const boilerplate = generateManualConfigBoilerplate();
-    config = JSON.parse(boilerplate);
+    configContent = JSON.parse(boilerplate);
   }
 
-  await writeFile(configPath, JSON.stringify(config, null, 2));
+  await writeFile(configPath, JSON.stringify(configContent, null, 2));
   console.log("✓ Created .lsmcp/config.json");
 
   // 4. Check for CLAUDE.md
@@ -209,7 +213,7 @@ export async function initCommand(
   console.log("\n✅ Initialization complete!");
 
   // Show additional message for manual config
-  if (!preset || config.adapter?.id === "custom") {
+  if (!preset || configContent.adapter?.id === "custom") {
     console.log("\n⚠️  Manual configuration required!");
     console.log(
       "   Please edit .lsmcp/config.json to configure your language server:",
@@ -245,11 +249,14 @@ export async function indexCommand(
     process.exit(1);
   }
 
-  // Load and validate config
-  const configContent = await readFile(configPath, "utf-8");
+  // Load and validate config using new ConfigLoader
+  const mainConfigLoader = new MainConfigLoader(projectRoot);
   let config: LSMCPConfig;
   try {
-    config = validateConfig(JSON.parse(configContent));
+    const result = await mainConfigLoader.load({
+      configFile: ".lsmcp/config.json",
+    });
+    config = result.config;
   } catch (error) {
     console.error(
       "❌ Invalid config.json:",

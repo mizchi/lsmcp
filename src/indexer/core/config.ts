@@ -28,23 +28,6 @@ export interface IndexConfig {
 }
 
 /**
- * Load index configuration from .lsmcp/config.json
- */
-export async function loadIndexConfig(rootPath: string): Promise<IndexConfig> {
-  try {
-    const { readFile } = await import("fs/promises");
-    const { join } = await import("path");
-
-    const configPath = join(rootPath, ".lsmcp", "config.json");
-    const content = await readFile(configPath, "utf-8");
-    return JSON.parse(content);
-  } catch {
-    // Return default config if not found
-    return {};
-  }
-}
-
-/**
  * Convert string symbol kind names to SymbolKind enum values
  */
 export function parseSymbolKinds(kinds: string[]): SymbolKind[] {

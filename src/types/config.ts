@@ -24,7 +24,35 @@ export const serverCapabilitiesSchema = z
   })
   .optional();
 
-// LSP adapter configuration schema for config files
+// LSP configuration schema for config files (simplified for user configuration)
+export const lspConfigSchema = z.object({
+  /** LSP server binary/command */
+  bin: z.string().describe("LSP server binary path or command"),
+
+  /** Arguments to pass to the LSP server */
+  args: z
+    .array(z.string())
+    .default([])
+    .describe("Arguments for the LSP server")
+    .optional(),
+
+  /** Language-specific initialization options */
+  initializationOptions: z
+    .any()
+    .optional()
+    .describe("LSP initialization options"),
+
+  /** Unsupported features */
+  unsupported: z
+    .array(z.string())
+    .optional()
+    .describe("List of unsupported MCP tools"),
+
+  /** Server capabilities */
+  serverCapabilities: serverCapabilitiesSchema,
+});
+
+// Full LSP adapter schema with id/name (for internal use)
 export const lspAdapterConfigSchema = z.object({
   /** Unique identifier for the adapter */
   id: z.string().describe("Unique identifier for the adapter"),
@@ -69,4 +97,5 @@ export const lspAdapterConfigSchema = z.object({
 
 // Type exports
 export type ServerCapabilitiesConfig = z.infer<typeof serverCapabilitiesSchema>;
+export type LspConfig = z.infer<typeof lspConfigSchema>;
 export type LspAdapterConfig = z.infer<typeof lspAdapterConfigSchema>;

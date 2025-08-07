@@ -5,6 +5,7 @@
 import { z } from "zod";
 import {
   serverCapabilitiesSchema,
+  lspConfigSchema,
   lspAdapterConfigSchema,
 } from "../../types/config.ts";
 
@@ -13,8 +14,14 @@ const lspAdapterSchema = lspAdapterConfigSchema;
 
 // Main config schema
 export const configSchema = z.object({
+  /** JSON Schema reference */
+  $schema: z.string().optional().describe("JSON Schema reference"),
+
   /** Version of the config file format */
-  version: z.literal("1.0").describe("Config file format version"),
+  version: z.literal("1.0").optional().describe("Config file format version"),
+
+  /** Preset adapter name (e.g., "tsgo", "typescript", "rust-analyzer") */
+  preset: z.string().optional().describe("Preset adapter to use"),
 
   /** Glob patterns for files to index */
   indexFiles: z
@@ -22,10 +29,13 @@ export const configSchema = z.object({
     .default(["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"])
     .describe("Glob patterns for files to index"),
 
-  /** Language adapter configuration */
+  /** LSP server configuration (advanced - overrides preset) */
+  lsp: lspConfigSchema.optional().describe("LSP server configuration"),
+
+  /** Legacy: Language adapter configuration (deprecated - use 'lsp' instead) */
   adapter: lspAdapterSchema
     .optional()
-    .describe("LSP adapter configuration (expanded from preset)"),
+    .describe("Deprecated: Use 'lsp' field instead"),
 
   /** Additional settings */
   settings: z
@@ -105,20 +115,6 @@ export type LSMCPConfig = z.infer<typeof configSchema>;
 export type LspAdapter = z.infer<typeof lspAdapterSchema>;
 export type ServerCharacteristics = z.infer<typeof serverCapabilitiesSchema>;
 
-// Default configuration
-export const DEFAULT_CONFIG: LSMCPConfig = {
-  version: "1.0",
-  indexFiles: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
-  settings: {
-    autoIndex: false,
-    indexConcurrency: 5,
-    autoIndexDelay: 500,
-    enableWatchers: true,
-    memoryLimit: 1024,
-  },
-  ignorePatterns: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
-};
-
 // Default symbol filter configuration
 export const DEFAULT_SYMBOL_FILTER = {
   excludeKinds: [
@@ -134,6 +130,21 @@ export const DEFAULT_SYMBOL_FILTER = {
   ],
   excludePatterns: ["callback", "temp", "tmp", "_", "^[a-z]$"],
   includeOnlyTopLevel: false,
+};
+
+// Default configuration
+export const DEFAULT_CONFIG: LSMCPConfig = {
+  version: "1.0",
+  indexFiles: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  settings: {
+    autoIndex: false,
+    indexConcurrency: 5,
+    autoIndexDelay: 500,
+    enableWatchers: true,
+    memoryLimit: 1024,
+  },
+  symbolFilter: DEFAULT_SYMBOL_FILTER,
+  ignorePatterns: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
 };
 
 /**

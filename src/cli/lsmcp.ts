@@ -12,8 +12,8 @@ import { join } from "node:path";
 import { debug as debugLog } from "../mcp/utils/mcpHelpers.ts";
 import {
   AdapterRegistry,
-  ConfigLoader,
-  type ConfigSources,
+  ConfigLoader as LspConfigLoader,
+  type ConfigSources as LspConfigSources,
 } from "../core/config/configLoader.ts";
 
 // Import modular components
@@ -23,7 +23,7 @@ import { runLanguageServerWithConfig } from "../mcp/server/lspServerRunner.ts";
 
 // Initialize configuration system
 const adapterRegistry = new AdapterRegistry();
-const configLoader = new ConfigLoader(adapterRegistry);
+const lspConfigLoader = new LspConfigLoader(adapterRegistry);
 
 // Register all adapters
 registerBuiltinAdapters(adapterRegistry);
@@ -93,14 +93,14 @@ async function main() {
       process.cwd(),
       values.preset,
       adapterRegistry,
-      configLoader,
+      lspConfigLoader,
       values["auto-index"],
     );
     process.exit(0);
   }
 
   if (subcommand === "index") {
-    await indexCommand(process.cwd(), false, configLoader, adapterRegistry);
+    await indexCommand(process.cwd(), false, lspConfigLoader, adapterRegistry);
     process.exit(0);
   }
 
@@ -167,8 +167,8 @@ async function mainWithConfigLoader() {
   }
 
   try {
-    // Prepare configuration sources
-    const sources: ConfigSources = {};
+    // Prepare configuration sources for LSP
+    const lspSources: LspConfigSources = {};
 
     // Check for .lsmcp/config.json
     const configPath = join(process.cwd(), ".lsmcp", "config.json");
@@ -179,20 +179,20 @@ async function mainWithConfigLoader() {
       !values.bin
     ) {
       debugLog("[lsmcp] Loading config from .lsmcp/config.json");
-      sources.configFile = configPath;
+      lspSources.configFile = configPath;
     }
 
     if (values.preset) {
-      sources.preset = values.preset;
+      lspSources.preset = values.preset;
     }
 
     if (values.config) {
-      sources.configFile = values.config;
+      lspSources.configFile = values.config;
     }
 
     if (values.bin) {
-      const parsedBin = ConfigLoader.parseBinString(values.bin);
-      sources.overrides = {
+      const parsedBin = LspConfigLoader.parseBinString(values.bin);
+      lspSources.overrides = {
         bin: parsedBin.bin,
         args: parsedBin.args,
       };
@@ -201,10 +201,10 @@ async function mainWithConfigLoader() {
     if (values.initializationOptions) {
       try {
         const parsedOptions = JSON.parse(values.initializationOptions);
-        if (!sources.overrides) {
-          sources.overrides = {};
+        if (!lspSources.overrides) {
+          lspSources.overrides = {};
         }
-        sources.overrides.initializationOptions = parsedOptions;
+        lspSources.overrides.initializationOptions = parsedOptions;
       } catch (error) {
         console.error(
           `Error parsing initializationOptions JSON: ${
@@ -215,8 +215,8 @@ async function mainWithConfigLoader() {
       }
     }
 
-    // Load configuration
-    const config = await configLoader.loadConfig(sources);
+    // Load LSP configuration
+    const config = await lspConfigLoader.loadConfig(lspSources);
 
     // Display final configuration details
     debugLog(`[lsmcp] ===== Final Configuration =====`);

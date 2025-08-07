@@ -300,6 +300,35 @@ You can configure any LSP server by providing the binary path and optional initi
 }
 ```
 
+### Configuration with JSON Schema
+
+lsmcp provides a JSON Schema for configuration files that enables validation and auto-completion in VS Code and other editors.
+
+Add the `$schema` field to your `.lsmcp/config.json`:
+
+```json
+{
+  "$schema": "../lsmcp.schema.json",
+  "preset": "tsgo",
+  "settings": {
+    "autoIndex": true,
+    "indexConcurrency": 10
+  }
+}
+```
+
+Available configuration options:
+- **preset** - Preset language adapter (tsgo, typescript, rust-analyzer, pyright, gopls, etc.)
+- **indexFiles** - Glob patterns for files to index
+- **lsp** - Custom LSP server configuration (bin, args, initializationOptions)
+- **settings** - LSMCP settings (autoIndex, indexConcurrency, enableWatchers, etc.)
+- **symbolFilter** - Symbol filtering options (excludeKinds, excludePatterns)
+- **ignorePatterns** - Additional patterns to ignore during indexing
+
+See [lsmcp.schema.json](lsmcp.schema.json) for the complete schema.
+
+For a comprehensive configuration example, see [examples/full-lsmcp-config.json](examples/full-lsmcp-config.json).
+
 ### Using Configuration Files
 
 For complex LSP server configurations, you can use the `--config` option to load settings from a JSON file:

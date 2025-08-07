@@ -4,51 +4,72 @@
 
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
-
-export interface IndexConfig {
-  indexFiles?: string[];
-  settings?: {
-    indexConcurrency?: number;
-    autoIndex?: boolean;
-    autoIndexDelay?: number;
-    enableWatchers?: boolean;
-    memoryLimit?: number;
-  };
-  symbolFilter?: {
-    excludeKinds?: string[];
-    excludePatterns?: string[];
-    includeOnlyTopLevel?: boolean;
-  };
-  ignorePatterns?: string[];
-}
+import type { IndexConfig } from "./config.ts";
 
 /**
  * Load index configuration from .lsmcp/config.json
+ * Returns IndexConfig with defaults merged
  */
-export function loadIndexConfig(rootPath: string): IndexConfig | null {
+export function loadIndexConfig(rootPath: string): IndexConfig {
   const configPath = join(rootPath, ".lsmcp", "config.json");
 
+  // Import default config
+  const defaultConfig: IndexConfig = {
+    indexFiles: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+    settings: {
+      indexConcurrency: 5,
+      autoIndex: false,
+      autoIndexDelay: 500,
+      enableWatchers: true,
+      memoryLimit: 1024,
+    },
+    symbolFilter: {
+      excludeKinds: [
+        "Variable",
+        "Constant",
+        "String",
+        "Number",
+        "Boolean",
+        "Array",
+        "Object",
+        "Key",
+        "Null",
+      ],
+      excludePatterns: ["callback", "temp", "tmp", "_", "^[a-z]$"],
+      includeOnlyTopLevel: false,
+    },
+    ignorePatterns: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
+  };
+
   if (!existsSync(configPath)) {
-    return null;
+    // Return defaults if no config file
+    return defaultConfig;
   }
 
   try {
     const content = readFileSync(configPath, "utf-8");
-    const config = JSON.parse(content);
+    const userConfig = JSON.parse(content);
 
-    // Extract relevant indexing configuration
+    // Merge user config with defaults
     return {
-      indexFiles: config.indexFiles,
-      settings: config.settings,
-      symbolFilter: config.symbolFilter,
-      ignorePatterns: config.ignorePatterns,
+      indexFiles: userConfig.indexFiles ?? defaultConfig.indexFiles,
+      settings: {
+        ...defaultConfig.settings,
+        ...userConfig.settings,
+      },
+      symbolFilter: {
+        ...defaultConfig.symbolFilter,
+        ...userConfig.symbolFilter,
+      },
+      ignorePatterns: userConfig.ignorePatterns ?? defaultConfig.ignorePatterns,
     };
   } catch (error) {
     console.error(
       `[loadIndexConfig] Failed to load config from ${configPath}:`,
       error,
     );
-    return null;
+    // Return defaults on error
+    return defaultConfig;
   }
 }
 
@@ -81,7 +102,8 @@ export function getDefaultConcurrency(rootPath: string): number {
  */
 export function getIgnorePatterns(rootPath: string): string[] {
   const config = loadIndexConfig(rootPath);
+  // loadIndexConfig always returns a value with defaults
   return (
-    config?.ignorePatterns ?? ["**/node_modules/**", "**/dist/**", "**/.git/**"]
+    config.ignorePatterns ?? ["**/node_modules/**", "**/dist/**", "**/.git/**"]
   );
 }

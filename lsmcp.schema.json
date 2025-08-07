@@ -1,0 +1,362 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/mizchi/lsmcp/lsmcp.schema.json",
+  "title": "LSMCP Configuration",
+  "description": "Configuration schema for Language Service MCP",
+  "$ref": "#/definitions/LSMCPConfig",
+  "definitions": {
+    "LSMCPConfig": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "description": "JSON Schema reference",
+          "markdownDescription": "JSON Schema reference"
+        },
+        "version": {
+          "type": "string",
+          "const": "1.0",
+          "description": "Config file format version",
+          "markdownDescription": "Config file format version"
+        },
+        "preset": {
+          "type": "string",
+          "description": "Preset adapter to use",
+          "markdownDescription": "Preset adapter to use"
+        },
+        "indexFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/*.ts",
+            "**/*.tsx",
+            "**/*.js",
+            "**/*.jsx"
+          ],
+          "description": "Glob patterns for files to index",
+          "markdownDescription": "Glob patterns for files to index"
+        },
+        "lsp": {
+          "type": "object",
+          "properties": {
+            "bin": {
+              "type": "string",
+              "description": "LSP server binary path or command",
+              "markdownDescription": "LSP server binary path or command"
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Arguments for the LSP server",
+              "markdownDescription": "Arguments for the LSP server"
+            },
+            "initializationOptions": {
+              "description": "LSP initialization options",
+              "markdownDescription": "LSP initialization options"
+            },
+            "unsupported": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of unsupported MCP tools",
+              "markdownDescription": "List of unsupported MCP tools"
+            },
+            "serverCapabilities": {
+              "type": "object",
+              "properties": {
+                "supportsRename": {
+                  "type": "boolean"
+                },
+                "supportsReferences": {
+                  "type": "boolean"
+                },
+                "supportsDefinition": {
+                  "type": "boolean"
+                },
+                "supportsHover": {
+                  "type": "boolean"
+                },
+                "supportsDocumentSymbol": {
+                  "type": "boolean"
+                },
+                "supportsWorkspaceSymbol": {
+                  "type": "boolean"
+                },
+                "supportsCompletion": {
+                  "type": "boolean"
+                },
+                "supportsSignatureHelp": {
+                  "type": "boolean"
+                },
+                "supportsDocumentFormatting": {
+                  "type": "boolean"
+                },
+                "supportsRangeFormatting": {
+                  "type": "boolean"
+                },
+                "supportsCodeAction": {
+                  "type": "boolean"
+                },
+                "supportsDiagnostics": {
+                  "type": "boolean"
+                },
+                "supportsInlayHint": {
+                  "type": "boolean"
+                },
+                "supportsSemanticTokens": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "bin"
+          ],
+          "additionalProperties": false,
+          "description": "LSP server configuration",
+          "markdownDescription": "LSP server configuration"
+        },
+        "adapter": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Unique identifier for the adapter",
+              "markdownDescription": "Unique identifier for the adapter"
+            },
+            "name": {
+              "type": "string",
+              "description": "Display name for the adapter",
+              "markdownDescription": "Display name for the adapter"
+            },
+            "bin": {
+              "type": "string",
+              "description": "LSP server binary path or command",
+              "markdownDescription": "LSP server binary path or command"
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Arguments for the LSP server",
+              "markdownDescription": "Arguments for the LSP server"
+            },
+            "baseLanguage": {
+              "type": "string",
+              "description": "Base language ID (e.g., 'typescript')",
+              "markdownDescription": "Base language ID (e.g., 'typescript')"
+            },
+            "description": {
+              "type": "string",
+              "description": "Description of the adapter",
+              "markdownDescription": "Description of the adapter"
+            },
+            "unsupported": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of unsupported MCP tools",
+              "markdownDescription": "List of unsupported MCP tools"
+            },
+            "initializationOptions": {
+              "description": "LSP initialization options",
+              "markdownDescription": "LSP initialization options"
+            },
+            "serverCapabilities": {
+              "type": "object",
+              "properties": {
+                "supportsRename": {
+                  "type": "boolean"
+                },
+                "supportsReferences": {
+                  "type": "boolean"
+                },
+                "supportsDefinition": {
+                  "type": "boolean"
+                },
+                "supportsHover": {
+                  "type": "boolean"
+                },
+                "supportsDocumentSymbol": {
+                  "type": "boolean"
+                },
+                "supportsWorkspaceSymbol": {
+                  "type": "boolean"
+                },
+                "supportsCompletion": {
+                  "type": "boolean"
+                },
+                "supportsSignatureHelp": {
+                  "type": "boolean"
+                },
+                "supportsDocumentFormatting": {
+                  "type": "boolean"
+                },
+                "supportsRangeFormatting": {
+                  "type": "boolean"
+                },
+                "supportsCodeAction": {
+                  "type": "boolean"
+                },
+                "supportsDiagnostics": {
+                  "type": "boolean"
+                },
+                "supportsInlayHint": {
+                  "type": "boolean"
+                },
+                "supportsSemanticTokens": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "bin"
+          ],
+          "additionalProperties": false,
+          "description": "Deprecated: Use 'lsp' field instead",
+          "markdownDescription": "Deprecated: Use 'lsp' field instead"
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "autoIndex": {
+              "type": "boolean",
+              "default": false,
+              "description": "Automatically index files on startup",
+              "markdownDescription": "Automatically index files on startup"
+            },
+            "indexConcurrency": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 5,
+              "description": "Number of files to index in parallel",
+              "markdownDescription": "Number of files to index in parallel"
+            },
+            "autoIndexDelay": {
+              "type": "number",
+              "minimum": 100,
+              "maximum": 5000,
+              "default": 500,
+              "description": "Delay before auto-indexing after file changes (ms)",
+              "markdownDescription": "Delay before auto-indexing after file changes (ms)"
+            },
+            "enableWatchers": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable file watchers for auto-indexing",
+              "markdownDescription": "Enable file watchers for auto-indexing"
+            },
+            "memoryLimit": {
+              "type": "number",
+              "minimum": 100,
+              "maximum": 4096,
+              "default": 1024,
+              "description": "Memory limit for indexing operations (MB)",
+              "markdownDescription": "Memory limit for indexing operations (MB)"
+            }
+          },
+          "additionalProperties": false,
+          "default": {},
+          "description": "Additional settings",
+          "markdownDescription": "Additional settings"
+        },
+        "ignorePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/.git/**"
+          ],
+          "description": "Additional ignore patterns for indexing",
+          "markdownDescription": "Additional ignore patterns for indexing"
+        },
+        "symbolFilter": {
+          "type": "object",
+          "properties": {
+            "excludeKinds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Symbol kinds to exclude from indexing",
+              "markdownDescription": "Symbol kinds to exclude from indexing"
+            },
+            "excludePatterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Regex patterns for symbols to exclude",
+              "markdownDescription": "Regex patterns for symbols to exclude"
+            },
+            "includeOnlyTopLevel": {
+              "type": "boolean",
+              "description": "Whether to include only top-level symbols",
+              "markdownDescription": "Whether to include only top-level symbols"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Symbol filtering configuration",
+          "markdownDescription": "Symbol filtering configuration"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "preset": "tsgo"
+    },
+    {
+      "preset": "pyright",
+      "indexFiles": [
+        "**/*.py",
+        "**/*.pyi"
+      ]
+    },
+    {
+      "lsp": {
+        "bin": "deno",
+        "args": [
+          "lsp"
+        ]
+      },
+      "indexFiles": [
+        "**/*.ts",
+        "**/*.tsx"
+      ]
+    },
+    {
+      "preset": "tsgo",
+      "settings": {
+        "autoIndex": true,
+        "indexConcurrency": 10
+      },
+      "symbolFilter": {
+        "excludeKinds": [
+          "Variable",
+          "Constant"
+        ],
+        "includeOnlyTopLevel": true
+      }
+    }
+  ]
+}

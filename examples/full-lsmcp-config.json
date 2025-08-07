@@ -1,0 +1,51 @@
+{
+  "$schema": "../lsmcp.schema.json",
+  "version": "1.0",
+  
+  "preset": "tsgo",
+  
+  "indexFiles": [
+    "**/*.ts",
+    "**/*.tsx", 
+    "**/*.js",
+    "**/*.jsx"
+  ],
+  
+  "settings": {
+    "autoIndex": false,
+    "indexConcurrency": 5,
+    "autoIndexDelay": 500,
+    "enableWatchers": true,
+    "memoryLimit": 1024
+  },
+  
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.git/**",
+    "**/coverage/**"
+  ],
+  
+  "symbolFilter": {
+    "excludeKinds": [
+      "Variable",
+      "Constant",
+      "String",
+      "Number",
+      "Boolean",
+      "Array",
+      "Object",
+      "Key",
+      "Null"
+    ],
+    "excludePatterns": [
+      "callback",
+      "temp",
+      "tmp",
+      "_",
+      "^[a-z]$"
+    ],
+    "includeOnlyTopLevel": false
+  }
+}
