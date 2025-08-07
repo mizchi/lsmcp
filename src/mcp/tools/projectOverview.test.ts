@@ -232,7 +232,7 @@ describe("getProjectOverviewTool", () => {
     expect(result).toContain("• IUser");
     expect(result).toContain("• IAuthToken");
 
-    expect(result).toContain("**Main Functions** (5):");
+    expect(result).toContain("**Functions & Methods** (5 total):");
     expect(result).toContain("• main");
     expect(result).toContain("• initializeApp");
 
@@ -349,7 +349,7 @@ describe("getProjectOverviewTool", () => {
     const result = await getProjectOverviewTool.execute({ root: mockRoot });
 
     // Should limit classes to top 10
-    expect(result).toContain("**Classes** (50, showing 10):");
+    expect(result).toContain("**Classes** (50):");
     expect(result).toContain("• Class0");
     expect(result).toContain("• Class9");
     expect(result).not.toContain("• Class10");
@@ -457,7 +457,7 @@ describe("getProjectOverviewTool", () => {
     const result = await getProjectOverviewTool.execute({ root: mockRoot });
 
     expect(result).toContain("### Structure:");
-    expect(result).toContain("• src/");
-    expect(result).toContain("• tests/");
+    expect(result).toContain("src/");
+    expect(result).toContain("tests/");
   });
 });

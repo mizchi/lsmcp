@@ -503,8 +503,11 @@ describe("searchSymbolFromIndexTool", () => {
         root: "/test",
       } as any);
 
-      // Verify config patterns were used
-      expect(glob).toHaveBeenCalledWith("src/**/*.js,lib/**/*.js", {
+      // Verify config patterns were used - split into separate calls
+      expect(glob).toHaveBeenCalledWith("src/**/*.js", {
+        cwd: "/test",
+      });
+      expect(glob).toHaveBeenCalledWith("lib/**/*.js", {
         cwd: "/test",
       });
 

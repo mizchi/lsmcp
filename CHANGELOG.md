@@ -1,3 +1,22 @@
+## [0.9.2](https://github.com/mizchi/lsmcp/compare/v0.9.0...v0.9.2) (2025-08-07)
+
+
+### Features
+
+* add project overview tool and improve search_symbol_from_index ([9437b74](https://github.com/mizchi/lsmcp/commit/9437b74f9ec415d20213f855d97373675460f82f))
+* improve search_symbol_from_index kind parameter to accept case-insensitive strings only ([63e0d26](https://github.com/mizchi/lsmcp/commit/63e0d268dfaab0cc66c8740a8d25a327d61f9943))
+
+
+### BREAKING CHANGES
+
+* Numeric values for kind parameter are no longer supported. Use string values instead (e.g., 'Class' instead of 5).
+
+🤖 Generated with Claude Code
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

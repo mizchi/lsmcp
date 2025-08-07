@@ -186,7 +186,11 @@ export const searchSymbolFromIndexTool: ToolDef<typeof searchSymbolSchema> = {
 
       // Find files to index
       const files: string[] = [];
-      const patterns = pattern.split(",").map((p) => p.trim());
+      // Handle patterns with braces properly (e.g., **/*.{ts,tsx})
+      const patterns =
+        pattern.includes("{") && pattern.includes("}")
+          ? [pattern]
+          : pattern.split(",").map((p) => p.trim());
 
       for (const p of patterns) {
         for await (const file of glob(p, { cwd: rootPath })) {
