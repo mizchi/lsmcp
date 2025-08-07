@@ -355,69 +355,6 @@ See the complete schema at `node_modules/@mizchi/lsmcp/lsmcp.schema.json` after 
 
 For a comprehensive configuration example, see [examples/full-lsmcp-config.json](examples/full-lsmcp-config.json).
 
-### Using Configuration Files
-
-For complex LSP server configurations, you can use the `--config` option to load settings from a JSON file:
-
-1. Create a configuration file (e.g., `my-language.json`):
-
-```json
-{
-  "id": "my-language",
-  "name": "My Custom Language",
-  "bin": "my-language-server",
-  "args": ["--stdio"],
-  "initializationOptions": {
-    "formatOnSave": true,
-    "lintingEnabled": true,
-    "customFeatures": {
-      "autoImport": true
-    }
-  }
-}
-```
-
-2. Use it with lsmcp:
-
-```bash
-# Using Claude CLI
-claude mcp add my-language npx -- -y @mizchi/lsmcp --config ./my-language.json
-
-# Or in .mcp.json
-{
-  "mcpServers": {
-    "my-language": {
-      "command": "npx",
-      "args": ["-y", "@mizchi/lsmcp", "--config", "./my-language.json"]
-    }
-  }
-}
-```
-
-This approach is useful when:
-- You have complex initialization options
-- You want to share configurations across projects
-- You need to version control your LSP settings
-
-### Environment Variables
-
-Some LSP servers can be configured via environment variables:
-
-```json
-{
-  "mcpServers": {
-    "configured-lsp": {
-      "command": "npx",
-      "args": ["-y", "@mizchi/lsmcp", "--bin", "lsp-server"],
-      "env": {
-        "LSP_LOG_LEVEL": "debug",
-        "LSP_WORKSPACE": "/path/to/workspace"
-      }
-    }
-  }
-}
-```
-
 ## MCP Usage
 
 ### Command Line Options
@@ -433,24 +370,14 @@ npx @mizchi/lsmcp --bin '<lsp-command>'
 
 ## Development
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development setup, testing instructions, and contribution guidelines.
+
 ```bash
-# Install dependencies
+# Quick start
 pnpm install
-
-# Build
 pnpm build
-
-# Run tests
 pnpm test
-
-# Type check
-pnpm typecheck
-
-# Lint
-pnpm lint
 ```
-
-See [CLAUDE.md](CLAUDE.md) for development guidelines.
 
 ## Troubleshooting
 
