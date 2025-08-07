@@ -2,11 +2,34 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { searchSymbolFromIndexTool } from "./indexTools.ts";
 import * as IndexerAdapter from "../../indexer/mcp/IndexerAdapter.ts";
 import { SymbolKind } from "vscode-languageserver-types";
+import { getLSPClient } from "../../lsp/lspClient.ts";
+import { loadIndexConfig } from "../../indexer/core/configLoader.ts";
+import { getAdapterDefaultPattern } from "../../indexer/core/adapterDefaults.ts";
+import { glob } from "gitaware-glob";
 
 // Mock the IndexerAdapter module
 vi.mock("../../indexer/mcp/IndexerAdapter.ts", () => ({
   querySymbols: vi.fn(),
   getIndexStats: vi.fn(),
+  updateIndexIncremental: vi.fn(),
+  getOrCreateIndex: vi.fn(),
+}));
+
+// Mock other dependencies
+vi.mock("../../lsp/lspClient.ts", () => ({
+  getLSPClient: vi.fn(),
+}));
+
+vi.mock("../../indexer/core/configLoader.ts", () => ({
+  loadIndexConfig: vi.fn(),
+}));
+
+vi.mock("../../indexer/core/adapterDefaults.ts", () => ({
+  getAdapterDefaultPattern: vi.fn(),
+}));
+
+vi.mock("gitaware-glob", () => ({
+  glob: vi.fn(),
 }));
 
 describe("searchSymbolFromIndexTool", () => {
@@ -19,6 +42,14 @@ describe("searchSymbolFromIndexTool", () => {
       totalSymbols: 100,
       indexingTime: 1000,
       lastUpdated: new Date(),
+    });
+
+    // Default mock for updateIndexIncremental
+    vi.mocked(IndexerAdapter.updateIndexIncremental).mockResolvedValue({
+      success: true,
+      updated: [],
+      removed: [],
+      errors: [],
     });
   });
 
@@ -331,7 +362,8 @@ describe("searchSymbolFromIndexTool", () => {
       expect(IndexerAdapter.querySymbols).not.toHaveBeenCalled();
     });
 
-    it("should handle empty index", async () => {
+    it("should auto-create index when empty", async () => {
+      // Mock empty index
       vi.mocked(IndexerAdapter.getIndexStats).mockReturnValue({
         totalFiles: 0,
         totalSymbols: 0,
@@ -339,13 +371,151 @@ describe("searchSymbolFromIndexTool", () => {
         lastUpdated: new Date(),
       });
 
+      // Mock LSP client exists
+      vi.mocked(getLSPClient).mockReturnValue({} as any);
+
+      // Mock index creation
+      const mockIndex = {
+        indexFiles: vi.fn().mockResolvedValue(undefined),
+        getStats: vi.fn().mockReturnValue({
+          totalFiles: 2,
+          totalSymbols: 10,
+          indexingTime: 100,
+          lastUpdated: new Date(),
+        }),
+      };
+      vi.mocked(IndexerAdapter.getOrCreateIndex).mockReturnValue(
+        mockIndex as any,
+      );
+
+      // Mock config loading (no config)
+      vi.mocked(loadIndexConfig).mockReturnValue(null as any);
+
+      // Mock default pattern
+      vi.mocked(getAdapterDefaultPattern).mockReturnValue("**/*.{ts,tsx}");
+
+      // Mock glob finding files  - glob returns an async generator
+      vi.mocked(glob).mockReturnValue(
+        (async function* () {
+          yield "file1.ts";
+          yield "file2.ts";
+        })() as any,
+      );
+
+      // Mock query symbols after indexing
+      vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([
+        {
+          name: "TestClass",
+          kind: SymbolKind.Class,
+          location: {
+            uri: "file:///test/file1.ts",
+            range: {
+              start: { line: 0, character: 0 },
+              end: { line: 10, character: 0 },
+            },
+          },
+        },
+      ]);
+
       const result = await searchSymbolFromIndexTool.execute({
         kind: "Class",
         root: "/test",
       } as any);
 
-      expect(result).toContain("No files indexed");
+      // Verify index creation flow
+      expect(getLSPClient).toHaveBeenCalled();
+      expect(IndexerAdapter.getOrCreateIndex).toHaveBeenCalledWith("/test");
+      expect(glob).toHaveBeenCalledWith("**/*.{ts,tsx}", {
+        cwd: "/test",
+      });
+      expect(mockIndex.indexFiles).toHaveBeenCalledWith(
+        ["file1.ts", "file2.ts"],
+        5,
+        expect.objectContaining({
+          onProgress: expect.any(Function),
+        }),
+      );
+
+      // Verify search was performed after indexing
+      expect(IndexerAdapter.querySymbols).toHaveBeenCalled();
+      expect(result).toContain("TestClass");
+    });
+
+    it("should return error when LSP client not initialized", async () => {
+      vi.mocked(IndexerAdapter.getIndexStats).mockReturnValue({
+        totalFiles: 0,
+        totalSymbols: 0,
+        indexingTime: 0,
+        lastUpdated: new Date(),
+      });
+
+      // Mock no LSP client
+      vi.mocked(getLSPClient).mockReturnValue(null as any);
+
+      const result = await searchSymbolFromIndexTool.execute({
+        kind: "Class",
+        root: "/test",
+      } as any);
+
+      expect(result).toContain("LSP client not initialized");
       expect(IndexerAdapter.querySymbols).not.toHaveBeenCalled();
+    });
+
+    it("should use config patterns when available", async () => {
+      vi.mocked(IndexerAdapter.getIndexStats).mockReturnValue({
+        totalFiles: 0,
+        totalSymbols: 0,
+        indexingTime: 0,
+        lastUpdated: new Date(),
+      });
+
+      vi.mocked(getLSPClient).mockReturnValue({} as any);
+
+      const mockIndex = {
+        indexFiles: vi.fn().mockResolvedValue(undefined),
+        getStats: vi.fn().mockReturnValue({
+          totalFiles: 1,
+          totalSymbols: 5,
+          indexingTime: 50,
+          lastUpdated: new Date(),
+        }),
+      };
+      vi.mocked(IndexerAdapter.getOrCreateIndex).mockReturnValue(
+        mockIndex as any,
+      );
+
+      // Mock config with patterns
+      vi.mocked(loadIndexConfig).mockReturnValue({
+        indexFiles: ["src/**/*.js", "lib/**/*.js"],
+        settings: { indexConcurrency: 10 },
+      } as any);
+
+      vi.mocked(glob).mockReturnValue(
+        (async function* () {
+          yield "src/file.js";
+        })() as any,
+      );
+
+      vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([]);
+
+      await searchSymbolFromIndexTool.execute({
+        kind: "Class",
+        root: "/test",
+      } as any);
+
+      // Verify config patterns were used
+      expect(glob).toHaveBeenCalledWith("src/**/*.js,lib/**/*.js", {
+        cwd: "/test",
+      });
+
+      // Verify config concurrency was used
+      expect(mockIndex.indexFiles).toHaveBeenCalledWith(
+        ["src/file.js"],
+        10,
+        expect.objectContaining({
+          onProgress: expect.any(Function),
+        }),
+      );
     });
 
     it("should handle no results", async () => {
@@ -396,6 +566,101 @@ describe("searchSymbolFromIndexTool", () => {
         containerName: "TestClass",
         includeChildren: false,
       });
+    });
+  });
+
+  describe("Auto-indexing", () => {
+    it("should auto-update index before searching", async () => {
+      vi.mocked(IndexerAdapter.updateIndexIncremental).mockResolvedValue({
+        success: true,
+        updated: ["file1.ts", "file2.ts"],
+        removed: ["old.ts"],
+        errors: [],
+      });
+
+      vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([
+        {
+          name: "TestClass",
+          kind: SymbolKind.Class,
+          location: {
+            uri: "file:///test/file.ts",
+            range: {
+              start: { line: 0, character: 0 },
+              end: { line: 10, character: 0 },
+            },
+          },
+        },
+      ]);
+
+      const result = await searchSymbolFromIndexTool.execute({
+        kind: "Class",
+        root: "/test",
+      } as any);
+
+      // Verify updateIndexIncremental was called
+      expect(IndexerAdapter.updateIndexIncremental).toHaveBeenCalledWith(
+        "/test",
+      );
+      expect(IndexerAdapter.updateIndexIncremental).toHaveBeenCalledBefore(
+        IndexerAdapter.querySymbols as any,
+      );
+
+      expect(result).toContain("TestClass");
+    });
+
+    it("should continue search even if auto-update fails", async () => {
+      vi.mocked(IndexerAdapter.updateIndexIncremental).mockRejectedValue(
+        new Error("Update failed"),
+      );
+
+      vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([
+        {
+          name: "TestClass",
+          kind: SymbolKind.Class,
+          location: {
+            uri: "file:///test/file.ts",
+            range: {
+              start: { line: 0, character: 0 },
+              end: { line: 10, character: 0 },
+            },
+          },
+        },
+      ]);
+
+      const result = await searchSymbolFromIndexTool.execute({
+        kind: "Class",
+        root: "/test",
+      } as any);
+
+      // Verify updateIndexIncremental was attempted
+      expect(IndexerAdapter.updateIndexIncremental).toHaveBeenCalledWith(
+        "/test",
+      );
+
+      // Search should still work
+      expect(IndexerAdapter.querySymbols).toHaveBeenCalled();
+      expect(result).toContain("TestClass");
+    });
+
+    it("should handle updateIndexIncremental returning no changes", async () => {
+      vi.mocked(IndexerAdapter.updateIndexIncremental).mockResolvedValue({
+        success: true,
+        updated: [],
+        removed: [],
+        errors: [],
+      });
+
+      vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([]);
+
+      const result = await searchSymbolFromIndexTool.execute({
+        kind: "Class",
+        root: "/test",
+      } as any);
+
+      expect(IndexerAdapter.updateIndexIncremental).toHaveBeenCalledWith(
+        "/test",
+      );
+      expect(result).toContain("No symbols found");
     });
   });
 

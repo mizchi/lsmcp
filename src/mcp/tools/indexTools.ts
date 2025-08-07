@@ -11,6 +11,7 @@ import {
   querySymbols,
   getIndexStats,
   updateIndexIncremental,
+  getOrCreateIndex,
 } from "../../indexer/mcp/IndexerAdapter.ts";
 import { glob } from "gitaware-glob";
 import { relative } from "path";
@@ -20,6 +21,9 @@ import {
   getSymbolKindName,
   parseSymbolKind,
 } from "../../indexer/core/symbolKindTypes.ts";
+import { getLSPClient } from "../../lsp/lspClient.ts";
+import { loadIndexConfig } from "../../indexer/core/configLoader.ts";
+import { getAdapterDefaultPattern } from "../../indexer/core/adapterDefaults.ts";
 
 // Index management tools
 
@@ -125,8 +129,8 @@ export const searchSymbolFromIndexTool: ToolDef<typeof searchSymbolSchema> = {
   name: "search_symbol_from_index",
   description:
     "Search symbols in the indexed codebase using various filters. Much faster than file-based search when you need to search for symbols across many files. " +
-    "IMPORTANT: This uses a pre-built index for speed. If results seem outdated, run 'index_files' first to update the index. " +
-    "Use 'kind' parameter with values like: File, Module, Namespace, Package, Class, Method, Property, Field, " +
+    "Automatically updates the index with incremental changes before searching to ensure results are up-to-date. " +
+    "Use 'kind' parameter with case-insensitive values like: File, Module, Namespace, Package, Class, Method, Property, Field, " +
     "Constructor, Enum, Interface, Function, Variable, Constant, String, Number, Boolean, Array, Object, Key, " +
     "Null, EnumMember, Struct, Event, Operator, TypeParameter.",
   schema: searchSymbolSchema,
@@ -143,7 +147,104 @@ export const searchSymbolFromIndexTool: ToolDef<typeof searchSymbolSchema> = {
     // Get index stats first
     const stats = getIndexStats(rootPath);
     if (stats.totalFiles === 0) {
-      return "No files indexed. Please run index_files first.";
+      // Auto-create index if it doesn't exist
+      console.error(
+        `[search_symbol_from_index] No index found. Creating initial index...`,
+      );
+
+      // Check if LSP client is initialized
+      const client = getLSPClient();
+      if (!client) {
+        return `Error: LSP client not initialized. This usually means the MCP server was not started properly with a language server.`;
+      }
+
+      // Get or create index
+      const index = getOrCreateIndex(rootPath);
+      if (!index) {
+        return `Error: Failed to create symbol index. LSP client may not be properly initialized.`;
+      }
+
+      // Determine pattern for initial indexing
+      let pattern: string;
+      const config = loadIndexConfig(rootPath);
+
+      if (config?.indexFiles && config.indexFiles.length > 0) {
+        pattern = config.indexFiles.join(",");
+        console.error(
+          `[search_symbol_from_index] Using patterns from .lsmcp/config.json: ${pattern}`,
+        );
+      } else {
+        // Try to detect adapter and use its defaults
+        pattern = getAdapterDefaultPattern("typescript");
+        console.error(
+          `[search_symbol_from_index] Using default TypeScript patterns: ${pattern}`,
+        );
+      }
+
+      // Determine concurrency
+      const concurrency = config?.settings?.indexConcurrency || 5;
+
+      // Find files to index
+      const files: string[] = [];
+      const patterns = pattern.split(",").map((p) => p.trim());
+
+      for (const p of patterns) {
+        for await (const file of glob(p, { cwd: rootPath })) {
+          if (typeof file === "string") {
+            files.push(file);
+          } else if (file && typeof file === "object" && "name" in file) {
+            files.push((file as any).name);
+          }
+        }
+      }
+
+      if (files.length === 0) {
+        return `No files found matching pattern: ${pattern}`;
+      }
+
+      console.error(
+        `[search_symbol_from_index] Indexing ${files.length} files...`,
+      );
+
+      // Perform initial indexing
+      const startTime = Date.now();
+      await index.indexFiles(files, concurrency, {
+        onProgress: (progress: any) => {
+          if (
+            progress.completed % 10 === 0 ||
+            progress.completed === progress.total
+          ) {
+            console.error(
+              `[search_symbol_from_index] Progress: ${progress.completed}/${progress.total} files`,
+            );
+          }
+        },
+      });
+
+      const stats = index.getStats();
+      const duration = Date.now() - startTime;
+      console.error(
+        `[search_symbol_from_index] Initial indexing completed: ${stats.totalFiles} files, ${stats.totalSymbols} symbols in ${duration}ms`,
+      );
+    } else {
+      // Auto-update index with incremental changes if it already exists
+      try {
+        const updateResult = await updateIndexIncremental(rootPath);
+        if (updateResult.success) {
+          const updatedCount = updateResult.updated.length;
+          const removedCount = updateResult.removed.length;
+          if (updatedCount > 0 || removedCount > 0) {
+            console.error(
+              `[search_symbol_from_index] Auto-updated index: ${updatedCount} files updated, ${removedCount} files removed`,
+            );
+          }
+        }
+      } catch (error) {
+        // Log error but continue with search
+        console.error(
+          `[search_symbol_from_index] Failed to auto-update index: ${error}`,
+        );
+      }
     }
 
     // Build query
@@ -343,9 +444,11 @@ export const updateIndexIncrementalTool: ToolDef<
 
 // Import unified tool
 import { indexSymbolsTool } from "./indexToolsUnified.ts";
+import { getProjectOverviewTool } from "./projectOverview.ts";
 
 // Export index tools - now includes the unified index_symbols tool
 export const indexTools = [
+  getProjectOverviewTool, // Quick project overview
   indexSymbolsTool, // New unified tool that replaces index_files and update_index_from_index
   searchSymbolFromIndexTool,
   getIndexStatsFromIndexTool,
