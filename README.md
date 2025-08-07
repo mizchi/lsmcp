@@ -324,11 +324,17 @@ You can configure any LSP server by providing the binary path and optional initi
 
 lsmcp provides a JSON Schema for configuration files that enables validation and auto-completion in VS Code and other editors.
 
-Add the `$schema` field to your `.lsmcp/config.json`:
+First, install lsmcp as a dev dependency:
+
+```bash
+pnpm add @mizchi/lsmcp -D
+```
+
+Then add the `$schema` field to your `.lsmcp/config.json`:
 
 ```json
 {
-  "$schema": "../lsmcp.schema.json",
+  "$schema": "../node_modules/@mizchi/lsmcp/lsmcp.schema.json",
   "preset": "tsgo",
   "settings": {
     "autoIndex": true,
@@ -345,7 +351,7 @@ Available configuration options:
 - **symbolFilter** - Symbol filtering options (excludeKinds, excludePatterns)
 - **ignorePatterns** - Additional patterns to ignore during indexing
 
-See [lsmcp.schema.json](lsmcp.schema.json) for the complete schema.
+See the complete schema at `node_modules/@mizchi/lsmcp/lsmcp.schema.json` after installation.
 
 For a comprehensive configuration example, see [examples/full-lsmcp-config.json](examples/full-lsmcp-config.json).
 
