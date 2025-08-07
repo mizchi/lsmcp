@@ -6,7 +6,7 @@ import { readFile, writeFile, appendFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 import type { LSMCPConfig } from "../core/config/configSchema.ts";
-import { ConfigLoader as MainConfigLoader } from "../config/loader.ts";
+import { ConfigLoader as MainConfigLoader } from "../core/config/loader.ts";
 import type {
   AdapterRegistry,
   ConfigLoader,

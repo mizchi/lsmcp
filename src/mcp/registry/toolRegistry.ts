@@ -27,7 +27,7 @@ import { indexTools } from "../tools/indexTools.ts";
 import { serenityTools } from "../tools/index.ts";
 
 // Import onboarding tools
-import { indexOnboardingTools } from "../../indexer/onboarding/onboardingTools.ts";
+import { indexOnboardingTools } from "../onboarding/onboardingTools.ts";
 
 // Define LSP-only tools
 export const lspTools: ToolDef<any>[] = [

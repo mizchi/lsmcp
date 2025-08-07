@@ -5,8 +5,8 @@
 
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
-import type { LSMCPConfig } from "../core/config/configSchema.ts";
-import { validateConfig } from "../core/config/configSchema.ts";
+import type { LSMCPConfig } from "./configSchema.ts";
+import { validateConfig } from "./configSchema.ts";
 
 /**
  * Configuration sources in priority order

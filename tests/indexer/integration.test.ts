@@ -3,11 +3,11 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { SymbolIndex } from "../core/SymbolIndex.ts";
-import { LSPSymbolProvider } from "../lsp/LSPSymbolProvider.ts";
-import { MemoryCache } from "../cache/MemoryCache.ts";
+import { SymbolIndex } from "../../src/indexer/core/SymbolIndex.ts";
+import { LSPSymbolProvider } from "../../src/indexer/lsp/LSPSymbolProvider.ts";
+import { MemoryCache } from "../../src/indexer/cache/MemoryCache.ts";
 import { SymbolKind } from "vscode-languageserver-types";
-import type { LSPClient } from "../../lsp/lspTypes.ts";
+import type { LSPClient } from "../../src/lsp/lspTypes.ts";
 
 describe("Indexer Integration", () => {
   let symbolIndex: SymbolIndex;
