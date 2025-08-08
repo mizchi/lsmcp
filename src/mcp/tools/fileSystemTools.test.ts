@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { listDirTool } from "./fileSystemTools.ts";
 import * as fs from "node:fs/promises";
 import * as fsSync from "node:fs";
-import * as gitignoreUtils from "../../core/io/gitignoreUtils.ts";
+import * as gitignoreUtils from "../../filesystem/gitignore/gitignoreUtils.ts";
 
 vi.mock("node:fs/promises");
 vi.mock("node:fs");
-vi.mock("../../core/io/gitignoreUtils.ts");
+vi.mock("../../filesystem/gitignore/gitignoreUtils.ts");
 
 describe.skip("fileSystemTools", () => {
   beforeEach(() => {
@@ -232,7 +232,7 @@ describe.skip("fileSystemTools", () => {
 
       // Create a real GitignoreManager instance with mocked fs
       const { GitignoreManager } = await import(
-        "../../core/io/gitignoreUtils.ts"
+        "../../filesystem/gitignore/gitignoreUtils.ts"
       );
       const mockGitignoreContent = `node_modules/\n.git\ndist\n.serena\n*.log`;
 
@@ -294,11 +294,11 @@ describe.skip("fileSystemTools", () => {
     it("should debug GitignoreManager loading", async () => {
       // Reset mocks
       vi.clearAllMocks();
-      vi.unmock("../../core/io/gitignoreUtils.ts");
+      vi.unmock("../../filesystem/gitignore/gitignoreUtils.ts");
 
       // Import the real implementation
       const { GitignoreManager } = await import(
-        "../../core/io/gitignoreUtils.ts"
+        "../../filesystem/gitignore/gitignoreUtils.ts"
       );
 
       // Mock fs with debug logging
@@ -340,10 +340,12 @@ describe.skip("fileSystemTools", () => {
     it("should test with actual createGitignoreFilter", async () => {
       // Reset mocks
       vi.clearAllMocks();
-      vi.unmock("../../core/io/gitignoreUtils.ts");
+      vi.unmock("../../filesystem/gitignore/gitignoreUtils.ts");
 
       // Import the real implementation
-      const gitignoreUtils = await import("../../core/io/gitignoreUtils.ts");
+      const gitignoreUtils = await import(
+        "../../filesystem/gitignore/gitignoreUtils.ts"
+      );
 
       // Mock fs for GitignoreManager
       const mockGitignoreContent = `node_modules/\n.git\ndist\n.serena\n*.log`;

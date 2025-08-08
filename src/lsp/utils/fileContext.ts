@@ -1,7 +1,7 @@
 import path from "path";
 import { pathToFileURL } from "url";
 import { ErrorContext, formatError } from "../../mcp/utils/errorHandler.ts";
-import type { FileSystemApi } from "../../core/io/FileSystemApi.ts";
+import type { FileSystemApi } from "../../filesystem/api/FileSystemApi.ts";
 
 /**
  * File context information for LSP operations

@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { SymbolIndex } from "../../src/indexer/core/SymbolIndex.ts";
+import { SymbolIndex } from "../../src/indexer/engine/SymbolIndex.ts";
 import { LSPSymbolProvider } from "../../src/indexer/lsp/LSPSymbolProvider.ts";
 import { MemoryCache } from "../../src/indexer/cache/MemoryCache.ts";
 import { SymbolKind } from "vscode-languageserver-types";

@@ -68,7 +68,7 @@ describe("lspGetDefinitionsTool with include_body", () => {
       expect(result).toContain("function processUserData(user: User): string");
       expect(result).toContain("// Validate user data");
       expect(result).toContain("if (!user.name || !user.email)");
-      expect(result).toContain("throw new Error('Invalid user data')");
+      expect(result).toContain('throw new Error("Invalid user data")');
       expect(result).toContain("const formatted");
       expect(result).toContain("return formatted.toUpperCase()");
       expect(result).toContain("}");
@@ -89,7 +89,7 @@ describe("lspGetDefinitionsTool with include_body", () => {
       );
       expect(result).toContain("// Simulate API call");
       expect(result).toContain("await new Promise");
-      expect(result).toContain("if (id === 'test-user-1')");
+      expect(result).toContain('if (id === "test-user-1")');
       expect(result).toContain("return null");
       expect(result).toContain("}");
     });

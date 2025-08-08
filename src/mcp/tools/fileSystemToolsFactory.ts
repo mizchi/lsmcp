@@ -3,9 +3,9 @@ import type { ToolDef } from "../utils/mcpHelpers.ts";
 import { join, relative } from "node:path";
 import { glob as gitawareGlob, type FileSystemInterface } from "gitaware-glob";
 import { minimatch } from "minimatch";
-import { createGitignoreFilter } from "../../core/io/gitignoreUtils.ts";
-import type { FileSystemApi } from "../../core/io/FileSystemApi.ts";
-import { nodeFileSystemApi } from "../../core/io/NodeFileSystemApi.ts";
+import { createGitignoreFilter } from "../../filesystem/gitignore/gitignoreUtils.ts";
+import type { FileSystemApi } from "../../filesystem/api/FileSystemApi.ts";
+import { nodeFileSystemApi } from "../../filesystem/node/NodeFileSystemApi.ts";
 
 // Create a filesystem adapter for gitignoreUtils
 function createFileSystemAdapter(api: FileSystemApi) {

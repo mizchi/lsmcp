@@ -5,8 +5,8 @@ import path from "path";
 import { getActiveClient } from "../lspClient.ts";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { ErrorContext, formatError } from "../../mcp/utils/errorHandler.ts";
-import { readFileWithMetadata } from "../../core/io/fileOperations.ts";
-import { validateLineAndSymbol } from "../../core/pure/validation.ts";
+import { readFileWithMetadata } from "../../filesystem/fileOperations.ts";
+import { validateLineAndSymbol } from "../../shared/validation/validation.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),

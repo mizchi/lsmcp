@@ -6,7 +6,7 @@
 import { type z, type ZodType } from "zod";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { MCPToolError } from "../../core/pure/mcpErrors.ts";
+import { MCPToolError } from "../../shared/errors/mcpErrors.ts";
 
 /**
  * Debug logging for MCP servers.

@@ -2,7 +2,7 @@
  * SQLite cache implementation using SymbolCacheManager
  */
 
-import type { SymbolCache, IndexedSymbol } from "../core/types.ts";
+import type { SymbolCache, IndexedSymbol } from "../engine/types.ts";
 import { SymbolCacheManager } from "./SymbolCacheManager.ts";
 import type { SymbolEntry } from "../symbolIndex.ts";
 import { relative } from "path";

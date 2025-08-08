@@ -2,7 +2,7 @@
  * CLI help functions
  */
 
-import type { AdapterRegistry } from "../core/config/configLoader.ts";
+import type { AdapterRegistry } from "../config/loader/configLoader.ts";
 
 export function showHelp(): void {
   console.log(`

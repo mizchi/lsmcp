@@ -2,9 +2,9 @@
  * Indexer module exports
  */
 
-export { SymbolIndex } from "./core/SymbolIndex.ts";
+export { SymbolIndex } from "./engine/SymbolIndex.ts";
 export { LSPSymbolProvider } from "./lsp/LSPSymbolProvider.ts";
-export { NodeFileSystem } from "./core/NodeFileSystem.ts";
+export { NodeFileSystem } from "./engine/NodeFileSystem.ts";
 export { MemoryCache } from "./cache/MemoryCache.ts";
 
 export type {
@@ -16,4 +16,4 @@ export type {
   FileSystem,
   SymbolCache,
   IndexEvent,
-} from "./core/types.ts";
+} from "./engine/types.ts";

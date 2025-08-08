@@ -8,7 +8,7 @@ import { getLSPClient } from "../lspClient.ts";
 import { loadFileContext } from "../utils/fileContext.ts";
 import { withTemporaryDocument } from "../utils/documentManager.ts";
 import { resolveLineIndexOrThrow } from "../utils/lineResolver.ts";
-import { commonSchemas } from "../../core/pure/schemas.ts";
+import { commonSchemas } from "../../shared/types/schemas.ts";
 import { createAdvancedCompletionHandler } from "../commands/completion.ts";
 
 const schema = z.object({

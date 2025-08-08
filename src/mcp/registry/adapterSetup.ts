@@ -2,7 +2,7 @@
  * Adapter registration setup
  */
 
-import { AdapterRegistry } from "../../core/config/configLoader.ts";
+import { AdapterRegistry } from "../../config/loader/configLoader.ts";
 
 // Import all adapters
 import { typescriptAdapter } from "../../adapters/typescriptLanguageServer.ts";

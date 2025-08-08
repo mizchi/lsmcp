@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
-import { createLSPTool } from "../../core/io/toolFactory.ts";
-import { withLSPOperation } from "../../core/io/lspOperations.ts";
-import { resolveFileAndSymbol } from "../../core/io/fileSymbolResolver.ts";
-import { getLanguageIdFromPath } from "../../core/pure/languageDetection.ts";
+import { createLSPTool } from "../../lsp/client/toolFactory.ts";
+import { withLSPOperation } from "../../lsp/client/lspOperations.ts";
+import { resolveFileAndSymbol } from "../../filesystem/fileSymbolResolver.ts";
+import { getLanguageIdFromPath } from "../../shared/languageDetection.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),

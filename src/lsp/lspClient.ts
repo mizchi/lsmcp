@@ -4,7 +4,7 @@ import {
   getErrorMessage,
   isErrorWithCode,
   isObject,
-} from "../core/pure/types.ts";
+} from "../shared/types/types.ts";
 import {
   CodeAction,
   Command,
@@ -26,7 +26,7 @@ import { ChildProcess } from "child_process";
 // Import new modular components
 import { DiagnosticsManager } from "./diagnostics/diagnosticsManager.ts";
 import { DocumentManager } from "./documents/documentManager.ts";
-import { RequestManager } from "./core/requestManager.ts";
+import { RequestManager } from "./protocol/requestManager.ts";
 import { applyWorkspaceEditManually } from "./workspace/workspaceEditHandler.ts";
 
 import {
@@ -84,7 +84,7 @@ import {
 } from "./lspTypes.ts";
 import { debug } from "../mcp/utils/mcpHelpers.ts";
 import { ErrorContext, formatError } from "../mcp/utils/errorHandler.ts";
-import { getLanguageIdFromPath } from "../core/pure/languageDetection.ts";
+import { getLanguageIdFromPath } from "../shared/languageDetection.ts";
 
 // Re-export types for backward compatibility
 export type {
@@ -99,8 +99,8 @@ export type {
 // Re-export getLanguageIdFromPath for backward compatibility
 export { getLanguageIdFromPath };
 
-import { getServerCharacteristics } from "../core/serverCharacteristics.ts";
-import { nodeFileSystemApi } from "../core/io/NodeFileSystemApi.ts";
+import { getServerCharacteristics } from "../config/serverCharacteristics.ts";
+import { nodeFileSystemApi } from "../filesystem/node/NodeFileSystemApi.ts";
 
 // Global state for active client
 let activeClient: LSPClient | null = null;
@@ -135,7 +135,7 @@ export async function initialize(
   languageId?: string,
   initializationOptions?: unknown,
   serverCharacteristics?: import("../types/lsp.ts").ServerCharacteristics,
-  fileSystemApi?: import("../core/io/FileSystemApi.ts").FileSystemApi,
+  fileSystemApi?: import("../filesystem/api/FileSystemApi.ts").FileSystemApi,
 ): Promise<LSPClient> {
   // Stop existing client if any
   if (activeClient) {

@@ -1,6 +1,6 @@
 import type { LspAdapter } from "../types/lsp.ts";
 import { execSync } from "child_process";
-import { getNodeModulesBin } from "../core/io/nodeModulesUtils.ts";
+import { getNodeModulesBin } from "../filesystem/nodeModulesUtils.ts";
 
 /**
  * MoonBit language server adapter

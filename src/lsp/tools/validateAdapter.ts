@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { err, type Result } from "neverthrow";
-import { createLSPTool } from "../../core/io/toolFactory.ts";
+import { createLSPTool } from "../../lsp/client/toolFactory.ts";
 // import { pyrightAdapter } from "../../adapters/pyright.ts";
 // import { debugLogger, LogLevel } from "../debugLogger.ts";
 

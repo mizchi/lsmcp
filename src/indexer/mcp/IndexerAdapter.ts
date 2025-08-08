@@ -2,14 +2,14 @@
  * MCP adapter for the indexer
  */
 
-import { SymbolIndex } from "../core/SymbolIndex.ts";
+import { SymbolIndex } from "../engine/SymbolIndex.ts";
 import { LSPSymbolProvider } from "../lsp/LSPSymbolProvider.ts";
-import { NodeFileSystem } from "../core/NodeFileSystem.ts";
+import { NodeFileSystem } from "../engine/NodeFileSystem.ts";
 import { SQLiteCache } from "../cache/SQLiteCache.ts";
 import { getLSPClient } from "../../lsp/lspClient.ts";
 import { fileURLToPath } from "url";
 import { readFile } from "fs/promises";
-import type { IndexedSymbol, SymbolQuery } from "../core/types.ts";
+import type { IndexedSymbol, SymbolQuery } from "../engine/types.ts";
 
 // Global index instances by root path
 const indexInstances = new Map<string, SymbolIndex>();

@@ -10,8 +10,8 @@ import {
 } from "../../indexer/mcp/IndexerAdapter.ts";
 import { glob } from "gitaware-glob";
 import { getLSPClient } from "../../lsp/lspClient.ts";
-import { loadIndexConfig } from "../../indexer/core/configLoader.ts";
-import { getAdapterDefaultPattern } from "../../indexer/core/adapterDefaults.ts";
+import { loadIndexConfig } from "../../indexer/config/configLoader.ts";
+import { getAdapterDefaultPattern } from "../../indexer/engine/adapterDefaults.ts";
 
 // Unified index_symbols schema
 const indexSymbolsSchema = z.object({

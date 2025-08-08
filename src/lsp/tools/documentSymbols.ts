@@ -7,8 +7,8 @@ import {
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { loadFileContext } from "../utils/fileContext.ts";
 import { withTemporaryDocument } from "../utils/documentManager.ts";
-import { fileLocationSchema } from "../../core/pure/schemas.ts";
-import { formatLocation, formatRange } from "../../core/pure/formatting.ts";
+import { fileLocationSchema } from "../../shared/types/schemas.ts";
+import { formatLocation, formatRange } from "../../shared/text/formatting.ts";
 import { getLSPClient } from "../lspClient.ts";
 
 const schema = fileLocationSchema;

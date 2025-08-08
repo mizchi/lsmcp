@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { tsgoAdapter } from "./tsgo.ts";
 import { resolveAdapterCommand } from "./utils.ts";
-import * as nodeModulesUtils from "../core/io/nodeModulesUtils.ts";
+import * as nodeModulesUtils from "../filesystem/nodeModulesUtils.ts";
 import * as childProcess from "child_process";
 
 // Mock the nodeModulesUtils
-vi.mock("../core/io/nodeModulesUtils.ts", () => ({
+vi.mock("../filesystem/nodeModulesUtils.ts", () => ({
   getNodeModulesBin: vi.fn(),
   getNodeModulesCommand: vi.fn(),
 }));

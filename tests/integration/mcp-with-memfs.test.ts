@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createFsFromVolume, Volume } from "memfs";
-import { MemFileSystemApi } from "../../src/core/io/MemFileSystemApi.ts";
-import type { FileSystemApi } from "../../src/core/io/FileSystemApi.ts";
+import { MemFileSystemApi } from "../../src/filesystem/memory/MemFileSystemApi.ts";
+import type { FileSystemApi } from "../../src/filesystem/api/FileSystemApi.ts";
 import {
   createMcpServer,
   registerTool,

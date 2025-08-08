@@ -5,13 +5,13 @@
 import { fileURLToPath } from "url";
 import type {
   WorkspaceEdit,
-  TextEdit,
   ApplyWorkspaceEditParams,
   ApplyWorkspaceEditResponse,
 } from "../lspTypes.ts";
-import { getErrorMessage } from "../../core/pure/types.ts";
-import type { FileSystemApi } from "../../core/io/FileSystemApi.ts";
-import { nodeFileSystemApi } from "../../core/io/NodeFileSystemApi.ts";
+import { getErrorMessage } from "../../shared/types/types.ts";
+import type { FileSystemApi } from "../../filesystem/api/FileSystemApi.ts";
+import { nodeFileSystemApi } from "../../filesystem/node/NodeFileSystemApi.ts";
+import { applyTextEdits } from "../../shared/text/applyTextEdits.ts";
 
 /**
  * Apply a workspace edit manually (when server doesn't support workspace/applyEdit)
@@ -43,60 +43,6 @@ export async function applyWorkspaceEditManually(
       );
     }
   }
-}
-
-/**
- * Apply text edits to a document
- */
-function applyTextEdits(content: string, edits: TextEdit[]): string {
-  // Sort edits by position (reverse order to apply from end to start)
-  const sortedEdits = [...edits].sort((a, b) => {
-    if (a.range.start.line !== b.range.start.line) {
-      return b.range.start.line - a.range.start.line;
-    }
-    return b.range.start.character - a.range.start.character;
-  });
-
-  // Convert content to lines for easier manipulation
-  const lines = content.split("\n");
-
-  for (const edit of sortedEdits) {
-    const { range, newText } = edit;
-
-    // Handle single line edit
-    if (range.start.line === range.end.line) {
-      const line = lines[range.start.line];
-      lines[range.start.line] =
-        line.substring(0, range.start.character) +
-        newText +
-        line.substring(range.end.character);
-    } else {
-      // Multi-line edit
-      const startLine = lines[range.start.line];
-      const endLine = lines[range.end.line];
-
-      const newLines = newText.split("\n");
-      const firstNewLine =
-        startLine.substring(0, range.start.character) + newLines[0];
-      const lastNewLine =
-        newLines[newLines.length - 1] + endLine.substring(range.end.character);
-
-      const replacementLines = [
-        firstNewLine,
-        ...newLines.slice(1, -1),
-        ...(newLines.length > 1 ? [lastNewLine] : []),
-      ];
-
-      // Replace the lines
-      lines.splice(
-        range.start.line,
-        range.end.line - range.start.line + 1,
-        ...replacementLines,
-      );
-    }
-  }
-
-  return lines.join("\n");
 }
 
 /**

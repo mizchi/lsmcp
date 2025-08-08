@@ -5,12 +5,12 @@
 import { readFile, writeFile, appendFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
-import type { LSMCPConfig } from "../core/config/configSchema.ts";
-import { ConfigLoader as MainConfigLoader } from "../core/config/loader.ts";
+import type { LSMCPConfig } from "../config/schema/configSchema.ts";
+import { ConfigLoader as MainConfigLoader } from "../config/loader/loader.ts";
 import type {
   AdapterRegistry,
   ConfigLoader,
-} from "../core/config/configLoader.ts";
+} from "../config/loader/configLoader.ts";
 import { getOrCreateIndex } from "../indexer/mcp/IndexerAdapter.ts";
 import { glob } from "gitaware-glob";
 import {
@@ -19,9 +19,9 @@ import {
 } from "./projectDetector.ts";
 import { createLSPClient, type LSPClient } from "../lsp/lspClient.ts";
 import { spawn } from "child_process";
-import { SymbolIndex } from "../indexer/core/SymbolIndex.ts";
+import { SymbolIndex } from "../indexer/engine/SymbolIndex.ts";
 import { LSPSymbolProvider } from "../indexer/lsp/LSPSymbolProvider.ts";
-import { NodeFileSystem } from "../indexer/core/NodeFileSystem.ts";
+import { NodeFileSystem } from "../indexer/engine/NodeFileSystem.ts";
 import { SQLiteCache } from "../indexer/cache/SQLiteCache.ts";
 import { fileURLToPath } from "url";
 

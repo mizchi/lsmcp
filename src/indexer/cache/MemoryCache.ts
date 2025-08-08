@@ -2,7 +2,7 @@
  * In-memory cache implementation
  */
 
-import type { SymbolCache, IndexedSymbol } from "../core/types.ts";
+import type { SymbolCache, IndexedSymbol } from "../engine/types.ts";
 
 export class MemoryCache implements SymbolCache {
   private cache: Map<string, IndexedSymbol[]> = new Map();

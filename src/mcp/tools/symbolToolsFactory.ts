@@ -5,12 +5,12 @@ import {
   indexFiles,
   querySymbols as queryIndexSymbols,
 } from "../../indexer/mcp/IndexerAdapter.ts";
-import type { SymbolQuery } from "../../indexer/core/types.ts";
+import type { SymbolQuery } from "../../indexer/engine/types.ts";
 import { resolve } from "node:path";
 import { SymbolKind } from "vscode-languageserver-types";
 import { glob, type FileSystemInterface } from "gitaware-glob";
-import type { FileSystemApi } from "../../core/io/FileSystemApi.ts";
-import { nodeFileSystemApi } from "../../core/io/NodeFileSystemApi.ts";
+import type { FileSystemApi } from "../../filesystem/api/FileSystemApi.ts";
+import { nodeFileSystemApi } from "../../filesystem/node/NodeFileSystemApi.ts";
 
 // Export for testing
 export async function getFilesRecursively(

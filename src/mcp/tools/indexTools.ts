@@ -20,10 +20,10 @@ import {
   SYMBOL_KIND_NAMES,
   getSymbolKindName,
   parseSymbolKind,
-} from "../../indexer/core/symbolKindTypes.ts";
+} from "../../indexer/engine/symbolKindTypes.ts";
 import { getLSPClient } from "../../lsp/lspClient.ts";
-import { loadIndexConfig } from "../../indexer/core/configLoader.ts";
-import { getAdapterDefaultPattern } from "../../indexer/core/adapterDefaults.ts";
+import { loadIndexConfig } from "../../indexer/config/configLoader.ts";
+import { getAdapterDefaultPattern } from "../../indexer/engine/adapterDefaults.ts";
 
 // Index management tools
 

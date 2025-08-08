@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
 import { getActiveClient } from "../lspClient.ts";
-import { parseLineNumber } from "../../core/textUtils/parseLineNumber.ts";
-import { findSymbolInLine } from "../../core/textUtils/findSymbolInLine.ts";
-import { findTargetInFile } from "../../core/textUtils/findTargetInFile.ts";
+import { parseLineNumber } from "../../shared/text/parseLineNumber.ts";
+import { findSymbolInLine } from "../../shared/text/findSymbolInLine.ts";
+import { findTargetInFile } from "../../shared/text/findTargetInFile.ts";
+import { applyTextEdits } from "../../shared/text/applyTextEdits.ts";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import path from "path";
@@ -270,7 +271,7 @@ async function applyWorkspaceEdit(
         changedFiles.push(fileChanges);
 
         // Apply edits to file
-        const newContent = applyTextEditsToContent(lines.join("\n"), edits);
+        const newContent = applyTextEdits(lines.join("\n"), edits);
         writeFileSync(filePath, newContent, "utf-8");
       }
     }
@@ -297,10 +298,7 @@ async function applyWorkspaceEdit(
           }
 
           // Apply edits to file
-          const newContent = applyTextEditsToContent(
-            lines.join("\n"),
-            change.edits,
-          );
+          const newContent = applyTextEdits(lines.join("\n"), change.edits);
           writeFileSync(filePath, newContent, "utf-8");
         }
       }
@@ -359,59 +357,6 @@ function processTextEdits(
     filePath,
     changes,
   };
-}
-
-/**
- * Apply text edits to content
- */
-function applyTextEditsToContent(content: string, edits: TextEdit[]): string {
-  // Sort edits by position (reverse order to avoid position shifts)
-  const sortedEdits = [...edits].sort((a, b) => {
-    if (a.range.start.line !== b.range.start.line) {
-      return b.range.start.line - a.range.start.line;
-    }
-    return b.range.start.character - a.range.start.character;
-  });
-
-  let result = content;
-  const lines = result.split("\n");
-
-  for (const edit of sortedEdits) {
-    const startLine = edit.range.start.line;
-    const startCol = edit.range.start.character;
-    const endLine = edit.range.end.line;
-    const endCol = edit.range.end.character;
-
-    if (startLine === endLine) {
-      // Single line edit
-      lines[startLine] =
-        lines[startLine].substring(0, startCol) +
-        edit.newText +
-        lines[startLine].substring(endCol);
-    } else {
-      // Multi-line edit
-      const newLines = edit.newText.split("\n");
-      const before = lines[startLine].substring(0, startCol);
-      const after = lines[endLine].substring(endCol);
-
-      // Remove old lines
-      lines.splice(startLine, endLine - startLine + 1);
-
-      // Insert new lines
-      if (newLines.length === 1) {
-        lines.splice(startLine, 0, before + newLines[0] + after);
-      } else {
-        const insertLines = [
-          before + newLines[0],
-          ...newLines.slice(1, -1),
-          newLines[newLines.length - 1] + after,
-        ];
-        lines.splice(startLine, 0, ...insertLines);
-      }
-    }
-  }
-
-  return lines.join("\n");
 }
 
 /**

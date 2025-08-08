@@ -10,8 +10,8 @@ import {
   querySymbols,
 } from "../../indexer/mcp/IndexerAdapter.ts";
 import { getLSPClient } from "../../lsp/lspClient.ts";
-import { loadIndexConfig } from "../../indexer/core/configLoader.ts";
-import { getAdapterDefaultPattern } from "../../indexer/core/adapterDefaults.ts";
+import { loadIndexConfig } from "../../indexer/config/configLoader.ts";
+import { getAdapterDefaultPattern } from "../../indexer/engine/adapterDefaults.ts";
 import { glob } from "gitaware-glob";
 import { SymbolKind } from "vscode-languageserver-types";
 import * as fs from "fs/promises";

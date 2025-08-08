@@ -15,8 +15,8 @@ import {
 } from "../registry/toolRegistry.ts";
 import { createCapabilityFilter } from "../registry/capabilityFilter.ts";
 import { resolveAdapterCommand } from "../../adapters/utils.ts";
-import type { ResolvedConfig } from "../../core/config/configLoader.ts";
-import type { AdapterRegistry } from "../../core/config/configLoader.ts";
+import type { ResolvedConfig } from "../../config/loader/configLoader.ts";
+import type { AdapterRegistry } from "../../config/loader/configLoader.ts";
 import type { LspAdapter } from "../../types/lsp.ts";
 
 export async function runLanguageServerWithConfig(

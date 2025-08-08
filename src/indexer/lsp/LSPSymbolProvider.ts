@@ -2,7 +2,7 @@
  * LSP-based symbol provider
  */
 
-import type { SymbolProvider } from "../core/types.ts";
+import type { SymbolProvider } from "../engine/types.ts";
 import type { LSPClient } from "../../lsp/lspTypes.ts";
 // import { withTemporaryDocument } from "../../lsp/utils/documentManager.ts";
 

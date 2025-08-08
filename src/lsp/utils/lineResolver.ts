@@ -1,4 +1,4 @@
-import { resolveLineParameter } from "../../core/textUtils/resolveLineParameter.ts";
+import { resolveLineParameter } from "../../shared/text/resolveLineParameter.ts";
 import { ErrorContext, formatError } from "../../mcp/utils/errorHandler.ts";
 
 /**

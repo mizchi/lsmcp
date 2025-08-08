@@ -14,7 +14,7 @@ import {
   AdapterRegistry,
   ConfigLoader as LspConfigLoader,
   type ConfigSources as LspConfigSources,
-} from "../core/config/configLoader.ts";
+} from "../config/loader/configLoader.ts";
 
 // Import modular components
 import { registerBuiltinAdapters } from "../mcp/registry/adapterSetup.ts";

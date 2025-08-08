@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { SymbolIndex } from "../../src/indexer/core/SymbolIndex.ts";
+import { SymbolIndex } from "../../src/indexer/engine/SymbolIndex.ts";
 import { SymbolKind } from "vscode-languageserver-types";
 import * as gitUtils from "../../src/indexer/utils/gitUtils.ts";
 import { ok } from "neverthrow";

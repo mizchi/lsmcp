@@ -39,7 +39,7 @@ export {
 };
 import { ChildProcess } from "child_process";
 import { EventEmitter } from "events";
-import type { FileSystemApi } from "../core/io/FileSystemApi.ts";
+import type { FileSystemApi } from "../filesystem/api/FileSystemApi.ts";
 
 // LSP Message types
 export interface LSPRequest {

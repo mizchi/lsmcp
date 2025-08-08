@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
-import { createLSPTool } from "../../core/io/toolFactory.ts";
+import { createLSPTool } from "../../lsp/client/toolFactory.ts";
 import {
   defaultGetSession as getSession,
   defaultExportSession as exportSession,

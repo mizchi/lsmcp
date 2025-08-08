@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
-import { createLSPTool } from "../../core/io/toolFactory.ts";
-import { resolveFileAndSymbol } from "../../core/io/fileSymbolResolver.ts";
-import { DiagnosticResultBuilder } from "../../core/pure/resultBuilders.ts";
+import { createLSPTool } from "../../lsp/client/toolFactory.ts";
+import { resolveFileAndSymbol } from "../../filesystem/fileSymbolResolver.ts";
+import { DiagnosticResultBuilder } from "../../shared/types/resultBuilders.ts";
 import { getActiveClient, getLanguageIdFromPath } from "../lspClient.ts";
 import { defaultLog as log, LogLevel } from "../debugLogger.ts";
 import { waitForDiagnosticsWithRetry } from "../diagnosticUtils.ts";

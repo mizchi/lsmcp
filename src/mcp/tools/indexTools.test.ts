@@ -3,8 +3,8 @@ import { searchSymbolFromIndexTool } from "./indexTools.ts";
 import * as IndexerAdapter from "../../indexer/mcp/IndexerAdapter.ts";
 import { SymbolKind } from "vscode-languageserver-types";
 import { getLSPClient } from "../../lsp/lspClient.ts";
-import { loadIndexConfig } from "../../indexer/core/configLoader.ts";
-import { getAdapterDefaultPattern } from "../../indexer/core/adapterDefaults.ts";
+import { loadIndexConfig } from "../../indexer/config/configLoader.ts";
+import { getAdapterDefaultPattern } from "../../indexer/engine/adapterDefaults.ts";
 import { glob } from "gitaware-glob";
 
 // Mock the IndexerAdapter module
@@ -20,11 +20,11 @@ vi.mock("../../lsp/lspClient.ts", () => ({
   getLSPClient: vi.fn(),
 }));
 
-vi.mock("../../indexer/core/configLoader.ts", () => ({
+vi.mock("../../indexer/config/configLoader.ts", () => ({
   loadIndexConfig: vi.fn(),
 }));
 
-vi.mock("../../indexer/core/adapterDefaults.ts", () => ({
+vi.mock("../../indexer/engine/adapterDefaults.ts", () => ({
   getAdapterDefaultPattern: vi.fn(),
 }));
 

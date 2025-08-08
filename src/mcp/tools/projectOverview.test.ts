@@ -21,11 +21,11 @@ vi.mock("../../lsp/lspClient.ts", () => ({
   getLSPClient: vi.fn(),
 }));
 
-vi.mock("../../indexer/core/configLoader.ts", () => ({
+vi.mock("../../indexer/config/configLoader.ts", () => ({
   loadIndexConfig: vi.fn(),
 }));
 
-vi.mock("../../indexer/core/adapterDefaults.ts", () => ({
+vi.mock("../../indexer/engine/adapterDefaults.ts", () => ({
   getAdapterDefaultPattern: vi.fn(),
 }));
 
@@ -35,7 +35,8 @@ vi.mock("gitaware-glob", () => ({
 
 import { glob } from "gitaware-glob";
 import { getLSPClient } from "../../lsp/lspClient.ts";
-import { getAdapterDefaultPattern } from "../../indexer/core/adapterDefaults.ts";
+import { getAdapterDefaultPattern } from "../../indexer/engine/adapterDefaults.ts";
+import { loadIndexConfig } from "../../indexer/config/configLoader.ts";
 
 describe("getProjectOverviewTool", () => {
   beforeEach(() => {
@@ -54,6 +55,9 @@ describe("getProjectOverviewTool", () => {
 
     // Setup default adapter pattern
     vi.mocked(getAdapterDefaultPattern).mockReturnValue("**/*.{ts,tsx}");
+
+    // Setup default config
+    vi.mocked(loadIndexConfig).mockReturnValue(null as any);
   });
 
   it("should return project overview with basic structure", async () => {

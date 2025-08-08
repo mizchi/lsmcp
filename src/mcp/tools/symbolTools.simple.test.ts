@@ -7,7 +7,7 @@ describe("getFilesRecursively simple test", () => {
     const rootPath = process.cwd();
 
     // Test on a known directory in the project
-    const testDir = resolve(rootPath, "src/core/pure");
+    const testDir = resolve(rootPath, "src/shared/errors");
     console.log("Testing directory:", testDir);
     console.log("Root path:", rootPath);
 
@@ -19,7 +19,7 @@ describe("getFilesRecursively simple test", () => {
     expect(files.some((f) => f.endsWith(".ts"))).toBe(true);
 
     // Should have correct relative paths
-    expect(files.every((f) => f.startsWith("src/core/pure"))).toBe(true);
+    expect(files.every((f) => f.startsWith("src/shared/errors"))).toBe(true);
   });
 
   it("should handle path replacement correctly", async () => {

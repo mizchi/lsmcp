@@ -3,7 +3,7 @@
  */
 
 // Re-export default config from existing location
-export { DEFAULT_CONFIG } from "../core/config/configSchema.ts";
+export { DEFAULT_CONFIG } from "../config/schema/configSchema.ts";
 
 // Config file paths
 export const CONFIG_FILE_NAME = "config.json";

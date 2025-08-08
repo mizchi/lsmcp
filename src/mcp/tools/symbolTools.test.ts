@@ -3,8 +3,8 @@ import { createGetSymbolsOverviewTool } from "./symbolToolsFactory.ts";
 import * as IndexerAdapter from "../../indexer/mcp/IndexerAdapter.ts";
 import { SymbolKind } from "vscode-languageserver-types";
 import { createFsFromVolume, Volume } from "memfs";
-import { MemFileSystemApi } from "../../core/io/MemFileSystemApi.ts";
-import type { FileSystemApi } from "../../core/io/FileSystemApi.ts";
+import { MemFileSystemApi } from "../../filesystem/memory/MemFileSystemApi.ts";
+import type { FileSystemApi } from "../../filesystem/api/FileSystemApi.ts";
 
 // Mock only IndexerAdapter, not file system modules
 vi.mock("../../indexer/mcp/IndexerAdapter.ts", () => ({
