@@ -1,336 +1,81 @@
-# lsmcp - Language Service MCP
-
-**LSP for headless AI Agents**
-
-[![CI - Unit Tests](https://github.com/mizchi/lsmcp/actions/workflows/ci-unit.yml/badge.svg)](https://github.com/mizchi/lsmcp/actions/workflows/ci-unit.yml)
-[![CI - Integration Tests](https://github.com/mizchi/lsmcp/actions/workflows/ci-integration.yml/badge.svg)](https://github.com/mizchi/lsmcp/actions/workflows/ci-integration.yml)
-[![CI - Language Adapters](https://github.com/mizchi/lsmcp/actions/workflows/ci-adapters.yml/badge.svg)](https://github.com/mizchi/lsmcp/actions/workflows/ci-adapters.yml)
-
-> ⚠️ **This project is under active development.** APIs and features may change without notice.
+# lsmcp - Language Service Protocol MCP
 
 A unified MCP (Model Context Protocol) server that provides advanced code manipulation and analysis capabilities for multiple programming languages through Language Server Protocol integration.
 
-## Features
-
-- 🌍 **Multi-Language Support** - Built-in TypeScript/JavaScript, extensible to any language via LSP
-- 🔍 **Semantic Code Analysis** - Go to definition, find references, type information
-- 🤖 **AI-Optimized** - Designed for LLMs with line and symbol-based interfaces
-
-### Core Tools
-
-#### Symbol Indexing & Search
-- **index_symbols** - Build/update symbol index with smart incremental updates based on git changes
-- **search_symbol_from_index** - Fast search for symbols by name, kind, file, or container
-- **get_index_stats_from_index** - Get statistics about the symbol index
-- **clear_index** - Clear the symbol index and free memory
-
-#### LSP Tools (Language Server Protocol)
-- **get_hover** - Get hover information (type signature, documentation) using LSP
-- **find_references** - Find all references to symbol across the codebase using LSP
-- **get_definitions** - Get the definition(s) of a symbol using LSP
-- **get_diagnostics** - Get diagnostics (errors, warnings) for a file using LSP
-- **get_all_diagnostics** - Get diagnostics for all files matching a pattern
-- **get_document_symbols** - Get all symbols in a document with hierarchical structure
-- **get_workspace_symbols** - Search for symbols across the entire workspace using LSP
-- **get_completion** - Get code completion suggestions at a specific position using LSP
-- **get_signature_help** - Get signature help (parameter hints) for function calls using LSP
-- **format_document** - Format an entire document using the language server's formatting provider
-
-#### Code Editing Tools
-- **replace_symbol_body** - Replace the entire body of a symbol
-- **insert_before_symbol** - Insert content before a symbol definition
-- **insert_after_symbol** - Insert content after a symbol definition
-- **replace_regex** - Replace content using regular expressions with dotall and multiline flags
-
-#### Memory System
-- **list_memories** - List available memories for the current project
-- **read_memory** - Read a specific memory from the project
-- **write_memory** - Write or update a memory for the project
-- **delete_memory** - Delete a memory from the project
-
-#### File System Tools
-- **list_dir** - List files and directories in a given path
-- **find_file** - Find files matching a pattern within a directory
-- **search_for_pattern** - Search for regex patterns in the codebase
-- **get_symbols_overview** - Get an overview of symbols in a file or directory
+- 🌍 **Multi-Language Support**
+- 🔍 **Semantic Code Analysis**
+- 🤖 **AI-Optimized**
 
 See [examples/](examples/) for working examples of each supported language configuration.
 
 ## Quick Start
 
-lsmcp provides multi-language support through Language Server Protocol (LSP) integration. The basic workflow is:
-
-1. **Install Language Server** - Install the LSP server for your target language
-2. **Add MCP Server** - Configure using `claude mcp add` command or `.mcp.json`
-
-### Basic Usage
-
 ```bash
 # Using presets for common languages
-claude mcp add typescript npx -- -y @mizchi/lsmcp -p typescript
+npm add -D @mizchi/lsmcp @typescript/native-preview
+npx @mizchi/lsmcp init -p tsgo
+claude mcp add lsmcp npx -- -y @mizchi/lsmcp -p tsgo
 
-# Custom LSP server with --bin
-claude mcp add <server-name> npx -- -y @mizchi/lsmcp --bin="<lsp-command>"
+# with manual --bin
+claude mcp add lsmcp npx -- -y @mizchi/lsmcp --bin="<lsp-command>"
 ```
 
-### Available Presets
+<details>
+<summary>📖 Example Usage with Claude</summary>
+
+### Basic Workflow
+
+```
+You: Start onboarding with lsmcp
+Claude: [Initializes lsmcp and creates symbol index]
+
+You: Get project overview
+Claude: [Analyzes project structure and shows key components]
+
+You: Find all references to the "handleRequest" function
+Claude: [Searches index and shows all usage locations]
+
+You: Show me the implementation of the UserService class
+Claude: [Navigates to definition with full code body]
+```
+
+### Common Tasks
+
+```
+# Search for symbols
+You: Find all classes that implement the Repository interface
+
+# Code navigation
+You: Where is the authentication logic implemented?
+
+# Error checking
+You: Check for TypeScript errors in the src directory
+
+# Code editing
+You: Replace all console.log with logger.debug in the codebase
+
+# Project understanding
+You: What are the main components of this application?
+```
+
+</details>
+
+## Available Presets
 
 lsmcp includes built-in presets for popular language servers:
 
-- **`typescript`** - TypeScript/JavaScript (typescript-language-server)
-- **`tsgo`** - TypeScript/JavaScript (tsgo - faster alternative)
-- **`deno`** - Deno TypeScript/JavaScript
-- **`pyright`** - Python (Microsoft Pyright)
-- **`ruff`** - Python (Ruff linter as LSP)
-- **`rust-analyzer`** - Rust
-- **`fsharp`** - F# (fsautocomplete)
+- **`tsgo`** - TypeScript (Recommended)
+- **`typescript`** - typescript-language-server
+- **`rust-analyzer`** - Rust Analyser
 - **`moonbit`** - MoonBit
+- **`fsharp`** - F# (fsautocomplete)
+- **`rust-analyzer`** - Rust
+- **`deno`** - Deno TypeScript/JavaScript
 - **`gopls`** - Go (Official Go language server)
 
-For languages not in this list, or to customize LSP server settings, see [Manual Setup](#manual-setup).
+### Configuration
 
-### Language-Specific Setup
-
-#### TypeScript
-
-<details>
-<summary>TypeScript Setup</summary>
-
-```bash
-# with typeScript-language-server (stable)
-npm add -D typescript typescript-language-server
-# Recommended: use tsgo for full functionality
-claude mcp add typescript npx -- -y @mizchi/lsmcp -p typescript
-
-# with @typescript/native-preview (experimental, fast)
-npm add -D @typescript/native-preview
-claude mcp add typescript npx -- -y @mizchi/lsmcp -p tsgo
-```
-
-Manual Configuration (.mcp.json)
-
-```json
-{
-  "mcpServers": {
-    "typescript": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@mizchi/lsmcp",
-        "-p",
-        "typescript"
-      ]
-    }
-  }
-}
-```
-
-</details>
-
-#### Rust
-
-<details>
-<summary>Rust Setup</summary>
-
-```bash
-rustup component add rust-analyzer
-claude mcp add rust npx -- -y @mizchi/lsmcp -p rust-analyzer
-```
-
-Manual Configuration (.mcp.json)
-
-```json
-{
-  "mcpServers": {
-    "rust": {
-      "command": "npx",
-      "args": ["-y", "@mizchi/lsmcp", "-p", "rust-analyzer"]
-    }
-  }
-}
-```
-
-See [examples/rust-project/](examples/rust-project/) for a complete example.
-
-</details>
-
-#### Go
-
-<details>
-<summary>Go Setup</summary>
-
-```bash
-# Install gopls (official Go language server)
-go install golang.org/x/tools/gopls@latest
-claude mcp add go npx -- -y @mizchi/lsmcp -p gopls
-```
-
-Manual Configuration (.mcp.json)
-
-```json
-{
-  "mcpServers": {
-    "go": {
-      "command": "npx",
-      "args": ["-y", "@mizchi/lsmcp", "-p", "gopls"]
-    }
-  }
-}
-```
-
-See [examples/go/](examples/go/) for a complete example.
-
-</details>
-
-#### F#
-
-<details>
-<summary>F# Setup</summary>
-
-```bash
-dotnet tool install -g fsautocomplete
-claude mcp add fsharp npx -- -y @mizchi/lsmcp -p fsharp --bin="fsautocomplete --adaptive-lsp-server-enabled"
-```
-
-Manual Configuration (.mcp.json)
-
-```json
-{
-  "mcpServers": {
-    "fsharp": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@mizchi/lsmcp",
-        "-p",
-        "fsharp",
-        "--bin",
-        "fsautocomplete"
-      ]
-    }
-  }
-}
-```
-
-See [examples/fsharp-project/](examples/fsharp-project/) for a complete example.
-
-</details>
-
-#### Python
-
-<details>
-<summary>Python Setup</summary>
-
-```bash
-# Option 1: Using Pyright (recommended)
-npm install -g pyright
-claude mcp add python npx -- -y @mizchi/lsmcp -p pyright
-
-# Option 2: Using python-lsp-server
-pip install python-lsp-server
-claude mcp add python npx -- -y @mizchi/lsmcp --bin="pylsp"
-```
-
-Manual Configuration (.mcp.json)
-
-```json
-{
-  "mcpServers": {
-    "python": {
-      "command": "npx",
-      "args": ["-y", "@mizchi/lsmcp", "-p", "pyright"]
-    }
-  }
-}
-```
-
-See [examples/python-project/](examples/python-project/) for a complete example.
-
-</details>
-
-#### Other Languages
-
-<details>
-<summary>Other Language Support</summary>
-
-lsmcp supports any language with an LSP server. Here are some common configurations:
-
-```bash
-# Go
-go install golang.org/x/tools/gopls@latest
-claude mcp add go npx -- -y @mizchi/lsmcp --bin="gopls"
-
-# C/C++ 
-# Install clangd from your package manager or LLVM releases
-claude mcp add cpp npx -- -y @mizchi/lsmcp --bin="clangd"
-
-# Java
-# Install jdtls (Eclipse JDT Language Server)
-claude mcp add java npx -- -y @mizchi/lsmcp --bin="jdtls"
-```
-
-For more customization options, see [Manual Setup](#manual-setup).
-
-</details>
-
-## Manual Setup
-
-For advanced users who want more control over LSP server configuration, you can set up lsmcp manually with custom settings.
-
-### Minimal rust-analyzer Example
-
-```json
-{
-  "mcpServers": {
-    "rust-minimal": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@mizchi/lsmcp",
-        "--bin",
-        "rust-analyzer"
-      ],
-      "env": {
-        "RUST_ANALYZER_CONFIG": "{\"assist\":{\"importGranularity\":\"module\"},\"cargo\":{\"allFeatures\":true}}"
-      }
-    }
-  }
-}
-```
-
-### Custom Language Server Setup
-
-You can configure any LSP server by providing the binary path and optional initialization options:
-
-```json
-{
-  "mcpServers": {
-    "custom-lsp": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@mizchi/lsmcp",
-        "--bin",
-        "/path/to/your/lsp-server",
-        "--initializationOptions",
-        "{\"customOption\":\"value\"}"
-      ]
-    }
-  }
-}
-```
-
-### Configuration with JSON Schema
-
-lsmcp provides a JSON Schema for configuration files that enables validation and auto-completion in VS Code and other editors.
-
-First, install lsmcp as a dev dependency:
-
-```bash
-pnpm add @mizchi/lsmcp -D
-```
-
-Then add the `$schema` field to your `.lsmcp/config.json`:
+`.lsmcp/config.json`
 
 ```json
 {
@@ -344,6 +89,7 @@ Then add the `$schema` field to your `.lsmcp/config.json`:
 ```
 
 Available configuration options:
+
 - **preset** - Preset language adapter (tsgo, typescript, rust-analyzer, pyright, gopls, etc.)
 - **indexFiles** - Glob patterns for files to index
 - **lsp** - Custom LSP server configuration (bin, args, initializationOptions)
@@ -355,18 +101,59 @@ See the complete schema at `node_modules/@mizchi/lsmcp/lsmcp.schema.json` after 
 
 For a comprehensive configuration example, see [examples/full-lsmcp-config.json](examples/full-lsmcp-config.json).
 
-## MCP Usage
+## Tools
 
-### Command Line Options
+lsmcp provides comprehensive MCP tools for code analysis and manipulation:
 
-```bash
-# Using language presets
-npx @mizchi/lsmcp -p <preset> --bin '...'
-npx @mizchi/lsmcp --preset <preset> --bin '...'
+### Core LSP Tools
 
-# Custom LSP server
-npx @mizchi/lsmcp --bin '<lsp-command>'
-```
+- **get_hover** - Get type information and documentation for symbols
+- **find_references** - Find all references to a symbol across the codebase
+- **get_definitions** - Navigate to symbol definitions with optional code body
+- **get_diagnostics** - Check for errors and warnings in files
+- **get_all_diagnostics** - Get diagnostics for entire project
+- **get_document_symbols** - List all symbols in a file
+- **get_workspace_symbols** - Search symbols across the entire workspace
+- **get_completion** - Get code completion suggestions
+- **get_signature_help** - Get parameter hints for function calls
+- **format_document** - Format entire documents using language server
+- **check_capabilities** - Check supported LSP features
+
+### Symbol Index Tools
+
+- **index_symbols** - Smart incremental indexing with auto-updates
+- **search_symbol_from_index** - Fast symbol search using pre-built index
+- **get_index_stats_from_index** - View index statistics and performance
+- **clear_index** - Clear and rebuild symbol index
+- **get_project_overview** - Quick project structure and component analysis
+
+### Code Editing Tools
+
+- **replace_symbol_body** - Replace entire symbol implementations
+- **insert_before_symbol** - Insert code before symbols
+- **insert_after_symbol** - Insert code after symbols
+- **replace_regex** - Advanced regex-based replacements
+
+### File System Tools
+
+- **list_dir** - List directories with gitignore support
+- **find_file** - Find files by pattern
+- **search_for_pattern** - Search text patterns in codebase
+- **get_symbols_overview** - High-level symbol overview by file
+
+### Memory Management
+
+- **list_memories** - List project memories
+- **read_memory** - Read specific memory content
+- **write_memory** - Create or update memories
+- **delete_memory** - Remove memories
+
+### Workflow Tools
+
+- **check_index_onboarding** - Check onboarding status
+- **index_onboarding** - Get onboarding instructions
+- **get_symbol_search_guidance** - Learn effective search techniques
+- **get_compression_guidance** - Token compression analysis
 
 ## Development
 
@@ -378,41 +165,6 @@ pnpm install
 pnpm build
 pnpm test
 ```
-
-## Troubleshooting
-
-<details>
-<summary>Common Issues</summary>
-
-### LSP Server Not Found
-
-```
-Error: LSP server for typescript not found
-```
-
-**Solution**: Install the language server:
-
-```bash
-npm add typescript typescript-language-server
-```
-
-### Permission Denied
-
-```
-Error: Permission denied for tool 'rename_symbol'
-```
-
-**Solution**: Update `.claude/settings.json` to allow lsmcp tools.
-
-### Empty Diagnostics
-
-If `get_diagnostics` returns empty results:
-
-1. Ensure the language server is running: `ps aux | grep language-server`
-2. Check for tsconfig.json or equivalent config file
-3. Try opening the file first with `get_hover`
-
-</details>
 
 ## License
 
