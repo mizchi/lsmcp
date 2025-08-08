@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/mizchi-lsmcp-badge.png)](https://mseep.ai/app/mizchi-lsmcp)
+
 # lsmcp - Language Service MCP
 
 **LSP for headless AI Agents**
