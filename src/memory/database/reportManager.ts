@@ -36,14 +36,28 @@ export class ReportManager {
    * Generate a comprehensive project report
    */
   async generateReport(
+    title?: string,
+    customSummary?: string,
     includeAIAnalysis: boolean = false,
     aiPrompt?: string,
   ): Promise<string> {
     // Get current git information
     const gitInfo = await this.getGitInfo();
 
+    // Check if report already exists for this commit
+    if (await this.db.reportExistsForCommit(gitInfo.commitHash)) {
+      throw new Error(
+        `Report already exists for commit ${gitInfo.commitHash}. Cannot create duplicate report.`,
+      );
+    }
+
     // Generate mechanical overview
     const overview = await this.generateProjectOverview();
+
+    // Generate title and summary if not provided
+    const reportTitle = title || this.generateTitle(overview, gitInfo);
+    const reportSummary =
+      customSummary || this.generateSummary(overview, gitInfo);
 
     // Generate AI analysis if requested
     let aiAnalysis: AIAnalysis | undefined;
@@ -67,6 +81,8 @@ export class ReportManager {
 
     // Save report to database
     const reportId = await this.db.saveReport(
+      reportTitle,
+      reportSummary,
       gitInfo.branch,
       gitInfo.commitHash,
       overview,
@@ -75,6 +91,45 @@ export class ReportManager {
     );
 
     return reportId;
+  }
+
+  /**
+   * Generate automatic title for report
+   */
+  private generateTitle(
+    overview: ProjectOverview,
+    gitInfo: { branch: string; commitHash: string },
+  ): string {
+    const projectName = this.projectPath.split("/").pop() || "Project";
+    const date = new Date().toLocaleDateString();
+    const mainLanguage = overview.languages[0]?.language || "Mixed";
+
+    return `${projectName} Report - ${mainLanguage} - ${gitInfo.branch} - ${date}`;
+  }
+
+  /**
+   * Generate automatic summary for report
+   */
+  private generateSummary(
+    overview: ProjectOverview,
+    gitInfo: { branch: string; commitHash: string },
+  ): string {
+    const languages = overview.languages
+      .slice(0, 3)
+      .map((l) => `${l.language} (${l.percentage.toFixed(1)}%)`)
+      .join(", ");
+
+    const symbolCount = Object.values(overview.symbolBreakdown).reduce(
+      (a, b) => a + b,
+      0,
+    );
+
+    return `Project analysis for ${gitInfo.branch} branch at commit ${gitInfo.commitHash.substring(
+      0,
+      8,
+    )}. Contains ${overview.totalFiles} files with ${symbolCount} symbols. Primary languages: ${
+      languages || "Not detected"
+    }. ${overview.dependencies?.length || 0} dependencies found.`;
   }
 
   /**
@@ -412,17 +467,17 @@ export class ReportManager {
   /**
    * Get latest report for current branch
    */
-  async getLatestReport() {
+  async getLatestReport(includeDeprecated: boolean = false) {
     const gitInfo = await this.getGitInfo();
-    return this.db.getLatestReport(gitInfo.branch);
+    return this.db.getLatestReport(gitInfo.branch, includeDeprecated);
   }
 
   /**
    * Get report history
    */
-  async getHistory(limit: number = 10) {
+  async getHistory(limit: number = 10, includeDeprecated: boolean = false) {
     const gitInfo = await this.getGitInfo();
-    return this.db.getReportHistory(gitInfo.branch, limit);
+    return this.db.getReportHistory(gitInfo.branch, limit, includeDeprecated);
   }
 
   /**
@@ -441,6 +496,7 @@ export class ReportManager {
     branch?: string;
     sortBy?: "timestamp" | "commit_hash" | "branch";
     sortOrder?: "asc" | "desc";
+    withDeprecated?: boolean;
   }) {
     return this.db.getAllReports(options);
   }
@@ -461,9 +517,48 @@ export class ReportManager {
       limit?: number;
       branch?: string;
       searchInAIAnalysis?: boolean;
+      withDeprecated?: boolean;
     },
   ) {
     return this.db.searchReportsByKeyword(keyword, options);
+  }
+
+  /**
+   * Deprecate a report
+   */
+  async deprecateReport(reportId: string, reason?: string) {
+    return this.db.deprecateReport(reportId, reason);
+  }
+
+  /**
+   * Undeprecate a report
+   */
+  async undeprecateReport(reportId: string) {
+    return this.db.undeprecateReport(reportId);
+  }
+
+  /**
+   * Get deprecated reports
+   */
+  async getDeprecatedReports(limit: number = 50) {
+    return this.db.getDeprecatedReports(limit);
+  }
+
+  /**
+   * Get reports by date range
+   */
+  async getReportsByDateRange(
+    startDate: string,
+    endDate: string,
+    branch?: string,
+    withDeprecated: boolean = false,
+  ) {
+    return this.db.getReportsByDateRange(
+      startDate,
+      endDate,
+      branch,
+      withDeprecated,
+    );
   }
 
   /**

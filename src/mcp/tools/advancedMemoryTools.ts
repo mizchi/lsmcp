@@ -39,6 +39,16 @@ Includes mechanical project overview and optionally AI analysis.
 Requires memory_advanced: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
+    title: z
+      .string()
+      .optional()
+      .describe("Custom title for the report (auto-generated if not provided)"),
+    summary: z
+      .string()
+      .optional()
+      .describe(
+        "Custom summary for the report (auto-generated if not provided)",
+      ),
     includeAIAnalysis: z
       .boolean()
       .optional()
@@ -59,6 +69,8 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 
     try {
       const reportId = await manager.generateReport(
+        args.title,
+        args.summary,
         args.includeAIAnalysis || false,
         args.aiPrompt,
       );
@@ -69,6 +81,8 @@ Requires memory_advanced: true in .lsmcp/config.json`,
         {
           success: true,
           reportId,
+          title: report?.title,
+          summary: report?.summary,
           branch: report?.branch,
           commitHash: report?.commitHash,
           timestamp: report?.timestamp,
@@ -105,6 +119,10 @@ Requires memory_advanced: true in .lsmcp/config.json`,
       .boolean()
       .optional()
       .describe("Include AI analysis if available"),
+    withDeprecated: z
+      .boolean()
+      .optional()
+      .describe("Include deprecated reports (default: false)"),
   }),
   execute: async (args) => {
     const rootPath = resolve(args.root);
@@ -118,7 +136,9 @@ Requires memory_advanced: true in .lsmcp/config.json`,
     const manager = new ReportManager(rootPath);
 
     try {
-      const report = await manager.getLatestReport();
+      const report = await manager.getLatestReport(
+        args.withDeprecated || false,
+      );
 
       if (!report) {
         return JSON.stringify({ error: "No reports found for current branch" });
@@ -167,6 +187,10 @@ Requires memory_advanced: true in .lsmcp/config.json`,
       .max(100)
       .optional()
       .describe("Maximum number of reports to return (default: 10)"),
+    withDeprecated: z
+      .boolean()
+      .optional()
+      .describe("Include deprecated reports (default: false)"),
   }),
   execute: async (args) => {
     const rootPath = resolve(args.root);
@@ -180,7 +204,10 @@ Requires memory_advanced: true in .lsmcp/config.json`,
     const manager = new ReportManager(rootPath);
 
     try {
-      const reports = await manager.getHistory(args.limit || 10);
+      const reports = await manager.getHistory(
+        args.limit || 10,
+        args.withDeprecated || false,
+      );
 
       const summaries = reports.map((report) => ({
         id: report.id,
@@ -386,6 +413,10 @@ Requires memory_advanced: true in .lsmcp/config.json`,
     startDate: z.string().describe("Start date (ISO format or YYYY-MM-DD)"),
     endDate: z.string().describe("End date (ISO format or YYYY-MM-DD)"),
     branch: z.string().optional().describe("Filter by specific branch"),
+    withDeprecated: z
+      .boolean()
+      .optional()
+      .describe("Include deprecated reports (default: false)"),
   }),
   execute: async (args) => {
     const rootPath = resolve(args.root);
@@ -403,6 +434,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
         args.startDate,
         args.endDate,
         args.branch,
+        args.withDeprecated || false,
       );
 
       const summaries = reports.map((report) => ({
@@ -441,6 +473,7 @@ export const getAllReportsToolDef: ToolDef<any> = {
   name: "get_all_reports",
   description: `Get all project reports with pagination and optional filters.
 Supports sorting and filtering by branch.
+By default, deprecated reports are excluded.
 Requires memory_advanced: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
@@ -464,6 +497,10 @@ Requires memory_advanced: true in .lsmcp/config.json`,
       .enum(["asc", "desc"])
       .optional()
       .describe("Sort order (default: desc)"),
+    withDeprecated: z
+      .boolean()
+      .optional()
+      .describe("Include deprecated reports (default: false)"),
   }),
   execute: async (args) => {
     const rootPath = resolve(args.root);
@@ -483,6 +520,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
         branch: args.branch,
         sortBy: args.sortBy,
         sortOrder: args.sortOrder,
+        withDeprecated: args.withDeprecated,
       });
 
       const summaries = result.reports.map((report) => ({
@@ -557,6 +595,7 @@ export const searchReportsByKeywordToolDef: ToolDef<any> = {
   name: "search_reports_by_keyword",
   description: `Search project reports by keyword in overview or AI analysis.
 Searches in file statistics, language information, dependencies, and AI analysis.
+By default, deprecated reports are excluded.
 Requires memory_advanced: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
@@ -572,6 +611,10 @@ Requires memory_advanced: true in .lsmcp/config.json`,
       .boolean()
       .optional()
       .describe("Include AI analysis in search (default: true)"),
+    withDeprecated: z
+      .boolean()
+      .optional()
+      .describe("Include deprecated reports (default: false)"),
   }),
   execute: async (args) => {
     const rootPath = resolve(args.root);
@@ -589,6 +632,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
         limit: args.limit,
         branch: args.branch,
         searchInAIAnalysis: args.searchInAIAnalysis,
+        withDeprecated: args.withDeprecated,
       });
 
       const results = reports.map((report) => ({
@@ -684,6 +728,136 @@ function extractRelevantInfo(
 }
 
 /**
+ * Deprecate a report
+ */
+export const deprecateReportToolDef: ToolDef<any> = {
+  name: "deprecate_report",
+  description: `Mark a report as deprecated.
+Deprecated reports are excluded from normal searches unless explicitly included.
+Requires memory_advanced: true in .lsmcp/config.json`,
+  schema: z.object({
+    root: z.string().describe("Root directory of the project"),
+    reportId: z.string().describe("ID of the report to deprecate"),
+    reason: z.string().optional().describe("Reason for deprecation"),
+  }),
+  execute: async (args) => {
+    const rootPath = resolve(args.root);
+
+    if (!isMemoryAdvancedEnabled(rootPath)) {
+      throw new Error(
+        "Advanced memory features are not enabled. Set memory_advanced: true in .lsmcp/config.json",
+      );
+    }
+
+    const manager = new ReportManager(rootPath);
+
+    try {
+      await manager.deprecateReport(args.reportId, args.reason);
+
+      return JSON.stringify({
+        success: true,
+        reportId: args.reportId,
+        message: "Report marked as deprecated",
+        reason: args.reason || "No reason provided",
+      });
+    } finally {
+      manager.close();
+    }
+  },
+};
+
+/**
+ * Undeprecate a report
+ */
+export const undeprecateReportToolDef: ToolDef<any> = {
+  name: "undeprecate_report",
+  description: `Remove deprecated status from a report.
+Requires memory_advanced: true in .lsmcp/config.json`,
+  schema: z.object({
+    root: z.string().describe("Root directory of the project"),
+    reportId: z.string().describe("ID of the report to undeprecate"),
+  }),
+  execute: async (args) => {
+    const rootPath = resolve(args.root);
+
+    if (!isMemoryAdvancedEnabled(rootPath)) {
+      throw new Error(
+        "Advanced memory features are not enabled. Set memory_advanced: true in .lsmcp/config.json",
+      );
+    }
+
+    const manager = new ReportManager(rootPath);
+
+    try {
+      await manager.undeprecateReport(args.reportId);
+
+      return JSON.stringify({
+        success: true,
+        reportId: args.reportId,
+        message: "Deprecated status removed from report",
+      });
+    } finally {
+      manager.close();
+    }
+  },
+};
+
+/**
+ * Get deprecated reports
+ */
+export const getDeprecatedReportsToolDef: ToolDef<any> = {
+  name: "get_deprecated_reports",
+  description: `Get a list of deprecated reports.
+Requires memory_advanced: true in .lsmcp/config.json`,
+  schema: z.object({
+    root: z.string().describe("Root directory of the project"),
+    limit: z
+      .number()
+      .min(1)
+      .max(100)
+      .optional()
+      .describe("Maximum number of reports to return (default: 50)"),
+  }),
+  execute: async (args) => {
+    const rootPath = resolve(args.root);
+
+    if (!isMemoryAdvancedEnabled(rootPath)) {
+      throw new Error(
+        "Advanced memory features are not enabled. Set memory_advanced: true in .lsmcp/config.json",
+      );
+    }
+
+    const manager = new ReportManager(rootPath);
+
+    try {
+      const reports = await manager.getDeprecatedReports(args.limit || 50);
+
+      const summaries = reports.map((report) => ({
+        id: report.id,
+        title: report.title,
+        summary: report.summary,
+        branch: report.branch,
+        commitHash: report.commitHash.substring(0, 8),
+        timestamp: report.timestamp,
+        deprecatedAt: report.deprecatedAt,
+        deprecatedReason: report.deprecatedReason || "No reason provided",
+      }));
+
+      return JSON.stringify(
+        {
+          count: summaries.length,
+          reports: summaries,
+        },
+        null,
+        2,
+      );
+    } finally {
+      manager.close();
+    }
+  },
+};
+
+/**
  * Get all advanced memory tools
  */
 export function getAdvancedMemoryTools(): ToolDef<any>[] {
@@ -698,6 +872,9 @@ export function getAdvancedMemoryTools(): ToolDef<any>[] {
     getReportByCommitToolDef,
     getMemoryStatsToolDef,
     searchReportsByDateToolDef,
+    deprecateReportToolDef,
+    undeprecateReportToolDef,
+    getDeprecatedReportsToolDef,
   ];
 }
 

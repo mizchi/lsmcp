@@ -5,12 +5,17 @@
 export interface ReportRecord {
   id: string;
   projectPath: string;
+  title: string;
+  summary: string;
   branch: string;
   commitHash: string;
   timestamp: string;
   overview: ProjectOverview;
   aiAnalysis?: AIAnalysis;
   metadata?: Record<string, any>;
+  deprecated?: boolean;
+  deprecatedAt?: string;
+  deprecatedReason?: string;
 }
 
 export interface ProjectOverview {
@@ -88,14 +93,20 @@ export const CREATE_TABLES = `
   CREATE TABLE IF NOT EXISTS reports (
     id TEXT PRIMARY KEY,
     project_path TEXT NOT NULL,
+    title TEXT NOT NULL,
+    summary TEXT NOT NULL,
     branch TEXT NOT NULL,
     commit_hash TEXT NOT NULL,
     timestamp TEXT NOT NULL,
     overview TEXT NOT NULL,
     ai_analysis TEXT,
     metadata TEXT,
+    deprecated INTEGER DEFAULT 0,
+    deprecated_at TEXT,
+    deprecated_reason TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(project_path, commit_hash)
   );
 
   CREATE INDEX IF NOT EXISTS idx_reports_project_branch 
@@ -106,6 +117,12 @@ export const CREATE_TABLES = `
   
   CREATE INDEX IF NOT EXISTS idx_reports_timestamp 
     ON reports(timestamp);
+  
+  CREATE INDEX IF NOT EXISTS idx_reports_title
+    ON reports(title);
+  
+  CREATE INDEX IF NOT EXISTS idx_reports_deprecated
+    ON reports(deprecated);
 
   CREATE TABLE IF NOT EXISTS analysis_cache (
     id TEXT PRIMARY KEY,
