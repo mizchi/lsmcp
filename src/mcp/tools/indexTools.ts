@@ -125,14 +125,18 @@ const searchSymbolSchema = z.object({
   includeExternal: z
     .boolean()
     .default(false)
-    .describe("Include external library symbols (from node_modules) in results"),
+    .describe(
+      "Include external library symbols (from node_modules) in results",
+    ),
   onlyExternal: z
     .boolean()
     .default(false)
     .describe("Only return external library symbols"),
   sourceLibrary: z
     .string()
-    .describe("Filter by specific library name (e.g., 'neverthrow', '@types/node')")
+    .describe(
+      "Filter by specific library name (e.g., 'neverthrow', '@types/node')",
+    )
     .optional(),
   root: z.string().describe("Root directory for the project").optional(),
 });

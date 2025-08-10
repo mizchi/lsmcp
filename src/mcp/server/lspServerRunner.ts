@@ -10,9 +10,9 @@ import {
   filterUnsupportedTools,
   lspTools,
   highLevelTools,
-  serenityToolsList,
   onboardingToolsList,
 } from "../registry/toolRegistry.ts";
+import { getSerenityToolsList } from "../tools/index.ts";
 import { createCapabilityFilter } from "../registry/capabilityFilter.ts";
 import { resolveAdapterCommand } from "../../adapters/utils.ts";
 import type { ResolvedConfig } from "../../config/loader/configLoader.ts";
@@ -79,10 +79,17 @@ export async function runLanguageServerWithConfig(
     // Apply capability-based filtering
     filteredLspTools = capabilityFilter.filterTools(filteredLspTools);
 
+    // Get Serenity tools based on config
+    const serenityTools = getSerenityToolsList(
+      config.languageFeatures
+        ? { languageFeatures: config.languageFeatures }
+        : undefined,
+    );
+
     const allTools: ToolDef<import("zod").ZodType>[] = [
       ...filteredLspTools,
       ...highLevelTools, // Analysis tools are always available
-      ...serenityToolsList, // Serenity tools for symbol editing and memory
+      ...serenityTools, // Serenity tools for symbol editing and memory (config-based)
       ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];
 
@@ -211,10 +218,19 @@ export async function runLanguageServer(
     // Apply capability-based filtering
     filteredLspTools = capabilityFilter.filterTools(filteredLspTools);
 
+    // Get Serenity tools based on config
+    // Note: For adapters, we need to check if languageFeatures is available
+    const adapterLanguageFeatures = (adapter as any)?.languageFeatures;
+    const serenityTools = getSerenityToolsList(
+      adapterLanguageFeatures
+        ? { languageFeatures: adapterLanguageFeatures }
+        : undefined,
+    );
+
     const allTools: ToolDef<import("zod").ZodType>[] = [
       ...filteredLspTools,
       ...highLevelTools, // Analysis tools are always available
-      ...serenityToolsList, // Serenity tools for symbol editing and memory
+      ...serenityTools, // Serenity tools for symbol editing and memory (config-based)
       ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];
     if (adapter?.customTools) {
@@ -291,10 +307,14 @@ export async function runCustomLspServer(
 
     // Register all LSP tools (filtered by capabilities) and analysis tools
     const filteredLspTools = capabilityFilter.filterTools(lspTools);
+    // Get Serenity tools based on config
+    // Note: adapter/resolved doesn't have languageFeatures yet - using undefined
+    const serenityTools = getSerenityToolsList(undefined);
+
     const allTools: ToolDef<import("zod").ZodType>[] = [
       ...filteredLspTools,
       ...highLevelTools, // Analysis tools are always available
-      ...serenityToolsList, // Serenity tools for symbol editing and memory
+      ...serenityTools, // Serenity tools for symbol editing and memory (config-based)
       ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];
     server.registerTools(allTools);

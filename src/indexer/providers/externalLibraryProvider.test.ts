@@ -9,7 +9,10 @@ import {
   indexDeclarationFile,
   indexExternalLibraries,
 } from "./externalLibraryProvider.ts";
-import { getLSPClient, initialize as initializeLSPClient } from "../../lsp/lspClient.ts";
+import {
+  getLSPClient,
+  initialize as initializeLSPClient,
+} from "../../lsp/lspClient.ts";
 import { typescriptAdapter } from "../../adapters/typescriptLanguageServer.ts";
 import { spawn } from "child_process";
 import { resolveAdapterCommand } from "../../adapters/utils.ts";
@@ -20,11 +23,11 @@ describe("ExternalLibraryProvider", () => {
 
   beforeEach(async () => {
     tempDir = await mkdtemp(join(tmpdir(), "lsmcp-test-"));
-    
+
     // Create a mock node_modules structure
     const nodeModulesDir = join(tempDir, "node_modules");
     await mkdir(nodeModulesDir, { recursive: true });
-    
+
     // Create mock @types/node
     const typesNodeDir = join(nodeModulesDir, "@types", "node");
     await mkdir(typesNodeDir, { recursive: true });
@@ -34,7 +37,7 @@ describe("ExternalLibraryProvider", () => {
         name: "@types/node",
         version: "20.0.0",
         types: "index.d.ts",
-      })
+      }),
     );
     await writeFile(
       join(typesNodeDir, "index.d.ts"),
@@ -44,9 +47,9 @@ describe("ExternalLibraryProvider", () => {
       }
       declare module 'path' {
         export function join(...paths: string[]): string;
-      }`
+      }`,
     );
-    
+
     // Create mock library with .d.ts files
     const mockLibDir = join(nodeModulesDir, "mock-lib");
     await mkdir(mockLibDir, { recursive: true });
@@ -56,7 +59,7 @@ describe("ExternalLibraryProvider", () => {
         name: "mock-lib",
         version: "1.0.0",
         types: "index.d.ts",
-      })
+      }),
     );
     await writeFile(
       join(mockLibDir, "index.d.ts"),
@@ -68,9 +71,9 @@ describe("ExternalLibraryProvider", () => {
       export class MockClass {
         constructor(value: string);
         getValue(): string;
-      }`
+      }`,
     );
-    
+
     // Create a package.json in the temp directory
     await writeFile(
       join(tempDir, "package.json"),
@@ -82,7 +85,7 @@ describe("ExternalLibraryProvider", () => {
         devDependencies: {
           "@types/node": "20.0.0",
         },
-      })
+      }),
     );
   });
 
@@ -96,11 +99,11 @@ describe("ExternalLibraryProvider", () => {
   describe("getNodeModulesDeclarations", () => {
     it("should find .d.ts files in node_modules", async () => {
       const files = await getNodeModulesDeclarations(tempDir);
-      
+
       expect(files.length).toBeGreaterThan(0);
-      expect(files.some(f => f.includes("@types/node"))).toBe(true);
-      expect(files.some(f => f.includes("mock-lib"))).toBe(true);
-      expect(files.every(f => f.endsWith(".d.ts"))).toBe(true);
+      expect(files.some((f) => f.includes("@types/node"))).toBe(true);
+      expect(files.some((f) => f.includes("mock-lib"))).toBe(true);
+      expect(files.every((f) => f.endsWith(".d.ts"))).toBe(true);
     });
 
     it("should respect maxFiles limit", async () => {
@@ -120,11 +123,11 @@ describe("ExternalLibraryProvider", () => {
     it("should group files by their library", async () => {
       const files = await getNodeModulesDeclarations(tempDir);
       const libraries = await groupFilesByLibrary(files, tempDir);
-      
+
       expect(libraries.size).toBeGreaterThan(0);
       expect(libraries.has("@types/node")).toBe(true);
       expect(libraries.has("mock-lib")).toBe(true);
-      
+
       const typesNode = libraries.get("@types/node");
       expect(typesNode).toBeDefined();
       expect(typesNode?.name).toBe("@types/node");
@@ -136,7 +139,7 @@ describe("ExternalLibraryProvider", () => {
   describe("getAvailableTypescriptDependencies", () => {
     it("should list TypeScript dependencies from package.json", async () => {
       const deps = await getAvailableTypescriptDependencies(tempDir);
-      
+
       expect(deps).toContain("mock-lib");
       expect(deps).toContain("@types/node");
     });
@@ -157,24 +160,29 @@ describe("ExternalLibraryProvider", () => {
         cwd: tempDir,
         env: process.env,
       });
-      
+
       await initializeLSPClient(
         tempDir,
         lspProcess,
         typescriptAdapter.id,
         typescriptAdapter.initializationOptions,
-        typescriptAdapter.serverCharacteristics
+        typescriptAdapter.serverCharacteristics,
       );
-      
+
       client = getLSPClient();
-      
-      const mockLibFile = join(tempDir, "node_modules", "mock-lib", "index.d.ts");
+
+      const mockLibFile = join(
+        tempDir,
+        "node_modules",
+        "mock-lib",
+        "index.d.ts",
+      );
       const result = await indexDeclarationFile(mockLibFile, client);
-      
+
       expect(result).toBeDefined();
       expect(result?.symbols.length).toBeGreaterThan(0);
-      
-      const symbolNames = result?.symbols.map(s => s.name);
+
+      const symbolNames = result?.symbols.map((s) => s.name);
       expect(symbolNames).toContain("MockInterface");
       expect(symbolNames).toContain("mockFunction");
       expect(symbolNames).toContain("MockClass");
@@ -189,26 +197,26 @@ describe("ExternalLibraryProvider", () => {
         cwd: tempDir,
         env: process.env,
       });
-      
+
       await initializeLSPClient(
         tempDir,
         lspProcess,
         typescriptAdapter.id,
         typescriptAdapter.initializationOptions,
-        typescriptAdapter.serverCharacteristics
+        typescriptAdapter.serverCharacteristics,
       );
-      
+
       client = getLSPClient();
-      
+
       const result = await indexExternalLibraries(tempDir, client, {
         maxFiles: 10,
       });
-      
+
       expect(result.libraries.size).toBeGreaterThan(0);
       expect(result.files.length).toBeGreaterThan(0);
       expect(result.totalSymbols).toBeGreaterThan(0);
       expect(result.indexingTime).toBeGreaterThan(0);
-      
+
       // Check that we indexed the expected libraries
       expect(result.libraries.has("@types/node")).toBe(true);
       expect(result.libraries.has("mock-lib")).toBe(true);

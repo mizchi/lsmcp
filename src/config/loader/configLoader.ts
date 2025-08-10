@@ -25,6 +25,16 @@ export interface ResolvedConfig {
   initializationOptions?: unknown;
   serverCharacteristics?: import("../../types/lsp.ts").ServerCharacteristics;
   serverCapabilities?: import("../../types/lsp.ts").ServerCapabilities;
+  languageFeatures?: {
+    typescript?: {
+      enabled: boolean;
+      indexNodeModules?: boolean;
+      maxFiles?: number;
+    };
+    rust?: { enabled: boolean; indexCargo?: boolean };
+    go?: { enabled: boolean; indexGoModules?: boolean };
+    python?: { enabled: boolean; indexSitePackages?: boolean };
+  };
 }
 
 /**
@@ -156,6 +166,7 @@ export class ConfigLoader {
       unsupported: adapter.unsupported,
       initializationOptions: adapter.initializationOptions,
       serverCharacteristics: adapter.serverCharacteristics,
+      languageFeatures: (adapter as any).languageFeatures,
     };
   }
 

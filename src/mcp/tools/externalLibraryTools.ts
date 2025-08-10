@@ -35,7 +35,8 @@ This tool scans node_modules for .d.ts files and indexes their symbols for fast 
       includePatterns: {
         type: "array",
         items: { type: "string" },
-        description: "Glob patterns for files to include (default: ['node_modules/**/*.d.ts'])",
+        description:
+          "Glob patterns for files to include (default: ['node_modules/**/*.d.ts'])",
       },
       excludePatterns: {
         type: "array",
@@ -82,11 +83,13 @@ Requires running index_external_libraries first.`,
       },
       libraryName: {
         type: "string",
-        description: "Name of the library to search in (e.g., 'react', '@types/node'). If not specified, searches all libraries.",
+        description:
+          "Name of the library to search in (e.g., 'react', '@types/node'). If not specified, searches all libraries.",
       },
       symbolName: {
         type: "string",
-        description: "Name of the symbol to search for (supports partial matching)",
+        description:
+          "Name of the symbol to search for (supports partial matching)",
       },
       kind: {
         type: "string",
@@ -124,7 +127,9 @@ export async function handleIndexExternalLibraries(args: any) {
   const state = getSymbolIndex(rootPath);
 
   if (!state.client) {
-    throw new Error("LSP client not initialized. Please initialize the index first.");
+    throw new Error(
+      "LSP client not initialized. Please initialize the index first.",
+    );
   }
 
   const config: Partial<ExternalLibraryConfig> = {
@@ -148,7 +153,7 @@ export async function handleIndexExternalLibraries(args: any) {
       })),
     },
     null,
-    2
+    2,
   );
 }
 
@@ -172,7 +177,7 @@ export async function handleGetTypescriptDependencies(args: any) {
       dependencies: dependencies.sort(),
     },
     null,
-    2
+    2,
   );
 }
 
@@ -184,17 +189,19 @@ export async function handleSearchExternalLibrarySymbols(args: any) {
     root: z.string(),
     libraryName: z.string().optional(),
     symbolName: z.string().optional(),
-    kind: z.enum([
-      "Class",
-      "Interface",
-      "Function",
-      "Variable",
-      "Constant",
-      "Enum",
-      "Module",
-      "Namespace",
-      "TypeParameter",
-    ]).optional(),
+    kind: z
+      .enum([
+        "Class",
+        "Interface",
+        "Function",
+        "Variable",
+        "Constant",
+        "Enum",
+        "Module",
+        "Namespace",
+        "TypeParameter",
+      ])
+      .optional(),
   });
 
   const parsed = schema.parse(args);
@@ -203,7 +210,7 @@ export async function handleSearchExternalLibrarySymbols(args: any) {
 
   if (!state.externalLibraries) {
     throw new Error(
-      "External libraries not indexed. Please run index_external_libraries first."
+      "External libraries not indexed. Please run index_external_libraries first.",
     );
   }
 
@@ -212,27 +219,25 @@ export async function handleSearchExternalLibrarySymbols(args: any) {
   // Filter by symbol name if provided
   if (parsed.symbolName) {
     const searchName = parsed.symbolName.toLowerCase();
-    symbols = symbols.filter(s => 
-      s.name.toLowerCase().includes(searchName)
-    );
+    symbols = symbols.filter((s) => s.name.toLowerCase().includes(searchName));
   }
 
   // Filter by kind if provided
   if (parsed.kind) {
     const kindMap: Record<string, number> = {
-      "Class": 5,
-      "Interface": 11,
-      "Function": 12,
-      "Variable": 13,
-      "Constant": 14,
-      "Enum": 10,
-      "Module": 2,
-      "Namespace": 3,
-      "TypeParameter": 26,
+      Class: 5,
+      Interface: 11,
+      Function: 12,
+      Variable: 13,
+      Constant: 14,
+      Enum: 10,
+      Module: 2,
+      Namespace: 3,
+      TypeParameter: 26,
     };
     const targetKind = kindMap[parsed.kind];
     if (targetKind !== undefined) {
-      symbols = symbols.filter(s => s.kind === targetKind);
+      symbols = symbols.filter((s) => s.kind === targetKind);
     }
   }
 
@@ -246,7 +251,7 @@ export async function handleSearchExternalLibrarySymbols(args: any) {
       totalResults: symbols.length,
       displayed: displaySymbols.length,
       truncated,
-      symbols: displaySymbols.map(s => ({
+      symbols: displaySymbols.map((s) => ({
         name: s.name,
         kind: getSymbolKindName(s.kind),
         container: s.containerName,
@@ -255,7 +260,7 @@ export async function handleSearchExternalLibrarySymbols(args: any) {
       })),
     },
     null,
-    2
+    2,
   );
 }
 
@@ -296,6 +301,7 @@ function getSymbolKindName(kind: number): string {
 
 /**
  * Get all external library tools
+ * @deprecated Use getExternalLibraryToolsWithConfig instead
  */
 export function getExternalLibraryTools(): Tool[] {
   return [
@@ -303,6 +309,50 @@ export function getExternalLibraryTools(): Tool[] {
     getTypescriptDependenciesTool,
     searchExternalLibrarySymbolsTool,
   ];
+}
+
+/**
+ * Get external library tools based on configuration
+ */
+export function getExternalLibraryToolsWithConfig(config?: {
+  typescript?: { enabled: boolean };
+  rust?: { enabled: boolean };
+  go?: { enabled: boolean };
+  python?: { enabled: boolean };
+}): Tool[] {
+  const tools: Tool[] = [];
+
+  // Default to TypeScript enabled if no config provided
+  const typescriptEnabled = config?.typescript?.enabled ?? false;
+  // const rustEnabled = config?.rust?.enabled ?? false;
+  // const goEnabled = config?.go?.enabled ?? false;
+  // const pythonEnabled = config?.python?.enabled ?? false;
+
+  // Only add TypeScript tools if enabled
+  if (typescriptEnabled) {
+    tools.push(
+      indexExternalLibrariesTool,
+      getTypescriptDependenciesTool,
+      searchExternalLibrarySymbolsTool,
+    );
+  }
+
+  // Future: Add Rust-specific tools when enabled
+  // if (rustEnabled) {
+  //   tools.push(indexRustCratesTool, searchRustSymbolsTool);
+  // }
+
+  // Future: Add Go-specific tools when enabled
+  // if (goEnabled) {
+  //   tools.push(indexGoModulesTool, searchGoSymbolsTool);
+  // }
+
+  // Future: Add Python-specific tools when enabled
+  // if (pythonEnabled) {
+  //   tools.push(indexPythonPackagesTool, searchPythonSymbolsTool);
+  // }
+
+  return tools;
 }
 
 /**
@@ -315,9 +365,18 @@ export const indexExternalLibrariesToolDef: ToolDef<any> = {
 This tool scans node_modules for .d.ts files and indexes their symbols for fast searching.`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
-    maxFiles: z.number().optional().describe("Maximum number of files to index (default: 5000)"),
-    includePatterns: z.array(z.string()).optional().describe("Glob patterns for files to include"),
-    excludePatterns: z.array(z.string()).optional().describe("Glob patterns for files to exclude"),
+    maxFiles: z
+      .number()
+      .optional()
+      .describe("Maximum number of files to index (default: 5000)"),
+    includePatterns: z
+      .array(z.string())
+      .optional()
+      .describe("Glob patterns for files to include"),
+    excludePatterns: z
+      .array(z.string())
+      .optional()
+      .describe("Glob patterns for files to exclude"),
   }),
   execute: handleIndexExternalLibraries,
 };
@@ -338,19 +397,28 @@ export const searchExternalLibrarySymbolsToolDef: ToolDef<any> = {
 Requires running index_external_libraries first.`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
-    libraryName: z.string().optional().describe("Name of the library to search in"),
-    symbolName: z.string().optional().describe("Name of the symbol to search for"),
-    kind: z.enum([
-      "Class",
-      "Interface",
-      "Function",
-      "Variable",
-      "Constant",
-      "Enum",
-      "Module",
-      "Namespace",
-      "TypeParameter",
-    ]).optional().describe("Type of symbol to filter by"),
+    libraryName: z
+      .string()
+      .optional()
+      .describe("Name of the library to search in"),
+    symbolName: z
+      .string()
+      .optional()
+      .describe("Name of the symbol to search for"),
+    kind: z
+      .enum([
+        "Class",
+        "Interface",
+        "Function",
+        "Variable",
+        "Constant",
+        "Enum",
+        "Module",
+        "Namespace",
+        "TypeParameter",
+      ])
+      .optional()
+      .describe("Type of symbol to filter by"),
   }),
   execute: handleSearchExternalLibrarySymbols,
 };

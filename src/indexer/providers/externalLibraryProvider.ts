@@ -40,10 +40,10 @@ export interface ExternalLibraryIndexResult {
  */
 export async function getNodeModulesDeclarations(
   rootPath: string,
-  config?: Partial<ExternalLibraryConfig>
+  config?: Partial<ExternalLibraryConfig>,
 ): Promise<string[]> {
   const nodeModulesPath = join(rootPath, "node_modules");
-  
+
   if (!existsSync(nodeModulesPath)) {
     return [];
   }
@@ -88,9 +88,11 @@ export async function getNodeModulesDeclarations(
 /**
  * Parse package.json to extract library info
  */
-async function getLibraryInfo(packagePath: string): Promise<LibraryInfo | null> {
+async function getLibraryInfo(
+  packagePath: string,
+): Promise<LibraryInfo | null> {
   const packageJsonPath = join(packagePath, "package.json");
-  
+
   if (!existsSync(packageJsonPath)) {
     return null;
   }
@@ -98,7 +100,7 @@ async function getLibraryInfo(packagePath: string): Promise<LibraryInfo | null> 
   try {
     const content = await readFile(packageJsonPath, "utf-8");
     const packageJson = JSON.parse(content);
-    
+
     return {
       name: packageJson.name || relative("node_modules", packagePath),
       version: packageJson.version,
@@ -116,7 +118,7 @@ async function getLibraryInfo(packagePath: string): Promise<LibraryInfo | null> 
  */
 export async function groupFilesByLibrary(
   files: string[],
-  rootPath: string
+  rootPath: string,
 ): Promise<Map<string, LibraryInfo>> {
   const libraries = new Map<string, LibraryInfo>();
   const nodeModulesPath = join(rootPath, "node_modules");
@@ -124,10 +126,10 @@ export async function groupFilesByLibrary(
   for (const file of files) {
     const relativePath = relative(nodeModulesPath, file);
     const parts = relativePath.split(/[\/\\]/);
-    
+
     let libraryName: string;
     let libraryPath: string;
-    
+
     if (parts[0] === "@types") {
       // @types/package-name
       libraryName = parts.slice(0, 2).join("/");
@@ -167,7 +169,7 @@ export async function groupFilesByLibrary(
 function documentSymbolToEntry(
   symbol: DocumentSymbol,
   fileUri: string,
-  containerName?: string
+  containerName?: string,
 ): SymbolEntry {
   const entry: SymbolEntry = {
     name: symbol.name,
@@ -183,7 +185,7 @@ function documentSymbolToEntry(
 
   if (symbol.children && symbol.children.length > 0) {
     entry.children = symbol.children.map((child) =>
-      documentSymbolToEntry(child, fileUri, symbol.name)
+      documentSymbolToEntry(child, fileUri, symbol.name),
     );
   }
 
@@ -195,19 +197,19 @@ function documentSymbolToEntry(
  */
 export async function indexDeclarationFile(
   filePath: string,
-  client: LSPClient
+  client: LSPClient,
 ): Promise<FileSymbols | null> {
   try {
     const content = await readFile(filePath, "utf-8");
     const fileUri = pathToFileURL(filePath).toString();
-    
+
     const symbols = await withTemporaryDocument(
       fileUri,
       content,
       async () => {
         return await client.getDocumentSymbols(fileUri);
       },
-      "typescript"
+      "typescript",
     );
 
     if (!symbols || !Array.isArray(symbols)) {
@@ -215,11 +217,11 @@ export async function indexDeclarationFile(
     }
 
     const entries: SymbolEntry[] = symbols.map((symbol) =>
-      documentSymbolToEntry(symbol as DocumentSymbol, fileUri)
+      documentSymbolToEntry(symbol as DocumentSymbol, fileUri),
     );
 
     const stats = await stat(filePath);
-    
+
     return {
       uri: fileUri,
       lastModified: stats.mtimeMs,
@@ -237,10 +239,10 @@ export async function indexDeclarationFile(
 export async function indexExternalLibraries(
   rootPath: string,
   client: LSPClient,
-  config?: Partial<ExternalLibraryConfig>
+  config?: Partial<ExternalLibraryConfig>,
 ): Promise<ExternalLibraryIndexResult> {
   const startTime = Date.now();
-  
+
   console.log("Scanning for TypeScript declaration files in node_modules...");
   const declarationFiles = await getNodeModulesDeclarations(rootPath, config);
   console.log(`Found ${declarationFiles.length} declaration files`);
@@ -254,26 +256,32 @@ export async function indexExternalLibraries(
   let processedFiles = 0;
 
   for (const [libraryName, libraryInfo] of libraries) {
-    console.log(`Indexing ${libraryName} (${libraryInfo.typingsFiles.length} files)...`);
-    
+    console.log(
+      `Indexing ${libraryName} (${libraryInfo.typingsFiles.length} files)...`,
+    );
+
     for (const filePath of libraryInfo.typingsFiles) {
       const fileSymbols = await indexDeclarationFile(filePath, client);
-      
+
       if (fileSymbols) {
         files.push(fileSymbols);
         totalSymbols += fileSymbols.symbols.length;
         processedFiles++;
-        
+
         if (processedFiles % 100 === 0) {
-          console.log(`Progress: ${processedFiles}/${declarationFiles.length} files indexed`);
+          console.log(
+            `Progress: ${processedFiles}/${declarationFiles.length} files indexed`,
+          );
         }
       }
     }
   }
 
   const indexingTime = Date.now() - startTime;
-  
-  console.log(`Indexing complete: ${totalSymbols} symbols from ${files.length} files in ${indexingTime}ms`);
+
+  console.log(
+    `Indexing complete: ${totalSymbols} symbols from ${files.length} files in ${indexingTime}ms`,
+  );
 
   return {
     libraries,
@@ -287,10 +295,10 @@ export async function indexExternalLibraries(
  * Get available TypeScript dependencies from package.json
  */
 export async function getAvailableTypescriptDependencies(
-  rootPath: string
+  rootPath: string,
 ): Promise<string[]> {
   const packageJsonPath = join(rootPath, "package.json");
-  
+
   if (!existsSync(packageJsonPath)) {
     return [];
   }
@@ -298,9 +306,9 @@ export async function getAvailableTypescriptDependencies(
   try {
     const content = await readFile(packageJsonPath, "utf-8");
     const packageJson = JSON.parse(content);
-    
+
     const dependencies: string[] = [];
-    
+
     // Collect all dependencies that might have TypeScript declarations
     const depFields = [
       "dependencies",
@@ -308,13 +316,13 @@ export async function getAvailableTypescriptDependencies(
       "peerDependencies",
       "optionalDependencies",
     ];
-    
+
     for (const field of depFields) {
       if (packageJson[field]) {
         dependencies.push(...Object.keys(packageJson[field]));
       }
     }
-    
+
     // Filter to only those that exist in node_modules with .d.ts files
     const existingDeps = [];
     for (const dep of dependencies) {
@@ -325,7 +333,7 @@ export async function getAvailableTypescriptDependencies(
           join(depPath, "**/*.d.ts"),
           join(rootPath, "node_modules", "@types", dep, "**/*.d.ts"),
         ];
-        
+
         for (const pattern of patterns) {
           const files = await glob(pattern, { nodir: true });
           if (files.length > 0) {
@@ -335,7 +343,7 @@ export async function getAvailableTypescriptDependencies(
         }
       }
     }
-    
+
     return existingDeps;
   } catch (error) {
     console.error(`Failed to read package.json:`, error);

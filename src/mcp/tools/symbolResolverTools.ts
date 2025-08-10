@@ -22,8 +22,12 @@ export const resolveSymbolToolDef: ToolDef<any> = {
 For example, if a file imports { ok, Ok, Err } from 'neverthrow', this tool can resolve where these symbols are defined.`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
-    filePath: z.string().describe("File path containing the symbol (relative to root)"),
-    symbolName: z.string().describe("Name of the symbol to resolve (e.g., 'ok', 'Ok', 'Err')"),
+    filePath: z
+      .string()
+      .describe("File path containing the symbol (relative to root)"),
+    symbolName: z
+      .string()
+      .describe("Name of the symbol to resolve (e.g., 'ok', 'Ok', 'Err')"),
   }),
   execute: handleResolveSymbol,
 };
@@ -69,7 +73,7 @@ async function handleResolveSymbol(args: any) {
   const parsed = schema.parse(args);
   const rootPath = resolve(parsed.root);
   const fullPath = resolve(rootPath, parsed.filePath);
-  
+
   const client = getLSPClient();
   if (!client) {
     throw new Error("LSP client not initialized");
@@ -79,7 +83,7 @@ async function handleResolveSymbol(args: any) {
     parsed.symbolName,
     fullPath,
     rootPath,
-    client
+    client,
   );
 
   if (!resolution) {
@@ -88,7 +92,7 @@ async function handleResolveSymbol(args: any) {
         error: `Symbol '${parsed.symbolName}' not found in imports or could not be resolved`,
       },
       null,
-      2
+      2,
     );
   }
 
@@ -105,7 +109,7 @@ async function handleResolveSymbol(args: any) {
       },
     },
     null,
-    2
+    2,
   );
 }
 
@@ -122,14 +126,19 @@ async function handleGetAvailableExternalSymbols(args: any) {
   const rootPath = resolve(parsed.root);
   const fullPath = resolve(rootPath, parsed.filePath);
 
-  const availableSymbols = await getAvailableExternalSymbols(fullPath, rootPath);
+  const availableSymbols = await getAvailableExternalSymbols(
+    fullPath,
+    rootPath,
+  );
 
-  const symbols = Array.from(availableSymbols.entries()).map(([local, resolution]) => ({
-    localName: local,
-    importedName: resolution.symbol.name,
-    sourceModule: resolution.sourceModule,
-    resolvedPath: resolution.resolvedPath,
-  }));
+  const symbols = Array.from(availableSymbols.entries()).map(
+    ([local, resolution]) => ({
+      localName: local,
+      importedName: resolution.symbol.name,
+      sourceModule: resolution.sourceModule,
+      resolvedPath: resolution.resolvedPath,
+    }),
+  );
 
   return JSON.stringify(
     {
@@ -138,7 +147,7 @@ async function handleGetAvailableExternalSymbols(args: any) {
       symbols,
     },
     null,
-    2
+    2,
   );
 }
 
@@ -160,13 +169,13 @@ async function handleParseImports(args: any) {
   const imports = parseImports(sourceCode);
 
   // Enhance imports with resolved paths
-  const enhancedImports = imports.map(imp => {
+  const enhancedImports = imports.map((imp) => {
     const resolvedPath = resolveModulePath(imp.source, fullPath, rootPath);
     return {
       source: imp.source,
       resolvedPath,
       isTypeOnly: imp.isTypeOnly,
-      specifiers: imp.specifiers.map(spec => ({
+      specifiers: imp.specifiers.map((spec) => ({
         imported: spec.imported,
         local: spec.local,
         isDefault: spec.isDefault,
@@ -182,7 +191,7 @@ async function handleParseImports(args: any) {
       imports: enhancedImports,
     },
     null,
-    2
+    2,
   );
 }
 

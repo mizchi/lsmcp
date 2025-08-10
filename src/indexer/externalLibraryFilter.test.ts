@@ -112,8 +112,14 @@ describe("External Library Symbol Filtering", () => {
       };
 
       // Add all symbols to indices
-      [internalSymbol1, internalSymbol2, externalSymbol1, externalSymbol2, externalSymbol3].forEach(
-        symbol => addSymbolToIndices(state, symbol, symbol.location.uri)
+      [
+        internalSymbol1,
+        internalSymbol2,
+        externalSymbol1,
+        externalSymbol2,
+        externalSymbol3,
+      ].forEach((symbol) =>
+        addSymbolToIndices(state, symbol, symbol.location.uri),
       );
 
       // Add to file index
@@ -129,11 +135,14 @@ describe("External Library Symbol Filtering", () => {
         symbols: [internalSymbol2],
       });
 
-      state.fileIndex.set("file:///project/node_modules/neverthrow/index.d.ts", {
-        uri: "file:///project/node_modules/neverthrow/index.d.ts",
-        lastModified: Date.now(),
-        symbols: [externalSymbol1, externalSymbol2],
-      });
+      state.fileIndex.set(
+        "file:///project/node_modules/neverthrow/index.d.ts",
+        {
+          uri: "file:///project/node_modules/neverthrow/index.d.ts",
+          lastModified: Date.now(),
+          symbols: [externalSymbol1, externalSymbol2],
+        },
+      );
 
       state.fileIndex.set("file:///project/node_modules/@types/node/fs.d.ts", {
         uri: "file:///project/node_modules/@types/node/fs.d.ts",
@@ -148,9 +157,9 @@ describe("External Library Symbol Filtering", () => {
       });
 
       expect(results).toHaveLength(2);
-      expect(results.every(s => !s.isExternal)).toBe(true);
-      expect(results.map(s => s.name)).toContain("internalFunction");
-      expect(results.map(s => s.name)).toContain("MyClass");
+      expect(results.every((s) => !s.isExternal)).toBe(true);
+      expect(results.map((s) => s.name)).toContain("internalFunction");
+      expect(results.map((s) => s.name)).toContain("MyClass");
     });
 
     it("should include both internal and external symbols when includeExternal is true", () => {
@@ -159,11 +168,11 @@ describe("External Library Symbol Filtering", () => {
       });
 
       expect(results).toHaveLength(5);
-      expect(results.map(s => s.name)).toContain("internalFunction");
-      expect(results.map(s => s.name)).toContain("MyClass");
-      expect(results.map(s => s.name)).toContain("ok");
-      expect(results.map(s => s.name)).toContain("Ok");
-      expect(results.map(s => s.name)).toContain("readFile");
+      expect(results.map((s) => s.name)).toContain("internalFunction");
+      expect(results.map((s) => s.name)).toContain("MyClass");
+      expect(results.map((s) => s.name)).toContain("ok");
+      expect(results.map((s) => s.name)).toContain("Ok");
+      expect(results.map((s) => s.name)).toContain("readFile");
     });
 
     it("should return only external symbols when onlyExternal is true", () => {
@@ -172,10 +181,10 @@ describe("External Library Symbol Filtering", () => {
       });
 
       expect(results).toHaveLength(3);
-      expect(results.every(s => s.isExternal)).toBe(true);
-      expect(results.map(s => s.name)).toContain("ok");
-      expect(results.map(s => s.name)).toContain("Ok");
-      expect(results.map(s => s.name)).toContain("readFile");
+      expect(results.every((s) => s.isExternal)).toBe(true);
+      expect(results.map((s) => s.name)).toContain("ok");
+      expect(results.map((s) => s.name)).toContain("Ok");
+      expect(results.map((s) => s.name)).toContain("readFile");
     });
 
     it("should filter by specific library", () => {
@@ -185,9 +194,9 @@ describe("External Library Symbol Filtering", () => {
       });
 
       expect(results).toHaveLength(2);
-      expect(results.every(s => s.sourceLibrary === "neverthrow")).toBe(true);
-      expect(results.map(s => s.name)).toContain("ok");
-      expect(results.map(s => s.name)).toContain("Ok");
+      expect(results.every((s) => s.sourceLibrary === "neverthrow")).toBe(true);
+      expect(results.map((s) => s.name)).toContain("ok");
+      expect(results.map((s) => s.name)).toContain("Ok");
     });
 
     it("should combine name search with external filtering", () => {
@@ -210,10 +219,10 @@ describe("External Library Symbol Filtering", () => {
       });
 
       expect(results).toHaveLength(2);
-      expect(results.every(s => s.kind === SymbolKind.Function)).toBe(true);
-      expect(results.every(s => s.isExternal)).toBe(true);
-      expect(results.map(s => s.name)).toContain("ok");
-      expect(results.map(s => s.name)).toContain("readFile");
+      expect(results.every((s) => s.kind === SymbolKind.Function)).toBe(true);
+      expect(results.every((s) => s.isExternal)).toBe(true);
+      expect(results.map((s) => s.name)).toContain("ok");
+      expect(results.map((s) => s.name)).toContain("readFile");
     });
 
     it("should search internal symbols only by default", () => {
@@ -240,24 +249,36 @@ describe("External Library Symbol Filtering", () => {
   describe("Library name extraction", () => {
     it("should extract regular package names", () => {
       const extractLibraryName = (uri: string): string => {
-        const match = uri.match(/node_modules[\/\\](@[^\/\\]+[\/\\][^\/\\]+|[^\/\\]+)/);
+        const match = uri.match(
+          /node_modules[\/\\](@[^\/\\]+[\/\\][^\/\\]+|[^\/\\]+)/,
+        );
         if (match) {
           return match[1];
         }
         return "unknown";
       };
 
-      expect(extractLibraryName("file:///project/node_modules/neverthrow/index.d.ts"))
-        .toBe("neverthrow");
-      
-      expect(extractLibraryName("file:///project/node_modules/@types/node/index.d.ts"))
-        .toBe("@types/node");
-      
-      expect(extractLibraryName("file:///project/node_modules/@angular/core/index.d.ts"))
-        .toBe("@angular/core");
-      
-      expect(extractLibraryName("file:///project/src/index.ts"))
-        .toBe("unknown");
+      expect(
+        extractLibraryName(
+          "file:///project/node_modules/neverthrow/index.d.ts",
+        ),
+      ).toBe("neverthrow");
+
+      expect(
+        extractLibraryName(
+          "file:///project/node_modules/@types/node/index.d.ts",
+        ),
+      ).toBe("@types/node");
+
+      expect(
+        extractLibraryName(
+          "file:///project/node_modules/@angular/core/index.d.ts",
+        ),
+      ).toBe("@angular/core");
+
+      expect(extractLibraryName("file:///project/src/index.ts")).toBe(
+        "unknown",
+      );
     });
   });
 });

@@ -44,7 +44,8 @@ import {
   parseImportsToolDef,
 } from "./symbolResolverTools.ts";
 
-export const serenityTools = {
+// Core tools that are always available
+const coreTools = {
   // Symbol editing tools
   replaceSymbolBody: replaceSymbolBodyTool,
   insertBeforeSymbol: insertBeforeSymbolTool,
@@ -65,8 +66,55 @@ export const serenityTools = {
   // Symbol overview tools
   getSymbolsOverview: getSymbolsOverviewTool,
   querySymbols: querySymbolsTool,
+};
 
-  // External library tools
+// Language-specific tools
+const languageSpecificTools = {
+  typescript: {
+    indexExternalLibraries: indexExternalLibrariesToolDef,
+    getTypescriptDependencies: getTypescriptDependenciesToolDef,
+    searchExternalLibrarySymbols: searchExternalLibrarySymbolsToolDef,
+    resolveSymbol: resolveSymbolToolDef,
+    getAvailableExternalSymbols: getAvailableExternalSymbolsToolDef,
+    parseImports: parseImportsToolDef,
+  },
+  // Future language-specific tools can be added here
+  // rust: { ... },
+  // go: { ... },
+  // python: { ... },
+};
+
+/**
+ * Get Serenity tools based on configuration
+ */
+export function getSerenityTools(config?: {
+  languageFeatures?: {
+    typescript?: { enabled: boolean };
+    rust?: { enabled: boolean };
+    go?: { enabled: boolean };
+    python?: { enabled: boolean };
+  };
+}): Record<string, ToolDef<any>> {
+  const tools = { ...coreTools };
+
+  // Add TypeScript tools if enabled (default: disabled)
+  if (config?.languageFeatures?.typescript?.enabled) {
+    Object.assign(tools, languageSpecificTools.typescript);
+  }
+
+  // Future: Add other language-specific tools based on config
+  // if (config?.languageFeatures?.rust?.enabled) {
+  //   Object.assign(tools, languageSpecificTools.rust);
+  // }
+
+  return tools;
+}
+
+// Legacy exports for backward compatibility
+export const serenityTools = {
+  ...coreTools,
+  // External library tools - included for backward compatibility
+  // but should be enabled via config in new code
   indexExternalLibraries: indexExternalLibrariesToolDef,
   getTypescriptDependencies: getTypescriptDependenciesToolDef,
   searchExternalLibrarySymbols: searchExternalLibrarySymbolsToolDef,
@@ -75,17 +123,22 @@ export const serenityTools = {
   resolveSymbol: resolveSymbolToolDef,
   getAvailableExternalSymbols: getAvailableExternalSymbolsToolDef,
   parseImports: parseImportsToolDef,
-
-  // Internal tools removed - not for MCP exposure:
-  // - searchCachedSymbols
-  // - getCacheStats
-  // - clearCache
-  // - checkOnboardingPerformed
-  // - onboarding
-  // - thinkAboutCollectedInformation
-  // - thinkAboutTaskAdherence
-  // - thinkAboutWhetherYouAreDone
 };
 
 // Export as a list for easy registration
 export const serenityToolsList: ToolDef<any>[] = Object.values(serenityTools);
+
+/**
+ * Get Serenity tools list based on configuration
+ */
+export function getSerenityToolsList(config?: {
+  languageFeatures?: {
+    typescript?: { enabled: boolean };
+    rust?: { enabled: boolean };
+    go?: { enabled: boolean };
+    python?: { enabled: boolean };
+  };
+}): ToolDef<any>[] {
+  const tools = getSerenityTools(config);
+  return Object.values(tools);
+}

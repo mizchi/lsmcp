@@ -66,6 +66,14 @@ const PRESETS: Record<string, Partial<LSMCPConfig>> = {
         maxTsServerMemory: 4096,
       },
     },
+    // Enable TypeScript features by default for tsgo
+    languageFeatures: {
+      typescript: {
+        enabled: true,
+        indexNodeModules: true,
+        maxFiles: 5000,
+      },
+    },
   },
   typescript: {
     preset: "typescript",
@@ -73,12 +81,27 @@ const PRESETS: Record<string, Partial<LSMCPConfig>> = {
       bin: "typescript-language-server",
       args: ["--stdio"],
     },
+    // Enable TypeScript features by default for typescript preset
+    languageFeatures: {
+      typescript: {
+        enabled: true,
+        indexNodeModules: true,
+        maxFiles: 5000,
+      },
+    },
   },
   "rust-analyzer": {
     preset: "rust-analyzer",
     lsp: {
       bin: "rust-analyzer",
       args: [],
+    },
+    // Enable Rust features by default for rust-analyzer
+    languageFeatures: {
+      rust: {
+        enabled: true,
+        indexCargo: true,
+      },
     },
   },
   pyright: {
@@ -239,7 +262,7 @@ export class ConfigLoader {
       if (parsed.preset && !parsed.lsp && !parsed.adapter) {
         const preset = PRESETS[parsed.preset];
         if (preset) {
-          Object.assign(merged, this.mergeConfigs(merged, preset));
+          merged = this.mergeConfigs(preset, merged);
         }
       }
 
@@ -260,7 +283,7 @@ export class ConfigLoader {
   /**
    * Load configuration from a preset
    */
-  private loadFromPreset(presetName: string, options: LoadOptions): LoadResult {
+  loadFromPreset(presetName: string, options: LoadOptions): LoadResult {
     const preset = PRESETS[presetName];
 
     if (!preset) {

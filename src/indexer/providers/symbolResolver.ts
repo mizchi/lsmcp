@@ -39,7 +39,7 @@ export interface SymbolResolution {
  */
 export function parseImports(sourceCode: string): ImportInfo[] {
   const imports: ImportInfo[] = [];
-  
+
   // Note: These patterns are for reference only, actual parsing is done below
   // const patterns = [
   //   // import { ok, Ok, Err } from 'neverthrow'
@@ -51,16 +51,17 @@ export function parseImports(sourceCode: string): ImportInfo[] {
   //   // import ok, { Ok, Err } from 'neverthrow'
   //   /import\s+(?:type\s+)?(\w+)\s*,\s*{([^}]+)}\s+from\s+['"]([^'"]+)['"]/g,
   // ];
-  
+
   // Parse named imports
-  const namedImportRegex = /import\s+(type\s+)?{([^}]+)}\s+from\s+['"]([^'"]+)['"]/g;
+  const namedImportRegex =
+    /import\s+(type\s+)?{([^}]+)}\s+from\s+['"]([^'"]+)['"]/g;
   let match;
-  
+
   while ((match = namedImportRegex.exec(sourceCode)) !== null) {
     const isTypeOnly = !!match[1];
     const specifiersStr = match[2];
     const source = match[3];
-    
+
     const specifiers = parseSpecifiers(specifiersStr);
     imports.push({
       source,
@@ -68,60 +69,76 @@ export function parseImports(sourceCode: string): ImportInfo[] {
       isTypeOnly,
     });
   }
-  
+
   // Parse namespace imports
-  const namespaceImportRegex = /import\s+(type\s+)?\*\s+as\s+(\w+)\s+from\s+['"]([^'"]+)['"]/g;
-  sourceCode.replace(namespaceImportRegex, (fullMatch, typeKeyword, name, source) => {
-    imports.push({
-      source,
-      specifiers: [{
-        imported: "*",
-        local: name,
-        isNamespace: true,
-      }],
-      isTypeOnly: !!typeKeyword,
-    });
-    return fullMatch;
-  });
-  
+  const namespaceImportRegex =
+    /import\s+(type\s+)?\*\s+as\s+(\w+)\s+from\s+['"]([^'"]+)['"]/g;
+  sourceCode.replace(
+    namespaceImportRegex,
+    (fullMatch, typeKeyword, name, source) => {
+      imports.push({
+        source,
+        specifiers: [
+          {
+            imported: "*",
+            local: name,
+            isNamespace: true,
+          },
+        ],
+        isTypeOnly: !!typeKeyword,
+      });
+      return fullMatch;
+    },
+  );
+
   // Parse default imports
-  const defaultImportRegex = /import\s+(type\s+)?(\w+)\s+from\s+['"]([^'"]+)['"]/g;
-  sourceCode.replace(defaultImportRegex, (fullMatch, typeKeyword, name, source) => {
-    // Skip if this is part of a combined import (has comma after)
-    if (fullMatch.includes(',')) return fullMatch;
-    
-    imports.push({
-      source,
-      specifiers: [{
-        imported: "default",
-        local: name,
-        isDefault: true,
-      }],
-      isTypeOnly: !!typeKeyword,
-    });
-    return fullMatch;
-  });
-  
+  const defaultImportRegex =
+    /import\s+(type\s+)?(\w+)\s+from\s+['"]([^'"]+)['"]/g;
+  sourceCode.replace(
+    defaultImportRegex,
+    (fullMatch, typeKeyword, name, source) => {
+      // Skip if this is part of a combined import (has comma after)
+      if (fullMatch.includes(",")) return fullMatch;
+
+      imports.push({
+        source,
+        specifiers: [
+          {
+            imported: "default",
+            local: name,
+            isDefault: true,
+          },
+        ],
+        isTypeOnly: !!typeKeyword,
+      });
+      return fullMatch;
+    },
+  );
+
   // Parse combined default and named imports
-  const combinedImportRegex = /import\s+(type\s+)?(\w+)\s*,\s*{([^}]+)}\s+from\s+['"]([^'"]+)['"]/g;
-  sourceCode.replace(combinedImportRegex, (fullMatch, typeKeyword, defaultName, namedSpecifiers, source) => {
-    const specifiers: ImportSpecifier[] = [
-      {
-        imported: "default",
-        local: defaultName,
-        isDefault: true,
-      },
-      ...parseSpecifiers(namedSpecifiers),
-    ];
-    
-    imports.push({
-      source,
-      specifiers,
-      isTypeOnly: !!typeKeyword,
-    });
-    return fullMatch;
-  });
-  
+  const combinedImportRegex =
+    /import\s+(type\s+)?(\w+)\s*,\s*{([^}]+)}\s+from\s+['"]([^'"]+)['"]/g;
+  sourceCode.replace(
+    combinedImportRegex,
+    (fullMatch, typeKeyword, defaultName, namedSpecifiers, source) => {
+      const specifiers: ImportSpecifier[] = [
+        {
+          imported: "default",
+          local: defaultName,
+          isDefault: true,
+        },
+        ...parseSpecifiers(namedSpecifiers),
+      ];
+
+      imports.push({
+        source,
+        specifiers,
+        isTypeOnly: !!typeKeyword,
+      });
+      return fullMatch;
+    },
+  );
+
   return imports;
 }
 
@@ -130,12 +147,12 @@ export function parseImports(sourceCode: string): ImportInfo[] {
  */
 function parseSpecifiers(specifiersStr: string): ImportSpecifier[] {
   const specifiers: ImportSpecifier[] = [];
-  const parts = specifiersStr.split(',');
-  
+  const parts = specifiersStr.split(",");
+
   for (const part of parts) {
     const trimmed = part.trim();
     if (!trimmed) continue;
-    
+
     // Check for "as" alias
     const asMatch = trimmed.match(/^(\w+)\s+as\s+(\w+)$/);
     if (asMatch) {
@@ -154,7 +171,7 @@ function parseSpecifiers(specifiersStr: string): ImportSpecifier[] {
       }
     }
   }
-  
+
   return specifiers;
 }
 
@@ -164,24 +181,24 @@ function parseSpecifiers(specifiersStr: string): ImportSpecifier[] {
 export function resolveModulePath(
   importSource: string,
   fromFile: string,
-  projectRoot: string
+  projectRoot: string,
 ): string | null {
   // Handle relative imports
-  if (importSource.startsWith('.')) {
+  if (importSource.startsWith(".")) {
     const fromDir = dirname(fromFile);
     const resolved = resolve(fromDir, importSource);
-    
+
     // Try with different extensions
-    const extensions = ['.ts', '.tsx', '.d.ts', '.js', '.jsx', '.mjs'];
+    const extensions = [".ts", ".tsx", ".d.ts", ".js", ".jsx", ".mjs"];
     for (const ext of extensions) {
       const withExt = resolved + ext;
       if (existsSync(withExt)) {
         return withExt;
       }
     }
-    
+
     // Try as directory with index file
-    for (const indexName of ['index', 'main']) {
+    for (const indexName of ["index", "main"]) {
       for (const ext of extensions) {
         const indexPath = join(resolved, `${indexName}${ext}`);
         if (existsSync(indexPath)) {
@@ -189,21 +206,21 @@ export function resolveModulePath(
         }
       }
     }
-    
+
     return null;
   }
-  
+
   // Handle node_modules imports
-  const nodeModulesPath = join(projectRoot, 'node_modules', importSource);
-  
+  const nodeModulesPath = join(projectRoot, "node_modules", importSource);
+
   // Check if it's a directory with package.json
-  const packageJsonPath = join(nodeModulesPath, 'package.json');
+  const packageJsonPath = join(nodeModulesPath, "package.json");
   if (existsSync(packageJsonPath)) {
     try {
       const packageJson = JSON.parse(
-        require('fs').readFileSync(packageJsonPath, 'utf-8')
+        require("fs").readFileSync(packageJsonPath, "utf-8"),
       );
-      
+
       // Try to find the types entry point
       const typesEntry = packageJson.types || packageJson.typings;
       if (typesEntry) {
@@ -212,13 +229,13 @@ export function resolveModulePath(
           return typesPath;
         }
       }
-      
+
       // Try main entry point
-      const mainEntry = packageJson.main || 'index.js';
+      const mainEntry = packageJson.main || "index.js";
       const mainPath = join(nodeModulesPath, mainEntry);
-      
+
       // Look for corresponding .d.ts file
-      const dtsPath = mainPath.replace(/\.(js|mjs|cjs)$/, '.d.ts');
+      const dtsPath = mainPath.replace(/\.(js|mjs|cjs)$/, ".d.ts");
       if (existsSync(dtsPath)) {
         return dtsPath;
       }
@@ -226,14 +243,19 @@ export function resolveModulePath(
       console.error(`Failed to parse package.json for ${importSource}:`, error);
     }
   }
-  
+
   // Try @types package
-  const typesPackagePath = join(projectRoot, 'node_modules', '@types', importSource);
-  const typesIndexPath = join(typesPackagePath, 'index.d.ts');
+  const typesPackagePath = join(
+    projectRoot,
+    "node_modules",
+    "@types",
+    importSource,
+  );
+  const typesIndexPath = join(typesPackagePath, "index.d.ts");
   if (existsSync(typesIndexPath)) {
     return typesIndexPath;
   }
-  
+
   return null;
 }
 
@@ -244,36 +266,38 @@ export async function resolveSymbolFromImports(
   symbolName: string,
   filePath: string,
   projectRoot: string,
-  client: LSPClient
+  client: LSPClient,
 ): Promise<SymbolResolution | null> {
   try {
-    const sourceCode = await readFile(filePath, 'utf-8');
+    const sourceCode = await readFile(filePath, "utf-8");
     const imports = parseImports(sourceCode);
-    
+
     // Find the import that contains this symbol
     for (const importInfo of imports) {
       const specifier = importInfo.specifiers.find(
-        spec => spec.local === symbolName
+        (spec) => spec.local === symbolName,
       );
-      
+
       if (specifier) {
         // Resolve the module path
         const modulePath = resolveModulePath(
           importInfo.source,
           filePath,
-          projectRoot
+          projectRoot,
         );
-        
+
         if (modulePath) {
           // Get symbols from the resolved module
           const moduleUri = pathToFileURL(modulePath).toString();
           const documentSymbols = await client.getDocumentSymbols(moduleUri);
-          
+
           if (Array.isArray(documentSymbols)) {
             // Find the exported symbol
-            const targetName = specifier.isDefault ? 'default' : specifier.imported;
+            const targetName = specifier.isDefault
+              ? "default"
+              : specifier.imported;
             const symbol = findSymbolByName(documentSymbols, targetName);
-            
+
             if (symbol) {
               return {
                 symbol: convertToSymbolEntry(symbol, moduleUri),
@@ -285,10 +309,13 @@ export async function resolveSymbolFromImports(
         }
       }
     }
-    
+
     return null;
   } catch (error) {
-    console.error(`Failed to resolve symbol ${symbolName} from ${filePath}:`, error);
+    console.error(
+      `Failed to resolve symbol ${symbolName} from ${filePath}:`,
+      error,
+    );
     return null;
   }
 }
@@ -301,14 +328,14 @@ function findSymbolByName(symbols: any[], name: string): any {
     if (symbol.name === name) {
       return symbol;
     }
-    
+
     // Search in children recursively
     if (symbol.children) {
       const found = findSymbolByName(symbol.children, name);
       if (found) return found;
     }
   }
-  
+
   return null;
 }
 
@@ -326,13 +353,13 @@ function convertToSymbolEntry(symbol: any, uri: string): SymbolEntry {
     detail: symbol.detail,
     deprecated: symbol.deprecated,
   };
-  
+
   if (symbol.children && symbol.children.length > 0) {
     entry.children = symbol.children.map((child: any) =>
-      convertToSymbolEntry(child, uri)
+      convertToSymbolEntry(child, uri),
     );
   }
-  
+
   return entry;
 }
 
@@ -341,21 +368,21 @@ function convertToSymbolEntry(symbol: any, uri: string): SymbolEntry {
  */
 export async function getAvailableExternalSymbols(
   filePath: string,
-  projectRoot: string
+  projectRoot: string,
 ): Promise<Map<string, SymbolResolution>> {
   const availableSymbols = new Map<string, SymbolResolution>();
-  
+
   try {
-    const sourceCode = await readFile(filePath, 'utf-8');
+    const sourceCode = await readFile(filePath, "utf-8");
     const imports = parseImports(sourceCode);
-    
+
     for (const importInfo of imports) {
       const modulePath = resolveModulePath(
         importInfo.source,
         filePath,
-        projectRoot
+        projectRoot,
       );
-      
+
       if (modulePath) {
         // Store resolution info for each imported symbol
         for (const specifier of importInfo.specifiers) {
@@ -379,10 +406,13 @@ export async function getAvailableExternalSymbols(
         }
       }
     }
-    
+
     return availableSymbols;
   } catch (error) {
-    console.error(`Failed to get available external symbols from ${filePath}:`, error);
+    console.error(
+      `Failed to get available external symbols from ${filePath}:`,
+      error,
+    );
     return availableSymbols;
   }
 }

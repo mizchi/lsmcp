@@ -25,9 +25,9 @@ describe("Symbol Resolver", () => {
         import { ok, Ok, Err } from 'neverthrow';
         import { Result } from 'neverthrow';
       `;
-      
+
       const imports = parseImports(code);
-      
+
       expect(imports).toHaveLength(2);
       expect(imports[0].source).toBe("neverthrow");
       expect(imports[0].specifiers).toHaveLength(3);
@@ -49,9 +49,9 @@ describe("Symbol Resolver", () => {
       const code = `
         import { Ok as OkType, Err as ErrType } from 'neverthrow';
       `;
-      
+
       const imports = parseImports(code);
-      
+
       expect(imports).toHaveLength(1);
       expect(imports[0].specifiers).toHaveLength(2);
       expect(imports[0].specifiers[0]).toEqual({
@@ -68,9 +68,9 @@ describe("Symbol Resolver", () => {
       const code = `
         import * as Result from 'neverthrow';
       `;
-      
+
       const imports = parseImports(code);
-      
+
       expect(imports).toHaveLength(1);
       expect(imports[0].source).toBe("neverthrow");
       expect(imports[0].specifiers).toHaveLength(1);
@@ -85,9 +85,9 @@ describe("Symbol Resolver", () => {
       const code = `
         import neverthrow from 'neverthrow';
       `;
-      
+
       const imports = parseImports(code);
-      
+
       expect(imports).toHaveLength(1);
       expect(imports[0].specifiers).toHaveLength(1);
       expect(imports[0].specifiers[0]).toEqual({
@@ -101,9 +101,9 @@ describe("Symbol Resolver", () => {
       const code = `
         import neverthrow, { ok, Ok, Err } from 'neverthrow';
       `;
-      
+
       const imports = parseImports(code);
-      
+
       expect(imports).toHaveLength(1);
       expect(imports[0].specifiers).toHaveLength(4);
       expect(imports[0].specifiers[0]).toEqual({
@@ -122,9 +122,9 @@ describe("Symbol Resolver", () => {
         import type { Result } from 'neverthrow';
         import type { Ok, Err } from 'neverthrow';
       `;
-      
+
       const imports = parseImports(code);
-      
+
       expect(imports).toHaveLength(2);
       expect(imports[0].isTypeOnly).toBe(true);
       expect(imports[1].isTypeOnly).toBe(true);
@@ -136,13 +136,13 @@ describe("Symbol Resolver", () => {
       // Create test files
       const srcDir = join(tempDir, "src");
       await mkdir(srcDir, { recursive: true });
-      
+
       const utilsPath = join(srcDir, "utils.ts");
       await writeFile(utilsPath, "export const util = () => {};");
-      
+
       const mainPath = join(srcDir, "main.ts");
       await writeFile(mainPath, "import { util } from './utils';");
-      
+
       const resolved = resolveModulePath("./utils", mainPath, tempDir);
       expect(resolved).toBe(utilsPath);
     });
@@ -151,23 +151,23 @@ describe("Symbol Resolver", () => {
       // Create mock node_modules structure
       const nodeModulesDir = join(tempDir, "node_modules", "neverthrow");
       await mkdir(nodeModulesDir, { recursive: true });
-      
+
       await writeFile(
         join(nodeModulesDir, "package.json"),
         JSON.stringify({
           name: "neverthrow",
           version: "6.0.0",
           types: "dist/index.d.ts",
-        })
+        }),
       );
-      
+
       const typesPath = join(nodeModulesDir, "dist", "index.d.ts");
       await mkdir(join(nodeModulesDir, "dist"), { recursive: true });
       await writeFile(typesPath, "export const ok = () => {};");
-      
+
       const testFile = join(tempDir, "test.ts");
       const resolved = resolveModulePath("neverthrow", testFile, tempDir);
-      
+
       expect(resolved).toBe(typesPath);
     });
 
@@ -175,13 +175,13 @@ describe("Symbol Resolver", () => {
       // Create @types structure
       const typesDir = join(tempDir, "node_modules", "@types", "node");
       await mkdir(typesDir, { recursive: true });
-      
+
       const indexPath = join(typesDir, "index.d.ts");
       await writeFile(indexPath, "declare module 'fs' {}");
-      
+
       const testFile = join(tempDir, "test.ts");
       const resolved = resolveModulePath("node", testFile, tempDir);
-      
+
       expect(resolved).toBe(indexPath);
     });
   });
@@ -191,7 +191,7 @@ describe("Symbol Resolver", () => {
       // Create a mock neverthrow library structure
       const neverthrowDir = join(tempDir, "node_modules", "neverthrow");
       await mkdir(neverthrowDir, { recursive: true });
-      
+
       // Create package.json
       await writeFile(
         join(neverthrowDir, "package.json"),
@@ -199,9 +199,9 @@ describe("Symbol Resolver", () => {
           name: "neverthrow",
           version: "6.0.0",
           types: "index.d.ts",
-        })
+        }),
       );
-      
+
       // Create type definitions similar to neverthrow
       await writeFile(
         join(neverthrowDir, "index.d.ts"),
@@ -226,9 +226,9 @@ export function ok<T = undefined, E = never>(value?: T): Ok<T, E>;
 export function err<T = never, E = undefined>(error?: E): Err<T, E>;
 
 export { Ok, Err };
-        `
+        `,
       );
-      
+
       // Create a test file that uses neverthrow
       const testFile = join(tempDir, "test.ts");
       await writeFile(
@@ -249,32 +249,39 @@ if (result.isOk()) {
 } else {
   console.log('Error:', result.error);
 }
-        `
+        `,
       );
-      
+
       // Parse imports from the test file
-      const sourceCode = await import("fs/promises").then(fs => fs.readFile(testFile, "utf-8"));
+      const sourceCode = await import("fs/promises").then((fs) =>
+        fs.readFile(testFile, "utf-8"),
+      );
       const imports = parseImports(sourceCode);
-      
+
       expect(imports).toHaveLength(1);
       expect(imports[0].source).toBe("neverthrow");
       expect(imports[0].specifiers).toHaveLength(4);
-      
+
       // Verify module resolution
       const resolvedPath = resolveModulePath("neverthrow", testFile, tempDir);
       expect(resolvedPath).toBe(join(neverthrowDir, "index.d.ts"));
-      
+
       // Get available external symbols
-      const availableSymbols = await getAvailableExternalSymbols(testFile, tempDir);
-      
+      const availableSymbols = await getAvailableExternalSymbols(
+        testFile,
+        tempDir,
+      );
+
       expect(availableSymbols.has("ok")).toBe(true);
       expect(availableSymbols.has("Ok")).toBe(true);
       expect(availableSymbols.has("Err")).toBe(true);
       expect(availableSymbols.has("Result")).toBe(true);
-      
+
       const okResolution = availableSymbols.get("ok");
       expect(okResolution?.sourceModule).toBe("neverthrow");
-      expect(okResolution?.resolvedPath).toBe(join(neverthrowDir, "index.d.ts"));
+      expect(okResolution?.resolvedPath).toBe(
+        join(neverthrowDir, "index.d.ts"),
+      );
     });
   });
 
@@ -282,12 +289,12 @@ if (result.isOk()) {
     it.skip("should resolve symbols from neverthrow with LSP", async () => {
       // This test requires actual LSP setup, so we skip it in unit tests
       // It would work in integration tests with a real TypeScript language server
-      
+
       // Setup would involve:
       // 1. Creating actual neverthrow node_modules
       // 2. Starting TypeScript language server
       // 3. Resolving symbols through LSP
-      
+
       expect(true).toBe(true);
     });
   });

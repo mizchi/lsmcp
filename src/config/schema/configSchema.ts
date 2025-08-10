@@ -108,6 +108,78 @@ export const configSchema = z.object({
     })
     .optional()
     .describe("Symbol filtering configuration"),
+
+  /** Language-specific features configuration */
+  languageFeatures: z
+    .object({
+      /** Enable external library indexing for TypeScript/JavaScript */
+      typescript: z
+        .object({
+          enabled: z
+            .boolean()
+            .default(false)
+            .describe("Enable TypeScript external library indexing"),
+          indexNodeModules: z
+            .boolean()
+            .default(true)
+            .describe("Index node_modules dependencies"),
+          maxFiles: z
+            .number()
+            .min(100)
+            .max(10000)
+            .default(5000)
+            .describe("Maximum number of files to index from node_modules"),
+        })
+        .optional()
+        .describe("TypeScript-specific features"),
+
+      /** Enable external library indexing for Rust */
+      rust: z
+        .object({
+          enabled: z
+            .boolean()
+            .default(false)
+            .describe("Enable Rust crate indexing"),
+          indexCargo: z
+            .boolean()
+            .default(true)
+            .describe("Index Cargo dependencies"),
+        })
+        .optional()
+        .describe("Rust-specific features"),
+
+      /** Enable external library indexing for Go */
+      go: z
+        .object({
+          enabled: z
+            .boolean()
+            .default(false)
+            .describe("Enable Go module indexing"),
+          indexGoModules: z
+            .boolean()
+            .default(true)
+            .describe("Index Go module dependencies"),
+        })
+        .optional()
+        .describe("Go-specific features"),
+
+      /** Enable external library indexing for Python */
+      python: z
+        .object({
+          enabled: z
+            .boolean()
+            .default(false)
+            .describe("Enable Python package indexing"),
+          indexSitePackages: z
+            .boolean()
+            .default(true)
+            .describe("Index site-packages dependencies"),
+        })
+        .optional()
+        .describe("Python-specific features"),
+    })
+    .default({})
+    .describe("Language-specific features configuration"),
 });
 
 // Type exports
@@ -145,6 +217,7 @@ export const DEFAULT_CONFIG: LSMCPConfig = {
   },
   symbolFilter: DEFAULT_SYMBOL_FILTER,
   ignorePatterns: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
+  languageFeatures: {}, // Default to no language features enabled
 };
 
 /**

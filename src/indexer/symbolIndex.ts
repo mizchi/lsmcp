@@ -169,7 +169,7 @@ function convertSymbols(
 export function addSymbolToIndices(
   state: SymbolIndexState,
   symbol: SymbolEntry,
-  fileUri: string
+  fileUri: string,
 ): void {
   // Name index
   if (!state.symbolIndex.has(symbol.name)) {
@@ -770,45 +770,52 @@ export function clearSymbolIndex(): void {
  */
 export async function indexExternalLibrariesForState(
   state: SymbolIndexState,
-  config?: Partial<ExternalLibraryConfig>
+  config?: Partial<ExternalLibraryConfig>,
 ): Promise<ExternalLibraryIndexResult> {
   if (!state.client) {
     throw new Error("LSP client not initialized");
   }
 
   console.log("Starting external library indexing...");
-  const result = await indexExternalLibraries(state.rootPath, state.client, config);
-  
+  const result = await indexExternalLibraries(
+    state.rootPath,
+    state.client,
+    config,
+  );
+
   // Store the result in state
   state.externalLibraries = result;
-  
+
   // Add external library symbols to the index with external flags
   for (const fileSymbols of result.files) {
     // Determine library name from file path
     const libraryName = extractLibraryName(fileSymbols.uri);
-    
+
     // Mark all symbols as external and add library info
-    const externalSymbols = markSymbolsAsExternal(fileSymbols.symbols, libraryName);
-    
+    const externalSymbols = markSymbolsAsExternal(
+      fileSymbols.symbols,
+      libraryName,
+    );
+
     // Create modified file symbols
     const modifiedFileSymbols = {
       ...fileSymbols,
       symbols: externalSymbols,
     };
-    
+
     // Add to file index
     state.fileIndex.set(fileSymbols.uri, modifiedFileSymbols);
-    
+
     // Update other indices
     for (const symbol of externalSymbols) {
       addSymbolToIndices(state, symbol, fileSymbols.uri);
     }
   }
-  
+
   // Update stats
   updateStats(state);
   state.eventEmitter.emit("externalLibrariesIndexed", result);
-  
+
   return result;
 }
 
@@ -816,7 +823,9 @@ export async function indexExternalLibrariesForState(
  * Extract library name from file URI
  */
 function extractLibraryName(uri: string): string {
-  const match = uri.match(/node_modules[\/\\](@[^\/\\]+[\/\\][^\/\\]+|[^\/\\]+)/);
+  const match = uri.match(
+    /node_modules[\/\\](@[^\/\\]+[\/\\][^\/\\]+|[^\/\\]+)/,
+  );
   if (match) {
     return match[1];
   }
@@ -828,9 +837,9 @@ function extractLibraryName(uri: string): string {
  */
 function markSymbolsAsExternal(
   symbols: SymbolEntry[],
-  libraryName: string
+  libraryName: string,
 ): SymbolEntry[] {
-  return symbols.map(symbol => ({
+  return symbols.map((symbol) => ({
     ...symbol,
     isExternal: true,
     sourceLibrary: libraryName,
@@ -844,7 +853,7 @@ function markSymbolsAsExternal(
  * Get available TypeScript dependencies
  */
 export async function getTypescriptDependencies(
-  state: SymbolIndexState
+  state: SymbolIndexState,
 ): Promise<string[]> {
   return await getAvailableTypescriptDependencies(state.rootPath);
 }
@@ -854,26 +863,27 @@ export async function getTypescriptDependencies(
  */
 export function queryExternalLibrarySymbols(
   state: SymbolIndexState,
-  libraryName?: string
+  libraryName?: string,
 ): SymbolEntry[] {
   if (!state.externalLibraries) {
     return [];
   }
-  
+
   const results: SymbolEntry[] = [];
-  
+
   for (const fileSymbols of state.externalLibraries.files) {
     // If library name is specified, filter by it
     if (libraryName) {
-      const isTargetLibrary = fileSymbols.uri.includes(`node_modules/${libraryName}/`) ||
-                             fileSymbols.uri.includes(`node_modules/@types/${libraryName}/`);
+      const isTargetLibrary =
+        fileSymbols.uri.includes(`node_modules/${libraryName}/`) ||
+        fileSymbols.uri.includes(`node_modules/@types/${libraryName}/`);
       if (!isTargetLibrary) {
         continue;
       }
     }
-    
+
     results.push(...fileSymbols.symbols);
   }
-  
+
   return results;
 }
