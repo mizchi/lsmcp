@@ -433,6 +433,40 @@ export class ReportManager {
   }
 
   /**
+   * Get all reports with pagination
+   */
+  async getAllReports(options?: {
+    limit?: number;
+    offset?: number;
+    branch?: string;
+    sortBy?: "timestamp" | "commit_hash" | "branch";
+    sortOrder?: "asc" | "desc";
+  }) {
+    return this.db.getAllReports(options);
+  }
+
+  /**
+   * Get full report details
+   */
+  async getReportDetails(reportId: string) {
+    return this.db.getReportDetails(reportId);
+  }
+
+  /**
+   * Search reports by keyword
+   */
+  async searchReportsByKeyword(
+    keyword: string,
+    options?: {
+      limit?: number;
+      branch?: string;
+      searchInAIAnalysis?: boolean;
+    },
+  ) {
+    return this.db.searchReportsByKeyword(keyword, options);
+  }
+
+  /**
    * Close database connection
    */
   close() {

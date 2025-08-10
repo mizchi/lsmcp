@@ -368,6 +368,305 @@ describe("MemoryDatabase", () => {
     });
   });
 
+  describe("getAllReports", () => {
+    it("should get all reports with pagination", async () => {
+      const overview: ProjectOverview = {
+        totalFiles: 100,
+        totalSymbols: 500,
+        languages: [],
+        structure: { name: "test", type: "directory" },
+        symbolBreakdown: {
+          classes: 50,
+          interfaces: 45,
+          functions: 200,
+          variables: 100,
+          types: 50,
+          enums: 25,
+          modules: 30,
+        },
+      };
+
+      // Save multiple reports
+      for (let i = 0; i < 15; i++) {
+        await db.saveReport("main", `commit${i}`, overview);
+        await new Promise((resolve) => setTimeout(resolve, 5));
+      }
+
+      // Get first page
+      const page1 = await db.getAllReports({ limit: 10, offset: 0 });
+      expect(page1.total).toBe(15);
+      expect(page1.reports).toHaveLength(10);
+
+      // Get second page
+      const page2 = await db.getAllReports({ limit: 10, offset: 10 });
+      expect(page2.total).toBe(15);
+      expect(page2.reports).toHaveLength(5);
+    });
+
+    it("should filter by branch", async () => {
+      const overview: ProjectOverview = {
+        totalFiles: 50,
+        totalSymbols: 250,
+        languages: [],
+        structure: { name: "test", type: "directory" },
+        symbolBreakdown: {
+          classes: 25,
+          interfaces: 20,
+          functions: 100,
+          variables: 50,
+          types: 25,
+          enums: 15,
+          modules: 15,
+        },
+      };
+
+      await db.saveReport("main", "commit1", overview);
+      await db.saveReport("develop", "commit2", overview);
+      await db.saveReport("main", "commit3", overview);
+
+      const result = await db.getAllReports({ branch: "main" });
+      expect(result.total).toBe(2);
+      expect(result.reports.every((r) => r.branch === "main")).toBe(true);
+    });
+
+    it("should sort reports", async () => {
+      const overview: ProjectOverview = {
+        totalFiles: 30,
+        totalSymbols: 150,
+        languages: [],
+        structure: { name: "test", type: "directory" },
+        symbolBreakdown: {
+          classes: 15,
+          interfaces: 10,
+          functions: 60,
+          variables: 30,
+          types: 15,
+          enums: 10,
+          modules: 10,
+        },
+      };
+
+      await db.saveReport("branch-a", "zzz", overview);
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      await db.saveReport("branch-b", "aaa", overview);
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      await db.saveReport("branch-c", "mmm", overview);
+
+      // Sort by branch ascending
+      const result = await db.getAllReports({
+        sortBy: "branch",
+        sortOrder: "asc",
+      });
+
+      expect(result.reports[0].branch).toBe("branch-a");
+      expect(result.reports[1].branch).toBe("branch-b");
+      expect(result.reports[2].branch).toBe("branch-c");
+    });
+  });
+
+  describe("getReportDetails", () => {
+    it("should get full report details", async () => {
+      const overview: ProjectOverview = {
+        totalFiles: 75,
+        totalSymbols: 375,
+        languages: [
+          { language: "TypeScript", files: 60, lines: 7500, percentage: 80 },
+          { language: "JavaScript", files: 15, lines: 1875, percentage: 20 },
+        ],
+        structure: { name: "test", type: "directory" },
+        dependencies: [{ name: "express", version: "4.18.0", type: "runtime" }],
+        symbolBreakdown: {
+          classes: 35,
+          interfaces: 30,
+          functions: 150,
+          variables: 75,
+          types: 40,
+          enums: 20,
+          modules: 25,
+        },
+      };
+
+      const aiAnalysis: AIAnalysis = {
+        summary: "Well-structured TypeScript project",
+        architecture: "MVC pattern",
+        keyComponents: [],
+        codeQuality: {
+          maintainability: 85,
+          documentationLevel: "good",
+          codeConsistency: "high",
+          architectureAdherence: "strong",
+        },
+        suggestions: [],
+        timestamp: new Date().toISOString(),
+      };
+
+      const reportId = await db.saveReport(
+        "main",
+        "detail-test",
+        overview,
+        aiAnalysis,
+      );
+
+      const details = await db.getReportDetails(reportId);
+
+      expect(details).toBeTruthy();
+      expect(details?.id).toBe(reportId);
+      expect(details?.overview.totalFiles).toBe(75);
+      expect(details?.overview.languages).toHaveLength(2);
+      expect(details?.overview.dependencies).toHaveLength(1);
+      expect(details?.aiAnalysis?.summary).toBe(
+        "Well-structured TypeScript project",
+      );
+    });
+
+    it("should return null for non-existent report", async () => {
+      const details = await db.getReportDetails("non-existent-id");
+      expect(details).toBeNull();
+    });
+  });
+
+  describe("searchReportsByKeyword", () => {
+    it("should find reports by keyword in overview", async () => {
+      const overview1: ProjectOverview = {
+        totalFiles: 100,
+        totalSymbols: 500,
+        languages: [
+          { language: "TypeScript", files: 80, lines: 10000, percentage: 80 },
+        ],
+        structure: { name: "test", type: "directory" },
+        dependencies: [{ name: "react", version: "18.2.0", type: "runtime" }],
+        symbolBreakdown: {
+          classes: 50,
+          interfaces: 40,
+          functions: 200,
+          variables: 100,
+          types: 60,
+          enums: 25,
+          modules: 25,
+        },
+      };
+
+      const overview2: ProjectOverview = {
+        totalFiles: 50,
+        totalSymbols: 250,
+        languages: [
+          { language: "Python", files: 50, lines: 5000, percentage: 100 },
+        ],
+        structure: { name: "test", type: "directory" },
+        dependencies: [{ name: "django", version: "4.2.0", type: "runtime" }],
+        symbolBreakdown: {
+          classes: 25,
+          interfaces: 0,
+          functions: 100,
+          variables: 75,
+          types: 0,
+          enums: 0,
+          modules: 50,
+        },
+      };
+
+      await db.saveReport("main", "commit1", overview1);
+      await db.saveReport("main", "commit2", overview2);
+
+      // Search for "react"
+      const reactResults = await db.searchReportsByKeyword("react");
+      expect(reactResults).toHaveLength(1);
+      expect(reactResults[0].commitHash).toBe("commit1");
+
+      // Search for "TypeScript"
+      const tsResults = await db.searchReportsByKeyword("TypeScript");
+      expect(tsResults).toHaveLength(1);
+      expect(tsResults[0].commitHash).toBe("commit1");
+    });
+
+    it("should find reports by keyword in AI analysis", async () => {
+      const overview: ProjectOverview = {
+        totalFiles: 60,
+        totalSymbols: 300,
+        languages: [],
+        structure: { name: "test", type: "directory" },
+        symbolBreakdown: {
+          classes: 30,
+          interfaces: 25,
+          functions: 120,
+          variables: 60,
+          types: 30,
+          enums: 15,
+          modules: 20,
+        },
+      };
+
+      const aiAnalysis1: AIAnalysis = {
+        summary: "Project uses microservices architecture",
+        architecture: "Microservices",
+        keyComponents: [],
+        codeQuality: {
+          maintainability: 80,
+          documentationLevel: "good",
+          codeConsistency: "high",
+          architectureAdherence: "strong",
+        },
+        suggestions: [],
+        timestamp: new Date().toISOString(),
+      };
+
+      const aiAnalysis2: AIAnalysis = {
+        summary: "Monolithic application with clean architecture",
+        architecture: "Monolithic",
+        keyComponents: [],
+        codeQuality: {
+          maintainability: 85,
+          documentationLevel: "excellent",
+          codeConsistency: "high",
+          architectureAdherence: "strong",
+        },
+        suggestions: [],
+        timestamp: new Date().toISOString(),
+      };
+
+      await db.saveReport("main", "commit1", overview, aiAnalysis1);
+      await db.saveReport("main", "commit2", overview, aiAnalysis2);
+
+      // Search for "microservices"
+      const results = await db.searchReportsByKeyword("microservices");
+      expect(results).toHaveLength(1);
+      expect(results[0].commitHash).toBe("commit1");
+    });
+
+    it("should respect search options", async () => {
+      const overview: ProjectOverview = {
+        totalFiles: 40,
+        totalSymbols: 200,
+        languages: [],
+        structure: { name: "test", type: "directory" },
+        symbolBreakdown: {
+          classes: 20,
+          interfaces: 15,
+          functions: 80,
+          variables: 40,
+          types: 20,
+          enums: 10,
+          modules: 15,
+        },
+      };
+
+      // Save reports on different branches
+      for (let i = 0; i < 5; i++) {
+        await db.saveReport("main", `main-${i}`, overview);
+        await db.saveReport("develop", `dev-${i}`, overview);
+      }
+
+      // Search with branch filter
+      const results = await db.searchReportsByKeyword("test", {
+        branch: "main",
+        limit: 3,
+      });
+
+      expect(results.length).toBeLessThanOrEqual(3);
+      expect(results.every((r) => r.branch === "main")).toBe(true);
+    });
+  });
+
   describe("getReportsByDateRange", () => {
     it("should get reports within date range", async () => {
       const overview: ProjectOverview = {

@@ -182,6 +182,102 @@ export class MemoryDatabase {
   }
 
   /**
+   * Get all reports with pagination and optional filters
+   */
+  async getAllReports(options?: {
+    limit?: number;
+    offset?: number;
+    branch?: string;
+    sortBy?: "timestamp" | "commit_hash" | "branch";
+    sortOrder?: "asc" | "desc";
+  }): Promise<{ reports: ReportRecord[]; total: number }> {
+    const limit = options?.limit || 50;
+    const offset = options?.offset || 0;
+    const sortBy = options?.sortBy || "timestamp";
+    const sortOrder = options?.sortOrder || "desc";
+
+    let countQuery = `SELECT COUNT(*) as total FROM reports WHERE project_path = ?`;
+    let query = `SELECT * FROM reports WHERE project_path = ?`;
+    const params: any[] = [this.projectPath];
+
+    if (options?.branch) {
+      countQuery += " AND branch = ?";
+      query += " AND branch = ?";
+      params.push(options.branch);
+    }
+
+    // Get total count
+    const countStmt = this.db.prepare(countQuery);
+    const countResult = countStmt.get(...params) as any;
+    const total = countResult.total;
+
+    // Add sorting and pagination
+    query += ` ORDER BY ${sortBy} ${sortOrder.toUpperCase()} LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
+
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(...params) as any[];
+    const reports = rows.map((row) => this.parseReportRow(row));
+
+    return { reports, total };
+  }
+
+  /**
+   * Get full report details including all metadata
+   */
+  async getReportDetails(reportId: string): Promise<ReportRecord | null> {
+    const stmt = this.db.prepare(`
+      SELECT * FROM reports 
+      WHERE id = ? AND project_path = ?
+    `);
+
+    const row = stmt.get(reportId, this.projectPath) as any;
+    if (!row) return null;
+
+    return this.parseReportRow(row);
+  }
+
+  /**
+   * Search reports by keyword in overview or AI analysis
+   */
+  async searchReportsByKeyword(
+    keyword: string,
+    options?: {
+      limit?: number;
+      branch?: string;
+      searchInAIAnalysis?: boolean;
+    },
+  ): Promise<ReportRecord[]> {
+    const limit = options?.limit || 20;
+    let query = `
+      SELECT * FROM reports 
+      WHERE project_path = ? 
+        AND (overview LIKE ? OR metadata LIKE ?`;
+
+    const searchPattern = `%${keyword}%`;
+    const params: any[] = [this.projectPath, searchPattern, searchPattern];
+
+    if (options?.searchInAIAnalysis !== false) {
+      query += " OR ai_analysis LIKE ?";
+      params.push(searchPattern);
+    }
+
+    query += ")";
+
+    if (options?.branch) {
+      query += " AND branch = ?";
+      params.push(options.branch);
+    }
+
+    query += " ORDER BY timestamp DESC LIMIT ?";
+    params.push(limit);
+
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(...params) as any[];
+    return rows.map((row) => this.parseReportRow(row));
+  }
+
+  /**
    * Cache AI analysis for reuse
    */
   async cacheAnalysis(

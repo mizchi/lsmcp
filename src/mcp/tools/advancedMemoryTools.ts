@@ -435,6 +435,255 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 };
 
 /**
+ * Get all reports with pagination and filters
+ */
+export const getAllReportsToolDef: ToolDef<any> = {
+  name: "get_all_reports",
+  description: `Get all project reports with pagination and optional filters.
+Supports sorting and filtering by branch.
+Requires memory_advanced: true in .lsmcp/config.json`,
+  schema: z.object({
+    root: z.string().describe("Root directory of the project"),
+    limit: z
+      .number()
+      .min(1)
+      .max(100)
+      .optional()
+      .describe("Number of reports per page (default: 50)"),
+    offset: z
+      .number()
+      .min(0)
+      .optional()
+      .describe("Number of reports to skip (for pagination)"),
+    branch: z.string().optional().describe("Filter by specific branch"),
+    sortBy: z
+      .enum(["timestamp", "commit_hash", "branch"])
+      .optional()
+      .describe("Sort field (default: timestamp)"),
+    sortOrder: z
+      .enum(["asc", "desc"])
+      .optional()
+      .describe("Sort order (default: desc)"),
+  }),
+  execute: async (args) => {
+    const rootPath = resolve(args.root);
+
+    if (!isMemoryAdvancedEnabled(rootPath)) {
+      throw new Error(
+        "Advanced memory features are not enabled. Set memory_advanced: true in .lsmcp/config.json",
+      );
+    }
+
+    const manager = new ReportManager(rootPath);
+
+    try {
+      const result = await manager.getAllReports({
+        limit: args.limit,
+        offset: args.offset,
+        branch: args.branch,
+        sortBy: args.sortBy,
+        sortOrder: args.sortOrder,
+      });
+
+      const summaries = result.reports.map((report) => ({
+        id: report.id,
+        branch: report.branch,
+        commitHash: report.commitHash.substring(0, 8),
+        timestamp: report.timestamp,
+        totalFiles: report.overview.totalFiles,
+        totalSymbols: report.overview.totalSymbols,
+        hasAIAnalysis: !!report.aiAnalysis,
+      }));
+
+      return JSON.stringify(
+        {
+          total: result.total,
+          page: Math.floor((args.offset || 0) / (args.limit || 50)) + 1,
+          pageSize: args.limit || 50,
+          reports: summaries,
+        },
+        null,
+        2,
+      );
+    } finally {
+      manager.close();
+    }
+  },
+};
+
+/**
+ * Get detailed report information
+ */
+export const getReportDetailsToolDef: ToolDef<any> = {
+  name: "get_report_details",
+  description: `Get complete details of a specific project report.
+Includes full overview and AI analysis if available.
+Requires memory_advanced: true in .lsmcp/config.json`,
+  schema: z.object({
+    root: z.string().describe("Root directory of the project"),
+    reportId: z.string().describe("ID of the report to retrieve"),
+  }),
+  execute: async (args) => {
+    const rootPath = resolve(args.root);
+
+    if (!isMemoryAdvancedEnabled(rootPath)) {
+      throw new Error(
+        "Advanced memory features are not enabled. Set memory_advanced: true in .lsmcp/config.json",
+      );
+    }
+
+    const manager = new ReportManager(rootPath);
+
+    try {
+      const report = await manager.getReportDetails(args.reportId);
+
+      if (!report) {
+        return JSON.stringify({
+          error: `Report not found: ${args.reportId}`,
+        });
+      }
+
+      return JSON.stringify(report, null, 2);
+    } finally {
+      manager.close();
+    }
+  },
+};
+
+/**
+ * Search reports by keyword
+ */
+export const searchReportsByKeywordToolDef: ToolDef<any> = {
+  name: "search_reports_by_keyword",
+  description: `Search project reports by keyword in overview or AI analysis.
+Searches in file statistics, language information, dependencies, and AI analysis.
+Requires memory_advanced: true in .lsmcp/config.json`,
+  schema: z.object({
+    root: z.string().describe("Root directory of the project"),
+    keyword: z.string().describe("Keyword to search for"),
+    limit: z
+      .number()
+      .min(1)
+      .max(50)
+      .optional()
+      .describe("Maximum number of results (default: 20)"),
+    branch: z.string().optional().describe("Filter by specific branch"),
+    searchInAIAnalysis: z
+      .boolean()
+      .optional()
+      .describe("Include AI analysis in search (default: true)"),
+  }),
+  execute: async (args) => {
+    const rootPath = resolve(args.root);
+
+    if (!isMemoryAdvancedEnabled(rootPath)) {
+      throw new Error(
+        "Advanced memory features are not enabled. Set memory_advanced: true in .lsmcp/config.json",
+      );
+    }
+
+    const manager = new ReportManager(rootPath);
+
+    try {
+      const reports = await manager.searchReportsByKeyword(args.keyword, {
+        limit: args.limit,
+        branch: args.branch,
+        searchInAIAnalysis: args.searchInAIAnalysis,
+      });
+
+      const results = reports.map((report) => ({
+        id: report.id,
+        branch: report.branch,
+        commitHash: report.commitHash.substring(0, 8),
+        timestamp: report.timestamp,
+        relevantInfo: extractRelevantInfo(report, args.keyword),
+        hasAIAnalysis: !!report.aiAnalysis,
+      }));
+
+      return JSON.stringify(
+        {
+          keyword: args.keyword,
+          count: results.length,
+          results,
+        },
+        null,
+        2,
+      );
+    } finally {
+      manager.close();
+    }
+  },
+};
+
+/**
+ * Helper function to extract relevant information around keyword
+ */
+function extractRelevantInfo(
+  report: any,
+  keyword: string,
+): { context: string; source: string } {
+  const keywordLower = keyword.toLowerCase();
+
+  // Check in overview
+  const overviewStr = JSON.stringify(report.overview);
+  if (overviewStr.toLowerCase().includes(keywordLower)) {
+    // Try to find specific context
+    if (report.overview.languages) {
+      for (const lang of report.overview.languages) {
+        if (lang.language.toLowerCase().includes(keywordLower)) {
+          return {
+            context: `${lang.language}: ${lang.files} files, ${lang.lines} lines`,
+            source: "languages",
+          };
+        }
+      }
+    }
+
+    if (report.overview.dependencies) {
+      for (const dep of report.overview.dependencies) {
+        if (dep.name.toLowerCase().includes(keywordLower)) {
+          return {
+            context: `${dep.name}@${dep.version} (${dep.type})`,
+            source: "dependencies",
+          };
+        }
+      }
+    }
+
+    return {
+      context: `Files: ${report.overview.totalFiles}, Symbols: ${report.overview.totalSymbols}`,
+      source: "overview",
+    };
+  }
+
+  // Check in AI analysis
+  if (report.aiAnalysis) {
+    const aiStr = JSON.stringify(report.aiAnalysis);
+    if (aiStr.toLowerCase().includes(keywordLower)) {
+      if (
+        report.aiAnalysis.summary &&
+        report.aiAnalysis.summary.toLowerCase().includes(keywordLower)
+      ) {
+        return {
+          context: report.aiAnalysis.summary.substring(0, 150) + "...",
+          source: "ai_summary",
+        };
+      }
+
+      return {
+        context: "Found in AI analysis",
+        source: "ai_analysis",
+      };
+    }
+  }
+
+  return {
+    context: "Keyword found in metadata",
+    source: "metadata",
+  };
+}
+
+/**
  * Get all advanced memory tools
  */
 export function getAdvancedMemoryTools(): ToolDef<any>[] {
@@ -442,6 +691,9 @@ export function getAdvancedMemoryTools(): ToolDef<any>[] {
     generateReportToolDef,
     getLatestReportToolDef,
     getReportHistoryToolDef,
+    getAllReportsToolDef,
+    getReportDetailsToolDef,
+    searchReportsByKeywordToolDef,
     updateAIAnalysisToolDef,
     getReportByCommitToolDef,
     getMemoryStatsToolDef,
