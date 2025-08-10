@@ -23,6 +23,12 @@ import {
 } from "./cache/symbolCacheIntegration.ts";
 import { withTemporaryDocument } from "../lsp/utils/documentManager.ts";
 import { readFile } from "fs/promises";
+import {
+  indexExternalLibraries,
+  getAvailableTypescriptDependencies,
+  type ExternalLibraryConfig,
+  type ExternalLibraryIndexResult,
+} from "./providers/externalLibraryProvider.ts";
 
 export interface SymbolEntry {
   name: string;
@@ -32,6 +38,8 @@ export interface SymbolEntry {
   deprecated?: boolean;
   detail?: string;
   children?: SymbolEntry[];
+  isExternal?: boolean; // Flag to mark external library symbols
+  sourceLibrary?: string; // Source library name (e.g., "neverthrow")
 }
 
 export interface FileSymbols {
@@ -46,6 +54,9 @@ export interface SymbolQuery {
   file?: string;
   containerName?: string;
   includeChildren?: boolean;
+  includeExternal?: boolean; // Include external library symbols in results
+  onlyExternal?: boolean; // Only return external library symbols
+  sourceLibrary?: string; // Filter by specific library
 }
 
 export interface SymbolIndexStats {
@@ -67,6 +78,7 @@ export interface SymbolIndexState {
   client: LSPClient | null;
   stats: SymbolIndexStats;
   eventEmitter: EventEmitter;
+  externalLibraries?: ExternalLibraryIndexResult;
 }
 
 /**
@@ -149,6 +161,42 @@ function convertSymbols(
       return entry;
     }
   });
+}
+
+/**
+ * Add a symbol to the indices (exported for testing)
+ */
+export function addSymbolToIndices(
+  state: SymbolIndexState,
+  symbol: SymbolEntry,
+  fileUri: string
+): void {
+  // Name index
+  if (!state.symbolIndex.has(symbol.name)) {
+    state.symbolIndex.set(symbol.name, []);
+  }
+  state.symbolIndex.get(symbol.name)!.push(symbol);
+
+  // Kind index
+  if (!state.kindIndex.has(symbol.kind)) {
+    state.kindIndex.set(symbol.kind, []);
+  }
+  state.kindIndex.get(symbol.kind)!.push(symbol);
+
+  // Container index
+  if (symbol.containerName) {
+    if (!state.containerIndex.has(symbol.containerName)) {
+      state.containerIndex.set(symbol.containerName, []);
+    }
+    state.containerIndex.get(symbol.containerName)!.push(symbol);
+  }
+
+  // Process children recursively
+  if (symbol.children) {
+    for (const child of symbol.children) {
+      addSymbolToIndices(state, child, fileUri);
+    }
+  }
 }
 
 /**
@@ -550,6 +598,21 @@ export function querySymbols(
     results = results.filter((s) => kinds.includes(s.kind));
   }
 
+  // Apply external library filters
+  if (query.onlyExternal) {
+    // Only return external library symbols
+    results = results.filter((s) => s.isExternal === true);
+  } else if (query.includeExternal === false) {
+    // Exclude external library symbols (default behavior)
+    results = results.filter((s) => s.isExternal !== true);
+  }
+  // If includeExternal is true or undefined, include both internal and external symbols
+
+  // Filter by specific library if provided
+  if (query.sourceLibrary) {
+    results = results.filter((s) => s.sourceLibrary === query.sourceLibrary);
+  }
+
   // Include children if requested
   if (query.includeChildren) {
     const additionalResults: SymbolEntry[] = [];
@@ -700,4 +763,117 @@ export function clearSymbolIndex(): void {
     globalIndexState.eventEmitter.removeAllListeners();
     globalIndexState = null;
   }
+}
+
+/**
+ * Index external libraries (node_modules)
+ */
+export async function indexExternalLibrariesForState(
+  state: SymbolIndexState,
+  config?: Partial<ExternalLibraryConfig>
+): Promise<ExternalLibraryIndexResult> {
+  if (!state.client) {
+    throw new Error("LSP client not initialized");
+  }
+
+  console.log("Starting external library indexing...");
+  const result = await indexExternalLibraries(state.rootPath, state.client, config);
+  
+  // Store the result in state
+  state.externalLibraries = result;
+  
+  // Add external library symbols to the index with external flags
+  for (const fileSymbols of result.files) {
+    // Determine library name from file path
+    const libraryName = extractLibraryName(fileSymbols.uri);
+    
+    // Mark all symbols as external and add library info
+    const externalSymbols = markSymbolsAsExternal(fileSymbols.symbols, libraryName);
+    
+    // Create modified file symbols
+    const modifiedFileSymbols = {
+      ...fileSymbols,
+      symbols: externalSymbols,
+    };
+    
+    // Add to file index
+    state.fileIndex.set(fileSymbols.uri, modifiedFileSymbols);
+    
+    // Update other indices
+    for (const symbol of externalSymbols) {
+      addSymbolToIndices(state, symbol, fileSymbols.uri);
+    }
+  }
+  
+  // Update stats
+  updateStats(state);
+  state.eventEmitter.emit("externalLibrariesIndexed", result);
+  
+  return result;
+}
+
+/**
+ * Extract library name from file URI
+ */
+function extractLibraryName(uri: string): string {
+  const match = uri.match(/node_modules[\/\\](@[^\/\\]+[\/\\][^\/\\]+|[^\/\\]+)/);
+  if (match) {
+    return match[1];
+  }
+  return "unknown";
+}
+
+/**
+ * Mark symbols as external recursively
+ */
+function markSymbolsAsExternal(
+  symbols: SymbolEntry[],
+  libraryName: string
+): SymbolEntry[] {
+  return symbols.map(symbol => ({
+    ...symbol,
+    isExternal: true,
+    sourceLibrary: libraryName,
+    children: symbol.children
+      ? markSymbolsAsExternal(symbol.children, libraryName)
+      : undefined,
+  }));
+}
+
+/**
+ * Get available TypeScript dependencies
+ */
+export async function getTypescriptDependencies(
+  state: SymbolIndexState
+): Promise<string[]> {
+  return await getAvailableTypescriptDependencies(state.rootPath);
+}
+
+/**
+ * Query external library symbols
+ */
+export function queryExternalLibrarySymbols(
+  state: SymbolIndexState,
+  libraryName?: string
+): SymbolEntry[] {
+  if (!state.externalLibraries) {
+    return [];
+  }
+  
+  const results: SymbolEntry[] = [];
+  
+  for (const fileSymbols of state.externalLibraries.files) {
+    // If library name is specified, filter by it
+    if (libraryName) {
+      const isTargetLibrary = fileSymbols.uri.includes(`node_modules/${libraryName}/`) ||
+                             fileSymbols.uri.includes(`node_modules/@types/${libraryName}/`);
+      if (!isTargetLibrary) {
+        continue;
+      }
+    }
+    
+    results.push(...fileSymbols.symbols);
+  }
+  
+  return results;
 }

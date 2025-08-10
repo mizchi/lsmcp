@@ -7,6 +7,8 @@ export * from "./memoryTools.ts";
 export * from "./fileSystemTools.ts";
 export * from "./symbolTools.ts";
 export * from "./indexTools.ts";
+export * from "./externalLibraryTools.ts";
+export * from "./symbolResolverTools.ts";
 
 // Re-export all tools as a collection
 import type { ToolDef } from "../utils/mcpHelpers.ts";
@@ -31,6 +33,16 @@ import {
   searchForPatternTool,
 } from "./fileSystemTools.ts";
 import { getSymbolsOverviewTool, querySymbolsTool } from "./symbolTools.ts";
+import {
+  indexExternalLibrariesToolDef,
+  getTypescriptDependenciesToolDef,
+  searchExternalLibrarySymbolsToolDef,
+} from "./externalLibraryTools.ts";
+import {
+  resolveSymbolToolDef,
+  getAvailableExternalSymbolsToolDef,
+  parseImportsToolDef,
+} from "./symbolResolverTools.ts";
 
 export const serenityTools = {
   // Symbol editing tools
@@ -53,6 +65,16 @@ export const serenityTools = {
   // Symbol overview tools
   getSymbolsOverview: getSymbolsOverviewTool,
   querySymbols: querySymbolsTool,
+
+  // External library tools
+  indexExternalLibraries: indexExternalLibrariesToolDef,
+  getTypescriptDependencies: getTypescriptDependenciesToolDef,
+  searchExternalLibrarySymbols: searchExternalLibrarySymbolsToolDef,
+
+  // Symbol resolver tools
+  resolveSymbol: resolveSymbolToolDef,
+  getAvailableExternalSymbols: getAvailableExternalSymbolsToolDef,
+  parseImports: parseImportsToolDef,
 
   // Internal tools removed - not for MCP exposure:
   // - searchCachedSymbols

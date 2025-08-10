@@ -556,6 +556,8 @@ describe("searchSymbolFromIndexTool", () => {
         file: "file.ts",
         containerName: "TestClass",
         includeChildren: false,
+        includeExternal: false,
+        onlyExternal: false,
         root: "/test",
       });
 

@@ -122,6 +122,18 @@ const searchSymbolSchema = z.object({
     .boolean()
     .default(true)
     .describe("Include child symbols in results"),
+  includeExternal: z
+    .boolean()
+    .default(false)
+    .describe("Include external library symbols (from node_modules) in results"),
+  onlyExternal: z
+    .boolean()
+    .default(false)
+    .describe("Only return external library symbols"),
+  sourceLibrary: z
+    .string()
+    .describe("Filter by specific library name (e.g., 'neverthrow', '@types/node')")
+    .optional(),
   root: z.string().describe("Root directory for the project").optional(),
 });
 
@@ -140,6 +152,9 @@ export const searchSymbolFromIndexTool: ToolDef<typeof searchSymbolSchema> = {
     file,
     containerName,
     includeChildren,
+    includeExternal,
+    onlyExternal,
+    sourceLibrary,
     root,
   }) => {
     const rootPath = root || process.cwd();
@@ -257,6 +272,9 @@ export const searchSymbolFromIndexTool: ToolDef<typeof searchSymbolSchema> = {
       containerName,
       includeChildren,
       file,
+      includeExternal,
+      onlyExternal,
+      sourceLibrary,
     };
 
     // Use the parseSymbolKind function to handle case-insensitive strings
