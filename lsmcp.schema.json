@@ -316,6 +316,12 @@
           "additionalProperties": false,
           "description": "Symbol filtering configuration",
           "markdownDescription": "Symbol filtering configuration"
+        },
+        "memoryAdvanced": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable advanced memory features with database storage for project reports",
+          "markdownDescription": "Enable advanced memory features with database storage for project reports. When enabled, provides comprehensive project analysis and reporting tools with SQLite-based storage in `.lsmcp/cache/memory.db`. Reports include mechanical metrics, AI analysis, and can be marked as deprecated."
         }
       },
       "additionalProperties": false
@@ -356,6 +362,13 @@
           "Constant"
         ],
         "includeOnlyTopLevel": true
+      }
+    },
+    {
+      "preset": "tsgo",
+      "memoryAdvanced": true,
+      "settings": {
+        "autoIndex": true
       }
     }
   ]
