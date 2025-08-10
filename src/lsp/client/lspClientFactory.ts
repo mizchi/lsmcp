@@ -66,6 +66,42 @@ export async function createTypescriptLSPClient(
 }
 
 /**
+ * Wrap an externally spawned LSP server process with an LSP client
+ * This does NOT spawn a process; it uses the provided ChildProcess.
+ *
+ * @param root Project root directory
+ * @param lspProcess Externally spawned LSP server process
+ * @param languageId Language ID for the client (default: "typescript")
+ * @returns LSPClientInstance with client and the provided process
+ */
+export async function createLSPClientFromProcess(
+  root: string,
+  lspProcess: ChildProcess,
+  languageId: string = "typescript",
+): Promise<LSPClientInstance> {
+  const client = createLSPClient({
+    rootPath: root,
+    process: lspProcess,
+    languageId,
+  });
+
+  try {
+    await client.start();
+    return { client, process: lspProcess };
+  } catch (error) {
+    // Ensure process is cleaned up if start fails
+    try {
+      if (lspProcess && !lspProcess.killed) {
+        lspProcess.kill();
+      }
+    } catch {
+      // ignore kill errors
+    }
+    throw errors.lspStartError(languageId, String(error));
+  }
+}
+
+/**
  * Safely stop an LSP client and its process
  * @param clientInstance The LSP client instance to stop
  */

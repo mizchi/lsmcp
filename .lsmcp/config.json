@@ -1,4 +1,5 @@
 {
   "$schema": "../lsmcp.schema.json",
-  "preset": "tsgo"
+  "preset": "tsgo",
+  "memoryAdvanced": true
 }

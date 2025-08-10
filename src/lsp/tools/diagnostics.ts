@@ -6,6 +6,7 @@ import { DiagnosticResultBuilder } from "../../shared/types/resultBuilders.ts";
 import { getActiveClient, getLanguageIdFromPath } from "../lspClient.ts";
 import { defaultLog as log, LogLevel } from "../debugLogger.ts";
 import { waitForDiagnosticsWithRetry } from "../diagnosticUtils.ts";
+import type { LSPClient } from "../lspTypes.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -48,6 +49,7 @@ interface GetDiagnosticsSuccess {
  */
 async function getDiagnosticsWithLSPV2(
   request: GetDiagnosticsRequest,
+  lspClient?: LSPClient,
 ): Promise<Result<GetDiagnosticsSuccess, string>> {
   const startTime = Date.now();
   const timeout = request.timeout || 5000;
@@ -61,7 +63,7 @@ async function getDiagnosticsWithLSPV2(
       filePath: request.filePath,
     });
 
-    const client = getActiveClient();
+    const client = lspClient ?? getActiveClient();
     const languageId = getLanguageIdFromPath(request.filePath);
 
     // Check if document is already open

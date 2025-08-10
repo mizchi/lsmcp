@@ -26,6 +26,9 @@ export interface LSPOperationOptions<T> {
   /** Timeout for the operation (ms) */
   timeout?: number;
 
+  /** Explicit LSP client to use. If omitted, uses active client */
+  client?: LSPClient;
+
   /** The actual LSP operation to perform */
   operation: (client: LSPClient) => Promise<T>;
 
@@ -52,14 +55,7 @@ export interface LSPOperationOptions<T> {
 export async function withLSPOperation<T>(
   options: LSPOperationOptions<T>,
 ): Promise<T> {
-  const client = getActiveClient();
-
-  if (!client) {
-    throw errors.lspNotRunning(
-      options.errorContext?.language || "unknown",
-      options.errorContext || {},
-    );
-  }
+  const client = options.client ?? getActiveClient();
 
   // Get server characteristics
   const characteristics = getServerCharacteristics(
@@ -118,6 +114,9 @@ export interface BatchLSPOperationOptions<T> {
   /** Wait time after opening all documents (ms) */
   waitTime?: number;
 
+  /** Explicit LSP client to use for the batch. If omitted, uses active client */
+  client?: LSPClient;
+
   /** The batch operation to perform */
   operation: (client: LSPClient) => Promise<T>;
 
@@ -145,14 +144,7 @@ export interface BatchLSPOperationOptions<T> {
 export async function withBatchLSPOperation<T>(
   options: BatchLSPOperationOptions<T>,
 ): Promise<T> {
-  const client = getActiveClient();
-
-  if (!client) {
-    throw errors.lspNotRunning(
-      options.errorContext?.language || "unknown",
-      options.errorContext || {},
-    );
-  }
+  const client = options.client ?? getActiveClient();
 
   // Get server characteristics
   const characteristics = getServerCharacteristics(

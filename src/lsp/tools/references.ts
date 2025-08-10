@@ -4,6 +4,7 @@ import { readFileSync } from "fs";
 import path from "path";
 import { getActiveClient } from "../lspClient.ts";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
+import type { LSPClient } from "../lspTypes.ts";
 import { ErrorContext, formatError } from "../../mcp/utils/errorHandler.ts";
 import { readFileWithMetadata } from "../../filesystem/fileOperations.ts";
 import { validateLineAndSymbol } from "../../shared/validation/validation.ts";
@@ -39,9 +40,10 @@ interface FindReferencesSuccess {
  */
 async function findReferencesWithLSP(
   request: FindReferencesRequest,
+  lspClient?: LSPClient,
 ): Promise<Result<FindReferencesSuccess, string>> {
   try {
-    const client = getActiveClient();
+    const client = lspClient ?? getActiveClient();
 
     // Read file content with metadata
     let fileContent: string;
@@ -149,6 +151,13 @@ async function findReferencesWithLSP(
     };
     return err(formatError(error, context));
   }
+}
+
+export async function findReferences(
+  request: FindReferencesRequest,
+  client?: LSPClient,
+): Promise<Result<FindReferencesSuccess, string>> {
+  return findReferencesWithLSP(request, client);
 }
 
 export const lspFindReferencesTool: ToolDef<typeof schema> = {

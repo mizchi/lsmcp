@@ -54,6 +54,7 @@ import type {
   LocationLink,
   DocumentSymbol,
   SymbolInformation,
+  LSPClient,
 } from "../lspTypes.ts";
 
 /**
@@ -111,9 +112,10 @@ function findSymbolAtPosition(
  */
 async function getDefinitionsWithLSP(
   request: GetDefinitionsRequest,
+  lspClient?: LSPClient,
 ): Promise<Result<GetDefinitionsSuccess, string>> {
   try {
-    const client = getActiveClient();
+    const client = lspClient ?? getActiveClient();
 
     // Read file content with metadata
     const { fileContent, fileUri } = readFileWithMetadata(
@@ -331,6 +333,13 @@ async function getDefinitionsWithLSP(
   } catch (error) {
     return err(error instanceof Error ? error.message : String(error));
   }
+}
+
+export async function getDefinitions(
+  request: GetDefinitionsRequest,
+  client?: LSPClient,
+): Promise<Result<GetDefinitionsSuccess, string>> {
+  return getDefinitionsWithLSP(request, client);
 }
 
 export const lspGetDefinitionsTool: ToolDef<typeof schema> = {
