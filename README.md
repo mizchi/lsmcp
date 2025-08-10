@@ -157,6 +157,8 @@ For a comprehensive configuration example, see [examples/full-lsmcp-config.json]
 
 lsmcp provides comprehensive MCP tools for code analysis and manipulation:
 
+Note: Tool names listed below are the raw MCP tool names (snake_case, e.g. get_hover). Some clients display them with a server-qualified prefix (e.g. mcp**lsmcp**get_hover). For naming conventions and module boundaries, see [`docs/TOOL_REFERENCE.md`](docs/TOOL_REFERENCE.md).
+
 ### Core LSP Tools
 
 - **get_hover** - Get type information and documentation for symbols
