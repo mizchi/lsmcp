@@ -1,3 +1,53 @@
+## [0.10.0-rc.0](https://github.com/mizchi/lsmcp/compare/v0.9.4...v0.10.0-rc.0) (2025-01-10)
+
+### 🚀 Features
+
+* **Advanced Memory Report System**: Comprehensive project analysis and reporting system
+  - Store project snapshots with mechanical metrics and AI analysis
+  - SQLite-based storage in `.lsmcp/cache/memory.db`
+  - Title and summary fields for better report identification
+  - Duplicate prevention using unique commit hash constraints
+  - Deprecated flag system for marking outdated reports
+  - Reports are excluded from git repository (temporary investigation artifacts)
+
+* **Report Management Tools**
+  - `generate_report`: Create comprehensive project reports with optional AI analysis
+  - `get_latest_report`: Retrieve the most recent report for current branch
+  - `get_report_history`: View historical reports with pagination
+  - `get_all_reports`: List all reports with filtering and sorting options
+  - `get_report_details`: Get complete details of a specific report
+  - `search_reports_by_keyword`: Full-text search across reports
+  - `search_reports_by_date`: Find reports within date ranges
+  - `get_report_by_commit`: Retrieve report for specific commit
+  - `update_ai_analysis`: Add or update AI analysis for existing reports
+  - `get_memory_stats`: View database statistics
+
+* **Deprecated Report Management**
+  - `deprecate_report`: Mark reports as deprecated with reason
+  - `undeprecate_report`: Remove deprecated status from reports
+  - `get_deprecated_reports`: List all deprecated reports
+  - `withDeprecated` parameter: Control inclusion of deprecated reports in searches
+
+### 📚 Documentation
+
+* **Report System Documentation**: Comprehensive documentation in English and Japanese
+  - Clear definition of reports as temporary investigation artifacts
+  - Usage examples and best practices
+  - Comparison with other documentation types
+
+### ⚙️ Configuration
+
+* **Advanced Memory Features**: Enable with `memoryAdvanced: true` in `.lsmcp/config.json`
+  - Automatic `.gitignore` configuration for cache directory
+  - SQLite database for persistent storage
+
+## [0.9.4](https://github.com/mizchi/lsmcp/compare/v0.9.3...v0.9.4) (2025-01-10)
+
+### Features
+
+* External library indexing and symbol resolution for TypeScript
+* Multi-language external library support preparation
+
 ## [0.9.3](https://github.com/mizchi/lsmcp/compare/v0.9.0...v0.9.3) (2025-08-07)
 
 
