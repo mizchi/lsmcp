@@ -109,6 +109,12 @@ export const configSchema = z.object({
     .optional()
     .describe("Symbol filtering configuration"),
 
+  /** Advanced memory features configuration */
+  memoryAdvanced: z
+    .boolean()
+    .default(false)
+    .describe("Enable advanced memory features with database storage"),
+
   /** Language-specific features configuration */
   languageFeatures: z
     .object({
@@ -217,6 +223,7 @@ export const DEFAULT_CONFIG: LSMCPConfig = {
   },
   symbolFilter: DEFAULT_SYMBOL_FILTER,
   ignorePatterns: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
+  memoryAdvanced: false, // Default to disabled
   languageFeatures: {}, // Default to no language features enabled
 };
 

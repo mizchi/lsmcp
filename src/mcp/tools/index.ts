@@ -38,6 +38,7 @@ import {
   getTypescriptDependenciesToolDef,
   searchExternalLibrarySymbolsToolDef,
 } from "./externalLibraryTools.ts";
+import { getAdvancedMemoryToolsIfEnabled } from "./advancedMemoryTools.ts";
 import {
   resolveSymbolToolDef,
   getAvailableExternalSymbolsToolDef,
@@ -94,6 +95,7 @@ export function getSerenityTools(config?: {
     go?: { enabled: boolean };
     python?: { enabled: boolean };
   };
+  memoryAdvanced?: boolean;
 }): Record<string, ToolDef<any>> {
   const tools = { ...coreTools };
 
@@ -106,6 +108,14 @@ export function getSerenityTools(config?: {
   // if (config?.languageFeatures?.rust?.enabled) {
   //   Object.assign(tools, languageSpecificTools.rust);
   // }
+
+  // Add advanced memory tools if enabled
+  if (config?.memoryAdvanced) {
+    const advancedMemoryTools = getAdvancedMemoryToolsIfEnabled(config);
+    for (const tool of advancedMemoryTools) {
+      (tools as any)[tool.name] = tool;
+    }
+  }
 
   return tools;
 }
@@ -138,6 +148,7 @@ export function getSerenityToolsList(config?: {
     go?: { enabled: boolean };
     python?: { enabled: boolean };
   };
+  memoryAdvanced?: boolean;
 }): ToolDef<any>[] {
   const tools = getSerenityTools(config);
   return Object.values(tools);

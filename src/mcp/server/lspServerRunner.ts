@@ -80,9 +80,16 @@ export async function runLanguageServerWithConfig(
     filteredLspTools = capabilityFilter.filterTools(filteredLspTools);
 
     // Get Serenity tools based on config
+    const serenityToolsConfig: any = {};
+    if (config.languageFeatures) {
+      serenityToolsConfig.languageFeatures = config.languageFeatures;
+    }
+    if ((config as any).memoryAdvanced) {
+      serenityToolsConfig.memoryAdvanced = (config as any).memoryAdvanced;
+    }
     const serenityTools = getSerenityToolsList(
-      config.languageFeatures
-        ? { languageFeatures: config.languageFeatures }
+      Object.keys(serenityToolsConfig).length > 0
+        ? serenityToolsConfig
         : undefined,
     );
 
