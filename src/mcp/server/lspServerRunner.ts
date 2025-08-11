@@ -3,7 +3,10 @@
  */
 
 import { spawn } from "child_process";
-import { initialize as initializeLSPClient } from "@lsmcp/lsp-client";
+import {
+  createLSPClient,
+  initialize as initializeGlobalClient,
+} from "@lsmcp/lsp-client";
 import { debug as debugLog, type ToolDef } from "../utils/mcpHelpers.ts";
 import { ErrorContext, formatError } from "../utils/errorHandler.ts";
 import {
@@ -52,14 +55,16 @@ export async function runLanguageServerWithConfig(
       },
     });
 
-    // Initialize LSP client with the spawned process
-    await initializeLSPClient(
-      projectRoot,
-      lspProcess,
-      config.id,
-      config.initializationOptions,
-      config.serverCharacteristics,
-    );
+    // Create and initialize LSP client with the spawned process
+    const client = createLSPClient({
+      rootPath: projectRoot,
+      process: lspProcess,
+      languageId: config.id,
+      initializationOptions: config.initializationOptions,
+      serverCharacteristics: config.serverCharacteristics,
+    });
+
+    await initializeGlobalClient(client);
 
     // Start MCP server
     const { createMcpServerManager } = await import(
@@ -196,13 +201,16 @@ export async function runLanguageServer(
     // Initialize LSP client with the spawned process
     const initOptions = adapter?.initializationOptions || undefined;
     const serverCharacteristics = adapter?.serverCharacteristics || undefined;
-    await initializeLSPClient(
-      projectRoot,
-      lspProcess,
-      language,
-      initOptions,
-      serverCharacteristics,
-    );
+
+    const client = createLSPClient({
+      rootPath: projectRoot,
+      process: lspProcess,
+      languageId: language,
+      initializationOptions: initOptions,
+      serverCharacteristics: serverCharacteristics,
+    });
+
+    await initializeGlobalClient(client);
 
     // Start MCP server
     const { createMcpServerManager } = await import(
@@ -297,8 +305,13 @@ export async function runCustomLspServer(
       },
     });
 
-    // Initialize LSP client with the spawned process
-    await initializeLSPClient(projectRoot, lspProcess);
+    // Create and initialize LSP client with the spawned process
+    const client = createLSPClient({
+      rootPath: projectRoot,
+      process: lspProcess,
+    });
+
+    await initializeGlobalClient(client);
 
     // Start MCP server
     const { createMcpServerManager } = await import(

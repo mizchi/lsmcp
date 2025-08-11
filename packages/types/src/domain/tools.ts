@@ -60,7 +60,7 @@ export interface MCPCapabilities {
 }
 
 // Common tool parameter schemas
-export const commonSchemas = {
+export const toolSchemas = {
   root: z.string().describe("Root directory for resolving relative paths"),
   filePath: z.string().describe("File path (relative to root)"),
   line: z.union([

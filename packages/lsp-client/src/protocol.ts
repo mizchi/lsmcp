@@ -2,7 +2,7 @@
  * LSP protocol message processing utilities
  */
 
-import { getErrorMessage } from "./utils/errors.ts";
+import { getErrorMessage } from "@lsmcp/types";
 
 interface ProcessedMessage {
   headers: Record<string, string>;

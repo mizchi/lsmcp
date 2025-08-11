@@ -60,7 +60,6 @@ async function handleDeleteSymbol({
 
   // Read the file content
   const content = await fs.readFile(absolutePath, "utf-8");
-  const lines = content.split("\n");
 
   // Open the document in LSP
   client.openDocument(fileUri, content);
@@ -74,7 +73,7 @@ async function handleDeleteSymbol({
     const resolvedLine = lineIndex + 1; // Convert back to 1-based
 
     // Find the symbol position on the line
-    const lineContent = lines[resolveResult.lineIndex];
+    const lineContent = lines[lineIndex];
     const symbolIndex = lineContent.indexOf(target);
 
     if (symbolIndex === -1) {
@@ -85,7 +84,7 @@ async function handleDeleteSymbol({
 
     // Create position for the symbol
     const position: Position = {
-      line: resolveResult.lineIndex, // LSP uses 0-based line numbers
+      line: lineIndex, // LSP uses 0-based line numbers
       character: symbolIndex,
     };
 

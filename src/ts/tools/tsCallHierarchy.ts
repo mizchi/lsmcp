@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
-import { commonSchemas } from "../../shared/types/schemas.ts";
+import { commonSchemas } from "@lsmcp/types";
 import { relative } from "path";
 import { Position } from "vscode-languageserver-types";
 import { readFileWithMetadata } from "../../filesystem/fileOperations.ts";

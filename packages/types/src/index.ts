@@ -9,6 +9,12 @@ export * from "./domain/index.ts";
 // Shared utilities
 export * from "./shared/index.ts";
 
+// Constants
+export * from "./constants/config.ts";
+export * from "./constants/diagnostics.ts";
+export * from "./constants/indexer.ts";
+export * from "./constants/lsp.ts";
+
 // Convenience re-exports
 export type {
   // LSP Protocol
@@ -78,6 +84,11 @@ export type {
   MCPServer,
   MCPRequest,
   MCPResponse,
+} from "./domain/tools.ts";
+
+export {
+  // Tool schemas
+  toolSchemas,
 } from "./domain/tools.ts";
 
 export type {

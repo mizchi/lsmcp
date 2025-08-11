@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { ToolDef } from "../../mcp/utils/mcpHelpers.ts";
-import { commonSchemas } from "../../shared/types/schemas.ts";
+import { commonSchemas } from "@lsmcp/types";
 import { CodeAction, Range, WorkspaceEdit } from "vscode-languageserver-types";
 import { readFileSync, writeFileSync } from "fs";
 import { errors } from "../../shared/errors/index.ts";

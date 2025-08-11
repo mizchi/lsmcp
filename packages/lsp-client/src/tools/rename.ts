@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
 import { getActiveClient } from "../globalClientManager.ts";
+import { applyTextEdits } from "../../../../src/shared/text/applyTextEdits.ts";
 // Helper functions
 function parseLineNumber(content: string, line: number | string): number {
   if (typeof line === "number") {
@@ -43,47 +44,10 @@ function findTargetInFile(
   throw new Error(`Target "${target}" not found in file`);
 }
 
-function applyTextEdits(content: string, edits: any[]): string {
-  const lines = content.split("\n");
-  const sortedEdits = [...edits].sort((a, b) => {
-    if (a.range.start.line !== b.range.start.line) {
-      return b.range.start.line - a.range.start.line;
-    }
-    return b.range.start.character - a.range.start.character;
-  });
-
-  for (const edit of sortedEdits) {
-    const startLine = edit.range.start.line;
-    const endLine = edit.range.end.line;
-    const startChar = edit.range.start.character;
-    const endChar = edit.range.end.character;
-
-    if (startLine === endLine) {
-      const line = lines[startLine] || "";
-      lines[startLine] =
-        line.substring(0, startChar) + edit.newText + line.substring(endChar);
-    } else {
-      const startLineText = lines[startLine] || "";
-      const endLineText = lines[endLine] || "";
-      const newLineText =
-        startLineText.substring(0, startChar) +
-        edit.newText +
-        endLineText.substring(endChar);
-      lines.splice(startLine, endLine - startLine + 1, newLineText);
-    }
-  }
-
-  return lines.join("\n");
-}
 import type { ToolDef } from "../client/toolFactory.ts";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import path from "path";
-import {
-  Position,
-  TextDocumentEdit,
-  TextEdit,
-  WorkspaceEdit,
-} from "@lsmcp/types/lsp";
+import { Position, TextEdit, WorkspaceEdit } from "@lsmcp/types/lsp";
 import { debug } from "../utils/container-helpers.ts";
 
 const schema = z.object({
@@ -128,13 +92,9 @@ async function performRenameWithoutLine(
     const lines = fileContent.split("\n");
 
     // Find target text in file
-    const targetResult = findTargetInFile(lines, request.target);
-    if ("error" in targetResult) {
-      return err(`${targetResult.error} in ${request.filePath}`);
-    }
-
-    const { lineIndex: targetLine, characterIndex: symbolPosition } =
-      targetResult;
+    const targetResult = findTargetInFile(fileContent, request.target);
+    const targetLine = targetResult.line;
+    const symbolPosition = targetResult.character;
 
     return performRenameAtPosition(
       request,
@@ -161,27 +121,12 @@ async function performRenameWithLine(
     const fileUri = `file://${absolutePath}`;
 
     // Parse line parameter
-    const lineResult = parseLineNumber(fileContent, request.line!);
-    if ("error" in lineResult) {
-      return err(
-        `Line parameter "${String(
-          request.line,
-        )}" not found in ${request.filePath}: ${lineResult.error}`,
-      );
-    }
-
-    const { targetLine, lineText } = lineResult;
+    const targetLine = parseLineNumber(fileContent, request.line!);
+    const lines = fileContent.split("\n");
+    const lineText = lines[targetLine] || "";
 
     // Find symbol position in line
-    const symbolResult = findSymbolInLine(lineText, request.target);
-    if ("error" in symbolResult) {
-      return err(
-        `Symbol "${request.target}" not found on line ${String(
-          targetLine + 1,
-        )}: ${symbolResult.error}`,
-      );
-    }
-    const symbolPosition = symbolResult.characterIndex;
+    const symbolPosition = findSymbolInLine(lineText, request.target);
 
     return performRenameAtPosition(
       request,
@@ -318,7 +263,7 @@ async function applyWorkspaceEdit(
 
   if (workspaceEdit.documentChanges) {
     for (const change of workspaceEdit.documentChanges) {
-      if (TextDocumentEdit.is(change) && change.textDocument?.uri) {
+      if ("textDocument" in change && change.textDocument?.uri) {
         const filePath = change.textDocument.uri.replace("file://", "");
         if (!allFileContents.has(filePath)) {
           const content = readFileSync(filePath, "utf-8");
@@ -350,7 +295,11 @@ async function applyWorkspaceEdit(
   // Process changes from WorkspaceEdit.documentChanges
   if (workspaceEdit.documentChanges) {
     for (const change of workspaceEdit.documentChanges) {
-      if (TextDocumentEdit.is(change) && change.textDocument?.uri) {
+      if (
+        "textDocument" in change &&
+        "edits" in change &&
+        change.textDocument?.uri
+      ) {
         const filePath = change.textDocument.uri.replace("file://", "");
         const lines = allFileContents.get(filePath);
         if (!lines) continue;

@@ -59,11 +59,7 @@ const mockWithTemporaryDocument = vi.mocked(
 mockWithTemporaryDocument.mockImplementation(
   async (_rootPath, _filePath, callback) => {
     // For tests, just call the callback with a mocked client
-    return await callback({
-      getDocumentSymbols: mockGetDocumentSymbols,
-      getDefinition: vi.fn(),
-      findReferences: vi.fn(),
-    });
+    return await callback();
   },
 );
 

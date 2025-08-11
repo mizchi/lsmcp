@@ -7,6 +7,7 @@ import type { ToolDef } from "../client/toolFactory.ts";
 import type { LSPClient } from "../lspTypes.ts";
 import { ErrorContext, formatError } from "../utils/container-helpers.ts";
 import { pathToFileURL } from "url";
+import { validateLineAndSymbol } from "../utils/validation.ts";
 
 // Helper functions
 function readFileWithMetadata(root: string, filePath: string) {
@@ -14,36 +15,6 @@ function readFileWithMetadata(root: string, filePath: string) {
   const fileContent = readFileSync(absolutePath, "utf-8");
   const fileUri = pathToFileURL(absolutePath).toString();
   return { fileContent, fileUri, absolutePath };
-}
-
-function validateLineAndSymbol(
-  content: string,
-  line: number | string,
-  symbolName: string,
-  filePath: string,
-) {
-  const lines = content.split("\n");
-  let lineIndex: number;
-
-  if (typeof line === "number") {
-    lineIndex = line - 1;
-  } else {
-    lineIndex = lines.findIndex((l) => l.includes(line));
-    if (lineIndex === -1) {
-      throw new Error(`Line containing "${line}" not found in ${filePath}`);
-    }
-  }
-
-  const lineContent = lines[lineIndex];
-  const symbolIndex = lineContent.indexOf(symbolName);
-
-  if (symbolIndex === -1) {
-    throw new Error(
-      `Symbol "${symbolName}" not found on line ${lineIndex + 1} in ${filePath}`,
-    );
-  }
-
-  return { lineIndex, symbolIndex };
 }
 
 const schema = z.object({

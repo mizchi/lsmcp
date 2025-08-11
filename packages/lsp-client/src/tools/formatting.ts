@@ -5,39 +5,7 @@ import { pathToFileURL } from "url";
 import { FormattingOptions, TextEdit } from "@lsmcp/types/lsp";
 import type { ToolDef } from "../client/toolFactory.ts";
 import { getLSPClient } from "../lspClient.ts";
-// Helper function
-function applyTextEdits(content: string, edits: TextEdit[]): string {
-  const lines = content.split("\n");
-  const sortedEdits = [...edits].sort((a, b) => {
-    if (a.range.start.line !== b.range.start.line) {
-      return b.range.start.line - a.range.start.line;
-    }
-    return b.range.start.character - a.range.start.character;
-  });
-
-  for (const edit of sortedEdits) {
-    const startLine = edit.range.start.line;
-    const endLine = edit.range.end.line;
-    const startChar = edit.range.start.character;
-    const endChar = edit.range.end.character;
-
-    if (startLine === endLine) {
-      const line = lines[startLine] || "";
-      lines[startLine] =
-        line.substring(0, startChar) + edit.newText + line.substring(endChar);
-    } else {
-      const startLineText = lines[startLine] || "";
-      const endLineText = lines[endLine] || "";
-      const newLineText =
-        startLineText.substring(0, startChar) +
-        edit.newText +
-        endLineText.substring(endChar);
-      lines.splice(startLine, endLine - startLine + 1, newLineText);
-    }
-  }
-
-  return lines.join("\n");
-}
+import { applyTextEdits } from "../../../../src/shared/text/applyTextEdits.ts";
 
 const schemaShape = {
   root: z.string().describe("Root directory for resolving relative paths"),

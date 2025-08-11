@@ -55,7 +55,7 @@ function resolveFileAndSymbol(params: {
     if (typeof params.line === "number") {
       lineIndex = params.line - 1;
     } else {
-      lineIndex = lines.findIndex((l) => l.includes(params.line));
+      lineIndex = lines.findIndex((l) => l.includes(params.line as string));
       if (lineIndex === -1) {
         throw new Error(
           `Line containing "${params.line}" not found in ${params.filePath}`,

@@ -13,7 +13,6 @@ export {
   Position,
   Location,
   LocationLink,
-  Definition,
   integer,
   DocumentSymbol,
   SymbolKind,
@@ -28,7 +27,6 @@ export {
   Hover,
   MarkupContent,
   MarkedString,
-  SignatureHelp,
   SignatureInformation,
   ParameterInformation,
   CodeAction,
@@ -45,14 +43,22 @@ export {
   InlayHintKind,
   InlayHintLabelPart,
   SemanticTokens,
-  SemanticTokensEdit,
   DocumentHighlight,
   DocumentHighlightKind,
   DocumentLink,
-  CallHierarchyItem,
-  CallHierarchyIncomingCall,
-  CallHierarchyOutgoingCall,
-  TypeHierarchyItem,
-  TypeHierarchySupertypeParams,
-  TypeHierarchySubtypeParams,
 } from "vscode-languageserver-types";
+
+// Type aliases that are not exported at runtime from vscode-languageserver-types
+export type Definition = Location | Location[];
+export type SignatureHelp = {
+  signatures: SignatureInformation[];
+  activeSignature?: number;
+  activeParameter?: number;
+};
+export type CallHierarchyItem = any; // These types are not available in v3.17.5
+export type CallHierarchyIncomingCall = any;
+export type CallHierarchyOutgoingCall = any;
+export type TypeHierarchyItem = any;
+export type TypeHierarchySupertypeParams = any;
+export type TypeHierarchySubtypeParams = any;
+export type SemanticTokensEdit = any;

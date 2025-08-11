@@ -2,7 +2,7 @@
  * SQLite-based memory database for storing project reports and AI analysis
  */
 
-import Database from "better-sqlite3";
+import { DatabaseSync } from "node:sqlite";
 import { join } from "path";
 import { existsSync, mkdirSync } from "fs";
 import { v4 as uuidv4 } from "uuid";
@@ -10,7 +10,7 @@ import type { ReportRecord, ProjectOverview, AIAnalysis } from "./schema.ts";
 import { CREATE_TABLES } from "./schema.ts";
 
 export class MemoryDatabase {
-  private db: Database.Database;
+  private db: DatabaseSync;
   private projectPath: string;
 
   constructor(projectPath: string) {
@@ -24,7 +24,7 @@ export class MemoryDatabase {
     }
 
     // Initialize database
-    this.db = new Database(dbPath);
+    this.db = new DatabaseSync(dbPath);
     this.initializeTables();
   }
 

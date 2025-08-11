@@ -3,7 +3,6 @@ import {
   Command,
   CompletionItem,
   CompletionList,
-  Definition,
   Diagnostic,
   DocumentSymbol,
   DocumentUri,
@@ -16,11 +15,19 @@ import {
   MarkupContent,
   Position,
   Range,
-  SignatureHelp,
+  SignatureInformation,
   SymbolInformation,
   TextEdit,
   WorkspaceEdit,
 } from "vscode-languageserver-types";
+
+// Type aliases that are not exported at runtime
+export type Definition = Location | Location[];
+export type SignatureHelp = {
+  signatures: SignatureInformation[];
+  activeSignature?: number;
+  activeParameter?: number;
+};
 
 // Re-export commonly used types
 export {
@@ -33,6 +40,7 @@ export {
   LocationLink,
   Position,
   Range,
+  SignatureInformation,
   SymbolInformation,
   TextEdit,
   WorkspaceEdit,

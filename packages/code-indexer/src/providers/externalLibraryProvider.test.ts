@@ -12,7 +12,6 @@ import {
 import {
   createLSPClient,
   initialize as initializeLSPClient,
-  getLSPClient,
 } from "@lsmcp/lsp-client";
 import { spawn } from "child_process";
 
