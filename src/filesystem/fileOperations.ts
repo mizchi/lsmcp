@@ -20,7 +20,8 @@ interface FileReadResult {
 // Create a default fs implementation that matches FileSystemSync interface
 const defaultFs: FileSystemSync = {
   readFileSync: (path, encoding) => fs.readFileSync(path, encoding),
-  writeFileSync: (path, data, encoding) => fs.writeFileSync(path, data, encoding),
+  writeFileSync: (path, data, encoding) =>
+    fs.writeFileSync(path, data, encoding),
   existsSync: (path) => fs.existsSync(path),
   mkdirSync: (path, options) => fs.mkdirSync(path, options),
   unlinkSync: (path) => fs.unlinkSync(path),

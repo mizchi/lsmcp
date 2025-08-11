@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { commonSchemas } from "@lsmcp/types/validators";
 import { err, ok, type Result } from "neverthrow";
 import { readFileSync } from "fs";
 import path from "path";
@@ -17,24 +18,17 @@ function readFileWithMetadata(root: string, filePath: string) {
 }
 
 const schema = z.object({
-  root: z.string().describe("Root directory for resolving relative paths"),
-  filePath: z
-    .string()
-    .describe("File path containing the symbol (relative to root)"),
-  line: z
-    .union([z.number(), z.string()])
-    .describe("Line number (1-based) or string to match in the line"),
-  symbolName: z.string().describe("Name of the symbol to get definitions for"),
-  before: z
-    .number()
-    .optional()
-    .describe("Number of lines to show before the definition"),
-  after: z
-    .number()
-    .optional()
-    .describe("Number of lines to show after the definition"),
-  include_body: z
-    .boolean()
+  root: commonSchemas.root,
+  filePath: commonSchemas.filePath.describe(
+    "File path containing the symbol (relative to root)",
+  ),
+  line: commonSchemas.line,
+  symbolName: commonSchemas.symbolName.describe(
+    "Name of the symbol to get definitions for",
+  ),
+  before: commonSchemas.before.optional(),
+  after: commonSchemas.after.optional(),
+  include_body: commonSchemas.includeBody
     .optional()
     .describe(
       "Include the full body of the symbol (for classes, functions, interfaces)",

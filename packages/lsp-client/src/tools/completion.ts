@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { CompletionItem, CompletionItemKind } from "@lsmcp/types/lsp";
+import { commonSchemas } from "@lsmcp/types/validators";
 import type { ToolDef } from "../client/toolFactory.ts";
 import { getLSPClient } from "../lspClient.ts";
 import { loadFileContext } from "../lsp-utils/fileContext.ts";
 import { withTemporaryDocument } from "../lsp-utils/documentManager.ts";
 import { resolveLineIndexOrThrow } from "../lsp-utils/lineResolver.ts";
-import { commonSchemas } from "../lsp-utils/schemas.ts";
 import { createAdvancedCompletionHandler } from "../commands/completion.ts";
 
 const schema = z.object({

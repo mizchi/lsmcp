@@ -4,10 +4,10 @@ import {
   SymbolInformation,
   SymbolKind,
 } from "@lsmcp/types/lsp";
+import { fileLocationSchema } from "@lsmcp/types/validators";
 import type { ToolDef } from "../client/toolFactory.ts";
 import { loadFileContext } from "../lsp-utils/fileContext.ts";
 import { withTemporaryDocument } from "../lsp-utils/documentManager.ts";
-import { fileLocationSchema } from "../lsp-utils/schemas.ts";
 
 // Simple formatting functions
 function formatRange(range: any): string {

@@ -6,14 +6,81 @@ export * from "./lsp/index.ts";
 // Domain types
 export * from "./domain/index.ts";
 
-// Shared utilities
-export * from "./shared/index.ts";
+// Shared utilities (except schemas which are now in validators)
+export {
+  // Error utilities
+  getErrorMessage,
+  isErrorWithCode,
+  formatError,
+  LSMCPError,
+  LSPClientError,
+  FileSystemError,
+  IndexingError,
+  ValidationError,
+  TimeoutError,
+  // Result utilities
+  Ok,
+  Err,
+  isOk,
+  isErr,
+  unwrap,
+  unwrapOr,
+  map,
+  mapErr,
+  tryAsync,
+  trySync,
+  // Type guards and utilities
+  isObject,
+  isString,
+  isNumber,
+  isBoolean,
+  isArray,
+  isFunction,
+  isDefined,
+  isNotNull,
+  isNotNullish,
+  sleep,
+  debounce,
+  throttle,
+  memoize,
+} from "./shared/index.ts";
 
 // Constants
 export * from "./constants/config.ts";
 export * from "./constants/diagnostics.ts";
 export * from "./constants/indexer.ts";
 export * from "./constants/lsp.ts";
+
+// Validators (Zod schemas) - but avoid conflicts
+export {
+  // LSP schemas
+  lspSchemas,
+  commonSchemas,
+  fileLocationSchema,
+  symbolLocationSchema,
+  definitionSchema,
+  hoverSchema,
+  diagnosticsSchema,
+  formattingOptionsSchema,
+  // Indexer schemas
+  indexFilesSchema,
+  searchSymbolSchema,
+  clearIndexSchema,
+  // Config schemas
+  configSchema,
+  adapterConfigSchema,
+  serverCharacteristicsSchema,
+  memoryConfigSchema,
+  indexConfigSchema,
+  // Memory schemas
+  listMemoriesSchema,
+  readMemorySchema,
+  writeMemorySchema,
+  deleteMemorySchema,
+  searchMemoriesSchema,
+  mergeMemoriesSchema,
+  compressMemorySchema,
+} from "./validators/index.ts";
 
 // Convenience re-exports
 export type {
@@ -96,48 +163,3 @@ export type {
   Result,
 } from "./shared/result.ts";
 
-// Re-export utilities
-export {
-  // Error utilities
-  getErrorMessage,
-  isErrorWithCode,
-  formatError,
-  LSMCPError,
-  LSPClientError,
-  FileSystemError,
-  IndexingError,
-  ValidationError,
-  TimeoutError,
-} from "./shared/errors.ts";
-
-export {
-  // Result utilities
-  Ok,
-  Err,
-  isOk,
-  isErr,
-  unwrap,
-  unwrapOr,
-  map,
-  mapErr,
-  tryAsync,
-  trySync,
-} from "./shared/result.ts";
-
-export {
-  // Type guards
-  isObject,
-  isString,
-  isNumber,
-  isBoolean,
-  isArray,
-  isFunction,
-  isDefined,
-  isNotNull,
-  isNotNullish,
-  // Utilities
-  sleep,
-  debounce,
-  throttle,
-  memoize,
-} from "./shared/utils.ts";
