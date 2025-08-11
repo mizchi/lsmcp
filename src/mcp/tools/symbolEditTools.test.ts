@@ -8,9 +8,9 @@ import {
   insertBeforeSymbolTool,
   insertAfterSymbolTool,
 } from "./symbolEditTools.ts";
-import * as symbolIndex from "../../indexer/symbolIndex.ts";
+import * as symbolIndex from "@lsmcp/code-indexer";
 
-vi.mock("../../indexer/symbolIndex.ts");
+vi.mock("@lsmcp/code-indexer");
 
 describe("symbolEditTools", () => {
   let testDir: string;
@@ -68,7 +68,7 @@ function standalone() {
   describe("replaceSymbolBody", () => {
     it("should replace a method body", async () => {
       // Mock querySymbols to return our test symbol
-      vi.mocked(symbolIndex.querySymbols).mockReturnValue([
+      vi.mocked(symbolIndex.queryLegacySymbols).mockReturnValue([
         {
           name: "TestClass",
           kind: 5, // Class
@@ -127,7 +127,7 @@ function standalone() {
     });
 
     it("should handle symbol not found", async () => {
-      vi.mocked(symbolIndex.querySymbols).mockReturnValue([]);
+      vi.mocked(symbolIndex.queryLegacySymbols).mockReturnValue([]);
 
       const result = await replaceSymbolBodyTool.execute({
         root: testDir,
@@ -146,7 +146,7 @@ function standalone() {
 
   describe("insertBeforeSymbol", () => {
     it("should insert content before a symbol", async () => {
-      vi.mocked(symbolIndex.querySymbols).mockReturnValue([
+      vi.mocked(symbolIndex.queryLegacySymbols).mockReturnValue([
         {
           name: "TestClass",
           kind: 5, // Class
@@ -207,7 +207,7 @@ function standalone() {
 
   describe("insertAfterSymbol", () => {
     it("should insert content after a symbol", async () => {
-      vi.mocked(symbolIndex.querySymbols).mockReturnValue([
+      vi.mocked(symbolIndex.queryLegacySymbols).mockReturnValue([
         {
           name: "TestClass",
           kind: 5, // Class
@@ -265,7 +265,7 @@ function standalone() {
 
   describe("error handling", () => {
     it("should handle file read errors", async () => {
-      vi.mocked(symbolIndex.querySymbols).mockReturnValue([
+      vi.mocked(symbolIndex.queryLegacySymbols).mockReturnValue([
         {
           name: "TestClass",
           kind: 5, // Class

@@ -3,13 +3,13 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { SymbolIndex } from "../../src/indexer/engine/SymbolIndex.ts";
+import { SymbolIndex } from "@lsmcp/code-indexer";
 import { SymbolKind } from "vscode-languageserver-types";
-import * as gitUtils from "../../src/indexer/utils/gitUtils.ts";
+import * as gitUtils from "../../packages/code-indexer/src/utils/gitUtils.ts";
 import { ok } from "neverthrow";
 
 // Mock git utilities
-vi.mock("../../src/indexer/utils/gitUtils.ts", () => ({
+vi.mock("../../packages/code-indexer/src/utils/gitUtils.ts", () => ({
   getGitHashAsync: vi.fn(),
   getModifiedFilesAsync: vi.fn(),
   getFileGitHash: vi.fn(),

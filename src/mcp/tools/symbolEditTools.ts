@@ -1,10 +1,13 @@
 import { z } from "zod";
 import type { ToolDef } from "../utils/mcpHelpers.ts";
 import type { SerenityEditResult } from "./regexEditTools.ts";
-import { getSymbolIndex, querySymbols } from "../../indexer/symbolIndex.ts";
+import {
+  getSymbolIndex,
+  queryLegacySymbols,
+  markFileModified,
+} from "@lsmcp/code-indexer";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { markFileModified } from "../../indexer/utils/autoIndex.ts";
 
 const replaceSymbolBodySchema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -29,7 +32,7 @@ export const replaceSymbolBodyTool: ToolDef<typeof replaceSymbolBodySchema> = {
       const absolutePath = resolve(root, relativePath);
 
       // Find the symbol using the index
-      const symbols = querySymbols(index, {
+      const symbols = queryLegacySymbols(index, {
         name: namePath.split("/").pop(),
         file: relativePath,
       });
@@ -126,7 +129,7 @@ export const insertBeforeSymbolTool: ToolDef<typeof insertBeforeSymbolSchema> =
         const absolutePath = resolve(root, relativePath);
 
         // Find the symbol
-        const symbols = querySymbols(index, {
+        const symbols = queryLegacySymbols(index, {
           name: namePath.split("/").pop(),
           file: relativePath,
         });
@@ -203,7 +206,7 @@ export const insertAfterSymbolTool: ToolDef<typeof insertAfterSymbolSchema> = {
       const absolutePath = resolve(root, relativePath);
 
       // Find the symbol
-      const symbols = querySymbols(index, {
+      const symbols = queryLegacySymbols(index, {
         name: namePath.split("/").pop(),
         file: relativePath,
       });

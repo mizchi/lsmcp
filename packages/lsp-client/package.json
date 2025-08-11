@@ -1,0 +1,20 @@
+{
+  "name": "@lsmcp/lsp-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@lsmcp/types": "workspace:*",
+    "vscode-languageserver-protocol": "^3.17.5",
+    "neverthrow": "^8.2.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5"
+  }
+}

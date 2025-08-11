@@ -11,11 +11,3 @@ export const LSP_SHUTDOWN_TIMEOUT = 5000; // 5 seconds
 export const DEFAULT_DOCUMENT_OPEN_DELAY = 1000; // ms
 export const DEFAULT_READINESS_CHECK_TIMEOUT = 500; // ms
 export const DEFAULT_OPERATION_TIMEOUT = 10000; // ms
-
-// LSP protocol constants
-export const LSP_JSONRPC_VERSION = "2.0";
-export const LSP_CLIENT_NAME = "lsp-client";
-export const LSP_CLIENT_VERSION = "0.1.0";
-
-// Language constants
-export const DEFAULT_LANGUAGE_ID = "plaintext";

@@ -2,9 +2,9 @@
  * Capability-based tool filtering
  */
 
-import type { ServerCapabilities } from "../../lsp/lspTypes.ts";
+import type { ServerCapabilities } from "@lsmcp/lsp-client";
 import type { ToolDef } from "../utils/mcpHelpers.ts";
-import { getLSPClient } from "../../lsp/lspClient.ts";
+import { getLSPClient } from "@lsmcp/lsp-client";
 import { debug } from "../utils/mcpHelpers.ts";
 
 /**

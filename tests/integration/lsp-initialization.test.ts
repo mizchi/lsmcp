@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { spawn } from "child_process";
-import { createLSPClient } from "../../src/lsp/lspClient.ts";
+import { createLSPClient } from "@lsmcp/lsp-client"; // from "lspClient.ts";
 import { writeFileSync, unlinkSync } from "fs";
 import { join } from "path";
 

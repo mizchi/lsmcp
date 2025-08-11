@@ -6,7 +6,7 @@ import {
   getOrCreateIndex,
   indexFiles,
   querySymbols as queryIndexSymbols,
-} from "../../indexer/mcp/IndexerAdapter.ts";
+} from "@lsmcp/code-indexer";
 import { vi } from "vitest";
 
 // Test fixture directory

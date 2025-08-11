@@ -1,6 +1,6 @@
 import { dirname, join, relative } from "path";
 import ignore, { type Ignore } from "ignore";
-import type { FileSystem } from "../api/fs-interface.ts";
+import type { FileSystemSync } from "@lsmcp/types/domain";
 import * as nodeFs from "fs";
 
 /**
@@ -13,7 +13,7 @@ export class GitignoreManager {
 
   constructor(
     private rootPath: string,
-    private fs: FileSystem = nodeFs as FileSystem,
+    private fs: FileSystemSync = nodeFs as FileSystemSync,
   ) {
     this.loadGitignoreHierarchy(rootPath);
   }

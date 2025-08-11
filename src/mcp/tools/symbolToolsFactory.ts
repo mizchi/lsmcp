@@ -4,12 +4,12 @@ import {
   getOrCreateIndex,
   indexFiles,
   querySymbols as queryIndexSymbols,
-} from "../../indexer/mcp/IndexerAdapter.ts";
-import type { SymbolQuery } from "../../indexer/engine/types.ts";
+  type SymbolQuery,
+} from "@lsmcp/code-indexer";
 import { resolve } from "node:path";
 import { SymbolKind } from "vscode-languageserver-types";
 import { glob, type FileSystemInterface } from "gitaware-glob";
-import type { FileSystemApi } from "../../filesystem/api/FileSystemApi.ts";
+import type { FileSystemApi } from "@lsmcp/types/domain";
 import { nodeFileSystemApi } from "../../filesystem/node/NodeFileSystemApi.ts";
 
 // Export for testing

@@ -11,18 +11,20 @@ import type {
   AdapterRegistry,
   ConfigLoader,
 } from "../config/loader/configLoader.ts";
-import { getOrCreateIndex } from "../indexer/mcp/IndexerAdapter.ts";
+import {
+  getOrCreateIndex,
+  SymbolIndex,
+  LSPSymbolProvider,
+  NodeFileSystem,
+  SQLiteCache,
+} from "@lsmcp/code-indexer";
 import { glob } from "gitaware-glob";
 import {
   detectProjectType,
   generateManualConfigBoilerplate,
 } from "./projectDetector.ts";
-import { createLSPClient, type LSPClient } from "../lsp/lspClient.ts";
+import { createLSPClient, type LSPClient } from "@lsmcp/lsp-client";
 import { spawn } from "child_process";
-import { SymbolIndex } from "../indexer/engine/SymbolIndex.ts";
-import { LSPSymbolProvider } from "../indexer/lsp/LSPSymbolProvider.ts";
-import { NodeFileSystem } from "../indexer/engine/NodeFileSystem.ts";
-import { SQLiteCache } from "../indexer/cache/SQLiteCache.ts";
 import { fileURLToPath } from "url";
 
 /**

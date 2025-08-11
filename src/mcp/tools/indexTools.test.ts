@@ -1,31 +1,91 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { searchSymbolFromIndexTool } from "./indexTools.ts";
-import * as IndexerAdapter from "../../indexer/mcp/IndexerAdapter.ts";
+import * as IndexerAdapter from "@lsmcp/code-indexer";
 import { SymbolKind } from "vscode-languageserver-types";
-import { getLSPClient } from "../../lsp/lspClient.ts";
-import { loadIndexConfig } from "../../indexer/config/configLoader.ts";
-import { getAdapterDefaultPattern } from "../../indexer/engine/adapterDefaults.ts";
+import { getLSPClient } from "@lsmcp/lsp-client";
+import { loadIndexConfig } from "@lsmcp/code-indexer";
+import { getAdapterDefaultPattern } from "@lsmcp/code-indexer";
 import { glob } from "gitaware-glob";
 
 // Mock the IndexerAdapter module
-vi.mock("../../indexer/mcp/IndexerAdapter.ts", () => ({
-  querySymbols: vi.fn(),
-  getIndexStats: vi.fn(),
-  updateIndexIncremental: vi.fn(),
-  getOrCreateIndex: vi.fn(),
-}));
+vi.mock("@lsmcp/code-indexer", () => {
+  const KIND_MAP: Record<string, number> = {
+    File: 1,
+    Module: 2,
+    Namespace: 3,
+    Package: 4,
+    Class: 5,
+    Method: 6,
+    Property: 7,
+    Field: 8,
+    Constructor: 9,
+    Enum: 10,
+    Interface: 11,
+    Function: 12,
+    Variable: 13,
+    Constant: 14,
+    String: 15,
+    Number: 16,
+    Boolean: 17,
+    Array: 18,
+    Object: 19,
+    Key: 20,
+    Null: 21,
+    EnumMember: 22,
+    Struct: 23,
+    Event: 24,
+    Operator: 25,
+    TypeParameter: 26,
+  };
+  const SYMBOL_KIND_NAMES = Object.keys(KIND_MAP);
+  const getSymbolKindName = (kind: number) => {
+    for (const [name, id] of Object.entries(KIND_MAP)) {
+      if (id === kind) return name;
+    }
+    return undefined;
+  };
+  const parseSymbolKind = (input: any) => {
+    const toKind = (s: string) => {
+      const key = SYMBOL_KIND_NAMES.find(
+        (k) => k.toLowerCase() === String(s).toLowerCase(),
+      );
+      if (!key) throw new Error(`Unknown symbol kind: ${s}`);
+      return KIND_MAP[key];
+    };
+    if (Array.isArray(input)) {
+      // If any non-string provided, simulate package behavior: reject numeric kinds explicitly
+      if (input.some((v) => typeof v !== "string")) {
+        throw new Error("Invalid kind type: number");
+      }
+      return input.map(toKind);
+    }
+    if (typeof input === "string") return [toKind(input)];
+    if (typeof input === "number") {
+      throw new Error("Invalid kind type: number");
+    }
+    throw new Error(`Invalid kind type: ${typeof input}`);
+  };
+
+  return {
+    // IndexerAdapter API
+    querySymbols: vi.fn(),
+    getIndexStats: vi.fn(),
+    updateIndexIncremental: vi.fn(),
+    getOrCreateIndex: vi.fn(),
+    // Config/helpers exposed from the same package entry
+    loadIndexConfig: vi.fn(),
+    getAdapterDefaultPattern: vi.fn(),
+
+    // Symbol kind helpers/constants used at module init time
+    SYMBOL_KIND_NAMES,
+    getSymbolKindName,
+    parseSymbolKind,
+  };
+});
 
 // Mock other dependencies
-vi.mock("../../lsp/lspClient.ts", () => ({
+vi.mock("@lsmcp/lsp-client", () => ({
   getLSPClient: vi.fn(),
-}));
-
-vi.mock("../../indexer/config/configLoader.ts", () => ({
-  loadIndexConfig: vi.fn(),
-}));
-
-vi.mock("../../indexer/engine/adapterDefaults.ts", () => ({
-  getAdapterDefaultPattern: vi.fn(),
 }));
 
 vi.mock("gitaware-glob", () => ({

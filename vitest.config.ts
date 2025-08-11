@@ -1,8 +1,27 @@
 import { defineConfig } from "vitest/config";
+import path from "node:path";
 
-const GLOBAL_IGNORED_FILES = ["tmp/**", "node_modules/**", "dist/**"];
+const GLOBAL_IGNORED_FILES = ["tmp/**", "node_modules/**", "dist/**", "**/node_modules/**"];
 
 export default defineConfig({
+  resolve: {
+    alias: [
+      // Runtime alias for the new package entry
+      {
+        find: "@lsmcp/code-indexer",
+        replacement: path.resolve(__dirname, "packages/code-indexer/src/index.ts"),
+      },
+      {
+        find: "@lsmcp/lsp-client",
+        replacement: path.resolve(__dirname, "packages/lsp-client/src/index.ts"),
+      },
+      // Alias to access repo root src as "lsmcp/*" from packages
+      {
+        find: /^lsmcp\//,
+        replacement: path.resolve(__dirname, "src/") + "/",
+      },
+    ],
+  },
   test: {
     exclude: GLOBAL_IGNORED_FILES,
     poolOptions: {
@@ -15,8 +34,8 @@ export default defineConfig({
         extends: true,
         test: {
           name: "unit",
-          includeSource: ["src/**/*.ts"],
-          include: ["src/**/*.test.ts"],
+          includeSource: ["src/**/*.ts", "packages/**/*.ts"],
+          include: ["src/**/*.test.ts", "packages/**/*.test.ts"],
         },
       },
       {
@@ -57,6 +76,15 @@ export default defineConfig({
           benchmark: {
             outputFile: "./bench-results.json",
           },
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "lsp-client",
+          include: ["packages/lsp-client/**/*.test.ts"],
+          exclude: [...GLOBAL_IGNORED_FILES],
+          testTimeout: 10000,
         },
       },
     ],

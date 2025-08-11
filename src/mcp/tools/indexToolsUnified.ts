@@ -4,14 +4,11 @@
 
 import { z } from "zod";
 import type { ToolDef } from "../utils/mcpHelpers.ts";
-import {
-  forceClearIndex,
-  getOrCreateIndex,
-} from "../../indexer/mcp/IndexerAdapter.ts";
+import { forceClearIndex, getOrCreateIndex } from "@lsmcp/code-indexer";
 import { glob } from "gitaware-glob";
-import { getLSPClient } from "../../lsp/lspClient.ts";
-import { loadIndexConfig } from "../../indexer/config/configLoader.ts";
-import { getAdapterDefaultPattern } from "../../indexer/engine/adapterDefaults.ts";
+import { getLSPClient } from "@lsmcp/lsp-client";
+import { loadIndexConfig } from "@lsmcp/code-indexer";
+import { getAdapterDefaultPattern } from "@lsmcp/code-indexer";
 
 // Unified index_symbols schema
 const indexSymbolsSchema = z.object({

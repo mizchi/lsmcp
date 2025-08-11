@@ -4,13 +4,13 @@ import {
   getLSPClient,
   initialize as initializeLSPClient,
   shutdown as shutdownLSPClient,
-} from "../../src/lsp/lspClient.ts";
-import { lspGetHoverTool } from "../../src/lsp/tools/hover.ts";
-import { lspFindReferencesTool } from "../../src/lsp/tools/references.ts";
-import { lspGetDefinitionsTool } from "../../src/lsp/tools/definitions.ts";
-import { lspGetDiagnosticsTool } from "../../src/lsp/tools/diagnostics.ts";
-import { lspRenameSymbolTool } from "../../src/lsp/tools/rename.ts";
-import { lspGetDocumentSymbolsTool } from "../../src/lsp/tools/documentSymbols.ts";
+} from "@lsmcp/lsp-client"; // from "lspClient.ts";
+import { lspGetHoverTool } from "@lsmcp/lsp-client"; // from "tools/hover.ts";
+import { lspFindReferencesTool } from "@lsmcp/lsp-client"; // from "tools/references.ts";
+import { lspGetDefinitionsTool } from "@lsmcp/lsp-client"; // from "tools/definitions.ts";
+import { lspGetDiagnosticsTool } from "@lsmcp/lsp-client"; // from "tools/diagnostics.ts";
+import { lspRenameSymbolTool } from "@lsmcp/lsp-client"; // from "tools/rename.ts";
+import { lspGetDocumentSymbolsTool } from "@lsmcp/lsp-client"; // from "tools/documentSymbols.ts";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";

@@ -1,15 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { getProjectOverviewTool } from "./projectOverview.ts";
-import * as IndexerAdapter from "../../indexer/mcp/IndexerAdapter.ts";
+import * as IndexerAdapter from "@lsmcp/code-indexer";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { SymbolKind } from "vscode-languageserver-types";
 
 // Mock the dependencies
-vi.mock("../../indexer/mcp/IndexerAdapter.ts", () => ({
+vi.mock("@lsmcp/code-indexer", () => ({
   getOrCreateIndex: vi.fn(),
   getIndexStats: vi.fn(),
   querySymbols: vi.fn(),
+  loadIndexConfig: vi.fn(),
+  getAdapterDefaultPattern: vi.fn(),
 }));
 
 vi.mock("fs/promises", () => ({
@@ -17,26 +19,21 @@ vi.mock("fs/promises", () => ({
   access: vi.fn(),
 }));
 
-vi.mock("../../lsp/lspClient.ts", () => ({
+vi.mock("@lsmcp/lsp-client", () => ({
   getLSPClient: vi.fn(),
 }));
 
-vi.mock("../../indexer/config/configLoader.ts", () => ({
-  loadIndexConfig: vi.fn(),
-}));
+/* loadIndexConfig is mocked via @lsmcp/code-indexer above */
 
-vi.mock("../../indexer/engine/adapterDefaults.ts", () => ({
-  getAdapterDefaultPattern: vi.fn(),
-}));
+/* getAdapterDefaultPattern is mocked via @lsmcp/code-indexer above */
 
 vi.mock("gitaware-glob", () => ({
   glob: vi.fn(),
 }));
 
 import { glob } from "gitaware-glob";
-import { getLSPClient } from "../../lsp/lspClient.ts";
-import { getAdapterDefaultPattern } from "../../indexer/engine/adapterDefaults.ts";
-import { loadIndexConfig } from "../../indexer/config/configLoader.ts";
+import { getLSPClient } from "@lsmcp/lsp-client";
+import { getAdapterDefaultPattern, loadIndexConfig } from "@lsmcp/code-indexer";
 
 describe("getProjectOverviewTool", () => {
   beforeEach(() => {

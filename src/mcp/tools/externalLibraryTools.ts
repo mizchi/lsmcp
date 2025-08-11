@@ -11,8 +11,9 @@ import {
   indexExternalLibrariesForState,
   getTypescriptDependencies,
   queryExternalLibrarySymbols,
-} from "../../indexer/symbolIndex.ts";
-import type { ExternalLibraryConfig } from "../../indexer/providers/externalLibraryProvider.ts";
+  getSymbolKindName,
+} from "@lsmcp/code-indexer";
+import type { ExternalLibraryConfig } from "@lsmcp/code-indexer";
 
 /**
  * Tool: Index external libraries (node_modules)
@@ -140,17 +141,31 @@ export async function handleIndexExternalLibraries(args: any) {
 
   const result = await indexExternalLibrariesForState(state, config);
 
+  // Convert libraries Map to array with explicit iteration to avoid TS inference issues
+  const librariesArray: Array<{
+    name: string;
+    version?: string;
+    filesCount: number;
+  }> = [];
+  for (const [name, info] of result.libraries as unknown as Iterable<
+    [string, any]
+  >) {
+    librariesArray.push({
+      name,
+      version: info?.version,
+      filesCount: Array.isArray(info?.typingsFiles)
+        ? info.typingsFiles.length
+        : 0,
+    });
+  }
+
   return JSON.stringify(
     {
       librariesIndexed: result.libraries.size,
       filesIndexed: result.files.length,
       totalSymbols: result.totalSymbols,
       indexingTime: `${result.indexingTime}ms`,
-      libraries: Array.from(result.libraries.entries()).map(([name, info]) => ({
-        name,
-        version: info.version,
-        filesCount: info.typingsFiles.length,
-      })),
+      libraries: librariesArray,
     },
     null,
     2,
@@ -262,41 +277,6 @@ export async function handleSearchExternalLibrarySymbols(args: any) {
     null,
     2,
   );
-}
-
-/**
- * Get human-readable symbol kind name
- */
-function getSymbolKindName(kind: number): string {
-  const kindNames: Record<number, string> = {
-    1: "File",
-    2: "Module",
-    3: "Namespace",
-    4: "Package",
-    5: "Class",
-    6: "Method",
-    7: "Property",
-    8: "Field",
-    9: "Constructor",
-    10: "Enum",
-    11: "Interface",
-    12: "Function",
-    13: "Variable",
-    14: "Constant",
-    15: "String",
-    16: "Number",
-    17: "Boolean",
-    18: "Array",
-    19: "Object",
-    20: "Key",
-    21: "Null",
-    22: "EnumMember",
-    23: "Struct",
-    24: "Event",
-    25: "Operator",
-    26: "TypeParameter",
-  };
-  return kindNames[kind] || "Unknown";
 }
 
 /**

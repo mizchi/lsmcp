@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createLSPClient } from "../../src/lsp/lspClient.ts";
+import { createLSPClient } from "@lsmcp/lsp-client"; // from "lspClient.ts";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { spawn } from "child_process";

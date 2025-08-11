@@ -10,7 +10,7 @@ import {
   openDocument,
   stopLSPClient,
   waitForDocumentProcessed,
-} from "../../lsp/client/lspClientFactory.ts";
+} from "@lsmcp/lsp-client";
 
 const schema = z.object({
   root: commonSchemas.root,

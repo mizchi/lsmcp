@@ -2,12 +2,12 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import path from "path";
 import fs from "fs/promises";
 import { randomBytes } from "crypto";
-import { lspRenameSymbolTool } from "../../src/lsp/tools/rename.ts";
+import { lspRenameSymbolTool } from "@lsmcp/lsp-client"; // from "tools/rename.ts";
 import { ChildProcess, spawn } from "child_process";
 import {
   initialize as initializeLSPClient,
   shutdown as shutdownLSPClient,
-} from "../../src/lsp/lspClient.ts";
+} from "@lsmcp/lsp-client"; // from "lspClient.ts";
 
 const FIXTURES_DIR = path.join(__dirname, "../fixtures/lsp-rename");
 

@@ -1,0 +1,17 @@
+{
+  "name": "@lsmcp/code-indexer",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./symbolIndex": "./src/symbolIndex.ts",
+    "./*": "./src/*"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@lsmcp/lsp-client": "workspace:*",
+    "@lsmcp/types": "workspace:*"
+  }
+}

@@ -1,4 +1,4 @@
-import type { FileSystemApi } from "../api/FileSystemApi.ts";
+import type { FileSystemApi } from "@lsmcp/types/domain";
 import type { IFs } from "memfs";
 import type { Stats } from "node:fs";
 import { dirname } from "node:path";

@@ -10,7 +10,7 @@ import {
   openDocument,
   stopLSPClient,
   waitForDocumentProcessed,
-} from "../../lsp/client/lspClientFactory.ts";
+} from "@lsmcp/lsp-client";
 import { validateLineAndSymbol } from "../../shared/validation/validation.ts";
 
 const schema = z.object({

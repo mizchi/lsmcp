@@ -12,5 +12,5 @@ export const INDEX_CONCURRENCY_MIN = 1;
 // Token compression
 export const AVERAGE_TOKEN_COMPRESSION_RATIO = 0.97; // 97% compression
 
-// Symbol kinds (re-export from existing location)
-export { SYMBOL_KINDS } from "../indexer/engine/symbolKindTypes.ts";
+// Symbol kinds (re-export from code-indexer package)
+export { SYMBOL_KINDS } from "@lsmcp/code-indexer";

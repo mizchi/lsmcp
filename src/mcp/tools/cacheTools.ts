@@ -3,7 +3,7 @@ import type { ToolDef } from "../utils/mcpHelpers.ts";
 import {
   searchSymbolsInCache,
   getSymbolCacheManager,
-} from "../../indexer/cache/symbolCacheIntegration.ts";
+} from "@lsmcp/code-indexer";
 
 const searchCachedSymbolsSchema = z.object({
   root: z.string().describe("Root directory for the project"),

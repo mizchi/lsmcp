@@ -1,0 +1,58 @@
+// Re-export all LSP types
+export * from "./client.ts";
+export * from "./protocol.ts";
+export * from "./symbols.ts";
+export * from "./diagnostics.ts";
+export * from "./builders.ts";
+
+// Re-export commonly used types from vscode-languageserver-types
+export {
+  Diagnostic,
+  DiagnosticSeverity,
+  Range,
+  Position,
+  Location,
+  LocationLink,
+  Definition,
+  integer,
+  DocumentSymbol,
+  SymbolKind,
+  SymbolInformation,
+  SymbolTag,
+  CompletionItem,
+  CompletionItemKind,
+  CompletionList,
+  TextEdit,
+  WorkspaceEdit,
+  DocumentUri,
+  Hover,
+  MarkupContent,
+  MarkedString,
+  SignatureHelp,
+  SignatureInformation,
+  ParameterInformation,
+  CodeAction,
+  CodeActionKind,
+  Command,
+  FormattingOptions,
+  Color,
+  ColorInformation,
+  ColorPresentation,
+  FoldingRange,
+  FoldingRangeKind,
+  SelectionRange,
+  InlayHint,
+  InlayHintKind,
+  InlayHintLabelPart,
+  SemanticTokens,
+  SemanticTokensEdit,
+  DocumentHighlight,
+  DocumentHighlightKind,
+  DocumentLink,
+  CallHierarchyItem,
+  CallHierarchyIncomingCall,
+  CallHierarchyOutgoingCall,
+  TypeHierarchyItem,
+  TypeHierarchySupertypeParams,
+  TypeHierarchySubtypeParams,
+} from "vscode-languageserver-types";

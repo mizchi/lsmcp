@@ -1,6 +1,7 @@
 import { resolve } from "path";
 import { ErrorCode, errors } from "../shared/errors/index.ts";
-import { FileSystem, nodeFs } from "./api/fs-interface.ts";
+import type { FileSystemSync } from "@lsmcp/types/domain";
+import { nodeFs } from "./api/fs-interface.ts";
 
 interface FileReadResult {
   absolutePath: string;
@@ -19,7 +20,7 @@ interface FileReadResult {
 export function readFileWithMetadata(
   root: string,
   filePath: string,
-  fs: FileSystem = nodeFs,
+  fs: FileSystemSync = nodeFs,
 ): FileReadResult {
   const absolutePath = resolve(root, filePath);
   const fileUri = `file://${absolutePath}`;
@@ -61,7 +62,7 @@ export function readFileWithMetadata(
 export function fileExists(
   root: string,
   filePath: string,
-  fs: FileSystem = nodeFs,
+  fs: FileSystemSync = nodeFs,
 ): boolean {
   const absolutePath = resolve(root, filePath);
   return fs.existsSync(absolutePath);
@@ -79,7 +80,7 @@ export function writeFile(
   root: string,
   filePath: string,
   content: string,
-  fs: FileSystem = nodeFs,
+  fs: FileSystemSync = nodeFs,
 ): void {
   const absolutePath = resolve(root, filePath);
 
@@ -106,7 +107,7 @@ if (import.meta.vitest) {
 
   describe("fileOperations with memfs", () => {
     let vol: any;
-    let memFs: FileSystem;
+    let memFs: FileSystemSync;
 
     beforeEach(() => {
       vol = new Volume();

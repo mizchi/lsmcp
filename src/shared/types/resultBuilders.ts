@@ -1,27 +1,18 @@
 import type {
   Diagnostic as LSPDiagnostic,
   Location,
-} from "../../lsp/lspTypes.ts";
+  SimpleDiagnostic,
+} from "@lsmcp/types/lsp";
 import { relative } from "path";
 
-/**
- * Common diagnostic structure used across tools
- */
-export interface Diagnostic {
-  severity: "error" | "warning" | "info" | "hint";
-  line: number;
-  column: number;
-  endLine?: number;
-  endColumn?: number;
-  message: string;
-  source?: string;
-}
+// Re-export diagnostic type from types package
+export type { SimpleDiagnostic as Diagnostic } from "@lsmcp/types/lsp";
 
 /**
  * Builder for diagnostic results
  */
 export class DiagnosticResultBuilder {
-  private diagnostics: Diagnostic[] = [];
+  private diagnostics: SimpleDiagnostic[] = [];
   private filePath?: string;
   // @ts-ignore - used in constructor
   private root?: string;
@@ -58,7 +49,7 @@ export class DiagnosticResultBuilder {
   /**
    * Add a custom diagnostic
    */
-  addDiagnostic(diagnostic: Diagnostic): this {
+  addDiagnostic(diagnostic: SimpleDiagnostic): this {
     this.diagnostics.push(diagnostic);
     return this;
   }
@@ -97,7 +88,7 @@ export class DiagnosticResultBuilder {
    */
   build(): {
     message: string;
-    diagnostics: Diagnostic[];
+    diagnostics: SimpleDiagnostic[];
   } {
     const counts = this.getCounts();
     const parts: string[] = [];
@@ -147,7 +138,7 @@ export class DiagnosticResultBuilder {
     return lines.join("\n");
   }
 
-  private mapSeverity(severity: number): Diagnostic["severity"] {
+  private mapSeverity(severity: number): SimpleDiagnostic["severity"] {
     switch (severity) {
       case 1:
         return "error";

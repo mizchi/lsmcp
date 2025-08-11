@@ -1,17 +1,14 @@
 import { spawn } from "child_process";
 import { join } from "path";
 import { readFileSync } from "fs";
-import { createLSPClient } from "../../src/lsp/lspClient.ts";
+import { createLSPClient } from "@lsmcp/lsp-client"; // from "lspClient.ts";
 import type { LspAdapter } from "../../src/types/lsp.ts";
 import { resolveAdapterCommand } from "../../src/adapters/utils.ts";
 import {
   processDefaultDiagnostics,
   processDeduplicatedDiagnostics,
 } from "./diagnosticProcessors.ts";
-import {
-  waitForDiagnosticsWithRetry,
-  isLargeFile,
-} from "../../src/lsp/diagnosticUtils.ts";
+import { waitForDiagnosticsWithRetry, isLargeFile } from "@lsmcp/lsp-client"; // from "diagnosticUtils.ts";
 
 // Helper to convert adapter to language config
 function adapterToLanguageConfig(adapter: LspAdapter): LspAdapter {

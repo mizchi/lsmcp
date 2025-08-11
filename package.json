@@ -48,6 +48,9 @@
     "lsmcp.schema.json"
   ],
   "dependencies": {
+    "@lsmcp/types": "workspace:*",
+    "@lsmcp/lsp-client": "workspace:*",
+    "@lsmcp/code-indexer": "workspace:*",
     "@types/micromatch": "^4.0.9",
     "better-sqlite3": "^12.2.0",
     "gitaware-glob": "^0.2.0",

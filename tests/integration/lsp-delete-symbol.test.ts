@@ -3,8 +3,8 @@ import { ChildProcess, spawn } from "child_process";
 import {
   initialize as initializeLSPClient,
   shutdown as shutdownLSPClient,
-} from "../../src/lsp/lspClient.ts";
-import { lspDeleteSymbolTool } from "../../src/lsp/tools/deleteSymbol.ts";
+} from "@lsmcp/lsp-client"; // from "lspClient.ts";
+import { lspDeleteSymbolTool } from "@lsmcp/lsp-client"; // from "tools/deleteSymbol.ts";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";

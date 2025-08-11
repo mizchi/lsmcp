@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { spawn } from "child_process";
-import { initialize as initializeLSPClient } from "../../src/lsp/lspClient.ts";
-import { createAdvancedCompletionHandler } from "../../src/lsp/commands/completion.ts";
+import { initialize as initializeLSPClient } from "@lsmcp/lsp-client"; // from "lspClient.ts";
+import { createAdvancedCompletionHandler } from "@lsmcp/lsp-client"; // from "commands/completion.ts";
 import { pathToFileURL } from "url";
 import { mkdir, rm, writeFile } from "fs/promises";
 import { join } from "path";

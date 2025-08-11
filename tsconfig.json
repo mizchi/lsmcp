@@ -8,6 +8,10 @@
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
     "allowImportingTsExtensions": true,
+    "paths": {
+      "@lsmcp/code-indexer": ["./packages/code-indexer/src/index.ts"],
+      "@lsmcp/lsp-client": ["./packages/lsp-client/src/index.ts"]
+    },
     "lib": ["esnext", "dom"],
     "types": ["vitest/importMeta"],
     "strict": true,
@@ -15,6 +19,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "include": ["src/**/*", "tests/**/*"],
+  "include": ["src/**/*", "tests/**/*", "packages/**/*"],
   "exclude": ["tests/fixtures/**/*", "tests/adapters/fixtures/**/*"]
 }

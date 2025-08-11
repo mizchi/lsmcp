@@ -12,7 +12,7 @@ import {
   getIndexStats,
   updateIndexIncremental,
   getOrCreateIndex,
-} from "../../indexer/mcp/IndexerAdapter.ts";
+} from "@lsmcp/code-indexer";
 import { glob } from "gitaware-glob";
 import { relative } from "path";
 import { fileURLToPath } from "url";
@@ -20,10 +20,10 @@ import {
   SYMBOL_KIND_NAMES,
   getSymbolKindName,
   parseSymbolKind,
-} from "../../indexer/engine/symbolKindTypes.ts";
-import { getLSPClient } from "../../lsp/lspClient.ts";
-import { loadIndexConfig } from "../../indexer/config/configLoader.ts";
-import { getAdapterDefaultPattern } from "../../indexer/engine/adapterDefaults.ts";
+} from "@lsmcp/code-indexer";
+import { getLSPClient } from "@lsmcp/lsp-client";
+import { loadIndexConfig } from "@lsmcp/code-indexer";
+import { getAdapterDefaultPattern } from "@lsmcp/code-indexer";
 
 // Index management tools
 

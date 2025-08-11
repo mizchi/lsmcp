@@ -3,7 +3,7 @@
  */
 
 import { spawn } from "child_process";
-import { initialize as initializeLSPClient } from "../../lsp/lspClient.ts";
+import { initialize as initializeLSPClient } from "@lsmcp/lsp-client";
 import { debug as debugLog, type ToolDef } from "../utils/mcpHelpers.ts";
 import { ErrorContext, formatError } from "../utils/errorHandler.ts";
 import {
