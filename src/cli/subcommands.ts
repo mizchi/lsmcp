@@ -14,7 +14,6 @@ import type {
 import {
   getOrCreateIndex,
   SymbolIndex,
-  LSPSymbolProvider,
   NodeFileSystem,
   SQLiteCache,
 } from "@lsmcp/code-indexer";
@@ -23,7 +22,11 @@ import {
   detectProjectType,
   generateManualConfigBoilerplate,
 } from "./projectDetector.ts";
-import { createLSPClient, type LSPClient } from "@lsmcp/lsp-client";
+import {
+  createLSPClient,
+  createLSPSymbolProvider,
+  type LSPClient,
+} from "@lsmcp/lsp-client";
 import { spawn } from "child_process";
 import { fileURLToPath } from "url";
 

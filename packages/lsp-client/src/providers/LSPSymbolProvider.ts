@@ -1,18 +1,27 @@
 /**
- * LSP-based symbol provider
+ * LSP-based symbol provider for code indexing
  */
 
-import type { SymbolProvider } from "../engine/types.ts";
-import type { LSPClient } from "@lsmcp/lsp-client";
-// import { withTemporaryDocument } from "@lsmcp/lsp-client";
+import type { LSPClient } from "../lspClient.ts";
+import type { DocumentSymbol } from "@lsmcp/types/lsp";
 
+/**
+ * Symbol provider interface required by code-indexer
+ */
+export interface SymbolProvider {
+  getDocumentSymbols(uri: string): Promise<DocumentSymbol[]>;
+}
+
+/**
+ * LSP implementation of SymbolProvider
+ */
 export class LSPSymbolProvider implements SymbolProvider {
   constructor(
     private client: LSPClient,
     private fileContentProvider: (uri: string) => Promise<string>,
   ) {}
 
-  async getDocumentSymbols(uri: string): Promise<any[]> {
+  async getDocumentSymbols(uri: string): Promise<DocumentSymbol[]> {
     try {
       // Get file content
       const content = await this.fileContentProvider(uri);
@@ -23,7 +32,7 @@ export class LSPSymbolProvider implements SymbolProvider {
       this.client.openDocument(uri, content);
 
       try {
-        // Wait a bit for LSP to process (reduced from 1000ms to 200ms)
+        // Wait a bit for LSP to process
         await new Promise((resolve) => setTimeout(resolve, 200));
 
         // Get symbols
@@ -31,7 +40,8 @@ export class LSPSymbolProvider implements SymbolProvider {
         console.error(
           `[LSPSymbolProvider] Got ${symbols.length} symbols from ${uri}`,
         );
-        return symbols;
+        // Cast to DocumentSymbol[] as code-indexer expects
+        return symbols as DocumentSymbol[];
       } finally {
         // Always close document
         this.client.closeDocument(uri);
@@ -47,4 +57,14 @@ export class LSPSymbolProvider implements SymbolProvider {
       return [];
     }
   }
+}
+
+/**
+ * Create an LSP-based symbol provider
+ */
+export function createLSPSymbolProvider(
+  client: LSPClient,
+  fileContentProvider: (uri: string) => Promise<string>,
+): SymbolProvider {
+  return new LSPSymbolProvider(client, fileContentProvider);
 }

@@ -16,8 +16,7 @@ export type {
   IndexEvent,
 } from "./engine/types.ts";
 
-// LSP symbol provider and filesystem adapter
-export { LSPSymbolProvider } from "./lsp/LSPSymbolProvider.ts";
+// Filesystem adapter
 export { NodeFileSystem } from "./engine/NodeFileSystem.ts";
 
 // Cache implementations

@@ -3,11 +3,10 @@
  */
 
 import { SymbolIndex } from "../engine/SymbolIndex.ts";
-import { LSPSymbolProvider } from "../lsp/LSPSymbolProvider.ts";
 import { NodeFileSystem } from "../engine/NodeFileSystem.ts";
 import { SQLiteCache } from "../cache/SQLiteCache.ts";
 import { MemoryCache } from "../cache/MemoryCache.ts";
-import { getLSPClient } from "@lsmcp/lsp-client";
+import { getLSPClient, createLSPSymbolProvider } from "@lsmcp/lsp-client";
 import { fileURLToPath } from "url";
 import { readFile } from "fs/promises";
 import type { IndexedSymbol, SymbolQuery } from "../engine/types.ts";
@@ -49,7 +48,7 @@ export function getOrCreateIndex(rootPath: string): SymbolIndex | null {
     return await readFile(path, "utf-8");
   };
 
-  const symbolProvider = new LSPSymbolProvider(client, fileContentProvider);
+  const symbolProvider = createLSPSymbolProvider(client, fileContentProvider);
 
   // Create index
   index = new SymbolIndex(rootPath, symbolProvider, fileSystem, cache);

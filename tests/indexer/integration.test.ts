@@ -3,11 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { SymbolIndex } from "@lsmcp/code-indexer";
-import { LSPSymbolProvider } from "@lsmcp/code-indexer";
-import { MemoryCache } from "@lsmcp/code-indexer";
+import { SymbolIndex, MemoryCache } from "@lsmcp/code-indexer";
+import { createLSPSymbolProvider, type LSPClient } from "@lsmcp/lsp-client";
 import { SymbolKind } from "vscode-languageserver-types";
-import type { LSPClient } from "@lsmcp/lsp-client";
 
 describe("Indexer Integration", () => {
   let symbolIndex: SymbolIndex;
@@ -41,7 +39,7 @@ describe("Indexer Integration", () => {
     };
 
     // Create symbol provider
-    const symbolProvider = new LSPSymbolProvider(
+    const symbolProvider = createLSPSymbolProvider(
       mockLSPClient,
       async (uri: string) => {
         const path = uri.replace("file://", "");

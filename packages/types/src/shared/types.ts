@@ -1,77 +1,10 @@
 /**
  * Common type definitions used across the codebase
+ * 
+ * Note: Utility functions have been moved to errors.ts and utils.ts
+ * to avoid duplication and ambiguous exports. This file now contains
+ * only type definitions.
  */
-
-/**
- * Type guard to check if a value is a non-null object
- */
-export function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-/**
- * Type guard to check if an object has a specific property
- */
-export function hasProperty<K extends string>(
-  obj: unknown,
-  key: K,
-): obj is Record<K, unknown> {
-  return isObject(obj) && key in obj;
-}
-
-/**
- * Type guard to check if a value is an Error instance
- */
-export function isError(value: unknown): value is Error {
-  return value instanceof Error;
-}
-
-/**
- * Type guard to check if an error has a code property
- */
-export function isErrorWithCode(
-  error: unknown,
-): error is Error & { code: string | number } {
-  return isError(error) && hasProperty(error, "code");
-}
-
-/**
- * Type guard to check if an error has a message property
- */
-export function isErrorWithMessage(
-  error: unknown,
-): error is { message: string } {
-  return isObject(error) && typeof (error as any).message === "string";
-}
-
-/**
- * Safe error message extraction
- */
-export function getErrorMessage(error: unknown): string {
-  if (isError(error)) {
-    return error.message;
-  }
-  if (isErrorWithMessage(error)) {
-    return error.message;
-  }
-  return String(error);
-}
-
-/**
- * Safe error code extraction
- */
-export function getErrorCode(error: unknown): string | number | undefined {
-  if (isErrorWithCode(error)) {
-    return error.code;
-  }
-  if (hasProperty(error, "code")) {
-    const code = error.code;
-    if (typeof code === "string" || typeof code === "number") {
-      return code;
-    }
-  }
-  return undefined;
-}
 
 /**
  * Type for functions that can be async or sync

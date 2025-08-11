@@ -173,3 +173,10 @@ export {
   waitForDocumentProcessed,
   type TypescriptClientInstance,
 } from "./typescript/helpers.ts";
+
+// Symbol provider for code indexing
+export {
+  LSPSymbolProvider,
+  createLSPSymbolProvider,
+  type SymbolProvider,
+} from "./providers/LSPSymbolProvider.ts";
