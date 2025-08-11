@@ -1,7 +1,7 @@
 import { resolve } from "path";
 import { ErrorCode, errors } from "../shared/errors/index.ts";
 import type { FileSystemSync } from "@lsmcp/types/domain";
-import { nodeFs } from "./api/fs-interface.ts";
+import * as fs from "fs";
 
 interface FileReadResult {
   absolutePath: string;
@@ -17,17 +17,28 @@ interface FileReadResult {
  * @returns FileReadResult with absolutePath, fileContent, and fileUri
  * @throws MCPToolError if file cannot be read
  */
+// Create a default fs implementation that matches FileSystemSync interface
+const defaultFs: FileSystemSync = {
+  readFileSync: (path, encoding) => fs.readFileSync(path, encoding),
+  writeFileSync: (path, data, encoding) => fs.writeFileSync(path, data, encoding),
+  existsSync: (path) => fs.existsSync(path),
+  mkdirSync: (path, options) => fs.mkdirSync(path, options),
+  unlinkSync: (path) => fs.unlinkSync(path),
+  readdirSync: (path) => fs.readdirSync(path),
+  statSync: (path) => fs.statSync(path),
+};
+
 export function readFileWithMetadata(
   root: string,
   filePath: string,
-  fs: FileSystemSync = nodeFs,
+  fileSystem: FileSystemSync = defaultFs,
 ): FileReadResult {
   const absolutePath = resolve(root, filePath);
   const fileUri = `file://${absolutePath}`;
 
   let fileContent: string;
   try {
-    fileContent = fs.readFileSync(absolutePath, "utf-8");
+    fileContent = fileSystem.readFileSync(absolutePath, "utf-8");
   } catch (error: any) {
     if (error.code === "ENOENT") {
       throw errors.fileNotFound(filePath);
