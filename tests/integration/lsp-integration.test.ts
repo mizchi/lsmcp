@@ -44,7 +44,13 @@ describe("LSP integration tests", () => {
     });
 
     // Initialize LSP client with tmpDir
-    await initializeLSPClient(tmpDir, lspProcess, "typescript");
+    const { createLSPClient } = await import("@lsmcp/lsp-client");
+    const lspClient = createLSPClient({
+      process: lspProcess,
+      rootPath: tmpDir,
+      languageId: "typescript",
+    });
+    await initializeLSPClient(lspClient);
   });
 
   afterAll(async () => {

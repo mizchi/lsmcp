@@ -138,7 +138,7 @@ export class GitignoreManager {
  */
 export function createGitignoreFilter(
   rootPath: string,
-  fs?: FileSystem,
+  fs?: FileSystemSync,
 ): (filePath: string, isDirectory?: boolean) => boolean {
   const manager = new GitignoreManager(rootPath, fs);
   return (filePath: string, isDirectory: boolean = false) =>

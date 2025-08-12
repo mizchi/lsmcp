@@ -47,7 +47,18 @@ export {
 };
 import { ChildProcess } from "child_process";
 import { EventEmitter } from "events";
-import type { IFileSystem } from "../interfaces/index.ts";
+// Backward compatibility interface
+export interface IFileSystem {
+  readFile(path: string, encoding: BufferEncoding): Promise<string>;
+  writeFile(
+    path: string,
+    data: string,
+    encoding?: BufferEncoding,
+  ): Promise<void>;
+  readdir(path: string): Promise<string[]>;
+  stat(path: string): Promise<any>;
+  exists(path: string): Promise<boolean>;
+}
 
 // LSP Message types
 export interface LSPRequest {
@@ -320,7 +331,7 @@ export interface LSPClientState {
   rootPath: string;
   languageId: string;
   serverCapabilities?: ServerCapabilities;
-  serverCharacteristics?: import("../interfaces/index.ts").IServerCharacteristics;
+  serverCharacteristics?: any; // IServerCharacteristics type from adapter
   fileSystemApi: IFileSystem;
 }
 
@@ -331,7 +342,7 @@ export interface LSPClientConfig {
   clientName?: string; // Default: "lsp-client"
   clientVersion?: string; // Default: "0.1.0"
   initializationOptions?: unknown; // Language-specific initialization options
-  serverCharacteristics?: import("../interfaces/index.ts").IServerCharacteristics;
+  serverCharacteristics?: any; // IServerCharacteristics type from adapter
   fileSystemApi?: IFileSystem; // Optional FileSystem API instance
 }
 

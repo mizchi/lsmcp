@@ -372,7 +372,7 @@ export async function indexCommand(
       };
 
       // Create symbol provider
-      const symbolProvider = new LSPSymbolProvider(
+      const symbolProvider = createLSPSymbolProvider(
         lspClient,
         fileContentProvider,
       );

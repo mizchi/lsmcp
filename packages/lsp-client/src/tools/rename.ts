@@ -89,7 +89,7 @@ async function performRenameWithoutLine(
     const absolutePath = path.resolve(request.root, request.filePath);
     const fileContent = readFileSync(absolutePath, "utf-8");
     const fileUri = `file://${absolutePath}`;
-    const lines = fileContent.split("\n");
+    // const lines = fileContent.split("\n");  // Currently unused
 
     // Find target text in file
     const targetResult = findTargetInFile(fileContent, request.target);

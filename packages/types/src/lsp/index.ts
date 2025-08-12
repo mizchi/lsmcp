@@ -1,6 +1,8 @@
 // Re-export all LSP types
+// Export from client.ts first (has the main implementations)
 export * from "./client.ts";
-export * from "./protocol.ts";
+// Only export non-duplicate items from protocol.ts
+export { LSPMethods, type LSPMethod } from "./protocol.ts";
 export * from "./symbols.ts";
 export * from "./diagnostics.ts";
 export * from "./builders.ts";
@@ -50,8 +52,9 @@ export {
 
 // Type aliases that are not exported at runtime from vscode-languageserver-types
 export type Definition = Location | Location[];
+import type { SignatureInformation as SignatureInfo } from "vscode-languageserver-types";
 export type SignatureHelp = {
-  signatures: SignatureInformation[];
+  signatures: SignatureInfo[];
   activeSignature?: number;
   activeParameter?: number;
 };

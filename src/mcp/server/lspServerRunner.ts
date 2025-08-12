@@ -56,12 +56,26 @@ export async function runLanguageServerWithConfig(
     });
 
     // Create and initialize LSP client with the spawned process
+    // Convert ServerCharacteristics to IServerCharacteristics (with required fields)
+    const serverChars = config.serverCharacteristics
+      ? {
+          documentOpenDelay:
+            config.serverCharacteristics.documentOpenDelay ?? 100,
+          operationTimeout:
+            config.serverCharacteristics.operationTimeout ?? 30000,
+          supportsIncrementalSync:
+            config.serverCharacteristics.supportsIncrementalSync,
+          supportsPullDiagnostics:
+            config.serverCharacteristics.supportsPullDiagnostics,
+        }
+      : undefined;
+
     const client = createLSPClient({
       rootPath: projectRoot,
       process: lspProcess,
       languageId: config.id,
       initializationOptions: config.initializationOptions,
-      serverCharacteristics: config.serverCharacteristics,
+      serverCharacteristics: serverChars,
     });
 
     await initializeGlobalClient(client);
@@ -200,14 +214,26 @@ export async function runLanguageServer(
 
     // Initialize LSP client with the spawned process
     const initOptions = adapter?.initializationOptions || undefined;
-    const serverCharacteristics = adapter?.serverCharacteristics || undefined;
+    const serverCharacteristics = adapter?.serverCharacteristics;
+
+    // Convert ServerCharacteristics to IServerCharacteristics (with required fields)
+    const serverChars = serverCharacteristics
+      ? {
+          documentOpenDelay: serverCharacteristics.documentOpenDelay ?? 100,
+          operationTimeout: serverCharacteristics.operationTimeout ?? 30000,
+          supportsIncrementalSync:
+            serverCharacteristics.supportsIncrementalSync,
+          supportsPullDiagnostics:
+            serverCharacteristics.supportsPullDiagnostics,
+        }
+      : undefined;
 
     const client = createLSPClient({
       rootPath: projectRoot,
       process: lspProcess,
       languageId: language,
       initializationOptions: initOptions,
-      serverCharacteristics: serverCharacteristics,
+      serverCharacteristics: serverChars,
     });
 
     await initializeGlobalClient(client);

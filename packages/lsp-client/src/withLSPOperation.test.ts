@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { withLSPOperation, ensureLSPClient } from "./client/lspOperations.ts";
 import type { LSPClient } from "./lspTypes.ts";
 import { setActiveClient } from "./globalClientManager.ts";

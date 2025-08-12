@@ -7,11 +7,11 @@ import type {
   WorkspaceEdit,
   ApplyWorkspaceEditParams,
   ApplyWorkspaceEditResponse,
-} from "../lspTypes.ts";
+  TextEdit,
+} from "./lspTypes.ts";
 import { getErrorMessage } from "@lsmcp/types";
 import type { FileSystemApi } from "./utils/container-helpers.ts";
 import { nodeFileSystemApi } from "./utils/container-helpers.ts";
-import type { TextEdit } from "../lspTypes.ts";
 import { applyTextEdits } from "../../../src/shared/text/applyTextEdits.ts";
 
 /**
@@ -34,10 +34,10 @@ export async function applyWorkspaceEditManually(
       const currentContent = await fs.readFile(filePath, "utf8");
 
       // Apply edits
-      const newContent = applyTextEdits(currentContent, edits);
+      const newContent = applyTextEdits(currentContent, edits as TextEdit[]);
 
       // Write back
-      await fs.writeFile(filePath, newContent, "utf8");
+      await fs.writeFile(filePath, newContent);
     } catch (error) {
       throw new Error(
         `Failed to apply edit to ${uri}: ${getErrorMessage(error)}`,

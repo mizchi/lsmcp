@@ -84,12 +84,14 @@ describe("Completion Integration Tests", () => {
           },
         );
 
-        // Initialize LSP client with the process
-        client = await initializeLSPClient(
-          process.cwd(), // Use project root
-          lspProcess,
-          "typescript",
-        );
+        // Create and initialize LSP client
+        const { createLSPClient } = await import("@lsmcp/lsp-client");
+        const lspClient = createLSPClient({
+          process: lspProcess,
+          rootPath: process.cwd(),
+          languageId: "typescript",
+        });
+        client = await initializeLSPClient(lspClient);
 
         // Open the test document
         await client.openDocument(TEST_FILE_URI, TEST_CONTENT);
@@ -228,12 +230,14 @@ describe("Completion Integration Tests", () => {
           cwd: process.cwd(),
         });
 
-        // Initialize LSP client with the process
-        client = await initializeLSPClient(
-          process.cwd(),
-          lspProcess,
-          "typescript",
-        );
+        // Create and initialize LSP client
+        const { createLSPClient } = await import("@lsmcp/lsp-client");
+        const lspClient = createLSPClient({
+          process: lspProcess,
+          rootPath: process.cwd(),
+          languageId: "typescript",
+        });
+        client = await initializeLSPClient(lspClient);
 
         // Open the test document
         await client.openDocument(TEST_FILE_URI, TEST_CONTENT);

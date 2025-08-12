@@ -7,7 +7,6 @@ import {
   DocumentSymbol,
   SymbolInformation,
   SymbolKind,
-  Range,
 } from "vscode-languageserver-types";
 import { relative } from "path";
 
@@ -31,10 +30,10 @@ export interface SimpleDiagnostic {
 export class DiagnosticResultBuilder {
   private diagnostics: SimpleDiagnostic[] = [];
   private filePath?: string;
-  private root?: string;
+  // private root?: string;  // Currently unused
 
-  constructor(root?: string, filePath?: string) {
-    this.root = root;
+  constructor(_root?: string, filePath?: string) {
+    // this.root = root;
     this.filePath = filePath;
   }
 

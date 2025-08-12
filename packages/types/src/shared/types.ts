@@ -1,6 +1,6 @@
 /**
  * Common type definitions used across the codebase
- * 
+ *
  * Note: Utility functions have been moved to errors.ts and utils.ts
  * to avoid duplication and ambiguous exports. This file now contains
  * only type definitions.
@@ -11,18 +11,7 @@
  */
 export type MaybePromise<T> = T | Promise<T>;
 
-/**
- * Make all properties of T optional recursively
- */
-export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends (infer U)[]
-    ? DeepPartial<U>[]
-    : T[P] extends readonly (infer U)[]
-      ? readonly DeepPartial<U>[]
-      : T[P] extends object
-        ? DeepPartial<T[P]>
-        : T[P];
-};
+// DeepPartial has been moved to utils.ts to avoid duplicate exports
 
 /**
  * Extract the resolved type from a Promise

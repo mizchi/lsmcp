@@ -27,6 +27,12 @@ export interface ServerCharacteristics {
 
   /** Maximum timeout for general operations (ms) */
   operationTimeout?: number;
+
+  /** Whether the server supports incremental document synchronization */
+  supportsIncrementalSync?: boolean;
+
+  /** Whether the server supports pull diagnostics */
+  supportsPullDiagnostics?: boolean;
 }
 
 /**

@@ -30,7 +30,13 @@ describe("lsp rename symbol", () => {
     });
 
     // Initialize LSP client
-    await initializeLSPClient(__dirname, lspProcess, "typescript");
+    const { createLSPClient } = await import("@lsmcp/lsp-client");
+    const lspClient = createLSPClient({
+      process: lspProcess,
+      rootPath: __dirname,
+      languageId: "typescript",
+    });
+    await initializeLSPClient(lspClient);
   });
 
   beforeAll(async () => {

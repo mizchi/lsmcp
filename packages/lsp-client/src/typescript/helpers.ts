@@ -5,7 +5,7 @@
 import { createLSPClient, type LSPClient } from "../lspClient.ts";
 import type { ChildProcess } from "child_process";
 import { spawn } from "child_process";
-import { resolve } from "path";
+// import { resolve } from "path";  // Currently unused
 
 export interface TypescriptClientInstance {
   client: LSPClient;

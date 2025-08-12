@@ -9,7 +9,11 @@
     "./lsp": "./src/lsp/index.ts",
     "./domain": "./src/domain/index.ts",
     "./shared": "./src/shared/index.ts",
-    "./validators": "./src/validators/index.ts"
+    "./validators": "./src/validators/index.ts",
+    "./constants/lsp": "./src/constants/lsp.ts",
+    "./constants/config": "./src/constants/config.ts",
+    "./constants/diagnostics": "./src/constants/diagnostics.ts",
+    "./constants/indexer": "./src/constants/indexer.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

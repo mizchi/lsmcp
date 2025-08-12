@@ -434,7 +434,7 @@ export class MemoryDatabase {
     `);
 
     const result = stmt.run(this.projectPath, cutoffDate.toISOString());
-    return result.changes;
+    return Number(result.changes);
   }
 
   /**

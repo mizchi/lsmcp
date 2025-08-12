@@ -74,7 +74,7 @@ export function readFileWithMetadata(
 export function fileExists(
   root: string,
   filePath: string,
-  fs: FileSystemSync = nodeFs,
+  fs: FileSystemSync = defaultFs,
 ): boolean {
   const absolutePath = resolve(root, filePath);
   return fs.existsSync(absolutePath);
@@ -92,7 +92,7 @@ export function writeFile(
   root: string,
   filePath: string,
   content: string,
-  fs: FileSystemSync = nodeFs,
+  fs: FileSystemSync = defaultFs,
 ): void {
   const absolutePath = resolve(root, filePath);
 

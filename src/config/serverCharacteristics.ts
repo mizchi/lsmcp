@@ -7,7 +7,7 @@ import {
   DEFAULT_DOCUMENT_OPEN_DELAY,
   DEFAULT_READINESS_CHECK_TIMEOUT,
   DEFAULT_OPERATION_TIMEOUT,
-} from "../constants/lsp.ts";
+} from "@lsmcp/types/constants/lsp";
 
 /**
  * Default characteristics for unknown servers
@@ -19,6 +19,8 @@ const DEFAULT_CHARACTERISTICS: Required<ServerCharacteristics> = {
   requiresProjectInit: false,
   sendsInitialDiagnostics: true,
   operationTimeout: DEFAULT_OPERATION_TIMEOUT,
+  supportsIncrementalSync: true,
+  supportsPullDiagnostics: false,
 };
 
 /**
