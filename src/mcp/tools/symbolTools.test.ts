@@ -4,7 +4,7 @@ import * as IndexerAdapter from "@lsmcp/code-indexer";
 import { SymbolKind } from "vscode-languageserver-types";
 import { createFsFromVolume, Volume } from "memfs";
 import { MemFileSystemApi } from "../../filesystem/memory/MemFileSystemApi.ts";
-import type { FileSystemApi } from "@lsmcp/types/domain";
+import type { FileSystemApi } from "@lsmcp/types";
 
 // Mock only IndexerAdapter, not file system modules
 vi.mock("@lsmcp/code-indexer", () => ({

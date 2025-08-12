@@ -1,4 +1,4 @@
-import type { Location } from "@lsmcp/types/lsp";
+import type { Location } from "@lsmcp/types";
 import type {
   DefinitionResult,
   LSPCommand,

@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z, ZodObject, type ZodType } from "zod";
 import type { ToolDef } from "./mcpHelpers.ts";
-import type { FileSystemApi } from "@lsmcp/types/domain";
+import type { FileSystemApi } from "@lsmcp/types";
 
 /**
  * MCP Server configuration options

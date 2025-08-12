@@ -3,6 +3,9 @@
 // LSP types
 export * from "./lsp/index.ts";
 
+// Re-export specific type aliases that might not be picked up by export *
+export type { Definition, SignatureHelp } from "./lsp/index.ts";
+
 // Domain types
 export * from "./domain/index.ts";
 

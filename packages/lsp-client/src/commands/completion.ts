@@ -1,11 +1,11 @@
-import type { CompletionItem, Position } from "@lsmcp/types/lsp";
+import type { CompletionItem, Position } from "@lsmcp/types";
 import type {
   CompletionParams,
   CompletionResult,
   LSPCommand,
 } from "./types.ts";
 import { isCompletionList } from "./types.ts";
-import type { LSPClient } from "../lspTypes.ts";
+import type { LSPClient } from "../protocol/types-legacy.ts";
 
 export function createCompletionCommand(): LSPCommand<
   CompletionParams,

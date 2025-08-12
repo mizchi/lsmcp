@@ -4,7 +4,7 @@ import { join, relative } from "node:path";
 import { glob as gitawareGlob, type FileSystemInterface } from "gitaware-glob";
 import { minimatch } from "minimatch";
 import { createGitignoreFilter } from "../../filesystem/gitignore/gitignoreUtils.ts";
-import type { FileSystemApi } from "@lsmcp/types/domain";
+import type { FileSystemApi } from "@lsmcp/types";
 import { nodeFileSystemApi } from "../../filesystem/node/NodeFileSystemApi.ts";
 
 // Create a filesystem adapter for gitignoreUtils

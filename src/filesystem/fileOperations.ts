@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import { ErrorCode, errors } from "../shared/errors/index.ts";
-import type { FileSystemSync } from "@lsmcp/types/domain";
+import type { FileSystemSync } from "@lsmcp/types";
 import * as fs from "fs";
 
 interface FileReadResult {

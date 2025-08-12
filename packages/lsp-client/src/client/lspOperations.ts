@@ -1,17 +1,19 @@
-import { getActiveClient } from "../globalClientManager.ts";
-import type { LSPClient } from "../lspTypes.ts";
+import type { LSPClient } from "../protocol/types-legacy.ts";
 
 /**
  * Options for LSP operations
  */
 export interface LSPOperationOptions<T> {
+  /** LSP client instance to use */
+  client: LSPClient;
+
   /** File URI for the document */
   fileUri: string;
 
   /** File content to open in LSP */
   fileContent: string;
 
-  /** Language ID (default: from active client) */
+  /** Language ID (default: from client) */
   languageId?: string;
 
   /** Wait time after opening document (ms) */
@@ -36,6 +38,7 @@ export interface LSPOperationOptions<T> {
  * @example
  * ```typescript
  * const hover = await withLSPOperation({
+ *   client: myLspClient,
  *   fileUri: "file:///path/to/file.ts",
  *   fileContent: content,
  *   operation: (client) => client.getHover(fileUri, position),
@@ -46,11 +49,11 @@ export interface LSPOperationOptions<T> {
 export async function withLSPOperation<T>(
   options: LSPOperationOptions<T>,
 ): Promise<T> {
-  const client = getActiveClient();
+  const { client } = options;
 
   if (!client) {
     throw new Error(
-      `LSP client not running for language: ${options.errorContext?.language || "unknown"}`,
+      `LSP client not provided for language: ${options.errorContext?.language || "unknown"}`,
     );
   }
 
@@ -99,6 +102,9 @@ export async function withLSPOperation<T>(
  * Options for batch LSP operations
  */
 export interface BatchLSPOperationOptions<T> {
+  /** LSP client instance to use */
+  client: LSPClient;
+
   /** List of file URIs and contents */
   files: Array<{
     fileUri: string;
@@ -124,6 +130,7 @@ export interface BatchLSPOperationOptions<T> {
  * @example
  * ```typescript
  * const diagnostics = await withBatchLSPOperation({
+ *   client: myLspClient,
  *   files: fileList.map(f => ({ fileUri: f.uri, fileContent: f.content })),
  *   operation: async (client) => {
  *     const results = [];
@@ -138,11 +145,11 @@ export interface BatchLSPOperationOptions<T> {
 export async function withBatchLSPOperation<T>(
   options: BatchLSPOperationOptions<T>,
 ): Promise<T> {
-  const client = getActiveClient();
+  const { client } = options;
 
   if (!client) {
     throw new Error(
-      `LSP client not running for language: ${options.errorContext?.language || "unknown"}`,
+      `LSP client not provided for language: ${options.errorContext?.language || "unknown"}`,
     );
   }
 
@@ -174,15 +181,4 @@ export async function withBatchLSPOperation<T>(
 
   // Execute the operation
   return operation(client);
-}
-
-/**
- * Helper to check if LSP client is available
- */
-export function ensureLSPClient(language: string = "unknown"): LSPClient {
-  const client = getActiveClient();
-  if (!client) {
-    throw new Error(`LSP client not running for language: ${language}`);
-  }
-  return client;
 }

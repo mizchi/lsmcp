@@ -4,4 +4,4 @@ export {
   LocationResultBuilder,
   SymbolResultBuilder,
   type SimpleDiagnostic as Diagnostic,
-} from "@lsmcp/types/lsp";
+} from "@lsmcp/types";

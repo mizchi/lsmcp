@@ -2,7 +2,7 @@
  * Helper functions that use the dependency container
  */
 
-import { container } from "../container/index.ts";
+import { container } from "../container.ts";
 
 // Logger helpers
 export function debug(...args: any[]): void {
@@ -45,7 +45,7 @@ export function getServerCharacteristics(
 }
 
 // FileSystem helpers
-export type FileSystemApi = import("../interfaces/index.ts").IFileSystem;
+export type FileSystemApi = import("../interfaces.ts").IFileSystem;
 
 export const nodeFileSystemApi: FileSystemApi = {
   async readFile(path: string, encoding?: BufferEncoding): Promise<string> {

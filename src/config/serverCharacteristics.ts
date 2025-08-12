@@ -7,7 +7,7 @@ import {
   DEFAULT_DOCUMENT_OPEN_DELAY,
   DEFAULT_READINESS_CHECK_TIMEOUT,
   DEFAULT_OPERATION_TIMEOUT,
-} from "@lsmcp/types/constants/lsp";
+} from "@lsmcp/types";
 
 /**
  * Default characteristics for unknown servers

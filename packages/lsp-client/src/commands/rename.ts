@@ -1,4 +1,4 @@
-import type { Range, WorkspaceEdit } from "@lsmcp/types/lsp";
+import type { Range, WorkspaceEdit } from "@lsmcp/types";
 import type {
   LSPCommand,
   RenameParams,

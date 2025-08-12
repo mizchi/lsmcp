@@ -204,12 +204,12 @@ export async function indexDeclarationFile(
     const fileUri = pathToFileURL(filePath).toString();
 
     const symbols = await withTemporaryDocument(
+      client,
       fileUri,
       content,
       async () => {
         return await client.getDocumentSymbols(fileUri);
       },
-      "typescript",
     );
 
     if (!symbols || !Array.isArray(symbols)) {

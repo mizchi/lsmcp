@@ -3,10 +3,7 @@
  */
 
 import { spawn } from "child_process";
-import {
-  createLSPClient,
-  initialize as initializeGlobalClient,
-} from "@lsmcp/lsp-client";
+import { createAndInitializeLSPClient } from "@lsmcp/lsp-client";
 import { debug as debugLog, type ToolDef } from "../utils/mcpHelpers.ts";
 import { ErrorContext, formatError } from "../utils/errorHandler.ts";
 import {
@@ -70,15 +67,13 @@ export async function runLanguageServerWithConfig(
         }
       : undefined;
 
-    const client = createLSPClient({
-      rootPath: projectRoot,
-      process: lspProcess,
-      languageId: config.id,
-      initializationOptions: config.initializationOptions,
-      serverCharacteristics: serverChars,
-    });
-
-    await initializeGlobalClient(client);
+    const client = await createAndInitializeLSPClient(
+      projectRoot,
+      lspProcess,
+      config.id,
+      config.initializationOptions,
+      serverChars,
+    );
 
     // Start MCP server
     const { createMcpServerManager } = await import(

@@ -4,23 +4,21 @@
 
 import type { ToolDef } from "../utils/mcpHelpers.ts";
 
-// Import LSP tools
-import {
-  lspGetHoverTool,
-  lspFindReferencesTool,
-  lspGetDefinitionsTool,
-  lspGetDiagnosticsTool,
-  lspGetAllDiagnosticsTool,
-  lspRenameSymbolTool,
-  lspDeleteSymbolTool,
-  lspGetDocumentSymbolsTool,
-  lspGetCompletionTool,
-  lspGetSignatureHelpTool,
-  lspFormatDocumentTool,
-  lspGetCodeActionsTool,
-  lspGetWorkspaceSymbolsTool,
-  lspCheckCapabilitiesTool,
-} from "@lsmcp/lsp-client";
+// Import LSP tools from mcp-tools
+import { lspGetHoverTool } from "../../mcp-tools/hover.ts";
+import { lspFindReferencesTool } from "../../mcp-tools/references.ts";
+import { lspGetDefinitionsTool } from "../../mcp-tools/definitions.ts";
+import { lspGetDiagnosticsTool } from "../../mcp-tools/diagnostics.ts";
+import { lspGetAllDiagnosticsTool } from "../../mcp-tools/allDiagnostics.ts";
+import { lspRenameSymbolTool } from "../../mcp-tools/rename.ts";
+import { lspDeleteSymbolTool } from "../../mcp-tools/deleteSymbol.ts";
+import { lspGetDocumentSymbolsTool } from "../../mcp-tools/documentSymbols.ts";
+import { lspGetCompletionTool } from "../../mcp-tools/completion.ts";
+import { lspGetSignatureHelpTool } from "../../mcp-tools/signatureHelp.ts";
+import { lspFormatDocumentTool } from "../../mcp-tools/formatting.ts";
+import { lspGetCodeActionsTool } from "../../mcp-tools/codeActions.ts";
+import { lspGetWorkspaceSymbolsTool } from "../../mcp-tools/workspaceSymbols.ts";
+import { lspCheckCapabilitiesTool } from "../../mcp-tools/checkCapabilities.ts";
 
 // Import analysis tools
 import { indexTools } from "../tools/indexTools.ts";

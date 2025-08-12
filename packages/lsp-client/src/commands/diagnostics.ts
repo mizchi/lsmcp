@@ -1,4 +1,4 @@
-import type { Diagnostic } from "@lsmcp/types/lsp";
+import type { Diagnostic } from "@lsmcp/types";
 import type { LSPCommand } from "./types.ts";
 
 // Pull diagnostics support (LSP 3.17+)

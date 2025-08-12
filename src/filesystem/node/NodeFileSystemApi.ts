@@ -9,7 +9,7 @@ import {
   realpath,
 } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import type { FileSystemApi } from "@lsmcp/types/domain";
+import type { FileSystemApi } from "@lsmcp/types";
 
 export class NodeFileSystemApi implements FileSystemApi {
   readFile(path: string, encoding: BufferEncoding): Promise<string>;

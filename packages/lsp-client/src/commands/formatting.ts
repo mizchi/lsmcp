@@ -1,4 +1,4 @@
-import type { TextEdit } from "@lsmcp/types/lsp";
+import type { TextEdit } from "@lsmcp/types";
 import type {
   FormattingParams,
   FormattingResult,

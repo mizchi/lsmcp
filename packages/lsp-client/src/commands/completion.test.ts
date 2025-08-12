@@ -4,8 +4,8 @@ import {
   createCompletionHandler,
   testHelpers,
 } from "./completion.ts";
-import type { CompletionItem } from "@lsmcp/types/lsp";
-import type { LSPClient } from "../lspTypes.ts";
+import type { CompletionItem } from "@lsmcp/types";
+import type { LSPClient } from "../protocol/types-legacy.ts";
 
 // Tests for completion handlers (more complex, kept in separate file)
 describe("completionHandler", () => {

@@ -404,9 +404,14 @@ export async function indexFile(
     const content = await readFile(absolutePath, "utf-8");
 
     // Get document symbols from LSP with temporary document
-    const symbols = await withTemporaryDocument(uri, content, async () => {
-      return await state.client!.getDocumentSymbols(uri);
-    });
+    const symbols = (await withTemporaryDocument(
+      state.client!,
+      uri,
+      content,
+      async () => {
+        return await state.client!.getDocumentSymbols(uri);
+      },
+    )) as any;
 
     if (!symbols || symbols.length === 0) {
       state.eventEmitter.emit("indexError", {

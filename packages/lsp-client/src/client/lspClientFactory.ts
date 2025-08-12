@@ -1,3 +1,3 @@
-import { createLSPClient as createClient } from "../lspClient.ts";
+import { createLSPClient as createClient } from "../core/client.ts";
 
 export const createLSPClient = createClient;

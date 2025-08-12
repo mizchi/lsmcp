@@ -1,4 +1,4 @@
-import { getLSPClient } from "../lspClient.ts";
+import type { LSPClient } from "../protocol/types-legacy.ts";
 import { ErrorContext, formatError } from "../utils/container-helpers.ts";
 
 /**
@@ -7,6 +7,7 @@ import { ErrorContext, formatError } from "../utils/container-helpers.ts";
  * This function handles the lifecycle of opening and closing a document
  * in the LSP server, ensuring proper cleanup even if the operation fails.
  *
+ * @param client - LSP client instance
  * @param fileUri - File URI for the document
  * @param content - Content of the document
  * @param operation - Async operation to execute while document is open
@@ -14,12 +15,12 @@ import { ErrorContext, formatError } from "../utils/container-helpers.ts";
  * @returns Result of the operation
  */
 export async function withTemporaryDocument<T>(
+  client: LSPClient,
   fileUri: string,
   content: string,
   operation: () => Promise<T>,
   language?: string,
 ): Promise<T> {
-  const client = getLSPClient();
   if (!client) {
     const context: ErrorContext = {
       operation: "LSP document operation",

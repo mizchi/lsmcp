@@ -57,9 +57,9 @@ const mockWithTemporaryDocument = vi.mocked(
   lspClientModule.withTemporaryDocument,
 );
 mockWithTemporaryDocument.mockImplementation(
-  async (_rootPath, _filePath, callback) => {
-    // For tests, just call the callback with a mocked client
-    return await callback();
+  async (_client, _uri, _content, callback) => {
+    // For tests, just call the callback
+    return await (callback as any)();
   },
 );
 

@@ -1,6 +1,6 @@
 import { dirname, join, relative } from "path";
 import ignore, { type Ignore } from "ignore";
-import type { FileSystemSync } from "@lsmcp/types/domain";
+import type { FileSystemSync } from "@lsmcp/types";
 import * as nodeFs from "fs";
 
 /**

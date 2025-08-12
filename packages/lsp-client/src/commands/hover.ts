@@ -1,4 +1,4 @@
-import type { Hover, MarkupContent } from "@lsmcp/types/lsp";
+import type { Hover, MarkupContent } from "@lsmcp/types";
 import type {
   HoverResult,
   LSPCommand,

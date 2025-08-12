@@ -9,10 +9,7 @@ import {
   indexDeclarationFile,
   indexExternalLibraries,
 } from "./externalLibraryProvider.ts";
-import {
-  createLSPClient,
-  initialize as initializeLSPClient,
-} from "@lsmcp/lsp-client";
+import { createLSPClient } from "@lsmcp/lsp-client";
 import { spawn } from "child_process";
 
 // Mock adapter for testing
@@ -187,7 +184,8 @@ describe("ExternalLibraryProvider", () => {
         serverCharacteristics: typescriptAdapter.serverCharacteristics,
       });
 
-      client = await initializeLSPClient(lspClient);
+      await lspClient.start();
+      client = lspClient;
 
       const mockLibFile = join(
         tempDir,
@@ -224,7 +222,8 @@ describe("ExternalLibraryProvider", () => {
         serverCharacteristics: typescriptAdapter.serverCharacteristics,
       });
 
-      client = await initializeLSPClient(lspClient);
+      await lspClient.start();
+      client = lspClient;
 
       const result = await indexExternalLibraries(tempDir, client, {
         maxFiles: 10,
