@@ -14,7 +14,7 @@ import {
 import { pathToFileURL } from "url";
 import { watch, FSWatcher } from "fs";
 import { resolve, relative } from "path";
-import { getLSPClient } from "@lsmcp/lsp-client";
+// import { getLSPClient } from "@lsmcp/lsp-client"; // Removed - no longer using global client
 import type { LSPClient } from "@lsmcp/lsp-client";
 import {
   cacheSymbolsFromIndex,
@@ -110,10 +110,10 @@ function createSymbolIndexState(rootPath: string): SymbolIndexState {
  */
 export async function initializeSymbolIndex(
   state: SymbolIndexState,
+  client?: any,
 ): Promise<void> {
-  const client = getLSPClient();
   if (!client) {
-    throw new Error("LSP client not initialized");
+    throw new Error("LSP client not provided");
   }
   state.client = client;
 }

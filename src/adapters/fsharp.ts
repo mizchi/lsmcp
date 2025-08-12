@@ -1,38 +1,15 @@
-import type { LspAdapter } from "../types/lsp.ts";
-import { execSync } from "child_process";
+import type { Preset } from "../types/lsp.ts";
 
 /**
  * F# Autocomplete (fsautocomplete) adapter
  */
-export const fsharpAdapter: LspAdapter = {
-  id: "fsharp",
-  name: "F# Autocomplete",
-  baseLanguage: "fsharp",
-  description: "F# language server (fsautocomplete)",
+export const fsharpAdapter: Preset = {
+  presetId: "fsharp",
   bin: "fsautocomplete",
   args: [],
+  files: ["**/*.fs", "**/*.fsi", "**/*.fsx"],
   initializationOptions: {
     AutomaticWorkspaceInit: true,
   },
-  unsupported: ["get_all_diagnostics"],
-  doctor: async () => {
-    try {
-      execSync("which dotnet", { stdio: "ignore" });
-      execSync("which fsautocomplete", { stdio: "ignore" });
-      return { ok: true };
-    } catch {
-      const missing = [];
-      try {
-        execSync("which dotnet", { stdio: "ignore" });
-      } catch {
-        missing.push("dotnet");
-      }
-      try {
-        execSync("which fsautocomplete", { stdio: "ignore" });
-      } catch {
-        missing.push("fsautocomplete");
-      }
-      return { ok: false, message: `Missing: ${missing.join(", ")}` };
-    }
-  },
+  disable: ["get_all_diagnostics"],
 };

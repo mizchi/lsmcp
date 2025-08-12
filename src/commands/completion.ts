@@ -1,4 +1,4 @@
-import { CompletionItem, CompletionItemKind } from "@lsmcp/types";
+import { CompletionItem } from "@lsmcp/types";
 
 export interface AdvancedCompletionHandlerOptions {
   includeAutoImport?: boolean;

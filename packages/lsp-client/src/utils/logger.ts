@@ -1,42 +1,17 @@
 import { appendFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { debugLog } from "../utils/debug.ts";
+import { LogLevel, type LogEntry, type DebugSession } from "@lsmcp/types";
 
-export enum LogLevel {
-  ERROR = 0,
-  WARN = 1,
-  INFO = 2,
-  DEBUG = 3,
-  TRACE = 4,
-}
+// Re-export for backward compatibility
+export { LogLevel, type LogEntry } from "@lsmcp/types";
 
-interface LogEntry {
-  timestamp: string;
-  level: LogLevel;
-  component: string;
-  message: string;
-  data?: unknown;
-  error?: Error;
-}
-
-interface DebugSession {
-  sessionId: string;
-  adapter: string;
-  startTime: Date;
-  endTime?: Date;
-  logEntries: LogEntry[];
-  metrics: {
-    totalRequests: number;
-    failedRequests: number;
-    averageResponseTime: number;
-    featureUsage: Record<string, number>;
-  };
-}
+// Use DebugSession directly from @lsmcp/types
 
 interface DebugLoggerState {
   logLevel: LogLevel;
   logFile?: string;
-  sessions: Map<string, DebugSession>;
+  sessions: Map<string, DebugSession & { featureUsage?: Record<string, number> }>;
   currentSession?: string;
   enableFileLogging: boolean;
   enableConsoleLogging: boolean;
@@ -78,7 +53,7 @@ export function startSession(
 ): string {
   const id = sessionId || `${adapter}-${Date.now()}`;
 
-  const session: DebugSession = {
+  const session: DebugSession & { featureUsage?: Record<string, number> } = {
     sessionId: id,
     adapter,
     startTime: new Date(),
@@ -86,9 +61,9 @@ export function startSession(
     metrics: {
       totalRequests: 0,
       failedRequests: 0,
-      averageResponseTime: 0,
-      featureUsage: {},
+      totalResponseTime: 0,
     },
+    featureUsage: {},
   };
 
   state.sessions.set(id, session);
@@ -202,8 +177,9 @@ export function logLSPRequest(
     const session = state.sessions.get(state.currentSession);
     if (session) {
       session.metrics.totalRequests++;
-      session.metrics.featureUsage[method] =
-        (session.metrics.featureUsage[method] || 0) + 1;
+      if (!session.featureUsage) session.featureUsage = {};
+      session.featureUsage[method] =
+        (session.featureUsage[method] || 0) + 1;
     }
   }
 }
@@ -242,9 +218,9 @@ export function logLSPResponse(
       if (responseTime) {
         // Update average response time
         const totalTime =
-          session.metrics.averageResponseTime *
+          (session.metrics.avgResponseTime || 0) *
           (session.metrics.totalRequests - 1);
-        session.metrics.averageResponseTime =
+        session.metrics.avgResponseTime =
           (totalTime + responseTime) / session.metrics.totalRequests;
       }
     }
@@ -341,14 +317,14 @@ export function exportSessionText(
     }%`,
   );
   lines.push(
-    `Average Response Time: ${session.metrics.averageResponseTime.toFixed(
+    `Average Response Time: ${(session.metrics.avgResponseTime || 0).toFixed(
       1,
     )}ms`,
   );
   lines.push("");
 
   lines.push(`=== Feature Usage ===`);
-  for (const [feature, count] of Object.entries(session.metrics.featureUsage)) {
+  for (const [feature, count] of Object.entries((session as any).featureUsage || {})) {
     lines.push(`${feature}: ${count}`);
   }
   lines.push("");

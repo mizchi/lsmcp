@@ -1,11 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { tsgoAdapter } from "./tsgo.ts";
 import { resolveAdapterCommand } from "./utils.ts";
-import * as nodeModulesUtils from "../filesystem/nodeModulesUtils.ts";
-import * as childProcess from "child_process";
 
 // Mock the nodeModulesUtils
-vi.mock("../filesystem/nodeModulesUtils.ts", () => ({
+vi.mock("../utils/nodeModulesUtils.ts", () => ({
   getNodeModulesBin: vi.fn(),
   getNodeModulesCommand: vi.fn(),
 }));
@@ -22,19 +20,17 @@ describe("tsgoAdapter", () => {
 
   describe("adapter configuration", () => {
     it("should have correct basic configuration", () => {
-      expect(tsgoAdapter.id).toBe("tsgo");
-      expect(tsgoAdapter.name).toBe("tsgo");
-      expect(tsgoAdapter.baseLanguage).toBe("typescript");
+      expect(tsgoAdapter.presetId).toBe("tsgo");
       expect(tsgoAdapter.bin).toBe("npx");
       expect(tsgoAdapter.args).toEqual(["tsgo", "--lsp", "--stdio"]);
     });
 
     it("should have appropriate unsupported tools", () => {
-      expect(tsgoAdapter.unsupported).not.toContain("get_document_symbols");
-      expect(tsgoAdapter.unsupported).not.toContain("get_workspace_symbols");
-      expect(tsgoAdapter.unsupported).toContain("get_code_actions");
-      expect(tsgoAdapter.unsupported).toContain("rename_symbol");
-      expect(tsgoAdapter.unsupported).toContain("delete_symbol");
+      expect(tsgoAdapter.disable).not.toContain("get_document_symbols");
+      expect(tsgoAdapter.disable).not.toContain("get_workspace_symbols");
+      expect(tsgoAdapter.disable).toContain("get_code_actions");
+      expect(tsgoAdapter.disable).toContain("rename_symbol");
+      expect(tsgoAdapter.disable).toContain("delete_symbol");
     });
 
     it("should have server characteristics configured", () => {
@@ -79,10 +75,11 @@ describe("tsgoAdapter", () => {
       });
     });
 
-    it("should not call getNodeModulesCommand for npx bin", () => {
-      const mockGetNodeModulesCommand = vi.mocked(
-        nodeModulesUtils.getNodeModulesCommand,
+    it("should not call getNodeModulesCommand for npx bin", async () => {
+      const { getNodeModulesCommand } = await import(
+        "../utils/nodeModulesUtils.ts"
       );
+      const mockGetNodeModulesCommand = vi.mocked(getNodeModulesCommand);
 
       const result = resolveAdapterCommand(tsgoAdapter, "/project");
 
@@ -90,39 +87,6 @@ describe("tsgoAdapter", () => {
       expect(result).toEqual({
         command: "npx",
         args: ["tsgo", "--lsp", "--stdio"],
-      });
-    });
-  });
-
-  describe("doctor", () => {
-    it("should return ok when tsgo is available in node_modules", async () => {
-      const mockGetNodeModulesBin = vi.mocked(
-        nodeModulesUtils.getNodeModulesBin,
-      );
-      mockGetNodeModulesBin.mockReturnValue("/project/node_modules/.bin/tsgo");
-
-      const result = await tsgoAdapter.doctor!();
-
-      expect(result).toEqual({ ok: true });
-      expect(mockGetNodeModulesBin).toHaveBeenCalledWith("tsgo");
-    });
-
-    it("should return error when tsgo is not available", async () => {
-      const mockGetNodeModulesBin = vi.mocked(
-        nodeModulesUtils.getNodeModulesBin,
-      );
-      mockGetNodeModulesBin.mockReturnValue(null);
-
-      const mockExecSync = vi.mocked(childProcess.execSync);
-      mockExecSync.mockImplementation(() => {
-        throw new Error("Command not found");
-      });
-
-      const result = await tsgoAdapter.doctor!();
-
-      expect(result).toEqual({
-        ok: false,
-        message: "tsgo not found. Install with: npm install -g tsgo",
       });
     });
   });

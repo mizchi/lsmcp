@@ -44,12 +44,13 @@ export {
 } from "./mcp/IndexerAdapter.ts";
 
 // Engine helpers and config
+// Symbol kind utilities are now re-exported from @lsmcp/types
 export {
   SYMBOL_KINDS,
   SYMBOL_KIND_NAMES,
   getSymbolKindName,
   parseSymbolKind,
-} from "./engine/symbolKindTypes.ts";
+} from "@lsmcp/types";
 export { getAdapterDefaultPattern } from "./engine/adapterDefaults.ts";
 export {
   shouldExcludeSymbol,

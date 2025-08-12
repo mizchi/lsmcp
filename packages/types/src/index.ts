@@ -9,6 +9,9 @@ export type { Definition, SignatureHelp } from "./lsp/index.ts";
 // Domain types
 export * from "./domain/index.ts";
 
+// Common types
+export * from "./common/logger.ts";
+
 // Shared utilities (except schemas which are now in validators)
 export {
   // Error utilities

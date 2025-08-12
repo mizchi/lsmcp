@@ -7,8 +7,6 @@ import type {
   LSPRequest,
   LSPResponse,
   LSPNotification,
-  isPublishDiagnosticsParams,
-  PublishDiagnosticsParams,
 } from "../protocol/types/index.ts";
 import type { LSPClientState } from "./state.ts";
 import { debug } from "../utils/debug.ts";
@@ -63,13 +61,12 @@ export class ConnectionHandler {
       isLSPResponse,
       isLSPNotification,
       isLSPRequest,
-      isPublishDiagnosticsParams,
     } = require("../protocol/types/index.ts");
 
     if (isLSPResponse(message)) {
-      this.handleResponse(message);
+      this.handleResponse(message as LSPResponse);
     } else if (isLSPNotification(message) || isLSPRequest(message)) {
-      this.handleNotificationOrRequest(message);
+      this.handleNotificationOrRequest(message as LSPNotification | LSPRequest);
     }
   }
 
@@ -92,17 +89,16 @@ export class ConnectionHandler {
   private handleNotificationOrRequest(
     message: LSPNotification | LSPRequest,
   ): void {
-    const { isLSPRequest, isPublishDiagnosticsParams } =
-      require("../protocol/types/index.ts");
+    const { isLSPRequest } = require("../protocol/types/index.ts");
 
     // Handle diagnostics notification
     if (
       message.method === "textDocument/publishDiagnostics" &&
       message.params
     ) {
-      if (isPublishDiagnosticsParams(message.params)) {
-        const params = message.params as PublishDiagnosticsParams;
-        const validDiagnostics = params.diagnostics.filter((d) => d && d.range);
+      const params = message.params as any;
+      if (params?.uri && params?.diagnostics) {
+        const validDiagnostics = params.diagnostics.filter((d: any) => d && d.range);
         this.state.diagnostics.set(params.uri, validDiagnostics);
         this.state.eventEmitter.emit("diagnostics", {
           ...params,
@@ -128,7 +124,7 @@ export class ConnectionHandler {
         }
         return {};
       });
-      this.sendResponse(message.id, configurations);
+      this.sendResponse((message as LSPRequest).id, configurations);
     }
 
     this.state.eventEmitter.emit("message", message);

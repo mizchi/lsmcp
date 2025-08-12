@@ -39,7 +39,7 @@ export {
 };
 import { ChildProcess } from "child_process";
 import { EventEmitter } from "events";
-import type { IFileSystem } from "./interfaces.ts";
+import type { IFileSystem } from "../interfaces.ts";
 
 // LSP Message types
 export interface LSPRequest {
@@ -312,7 +312,7 @@ export interface LSPClientState {
   rootPath: string;
   languageId: string;
   serverCapabilities?: ServerCapabilities;
-  serverCharacteristics?: import("./interfaces.ts").IServerCharacteristics;
+  serverCharacteristics?: import("../interfaces.ts").IServerCharacteristics;
   fileSystemApi: IFileSystem;
 }
 
@@ -323,7 +323,7 @@ export interface LSPClientConfig {
   clientName?: string; // Default: "lsp-client"
   clientVersion?: string; // Default: "0.1.0"
   initializationOptions?: unknown; // Language-specific initialization options
-  serverCharacteristics?: import("./interfaces.ts").IServerCharacteristics;
+  serverCharacteristics?: import("../interfaces.ts").IServerCharacteristics;
   fileSystemApi?: IFileSystem; // Optional FileSystem API instance
 }
 

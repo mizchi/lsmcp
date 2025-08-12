@@ -6,7 +6,7 @@ import { SymbolIndex } from "../engine/SymbolIndex.ts";
 import { NodeFileSystem } from "../engine/NodeFileSystem.ts";
 import { SQLiteCache } from "../cache/SQLiteCache.ts";
 import { MemoryCache } from "../cache/MemoryCache.ts";
-import { getLSPClient, createLSPSymbolProvider } from "@lsmcp/lsp-client";
+import { createLSPSymbolProvider } from "@lsmcp/lsp-client";
 import { fileURLToPath } from "url";
 import { readFile } from "fs/promises";
 import type { IndexedSymbol, SymbolQuery } from "../engine/types.ts";
@@ -17,7 +17,7 @@ const indexInstances = new Map<string, SymbolIndex>();
 /**
  * Get or create a symbol index for a root path
  */
-export function getOrCreateIndex(rootPath: string): SymbolIndex | null {
+export function getOrCreateIndex(rootPath: string, client?: any): SymbolIndex | null {
   // Check if we have an existing index
   let index = indexInstances.get(rootPath);
   if (index) {
@@ -32,10 +32,9 @@ export function getOrCreateIndex(rootPath: string): SymbolIndex | null {
       ? new MemoryCache()
       : new SQLiteCache(rootPath);
 
-  // Get LSP client
-  const client = getLSPClient();
+  // Check if client is provided
   if (!client) {
-    console.error(`[IndexerAdapter] No LSP client available for ${rootPath}`);
+    console.error(`[IndexerAdapter] No LSP client provided for ${rootPath}`);
     return null;
   }
   console.error(
@@ -97,7 +96,7 @@ export async function indexFiles(
   duration: number;
   errors: Array<{ file: string; error: string }>;
 }> {
-  const index = getOrCreateIndex(rootPath);
+  const index = getOrCreateIndex(rootPath, null);
   if (!index) {
     return {
       success: false,
@@ -185,7 +184,7 @@ export async function updateIndexIncremental(rootPath: string): Promise<{
   errors: string[];
   message?: string;
 }> {
-  const index = getOrCreateIndex(rootPath);
+  const index = getOrCreateIndex(rootPath, null);
   if (!index) {
     return {
       success: false,

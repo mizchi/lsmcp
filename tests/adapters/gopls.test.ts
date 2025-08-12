@@ -38,11 +38,11 @@ describe("gopls adapter", () => {
 
       // The result will depend on whether gopls is installed
       expect(result).toBeDefined();
-      expect(typeof result.ok).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
       expect(typeof result.message).toBe("string");
 
       // If gopls is not installed, we should get appropriate error messages
-      if (!result.ok) {
+      if (!result.success) {
         expect(result.message).toMatch(
           /gopls is not installed|go install golang\.org\/x\/tools\/gopls@latest/,
         );
@@ -136,7 +136,9 @@ func add(a, b int) int {
         rootPath: tmpDir,
         process: lspProcess,
         languageId: "go",
-        initializationOptions: goplsAdapter.initializationOptions,
+        initializationOptions: goplsAdapter.initializationOptions as
+          | Record<string, unknown>
+          | undefined,
       });
 
       await client.start();

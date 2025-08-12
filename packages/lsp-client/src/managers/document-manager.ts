@@ -7,7 +7,7 @@ import type {
   DidChangeTextDocumentParams,
   DidCloseTextDocumentParams,
   VersionedTextDocumentIdentifier,
-} from "./lspTypes.ts";
+} from "../protocol/types-legacy.ts";
 
 export class DocumentManager {
   private openDocuments = new Set<string>();

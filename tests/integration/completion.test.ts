@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { spawn } from "child_process";
-import { initialize as initializeLSPClient } from "@lsmcp/lsp-client"; // from "lspClient.ts";
-import { createAdvancedCompletionHandler } from "@lsmcp/lsp-client"; // from "commands/completion.ts";
+import { createCompletionHandler } from "@lsmcp/lsp-client";
 import { pathToFileURL } from "url";
 import { mkdir, rm, writeFile } from "fs/promises";
 import { join } from "path";
@@ -71,7 +70,7 @@ describe("Completion Integration Tests", () => {
 
   describe("typescript-language-server", () => {
     let client: any;
-    let handler: ReturnType<typeof createAdvancedCompletionHandler>;
+    let handler: ReturnType<typeof createCompletionHandler>;
 
     beforeAll(async () => {
       try {
@@ -91,13 +90,14 @@ describe("Completion Integration Tests", () => {
           rootPath: process.cwd(),
           languageId: "typescript",
         });
-        client = await initializeLSPClient(lspClient);
+        await lspClient.start();
+        client = lspClient;
 
         // Open the test document
         await client.openDocument(TEST_FILE_URI, TEST_CONTENT);
 
         // Create completion handler
-        handler = createAdvancedCompletionHandler(client);
+        handler = createCompletionHandler(client);
 
         // Wait a bit for the server to analyze the file
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -182,7 +182,7 @@ describe("Completion Integration Tests", () => {
         const completions = await handler.getCompletionsWithImports(
           TEST_FILE_URI,
           { line: lineIndex, character },
-          { resolveAll: true, maxItems: 5 },
+          true,
         );
 
         // Check that items have been resolved with additional details
@@ -201,7 +201,7 @@ describe("Completion Integration Tests", () => {
       const completions = await handler.getCompletionsWithImports(
         TEST_FILE_URI,
         { line: lineIndex, character },
-        { filterAutoImports: true, resolveAll: true },
+        false, // Don't include auto-imports
       );
 
       // Should find auto-import suggestions
@@ -221,7 +221,7 @@ describe("Completion Integration Tests", () => {
 
   describe("tsgo", () => {
     let client: any;
-    let handler: ReturnType<typeof createAdvancedCompletionHandler>;
+    let handler: ReturnType<typeof createCompletionHandler>;
 
     beforeAll(async () => {
       try {
@@ -237,13 +237,14 @@ describe("Completion Integration Tests", () => {
           rootPath: process.cwd(),
           languageId: "typescript",
         });
-        client = await initializeLSPClient(lspClient);
+        await lspClient.start();
+        client = lspClient;
 
         // Open the test document
         await client.openDocument(TEST_FILE_URI, TEST_CONTENT);
 
         // Create completion handler
-        handler = createAdvancedCompletionHandler(client);
+        handler = createCompletionHandler(client);
 
         // Wait a bit for the server to analyze the file
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -305,7 +306,7 @@ describe("Completion Handler Edge Cases", () => {
       sendRequest: async () => [],
     };
 
-    const handler = createAdvancedCompletionHandler(mockClient as any);
+    const handler = createCompletionHandler(mockClient as any);
     const result = await handler.getCompletionsWithImports("file:///test.ts", {
       line: 0,
       character: 0,
@@ -321,7 +322,7 @@ describe("Completion Handler Edge Cases", () => {
       },
     };
 
-    const handler = createAdvancedCompletionHandler(mockClient as any);
+    const handler = createCompletionHandler(mockClient as any);
 
     await expect(
       handler.getCompletionsWithImports("file:///test.ts", {

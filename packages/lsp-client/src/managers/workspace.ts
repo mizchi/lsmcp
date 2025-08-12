@@ -2,7 +2,7 @@
  * Workspace edit management
  */
 
-import type { WorkspaceEdit, TextEdit } from "../protocol/types/index.ts";
+import type { WorkspaceEdit } from "../protocol/types/index.ts";
 import type { IFileSystem } from "../interfaces.ts";
 import { applyTextEdits } from "../utils/textEdits.ts";
 

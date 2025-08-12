@@ -1,9 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
-import {
-  initialize as initializeLSPClient,
-  shutdown as shutdownLSPClient,
-} from "@lsmcp/lsp-client"; // from "lspClient.ts";
 import { lspGetHoverTool } from "@lsmcp/lsp-client"; // from "tools/hover.ts";
 import { lspFindReferencesTool } from "@lsmcp/lsp-client"; // from "tools/references.ts";
 import { lspGetDefinitionsTool } from "@lsmcp/lsp-client"; // from "tools/definitions.ts";
@@ -17,6 +13,7 @@ const FIXTURES_DIR = path.join(__dirname, "fixtures/lsp-errors");
 
 describe("LSP error handling tests", () => {
   let lspProcess: ChildProcess;
+  let lspClient: any;
   let tmpDir: string;
 
   beforeAll(async () => {
@@ -38,12 +35,12 @@ describe("LSP error handling tests", () => {
 
     // Initialize LSP client
     const { createLSPClient } = await import("@lsmcp/lsp-client");
-    const lspClient = createLSPClient({
+    lspClient = createLSPClient({
       process: lspProcess,
       rootPath: __dirname,
       languageId: "typescript",
     });
-    await initializeLSPClient(lspClient);
+    await lspClient.start();
 
     // Create temporary directory
     const hash = randomBytes(8).toString("hex");
@@ -58,7 +55,7 @@ describe("LSP error handling tests", () => {
     }
 
     if (lspProcess) {
-      await shutdownLSPClient();
+      if (lspClient) await lspClient.stop();
       lspProcess.kill();
     }
   });
@@ -248,7 +245,7 @@ console.log(message);`;
       }
 
       // Temporarily shut down the client
-      await shutdownLSPClient();
+      await lspClient.stop();
 
       // Try to use tools without client
       await expect(
@@ -262,12 +259,12 @@ console.log(message);`;
 
       // Re-initialize for other tests
       const { createLSPClient: createLSP } = await import("@lsmcp/lsp-client");
-      const newLspClient = createLSP({
+      lspClient = createLSP({
         process: lspProcess,
         rootPath: __dirname,
         languageId: "typescript",
       });
-      await initializeLSPClient(newLspClient);
+      await lspClient.start();
     });
   });
 

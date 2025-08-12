@@ -1,9 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
-import {
-  initialize as initializeLSPClient,
-  shutdown as shutdownLSPClient,
-} from "@lsmcp/lsp-client"; // from "lspClient.ts";
 import { lspGetDocumentSymbolsTool } from "@lsmcp/lsp-client"; // from "tools/documentSymbols.ts";
 import path from "path";
 
@@ -11,6 +7,7 @@ const FIXTURES_DIR = path.join(__dirname, "fixtures");
 
 describe("lsp document symbols", () => {
   let lspProcess: ChildProcess;
+  let lspClient: any;
 
   beforeAll(async () => {
     // Skip test if LSP_COMMAND is not set
@@ -28,17 +25,17 @@ describe("lsp document symbols", () => {
 
     // Initialize LSP client
     const { createLSPClient } = await import("@lsmcp/lsp-client");
-    const lspClient = createLSPClient({
+    lspClient = createLSPClient({
       process: lspProcess,
       rootPath: __dirname,
       languageId: "typescript",
     });
-    await initializeLSPClient(lspClient);
+    await lspClient.start();
   });
 
   afterAll(async () => {
     if (lspProcess) {
-      await shutdownLSPClient();
+      if (lspClient) await lspClient.stop();
       lspProcess.kill();
     }
   });

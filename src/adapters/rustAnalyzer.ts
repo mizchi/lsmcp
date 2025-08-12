@@ -1,16 +1,13 @@
-import type { LspAdapter } from "../types/lsp.ts";
-import { execSync } from "child_process";
+import type { Preset } from "../types/lsp.ts";
 
 /**
  * rust-analyzer adapter
  */
-export const rustAnalyzerAdapter: LspAdapter = {
-  id: "rust-analyzer",
-  name: "rust-analyzer",
-  baseLanguage: "rust",
-  description: "Official Rust language server",
+export const rustAnalyzerAdapter: Preset = {
+  presetId: "rust-analyzer",
   bin: "rust-analyzer",
   args: [],
+  files: ["**/*.rs"],
   initializationOptions: {
     cargo: {
       features: "all",
@@ -18,13 +15,5 @@ export const rustAnalyzerAdapter: LspAdapter = {
     // procMacro: {
     //   enable: true,
     // },
-  },
-  doctor: async () => {
-    try {
-      execSync("which rust-analyzer", { stdio: "ignore" });
-      return { ok: true };
-    } catch {
-      return { ok: false, message: "rust-analyzer not found in PATH" };
-    }
   },
 };

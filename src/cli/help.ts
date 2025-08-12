@@ -2,7 +2,7 @@
  * CLI help functions
  */
 
-import type { AdapterRegistry } from "../config/loader/configLoader.ts";
+import type { PresetRegistry } from "../config/loader.ts";
 
 export function showHelp(): void {
   console.log(`
@@ -36,12 +36,15 @@ Examples:
 }
 
 export function showListWithConfigLoader(
-  adapterRegistry: AdapterRegistry,
+  adapterRegistry: PresetRegistry,
 ): void {
   console.log("Available adapters with --preset:");
   const adapterList = adapterRegistry.list();
   for (const adapter of adapterList) {
-    console.log(`  ${adapter.id.padEnd(25)} - ${adapter.description}`);
+    const id =
+      "presetId" in adapter ? adapter.presetId : (adapter as any).id || "";
+    const description = (adapter as any).description || "";
+    console.log(`  ${id.padEnd(25)} - ${description}`);
   }
 
   console.log("\nFor custom language configuration, use --config:");
@@ -52,7 +55,7 @@ export function showListWithConfigLoader(
   console.log('  --bin "jdtls" for Java');
 }
 
-export function showNoArgsHelp(adapterRegistry: AdapterRegistry): void {
+export function showNoArgsHelp(adapterRegistry: PresetRegistry): void {
   console.log(`
 🌍 LSMCP - Language Service MCP
 
@@ -73,9 +76,15 @@ Available presets:`);
 
   // Show primary adapters first
   for (const id of primaryAdapters) {
-    const adapter = adapterList.find((a) => a.id === id);
+    const adapter = adapterList.find((a) => {
+      const adapterId = "presetId" in a ? a.presetId : (a as any).id;
+      return adapterId === id;
+    });
     if (adapter) {
-      console.log(`  ${adapter.id.padEnd(20)} - ${adapter.description}`);
+      const adapterId =
+        "presetId" in adapter ? adapter.presetId : (adapter as any).id || "";
+      const description = (adapter as any).description || "";
+      console.log(`  ${adapterId.padEnd(20)} - ${description}`);
     }
   }
 

@@ -4,15 +4,12 @@ import fs from "fs/promises";
 import { randomBytes } from "crypto";
 import { lspRenameSymbolTool } from "@lsmcp/lsp-client"; // from "tools/rename.ts";
 import { ChildProcess, spawn } from "child_process";
-import {
-  initialize as initializeLSPClient,
-  shutdown as shutdownLSPClient,
-} from "@lsmcp/lsp-client"; // from "lspClient.ts";
 
 const FIXTURES_DIR = path.join(__dirname, "../fixtures/lsp-rename");
 
 describe("lspRenameSymbol - multi-file rename", () => {
   let lspProcess: ChildProcess;
+  let lspClient: any;
   let tmpDir: string;
 
   beforeAll(async () => {
@@ -36,12 +33,12 @@ describe("lspRenameSymbol - multi-file rename", () => {
 
     // Initialize LSP client
     const { createLSPClient } = await import("@lsmcp/lsp-client");
-    const lspClient = createLSPClient({
+    lspClient = createLSPClient({
       process: lspProcess,
       rootPath: tmpDir,
       languageId: "typescript",
     });
-    await initializeLSPClient(lspClient);
+    await lspClient.start();
   });
 
   afterAll(async () => {
@@ -51,7 +48,7 @@ describe("lspRenameSymbol - multi-file rename", () => {
     }
 
     if (lspProcess) {
-      await shutdownLSPClient();
+      if (lspClient) await lspClient.stop();
       lspProcess.kill();
     }
   });

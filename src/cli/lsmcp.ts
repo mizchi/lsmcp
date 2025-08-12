@@ -9,21 +9,22 @@
 import { parseArgs } from "node:util";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { debug as debugLog } from "../mcp/utils/mcpHelpers.ts";
+import { debug as debugLog } from "@lsmcp/lsp-client";
 import {
-  AdapterRegistry,
   ConfigLoader as LspConfigLoader,
-  type ConfigSources as LspConfigSources,
-} from "../config/loader/configLoader.ts";
+  globalPresetRegistry,
+  type ConfigSources,
+} from "../config/loader.ts";
+import type { Preset } from "../types/lsp.ts";
 
 // Import modular components
-import { registerBuiltinAdapters } from "../mcp/registry/adapterSetup.ts";
+import { registerBuiltinAdapters } from "../registry/adapterSetup.ts";
 import { showHelp, showListWithConfigLoader, showNoArgsHelp } from "./help.ts";
-import { runLanguageServerWithConfig } from "../mcp/server/lspServerRunner.ts";
+import { runLanguageServerWithConfig } from "../lspServerRunner.ts";
 
 // Initialize configuration system
-const adapterRegistry = new AdapterRegistry();
-const lspConfigLoader = new LspConfigLoader(adapterRegistry);
+const adapterRegistry = globalPresetRegistry;
+const lspConfigLoader = new LspConfigLoader(process.cwd());
 
 // Register all adapters
 registerBuiltinAdapters(adapterRegistry);
@@ -168,7 +169,7 @@ async function mainWithConfigLoader() {
 
   try {
     // Prepare configuration sources for LSP
-    const lspSources: LspConfigSources = {};
+    const lspSources: ConfigSources = {};
 
     // Check for .lsmcp/config.json
     const configPath = join(process.cwd(), ".lsmcp", "config.json");
@@ -191,20 +192,29 @@ async function mainWithConfigLoader() {
     }
 
     if (values.bin) {
-      const parsedBin = LspConfigLoader.parseBinString(values.bin);
-      lspSources.overrides = {
-        bin: parsedBin.bin,
-        args: parsedBin.args,
+      // Create custom preset from bin string
+      const parts = values.bin.split(" ");
+      const customPreset: Preset = {
+        presetId: "custom",
+        bin: parts[0],
+        args: parts.slice(1),
+        files: ["**/*"],
       };
+      globalPresetRegistry.register(customPreset);
+      lspSources.preset = "custom";
     }
 
     if (values.initializationOptions) {
       try {
         const parsedOptions = JSON.parse(values.initializationOptions);
-        if (!lspSources.overrides) {
-          lspSources.overrides = {};
+        // Store initialization options for later use
+        if (!lspSources.config) {
+          lspSources.config = {
+            initializationOptions: parsedOptions,
+          };
+        } else {
+          lspSources.config.initializationOptions = parsedOptions;
         }
-        lspSources.overrides.initializationOptions = parsedOptions;
       } catch (error) {
         console.error(
           `Error parsing initializationOptions JSON: ${
@@ -216,14 +226,15 @@ async function mainWithConfigLoader() {
     }
 
     // Load LSP configuration
-    const config = await lspConfigLoader.loadConfig(lspSources);
+    const result = await lspConfigLoader.load(lspSources);
+    const config = result.config; // Extended config includes preset properties
 
     // Display final configuration details
     debugLog(`[lsmcp] ===== Final Configuration =====`);
-    debugLog(`[lsmcp] Adapter ID: ${config.id}`);
-    debugLog(`[lsmcp] Name: ${config.name}`);
-    debugLog(`[lsmcp] Command: ${config.bin}`);
-    debugLog(`[lsmcp] Arguments: ${JSON.stringify(config.args)}`);
+    debugLog(`[lsmcp] Adapter ID: ${config.id || config.preset}`);
+    debugLog(`[lsmcp] Name: ${config.name || config.preset}`);
+    debugLog(`[lsmcp] Command: ${config.bin || "N/A"}`);
+    debugLog(`[lsmcp] Arguments: ${JSON.stringify(config.args || [])}`);
     if (config.baseLanguage) {
       debugLog(`[lsmcp] Base Language: ${config.baseLanguage}`);
     }

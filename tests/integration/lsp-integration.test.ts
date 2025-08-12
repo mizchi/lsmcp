@@ -1,10 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
-import {
-  getLSPClient,
-  initialize as initializeLSPClient,
-  shutdown as shutdownLSPClient,
-} from "@lsmcp/lsp-client"; // from "lspClient.ts";
 import { lspGetHoverTool } from "@lsmcp/lsp-client"; // from "tools/hover.ts";
 import { lspFindReferencesTool } from "@lsmcp/lsp-client"; // from "tools/references.ts";
 import { lspGetDefinitionsTool } from "@lsmcp/lsp-client"; // from "tools/definitions.ts";
@@ -19,6 +14,7 @@ const FIXTURES_DIR = path.join(__dirname, "fixtures/lsp-integration");
 
 describe("LSP integration tests", () => {
   let lspProcess: ChildProcess;
+  let lspClient: any;
   let tmpDir: string;
 
   beforeAll(async () => {
@@ -45,12 +41,12 @@ describe("LSP integration tests", () => {
 
     // Initialize LSP client with tmpDir
     const { createLSPClient } = await import("@lsmcp/lsp-client");
-    const lspClient = createLSPClient({
+    lspClient = createLSPClient({
       process: lspProcess,
       rootPath: tmpDir,
       languageId: "typescript",
     });
-    await initializeLSPClient(lspClient);
+    await lspClient.start();
   });
 
   afterAll(async () => {
@@ -60,7 +56,7 @@ describe("LSP integration tests", () => {
     }
 
     if (lspProcess) {
-      await shutdownLSPClient();
+      if (lspClient) await lspClient.stop();
       lspProcess.kill();
     }
   });
@@ -274,8 +270,7 @@ console.log(unknownVariable); // Unknown variable
         return;
       }
 
-      const client = getLSPClient();
-      expect(client).toBeDefined();
+      expect(lspClient).toBeDefined();
 
       // Perform multiple operations to ensure connection stability
       const testFile = `export const VERSION = "1.0.0";\nexport const NAME = "Test";`;
@@ -299,8 +294,7 @@ console.log(unknownVariable); // Unknown variable
       expect(hover2).toContain("NAME");
 
       // Client should still be active
-      const clientAfter = getLSPClient();
-      expect(clientAfter).toBe(client);
+      expect(lspClient).toBeDefined();
     });
   });
 

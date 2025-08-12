@@ -19,13 +19,10 @@ export { createDefinitionCommand } from "./definition.ts";
 export { createReferencesCommand } from "./references.ts";
 export { createHoverCommand } from "./hover.ts";
 export {
-  type AdvancedCompletionOptions,
   type CompletionHandler,
-  createAdvancedCompletionHandler,
   createCompletionCommand,
   createCompletionHandler,
   createCompletionResolveCommand,
-  testHelpers as completionTestHelpers,
 } from "./completion.ts";
 export { createDocumentSymbolsCommand } from "./documentSymbols.ts";
 export { createPullDiagnosticsCommand } from "./diagnostics.ts";

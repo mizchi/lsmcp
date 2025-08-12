@@ -24,7 +24,7 @@ export async function testLspConnection(
   // Check doctor first if available
   if (adapter.doctor) {
     const doctorResult = await adapter.doctor();
-    if (!doctorResult.ok) {
+    if (!doctorResult.success) {
       return { connected: false, error: doctorResult.message };
     }
   }
@@ -43,8 +43,11 @@ export async function testLspConnection(
     const client = createLSPClient({
       rootPath: projectPath,
       process: lspProcess,
-      languageId: adapter.baseLanguage,
-      initializationOptions: config.initializationOptions,
+      languageId:
+        adapter.baseLanguage || (adapter as any).presetId || "unknown",
+      initializationOptions: config.initializationOptions as
+        | Record<string, unknown>
+        | undefined,
     });
 
     // Start the client - this will throw if connection fails
@@ -121,5 +124,44 @@ export async function testLspConnection(
     return { connected: true, diagnostics: allDiagnostics };
   } catch (error: any) {
     return { connected: false, error: error.message || String(error) };
+  }
+}
+
+// Test helper functions for setting up and tearing down LSP connections
+let testClient: any = null;
+
+export async function setupLSPForTest(root: string): Promise<any> {
+  const { typescriptAdapter } = await import(
+    "../../src/adapters/typescriptLanguageServer.ts"
+  );
+  const { command, args } = resolveAdapterCommand(typescriptAdapter, root);
+
+  const lspProcess = spawn(command, args, {
+    cwd: root,
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+
+  testClient = createLSPClient({
+    rootPath: root,
+    process: lspProcess,
+    languageId: "typescript",
+    initializationOptions: typescriptAdapter.initializationOptions as
+      | Record<string, unknown>
+      | undefined,
+  });
+
+  await testClient.start();
+
+  // Global client setting no longer needed
+
+  return testClient;
+}
+
+export async function teardownLSPForTest(): Promise<void> {
+  if (testClient) {
+    await testClient.stop();
+    testClient = null;
+
+    // Global client clearing no longer needed
   }
 }

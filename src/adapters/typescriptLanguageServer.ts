@@ -1,20 +1,16 @@
-import type { LspAdapter } from "../types/lsp.ts";
-import { execSync } from "child_process";
-import { getNodeModulesBin } from "../filesystem/nodeModulesUtils.ts";
-import { extractTypeTool } from "../ts/tools/tsExtractType.ts";
-import { generateAccessorsTool } from "../ts/tools/tsGenerateAccessors.ts";
-import { callHierarchyTool } from "../ts/tools/tsCallHierarchy.ts";
+import type { Preset } from "../types/lsp.ts";
+import { extractTypeTool } from "../languageSpecific/ts/tools/tsExtractType.ts";
+import { generateAccessorsTool } from "../languageSpecific/ts/tools/tsGenerateAccessors.ts";
+import { callHierarchyTool } from "../languageSpecific/ts/tools/tsCallHierarchy.ts";
 
 /**
  * TypeScript Language Server adapter (default)
  */
-export const typescriptAdapter: LspAdapter = {
-  id: "typescript",
-  name: "TypeScript Language Server",
-  baseLanguage: "typescript",
-  description: "Community TypeScript Language Server",
+export const typescriptAdapter: Preset = {
+  presetId: "typescript",
   bin: "typescript-language-server",
   args: ["--stdio"],
+  files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
   initializationOptions: {
     preferences: {
       includeCompletionsForModuleExports: true,
@@ -22,13 +18,13 @@ export const typescriptAdapter: LspAdapter = {
     },
   },
   customTools: [
-    extractTypeTool as unknown as import("../mcp/utils/mcpHelpers.ts").ToolDef<
+    extractTypeTool as unknown as import("../utils/mcpHelpers.ts").ToolDef<
       import("zod").ZodType
     >,
-    generateAccessorsTool as unknown as import("../mcp/utils/mcpHelpers.ts").ToolDef<
+    generateAccessorsTool as unknown as import("../utils/mcpHelpers.ts").ToolDef<
       import("zod").ZodType
     >,
-    callHierarchyTool as unknown as import("../mcp/utils/mcpHelpers.ts").ToolDef<
+    callHierarchyTool as unknown as import("../utils/mcpHelpers.ts").ToolDef<
       import("zod").ZodType
     >,
   ],
@@ -39,24 +35,5 @@ export const typescriptAdapter: LspAdapter = {
     requiresProjectInit: true,
     sendsInitialDiagnostics: true,
     operationTimeout: 15000,
-  },
-  doctor: async () => {
-    try {
-      // Check if typescript-language-server is available in node_modules
-      const binPath = getNodeModulesBin("typescript-language-server");
-      if (binPath) {
-        return { ok: true };
-      }
-
-      // Check if globally installed
-      execSync("which typescript-language-server", { stdio: "ignore" });
-      return { ok: true };
-    } catch {
-      return {
-        ok: false,
-        message:
-          "typescript-language-server not found. Install with: npm install -g typescript-language-server",
-      };
-    }
   },
 };

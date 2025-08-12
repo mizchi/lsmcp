@@ -25,28 +25,34 @@ export const nodeFileSystemApi: IFileSystem = {
     }
   },
 
-  async mkdir(dirPath: string): Promise<void> {
-    await fs.promises.mkdir(dirPath, { recursive: true });
+  async isDirectory(path: string): Promise<boolean> {
+    try {
+      const stats = await fs.promises.stat(path);
+      return stats.isDirectory();
+    } catch {
+      return false;
+    }
   },
 
-  async readdir(dirPath: string): Promise<string[]> {
-    return fs.promises.readdir(dirPath);
-  },
-
-  async stat(
-    filePath: string,
-  ): Promise<{
-    isFile: boolean;
-    isDirectory: boolean;
-    size: number;
-    mtime: Date;
-  }> {
-    const stats = await fs.promises.stat(filePath);
-    return {
-      isFile: stats.isFile(),
-      isDirectory: stats.isDirectory(),
-      size: stats.size,
-      mtime: stats.mtime,
-    };
+  async listDirectory(path: string): Promise<string[]> {
+    return fs.promises.readdir(path);
   },
 };
+
+// Additional file system utilities not in IFileSystem interface
+export async function stat(
+  filePath: string,
+): Promise<{
+  isFile: boolean;
+  isDirectory: boolean;
+  size: number;
+  mtime: Date;
+}> {
+  const stats = await fs.promises.stat(filePath);
+  return {
+    isFile: stats.isFile(),
+    isDirectory: stats.isDirectory(),
+    size: stats.size,
+    mtime: stats.mtime,
+  };
+}

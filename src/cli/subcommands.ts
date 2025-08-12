@@ -5,12 +5,11 @@
 import { readFile, writeFile, appendFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
-import type { LSMCPConfig } from "../config/schema/configSchema.ts";
-import { ConfigLoader as MainConfigLoader } from "../config/loader/loader.ts";
-import type {
-  AdapterRegistry,
-  ConfigLoader,
-} from "../config/loader/configLoader.ts";
+import type { LSMCPConfig } from "../config/configSchema.ts";
+import {
+  ConfigLoader as MainConfigLoader,
+  PresetRegistry,
+} from "../config/loader.ts";
 import {
   getOrCreateIndex,
   SymbolIndex,
@@ -36,8 +35,8 @@ import { fileURLToPath } from "url";
 export async function initCommand(
   projectRoot: string,
   preset?: string,
-  adapterRegistry?: AdapterRegistry,
-  configLoader?: ConfigLoader,
+  adapterRegistry?: PresetRegistry,
+  configLoader?: MainConfigLoader,
   autoIndex?: boolean,
 ): Promise<void> {
   console.log("Initializing lsmcp project...");
@@ -57,9 +56,13 @@ export async function initCommand(
         .list()
         .slice(0, 5)
         .forEach((adapter) => {
-          console.log(
-            `  ${adapter.id.padEnd(20)} - ${adapter.description || adapter.name}`,
-          );
+          const id =
+            "presetId" in adapter
+              ? adapter.presetId
+              : (adapter as any).id || "";
+          const description =
+            (adapter as any).description || (adapter as any).name || "";
+          console.log(`  ${id.padEnd(20)} - ${description}`);
         });
       console.log("\nFor a complete list: lsmcp --list");
       console.log(
@@ -244,8 +247,8 @@ export async function initCommand(
 export async function indexCommand(
   projectRoot: string,
   isFromInit: boolean = false,
-  configLoader?: ConfigLoader,
-  adapterRegistry?: AdapterRegistry,
+  configLoader?: MainConfigLoader,
+  adapterRegistry?: PresetRegistry,
 ): Promise<void> {
   const configPath = join(projectRoot, ".lsmcp", "config.json");
 
@@ -270,17 +273,17 @@ export async function indexCommand(
     process.exit(1);
   }
 
-  if (!config.indexFiles || config.indexFiles.length === 0) {
+  if (!config.files || config.files.length === 0) {
     console.error("❌ No indexFiles patterns found in config.json");
     process.exit(1);
   }
 
   console.log("Indexing files...");
-  console.log(`Patterns: ${config.indexFiles.join(", ")}`);
+  console.log(`Patterns: ${config.files.join(", ")}`);
 
   // Find all files matching patterns
   const allFiles: string[] = [];
-  for (const pattern of config.indexFiles) {
+  for (const pattern of config.files) {
     const filesGen = await glob(pattern, {
       cwd: projectRoot,
     });
@@ -308,13 +311,18 @@ export async function indexCommand(
   let lspClient: LSPClient | undefined;
   let index: SymbolIndex | undefined;
 
-  if (config.adapter && configLoader && adapterRegistry) {
+  if (config.preset && configLoader && adapterRegistry) {
     try {
-      // Load adapter configuration
-      const adapter = config.adapter;
-      const adapterConfig = adapterRegistry.get(adapter.id) || adapter;
+      // Load preset configuration
+      const presetConfig = adapterRegistry.get(config.preset);
+      if (!presetConfig) {
+        throw new Error(`Unknown preset: ${config.preset}`);
+      }
+      const adapterConfig = presetConfig;
 
-      console.log(`Starting ${adapterConfig.name} for indexing...`);
+      console.log(
+        `Starting ${adapterConfig.name || adapterConfig.presetId} for indexing...`,
+      );
 
       // Check if command exists before spawning
       const { execSync } = await import("child_process");
@@ -337,15 +345,15 @@ export async function indexCommand(
           console.error(
             `Make sure ${adapterConfig.bin} is installed and in PATH`,
           );
-          if (adapterConfig.id === "tsgo") {
+          if (adapterConfig.presetId === "tsgo") {
             console.error(
               "Install with: npm install -g @typescript/native-preview",
             );
-          } else if (adapterConfig.id === "typescript") {
+          } else if (adapterConfig.presetId === "typescript") {
             console.error(
               "Install with: npm install -g typescript typescript-language-server",
             );
-          } else if (adapterConfig.id === "rust-analyzer") {
+          } else if (adapterConfig.presetId === "rust-analyzer") {
             console.error(
               "Install rust-analyzer from: https://rust-analyzer.github.io/",
             );
@@ -357,8 +365,10 @@ export async function indexCommand(
       lspClient = createLSPClient({
         process: lspProcess,
         rootPath: projectRoot,
-        languageId: adapterConfig.baseLanguage,
-        initializationOptions: adapterConfig.initializationOptions,
+        languageId: adapterConfig.baseLanguage || adapterConfig.presetId,
+        initializationOptions: adapterConfig.initializationOptions as
+          | Record<string, unknown>
+          | undefined,
         serverCharacteristics: (adapterConfig as any).serverCharacteristics,
       });
 
@@ -393,23 +403,23 @@ export async function indexCommand(
         error instanceof Error &&
         error.message.includes("Command not found")
       ) {
-        if (config.adapter?.id === "tsgo") {
+        if (config.preset === "tsgo") {
           console.error("\nTo install tsgo:");
           console.error("  npm install -g @typescript/native-preview");
           console.error("\nAlternatively, you can use a different preset:");
           console.error("  lsmcp init -p typescript");
-        } else if (config.adapter?.id === "typescript") {
+        } else if (config.preset === "typescript") {
           console.error("\nTo install typescript-language-server:");
           console.error(
             "  npm install -g typescript typescript-language-server",
           );
-        } else if (config.adapter?.id === "rust-analyzer") {
+        } else if (config.preset === "rust-analyzer") {
           console.error("\nTo install rust-analyzer:");
           console.error("  Visit: https://rust-analyzer.github.io/");
-        } else if (config.adapter?.id === "pyright") {
+        } else if (config.preset === "pyright") {
           console.error("\nTo install pyright:");
           console.error("  npm install -g pyright");
-        } else if (config.adapter?.id === "gopls") {
+        } else if (config.preset === "gopls") {
           console.error("\nTo install gopls:");
           console.error("  go install golang.org/x/tools/gopls@latest");
         }
@@ -425,7 +435,7 @@ export async function indexCommand(
     }
   } else {
     // Fallback to existing index (for backward compatibility)
-    const maybeIndex = getOrCreateIndex(projectRoot);
+    const maybeIndex = getOrCreateIndex(projectRoot, null);
     index = maybeIndex !== null ? maybeIndex : undefined;
   }
 

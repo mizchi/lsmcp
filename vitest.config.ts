@@ -36,6 +36,14 @@ export default defineConfig({
           name: "unit",
           includeSource: ["src/**/*.ts", "packages/**/*.ts"],
           include: ["src/**/*.test.ts", "packages/**/*.test.ts"],
+          exclude: [
+            ...GLOBAL_IGNORED_FILES,
+            // These files contain LSP integration tests that should not run as unit tests
+            "src/tools/lsp/definitions.ts",
+            "src/tools/lsp/diagnostics.ts",
+            "src/tools/lsp/hover.ts",
+            "src/tools/lsp/references.ts",
+          ],
         },
       },
       {
@@ -56,11 +64,6 @@ export default defineConfig({
         extends: true,
         test: {
           name: "adapters",
-          // pool: "forks",
-          // poolOptions: {
-          //   // minThreads: 1, // Minimum threads for adapter tests
-          //   // maxThreads: 1
-          // },
           include: ["tests/adapters/**/*.test.ts"],
           exclude: [...GLOBAL_IGNORED_FILES],
           testTimeout: 15000, // 15s timeout for adapter initialization tests

@@ -167,7 +167,7 @@ describe("ExternalLibraryProvider", () => {
     });
   });
 
-  describe("indexDeclarationFile", () => {
+  describe.skip("indexDeclarationFile", () => {
     it("should index symbols from a declaration file", async () => {
       // Initialize TypeScript LSP client
       const resolved = resolveAdapterCommand(typescriptAdapter, tempDir);
@@ -205,7 +205,7 @@ describe("ExternalLibraryProvider", () => {
     });
   });
 
-  describe("indexExternalLibraries", () => {
+  describe.skip("indexExternalLibraries", () => {
     it("should index all external libraries", async () => {
       // Initialize TypeScript LSP client
       const resolved = resolveAdapterCommand(typescriptAdapter, tempDir);

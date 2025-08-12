@@ -1,6 +1,4 @@
-import type { LspAdapter } from "../types/lsp.ts";
-import { execSync } from "child_process";
-import { getNodeModulesBin } from "../filesystem/nodeModulesUtils.ts";
+import type { Preset } from "../types/lsp.ts";
 
 /**
  * MoonBit language server adapter
@@ -9,31 +7,12 @@ import { getNodeModulesBin } from "../filesystem/nodeModulesUtils.ts";
  * - May have slower response times for some operations
  * - Hover operations may timeout on large files
  */
-export const moonbitAdapter: LspAdapter = {
-  id: "moonbit",
-  name: "MoonBit Language Server",
-  baseLanguage: "moonbit",
-  description: "moonbit lsp",
+export const moonbitAdapter: Preset = {
+  presetId: "moonbit",
   bin: "moonbit-lsp",
   args: [],
-  unsupported: [
+  files: ["**/*.mbt", "**/*.mbti"],
+  disable: [
     // "get_hover", // May be slow/timeout on some files
   ],
-  doctor: async () => {
-    try {
-      const binPath = getNodeModulesBin("moonbit-lsp");
-      if (binPath) {
-        return { ok: true };
-      }
-      // Fall back to checking in PATH
-      execSync("which moonbit-lsp", { stdio: "ignore" });
-      return { ok: true };
-    } catch {
-      return {
-        ok: false,
-        message:
-          "moonbit-lsp not found. Install MoonBit from https://www.moonbitlang.com/",
-      };
-    }
-  },
 };

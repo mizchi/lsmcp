@@ -1,16 +1,13 @@
-import { execSync } from "node:child_process";
-import type { LspAdapter } from "../types/lsp.ts";
+import type { Preset } from "../types/lsp.ts";
 
 /**
  * Pyright adapter - Microsoft's Python language server
  */
-export const pyrightAdapter: LspAdapter = {
-  id: "pyright",
-  name: "Pyright",
-  baseLanguage: "python",
-  description: "Microsoft's Pyright Python language server",
+export const pyrightAdapter: Preset = {
+  presetId: "pyright",
   bin: "uv",
   args: ["run", "pyright-langserver", "--stdio"],
+  files: ["**/*.py", "**/*.pyi"],
   initializationOptions: {
     python: {
       analysis: {
@@ -27,20 +24,5 @@ export const pyrightAdapter: LspAdapter = {
     requiresProjectInit: false,
     sendsInitialDiagnostics: true,
     operationTimeout: 12000,
-  },
-  doctor: async () => {
-    try {
-      execSync("uv run pyright-langserver --version", {
-        stdio: "ignore",
-        timeout: 5000,
-      });
-      return { ok: true, message: "pyright-langserver available via uv" };
-    } catch {
-      return {
-        ok: false,
-        message:
-          "pyright-langserver not available via uv. Install with: uv add pyright",
-      };
-    }
   },
 };

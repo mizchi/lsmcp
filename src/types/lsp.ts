@@ -2,7 +2,7 @@
  * LSP-related type definitions
  */
 
-import type { ToolDef } from "../mcp/utils/mcpHelpers.ts";
+import { ToolDef } from "@lsmcp/lsp-client";
 import type { ZodType } from "zod";
 
 /**
@@ -61,17 +61,8 @@ export interface ServerCapabilities {
  * Defines how to connect to and configure a language server
  */
 export interface LspAdapter {
-  /** Unique identifier (e.g., "typescript", "pyright") */
-  id: string;
-
-  /** Display name (e.g., "TypeScript Language Server") */
-  name: string;
-
-  /** Base language this adapter supports (e.g., "typescript", "python") */
-  baseLanguage: string;
-
-  /** Brief description of the adapter */
-  description: string;
+  /** Adapter ID */
+  id?: string;
 
   /** LSP server binary command */
   bin: string;
@@ -82,8 +73,11 @@ export interface LspAdapter {
   /** LSP initialization options */
   initializationOptions?: unknown;
 
+  /** Analyze targets */
+  files: string[];
+
   /** List of unsupported LSP features (e.g., ["rename_symbol", "get_code_actions"]) */
-  unsupported?: string[];
+  disable?: string[];
 
   /** Whether diagnostics need deduplication */
   needsDiagnosticDeduplication?: boolean;
@@ -91,14 +85,37 @@ export interface LspAdapter {
   /** Custom MCP tools specific to this adapter */
   customTools?: ToolDef<ZodType>[];
 
-  /** Health check function */
-  doctor?: () => Promise<{ ok: boolean; message?: string }>;
-
   /** Server-specific behavior characteristics */
   serverCharacteristics?: ServerCharacteristics;
 
   /** Server capabilities */
   serverCapabilities?: ServerCapabilities;
+
+  /** Base language for this adapter */
+  baseLanguage?: string;
+
+  /** Doctor function for checking adapter requirements */
+  doctor?: () => Promise<{ success: boolean; message: string }>;
+}
+
+export interface Preset extends LspAdapter {
+  /** Unique identifier (e.g., "typescript", "pyright") */
+  presetId: string;
+
+  /** Display name */
+  name?: string;
+
+  /** Base language for this preset */
+  baseLanguage?: string;
+
+  /** Description of this preset */
+  description?: string;
+
+  /** Language-specific features configuration */
+  languageFeatures?: unknown;
+
+  /** Unsupported features */
+  unsupported?: string[];
 }
 
 /**

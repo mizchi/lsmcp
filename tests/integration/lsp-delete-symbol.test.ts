@@ -1,9 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
-import {
-  initialize as initializeLSPClient,
-  shutdown as shutdownLSPClient,
-} from "@lsmcp/lsp-client"; // from "lspClient.ts";
 import { lspDeleteSymbolTool } from "@lsmcp/lsp-client"; // from "tools/deleteSymbol.ts";
 import fs from "fs/promises";
 import path from "path";
@@ -13,6 +9,7 @@ import { randomBytes } from "crypto";
 
 describe("lsp delete symbol", () => {
   let lspProcess: ChildProcess;
+  let lspClient: any;
   let tmpDir: string;
 
   beforeAll(async () => {
@@ -31,12 +28,12 @@ describe("lsp delete symbol", () => {
 
     // Initialize LSP client
     const { createLSPClient } = await import("@lsmcp/lsp-client");
-    const lspClient = createLSPClient({
+    lspClient = createLSPClient({
       process: lspProcess,
       rootPath: __dirname,
       languageId: "typescript",
     });
-    await initializeLSPClient(lspClient);
+    await lspClient.start();
   });
 
   beforeAll(async () => {
@@ -53,7 +50,7 @@ describe("lsp delete symbol", () => {
     }
 
     if (lspProcess) {
-      await shutdownLSPClient();
+      if (lspClient) await lspClient.stop();
       lspProcess.kill();
     }
   });

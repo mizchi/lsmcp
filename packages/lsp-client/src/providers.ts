@@ -2,7 +2,7 @@
  * LSP-based symbol provider for code indexing
  */
 
-import type { LSPClient } from "../protocol/types-legacy.ts";
+import type { LSPClient } from "./protocol/types-legacy.ts";
 import type { DocumentSymbol } from "@lsmcp/types";
 
 /**

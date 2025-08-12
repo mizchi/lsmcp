@@ -1,7 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { join } from "path";
 import { pyrightAdapter } from "../../../src/adapters/pyright.ts";
-import { ruffAdapter } from "../../../src/adapters/ruff.ts";
 import { testLspConnection } from "../testHelpers.ts";
 import { $ } from "zx";
 
@@ -40,13 +39,16 @@ describe.skip("Ruff Adapter", () => {
     await initializePythonEnvironment();
   }, 15000); // 30s timeout for initialization
 
-  it("should connect to Ruff language server", async () => {
-    const checkFiles = ["main.py"];
-    const result = await testLspConnection(
-      ruffAdapter,
-      projectRoot,
-      checkFiles,
-    );
+  it.skip("should connect to Ruff language server", async () => {
+    // ruff adapter has been removed
+    // const checkFiles = ["main.py"];
+    // const result = await testLspConnection(
+    //   ruffAdapter,
+    //   projectRoot,
+    //   checkFiles,
+    // );
+    expect(true).toBe(true); // Placeholder
+    /*
     expect(result).toMatchInlineSnapshot(`
       {
         "connected": true,
@@ -60,6 +62,6 @@ describe.skip("Ruff Adapter", () => {
           },
         ],
       }
-    `);
+    `); */
   });
 });

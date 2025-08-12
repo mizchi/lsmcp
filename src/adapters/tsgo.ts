@@ -1,6 +1,4 @@
-import type { LspAdapter } from "../types/lsp.ts";
-import { execSync } from "child_process";
-import { getNodeModulesBin } from "../filesystem/nodeModulesUtils.ts";
+import type { Preset } from "../types/lsp.ts";
 
 /**
  * tsgo adapter - Fast TypeScript language server
@@ -10,15 +8,12 @@ import { getNodeModulesBin } from "../filesystem/nodeModulesUtils.ts";
  * - May report diagnostics for non-existent lines
  * - Diagnostics are deduplicated and filtered by the test helper
  */
-export const tsgoAdapter: LspAdapter = {
-  id: "tsgo",
-  name: "tsgo",
-  baseLanguage: "typescript",
-  description: "Fast TypeScript language server by tsgo",
+export const tsgoAdapter: Preset = {
+  presetId: "tsgo",
   bin: "npx",
   args: ["tsgo", "--lsp", "--stdio"],
-
-  unsupported: ["get_code_actions", "rename_symbol", "delete_symbol"],
+  files: ["**/*.ts", "**/*.tsx"],
+  disable: ["get_code_actions", "rename_symbol", "delete_symbol"],
   needsDiagnosticDeduplication: true,
 
   serverCharacteristics: {
@@ -43,23 +38,5 @@ export const tsgoAdapter: LspAdapter = {
     },
     // Disable some features that might cause issues
     maxTsServerMemory: 4096,
-  },
-
-  doctor: async () => {
-    try {
-      const binPath = getNodeModulesBin("tsgo");
-      if (binPath) {
-        return { ok: true };
-      }
-      // Fall back to checking npx
-      execSync("which npx", { stdio: "ignore" });
-      execSync("npx -y tsgo --version", { stdio: "ignore" });
-      return { ok: true };
-    } catch {
-      return {
-        ok: false,
-        message: "tsgo not found. Install with: npm install -g tsgo",
-      };
-    }
   },
 };

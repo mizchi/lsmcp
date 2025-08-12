@@ -1,4 +1,4 @@
-import { getNodeModulesCommand } from "../filesystem/nodeModulesUtils.ts";
+import { getNodeModulesCommand } from "../utils/nodeModulesUtils.ts";
 import type { LspAdapter } from "../types/lsp.ts";
 
 /**
