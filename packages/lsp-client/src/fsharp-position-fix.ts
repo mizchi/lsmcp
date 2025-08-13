@@ -84,7 +84,13 @@ function fixRange(
 
       // Check if this line contains the symbol declaration
       // F# declarations typically start with: let, type, member, val, module, namespace
+      // For record fields, look for "FieldName:" pattern
+      const isRecordField = trimmedLine.includes(`${symbolName}:`) && 
+                           !trimmedLine.startsWith("///") && 
+                           !trimmedLine.startsWith("//");
+      
       if (
+        isRecordField ||
         trimmedLine.startsWith("let ") ||
         trimmedLine.startsWith("type ") ||
         trimmedLine.startsWith("member ") ||
