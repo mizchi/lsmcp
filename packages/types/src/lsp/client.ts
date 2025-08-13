@@ -45,11 +45,9 @@ export {
   TextEdit,
   WorkspaceEdit,
 };
-import { ChildProcess } from "child_process";
-import { EventEmitter } from "events";
+import type { ChildProcess } from "child_process";
+import type { EventEmitter } from "node:events";
 import type { FileSystemApi } from "../domain/filesystem.ts";
-// Backward compatibility type alias
-export type IFileSystem = FileSystemApi;
 
 // LSP Message types
 export interface LSPRequest {

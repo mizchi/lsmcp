@@ -34,7 +34,8 @@ import { debug } from "../utils/debug.ts";
 import type { IFileSystem, IServerCharacteristics } from "../interfaces.ts";
 import type { ChildProcess } from "child_process";
 
-export interface LSPClient {
+// Internal LSP Client implementation interface
+export interface InternalLSPClient {
   languageId: string;
   rootPath: string;
   fileSystemApi: IFileSystem;
@@ -108,7 +109,7 @@ export interface LSPClient {
   supportsFeature(feature: string): boolean;
 }
 
-export function createLSPClient(config: LSPClientConfig): LSPClient {
+export function createLSPClient(config: LSPClientConfig): InternalLSPClient {
   const state = createInitialState(config);
   const connection = new ConnectionHandler(state);
   const lifecycle = new LifecycleManager(state, connection, config);
@@ -117,7 +118,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   const commands = createFeatureCommands();
 
   // Create the client interface
-  const client: LSPClient = {
+  const client: InternalLSPClient = {
     languageId: state.languageId,
     rootPath: state.rootPath,
     fileSystemApi: state.fileSystemApi,
@@ -480,6 +481,9 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
  * Create and initialize an LSP client
  * @deprecated Use createLSPClient and call start() separately
  */
+// Export type alias for backward compatibility
+export type LSPClient = InternalLSPClient;
+
 export async function createAndInitializeLSPClient(
   rootPath: string,
   process: ChildProcess,

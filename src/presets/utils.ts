@@ -1,13 +1,13 @@
 import { getNodeModulesCommand } from "../utils/nodeModulesUtils.ts";
-import type { LspAdapter } from "../config/schema.ts";
+import type { LspClientConfig } from "../config/schema.ts";
 
 /**
- * Convert an LSP adapter to a language configuration, resolving node_modules binaries
+ * Convert an LSP client config to a language configuration, resolving node_modules binaries
  */
 export function adapterToLanguageConfig(
-  adapter: LspAdapter,
+  adapter: LspClientConfig,
   projectRoot?: string,
-): LspAdapter {
+): LspClientConfig {
   // Check if this is a node_modules binary that should be resolved
   const nodeModulesBinaries = [
     "typescript-language-server",
@@ -33,10 +33,10 @@ export function adapterToLanguageConfig(
 }
 
 /**
- * Resolve the LSP command for an adapter, handling node_modules binaries
+ * Resolve the LSP command for a client config, handling node_modules binaries
  */
 export function resolveAdapterCommand(
-  adapter: LspAdapter,
+  adapter: LspClientConfig,
   projectRoot?: string,
 ): { command: string; args: string[] } {
   const nodeModulesBinaries = [

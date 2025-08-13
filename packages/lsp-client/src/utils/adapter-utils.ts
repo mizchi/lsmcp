@@ -1,6 +1,6 @@
 import { ChildProcess, spawn } from "child_process";
 import { LSPValidationResult, LSPValidator } from "../utils/validator.ts";
-import type { ILspAdapter as LspAdapter } from "../interfaces.ts";
+import type { ILspClientConfig as LspClientConfig } from "../interfaces.ts";
 import { debug as debugLog } from "../utils/debug.ts";
 
 export interface AdapterValidationOptions {
@@ -31,7 +31,7 @@ function createAdapterState(): AdapterState {
 
 // Check if the LSP server binary is available
 export async function checkAdapterAvailability(
-  config: LspAdapter,
+  config: LspClientConfig,
 ): Promise<{ available: boolean; message?: string }> {
   try {
     if (config.doctor) {
@@ -89,7 +89,7 @@ export async function checkAdapterAvailability(
 
 // Get environment variables for the LSP server process
 export function getAdapterEnvironmentVariables(
-  config: LspAdapter,
+  config: LspClientConfig,
 ): Record<string, string> {
   // Language-specific environment variables
   const languageEnv: Record<string, Record<string, string>> = {
@@ -105,7 +105,7 @@ export function getAdapterEnvironmentVariables(
 }
 
 // Get default test content for validation
-export function getDefaultTestContent(config: LspAdapter): string {
+export function getDefaultTestContent(config: LspClientConfig): string {
   const testContent: Record<string, string> = {
     python: "# Python test file\nimport sys\n\ndef test():\n    pass\n",
     typescript: "// TypeScript test file\nconst test = (): void => {};\n",
@@ -122,7 +122,7 @@ export function getDefaultTestContent(config: LspAdapter): string {
 }
 
 // Get default test file name for validation
-export function getDefaultTestFileName(config: LspAdapter): string {
+export function getDefaultTestFileName(config: LspClientConfig): string {
   const extensions: Record<string, string> = {
     python: "test.py",
     typescript: "test.ts",
@@ -139,7 +139,7 @@ export function getDefaultTestFileName(config: LspAdapter): string {
 
 // Start the LSP server process
 export async function startLspProcess(
-  config: LspAdapter,
+  config: LspClientConfig,
   rootPath: string,
 ): Promise<ChildProcess> {
   debugLog(
@@ -190,7 +190,7 @@ export async function startLspProcess(
 
 // Validate the LSP server functionality
 export async function validateLspAdapter(
-  config: LspAdapter,
+  config: LspClientConfig,
   rootPath: string,
   options: AdapterValidationOptions = {},
   state?: AdapterState,
@@ -260,7 +260,7 @@ export async function validateLspAdapter(
 }
 
 // Get information about supported LSP features
-export function getSupportedFeatures(config: LspAdapter): string[] {
+export function getSupportedFeatures(config: LspClientConfig): string[] {
   const allFeatures = [
     "textDocument/hover",
     "textDocument/completion",
@@ -279,13 +279,13 @@ export function getSupportedFeatures(config: LspAdapter): string[] {
 }
 
 // Get information about unsupported LSP features
-export function getUnsupportedFeatures(config: LspAdapter): string[] {
+export function getUnsupportedFeatures(config: LspClientConfig): string[] {
   return config.unsupported || [];
 }
 
 // Get diagnostic information about the adapter
 export async function getAdapterDiagnosticInfo(
-  config: LspAdapter,
+  config: LspClientConfig,
   rootPath: string,
   state?: AdapterState,
 ): Promise<{
@@ -321,7 +321,7 @@ export async function getAdapterDiagnosticInfo(
 
 // Create adapter manager for stateful operations
 export interface AdapterManager {
-  config: LspAdapter;
+  config: LspClientConfig;
   checkAvailability(): Promise<{ available: boolean; message?: string }>;
   startProcess(rootPath: string): Promise<ChildProcess>;
   validate(
@@ -343,7 +343,7 @@ export interface AdapterManager {
 }
 
 // Create an adapter manager with stateful operations
-export function createAdapterManager(config: LspAdapter): AdapterManager {
+export function createAdapterManager(config: LspClientConfig): AdapterManager {
   const state = createAdapterState();
 
   return {

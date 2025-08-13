@@ -81,8 +81,8 @@ export const serverCapabilitiesSchema = z.object({
 
 export type ServerCapabilities = z.infer<typeof serverCapabilitiesSchema>;
 
-// LSP adapter base schema (common fields)
-export const lspAdapterBaseSchema = z.object({
+// LSP client config base schema (common fields)
+export const lspClientConfigBaseSchema = z.object({
   /** Adapter ID */
   id: z.string().optional().describe("Adapter ID"),
 
@@ -129,13 +129,13 @@ export const lspAdapterBaseSchema = z.object({
     .describe("Base language for this adapter"),
 });
 
-// LSP adapter type (no runtime-only fields anymore)
-export const lspAdapterSchema = lspAdapterBaseSchema;
+// LSP client config type (no runtime-only fields anymore)
+export const lspClientConfigSchema = lspClientConfigBaseSchema;
 
-export type LspAdapter = z.infer<typeof lspAdapterBaseSchema>;
+export type LspClientConfig = z.infer<typeof lspClientConfigBaseSchema>;
 
 // Preset schema
-export const presetSchema = lspAdapterSchema.extend({
+export const presetSchema = lspClientConfigSchema.extend({
   /** Unique identifier */
   presetId: z.string().describe("Unique preset identifier"),
 

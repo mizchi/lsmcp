@@ -15,7 +15,7 @@ import { highLevelTools, onboardingToolsList } from "./tools/toolLists.ts";
 import { getSerenityToolsList } from "./tools/index.ts";
 import { resolveAdapterCommand } from "./presets/utils.ts";
 import { PresetRegistry, type ExtendedLSMCPConfig } from "./config/loader.ts";
-import type { LspAdapter } from "./config/schema.ts";
+import type { LspClientConfig } from "./config/schema.ts";
 
 export async function runLanguageServerWithConfig(
   config: ExtendedLSMCPConfig,
@@ -46,7 +46,7 @@ export async function runLanguageServerWithConfig(
         bin: config.bin,
         args: config.args || [],
         files: config.files || [],
-      } as LspAdapter,
+      } as LspClientConfig,
       projectRoot,
     );
 

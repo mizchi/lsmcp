@@ -91,7 +91,10 @@ async function getDiagnosticsWithLSPV2(
     if (diagnostics.length > 0) {
       if (diagnosticSupport.pushDiagnostics) {
         method = "push";
-      } else if (diagnosticSupport.pullDiagnostics && client.pullDiagnostics) {
+      } else if (
+        diagnosticSupport.pullDiagnostics &&
+        typeof client.pullDiagnostics === "function"
+      ) {
         method = "pull";
       } else {
         method = "polling";

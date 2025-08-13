@@ -43,8 +43,8 @@ export interface IServerCharacteristicsProvider {
   ): IServerCharacteristics;
 }
 
-// LSP Adapter interface
-export interface ILspAdapter {
+// LSP Client Config interface
+export interface ILspClientConfig {
   id: string;
   name: string;
   command: string[];

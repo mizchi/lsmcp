@@ -49,7 +49,7 @@ async function loadAdapters(): Promise<AdapterInfo[]> {
 
     // Extract adapter export with regex
     const adapterMatch = content.match(
-      /export const (\w+Adapter): LspAdapter = \{([^}]+(?:\{[^}]*\}[^}]*)*)\}/s,
+      /export const (\w+Adapter): LspClientConfig = \{([^}]+(?:\{[^}]*\}[^}]*)*)\}/s,
     );
     if (!adapterMatch) continue;
 

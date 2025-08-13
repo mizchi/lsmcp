@@ -2,7 +2,7 @@ import { spawn } from "child_process";
 import { join } from "path";
 import { readFileSync } from "fs";
 import { createLSPClient } from "@lsmcp/lsp-client"; // from "lspClient.ts";
-import type { LspAdapter } from "../../src/config/schema.ts";
+import type { LspClientConfig } from "../../src/config/schema.ts";
 import { resolveAdapterCommand } from "../../src/presets/utils.ts";
 import {
   processDefaultDiagnostics,
@@ -11,13 +11,13 @@ import {
 import { waitForDiagnosticsWithRetry, isLargeFile } from "@lsmcp/lsp-client"; // from "diagnosticUtils.ts";
 
 // Helper to convert adapter to language config
-function adapterToLanguageConfig(adapter: LspAdapter): LspAdapter {
+function adapterToLanguageConfig(adapter: LspClientConfig): LspClientConfig {
   return adapter;
 }
 
 // Test helper to verify LSP connection
 export async function testLspConnection(
-  adapter: LspAdapter,
+  adapter: LspClientConfig,
   projectPath: string,
   checkFiles: string[],
 ): Promise<{ connected: boolean; diagnostics?: any[]; error?: string }> {

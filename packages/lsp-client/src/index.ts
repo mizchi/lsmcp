@@ -7,8 +7,7 @@ import type { LSPClient } from "./protocol/types/index.ts";
 // ============================================================================
 // Core Client API
 // ============================================================================
-export { createLSPClient } from "./core/client.ts";
-export type { LSPClient } from "./protocol/types/index.ts";
+export { createLSPClient, type LSPClient } from "./core/client.ts";
 export type { LSPClientConfig, LSPClientState } from "./core/state.ts";
 
 // Factory function for creating and initializing clients

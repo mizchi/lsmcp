@@ -78,9 +78,9 @@ lsmcp/
 
 ```typescript
 // src/adapters/myLanguage.ts
-import type { LspAdapter } from "../types/lsp.ts";
+import type { LspClientConfig } from "../types/lsp.ts";
 
-export const myLanguageAdapter: LspAdapter = {
+export const myLanguageAdapter: LspClientConfig = {
   id: "my-language",
   name: "My Language",
   fileExtensions: [".ml", ".mli"],

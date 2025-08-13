@@ -29,18 +29,6 @@ export interface McpToolDef<TSchema extends ZodType> {
 }
 
 /**
- * Context-aware MCP Tool definition
- * Tools that require context should use this interface
- */
-export interface McpToolDefWithContext<TSchema extends ZodType> {
-  name: string;
-  description: string;
-  schema: TSchema;
-  requiresContext: true;
-  execute: (args: z.infer<TSchema>, context: McpContext) => Promise<string>;
-}
-
-/**
  * MCP Server configuration options
  */
 export interface McpServerOptions {
