@@ -202,6 +202,25 @@ Note: Tool names listed below are the raw MCP tool names (snake_case, e.g. get_h
 - **write_memory** - Create or update memories
 - **delete_memory** - Remove memories
 
+## Performance Optimization
+
+LSMCP includes several performance optimizations:
+
+- **Incremental Indexing**: Only modified files are re-indexed
+- **Memory Monitoring**: Automatic garbage collection when memory usage is high
+- **Batch Processing**: Efficient concurrent file processing
+- **Smart Caching**: 15-minute cache for frequently accessed data
+
+Configuration options in `.lsmcp/config.json`:
+```json
+{
+  "indexConcurrency": 5,
+  "maxFileSize": 10485760,
+  "enableWatchers": true,
+  "memoryLimit": 1024
+}
+```
+
 ## Development
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development setup, testing instructions, and contribution guidelines.
@@ -211,6 +230,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development setup, testing i
 pnpm install
 pnpm build
 pnpm test
+
+# Run with memory monitoring
+node --expose-gc dist/lsmcp.js
 ```
 
 ## License

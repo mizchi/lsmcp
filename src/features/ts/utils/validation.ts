@@ -15,7 +15,7 @@ interface LineAndSymbolResult {
  * @param symbolName Symbol name to find
  * @param filePath File path for error messages
  * @returns LineAndSymbolResult with line index, content, and symbol index
- * @throws MCPToolError if validation fails
+ * @throws LSMCPError if validation fails
  */
 export function validateLineAndSymbol(
   fileContent: string,
@@ -50,7 +50,7 @@ export function validateLineAndSymbol(
  * @param line Line number (1-based) or string to match
  * @param filePath File path for error messages
  * @returns Line index and content
- * @throws MCPToolError if validation fails
+ * @throws LSMCPError if validation fails
  */
 export function validateLine(
   fileContent: string,

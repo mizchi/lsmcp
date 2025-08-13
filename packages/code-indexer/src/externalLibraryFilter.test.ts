@@ -250,7 +250,7 @@ describe("External Library Symbol Filtering", () => {
     it("should extract regular package names", () => {
       const extractLibraryName = (uri: string): string => {
         const match = uri.match(
-          /node_modules[\/\\](@[^\/\\]+[\/\\][^\/\\]+|[^\/\\]+)/,
+          /node_modules[\/\\](@[^/\\]+[\/\\][^/\\]+|[^/\\]+)/,
         );
         if (match) {
           return match[1];

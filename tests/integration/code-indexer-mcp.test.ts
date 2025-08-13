@@ -385,8 +385,8 @@ export enum UserRole {
       // The result is returned as text, not JSON
       const resultText = (result.content as any)[0]?.text || "";
       expect(resultText).toContain("Logger");
-      expect(resultText).toContain("VERSION");
       expect(resultText).toContain("formatDate");
+      expect(resultText).toContain("parseJSON");
       expect(resultText).toContain("src/utils.ts");
     }, 30000);
 

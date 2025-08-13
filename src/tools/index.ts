@@ -2,8 +2,6 @@ export * from "./editor/symbolEditTools.ts";
 export * from "./editor/regexEditTools.ts";
 export * from "./memory/memoryTools.ts";
 // Internal tools - not exported
-// export * from "./cacheTools.ts";
-// export * from "./workflowTools.ts";
 export * from "./finder/fileSystemTools.ts";
 export * from "./finder/symbolTools.ts";
 export * from "./finder/indexTools.ts";
@@ -25,8 +23,6 @@ import {
   deleteMemoryTool,
 } from "./memory/memoryTools.ts";
 // Internal tools - not exported as MCP tools
-// import { ... } from "./cacheTools.ts";
-// import { ... } from "./workflowTools.ts";
 import {
   listDirTool,
   findFileTool,
@@ -87,9 +83,6 @@ const languageSpecificTools = {
     parseImports: parseImportsToolDef,
   },
   // Future language-specific tools can be added here
-  // rust: { ... },
-  // go: { ... },
-  // python: { ... },
 };
 
 /**
@@ -115,9 +108,6 @@ export function getSerenityTools(config?: {
   }
 
   // Future: Add other language-specific tools based on config
-  // if (config?.languageFeatures?.rust?.enabled) {
-  //   Object.assign(tools, languageSpecificTools.rust);
-  // }
 
   // Add advanced memory tools if enabled (support both old and new config)
   const memoryEnabled = config?.experiments?.memory || config?.memoryAdvanced;

@@ -1,3 +1,35 @@
+## [0.10.0-rc.2] - 2025-08-13
+
+### Added
+- Memory monitoring and automatic garbage collection
+- Performance optimization constants
+- Ruby language support in test fixtures
+- Comprehensive error handling with LSMCPError
+
+### Changed
+- Unified error handling system - replaced MCPToolError with LSMCPError
+- Improved project detection with better error handling
+- Enhanced TypeScript comment position handling
+- Optimized symbol indexing with batch processing
+
+### Fixed
+- Lint warnings in test fixtures and source files
+- Regex escape sequences in node_modules path matching
+- Unused variable warnings with underscore prefix convention
+- Memory leaks in symbol indexing
+
+### Removed
+- Deprecated mcpErrors.ts file
+- Unused processedCount variable in indexing
+- Moonbit database file from test fixtures
+
+## [0.10.0-rc.1] - 2025-08-12
+
+### Added
+- Initial release candidate improvements
+- Enhanced error handling system
+- Better performance monitoring
+
 ## [0.10.0-rc.0](https://github.com/mizchi/lsmcp/compare/v0.9.4...v0.10.0-rc.0) (2025-01-10)
 
 ### 🚀 Features

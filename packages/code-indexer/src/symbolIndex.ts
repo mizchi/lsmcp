@@ -302,7 +302,7 @@ function queueReindex(state: SymbolIndexState, filePath: string): void {
       resolve(state.rootPath, filePath),
     );
     manager.invalidateFile(relativePath);
-  } catch (error) {
+  } catch {
     // Ignore cache errors
   }
 
@@ -473,13 +473,11 @@ export async function indexFiles(
     chunks.push(filePaths.slice(i, i + concurrency));
   }
 
-  let processedCount = 0;
   for (const chunk of chunks) {
     await Promise.all(
       chunk.map(async (file) => {
         try {
           await indexFile(state, file);
-          processedCount++;
         } catch (error) {
           // Error is already emitted in indexFile
           errorLog(`Failed to index ${file}:`, error);
@@ -830,7 +828,7 @@ export async function indexExternalLibrariesForState(
  */
 function extractLibraryName(uri: string): string {
   const match = uri.match(
-    /node_modules[\/\\](@[^\/\\]+[\/\\][^\/\\]+|[^\/\\]+)/,
+    /node_modules[\/\\](@[^/\\]+[\/\\][^/\\]+|[^/\\]+)/,
   );
   if (match) {
     return match[1];

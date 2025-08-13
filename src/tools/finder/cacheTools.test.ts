@@ -1,9 +1,4 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-// import {
-//   searchCachedSymbolsFromIndexTool,
-//   getCacheStatsFromIndexTool,
-//   clearCacheFromIndexTool,
-// } from "../../mcp/tools/cacheTools.ts";
 import * as cacheIntegration from "@lsmcp/code-indexer";
 import {
   clearCacheFromIndexTool,

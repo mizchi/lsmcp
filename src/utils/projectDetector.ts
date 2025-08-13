@@ -2,9 +2,11 @@
  * Project type detector for automatic preset selection
  */
 
-import { existsSync } from "fs";
+import { existsSync, readdirSync } from "fs";
 import { readFile } from "fs/promises";
 import { join } from "path";
+import { debug } from "./mcpHelpers.ts";
+import { LSMCPError, ErrorCode } from "../domain/errors/index.ts";
 
 export interface DetectedProject {
   preset: string;
@@ -17,6 +19,18 @@ export interface DetectedProject {
 export async function detectProjectType(
   projectRoot: string,
 ): Promise<DetectedProject[]> {
+  if (!existsSync(projectRoot)) {
+    throw new LSMCPError(
+      ErrorCode.FILE_NOT_FOUND,
+      `Project root not found: ${projectRoot}`,
+      { filePath: projectRoot },
+      [
+        "Ensure the project root path is correct",
+        "Use an absolute path to the project directory",
+      ],
+    );
+  }
+
   const detected: DetectedProject[] = [];
 
   // Check for TypeScript/JavaScript projects
@@ -46,7 +60,8 @@ export async function detectProjectType(
         });
       }
     } catch (error) {
-      // Ignore parse errors
+      // Log parse errors but don't fail
+      debug(`Failed to parse package.json: ${error}`);
     }
   }
 
@@ -62,21 +77,18 @@ export async function detectProjectType(
   }
 
   // Check for F#
-  const files = ["*.fsproj"];
-  for (const pattern of files) {
-    const { glob } = await import("gitaware-glob");
-    const matchesGen = await glob(pattern, { cwd: projectRoot });
-    const matches = [];
-    for await (const match of matchesGen) {
-      matches.push(match);
-    }
-    if (matches.length > 0) {
+  try {
+    const files = readdirSync(projectRoot);
+    const fsprojFile = files.find((file) => file.endsWith(".fsproj"));
+    if (fsprojFile) {
       detected.push({
         preset: "fsharp",
-        reason: `Found ${matches[0]}`,
+        reason: `Found ${fsprojFile}`,
       });
-      break;
     }
+  } catch (error) {
+    // Log read errors but don't fail
+    debug(`Failed to read directory for F# detection: ${error}`);
   }
 
   // Check for MoonBit

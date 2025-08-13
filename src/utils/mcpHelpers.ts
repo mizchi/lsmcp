@@ -6,7 +6,7 @@
 import { type ZodType } from "zod";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { MCPToolError } from "../domain/errors/mcpErrors.ts";
+import { LSMCPError } from "../domain/errors/index.ts";
 import type { McpToolDef } from "@lsmcp/types";
 
 /**
@@ -77,9 +77,9 @@ export function toMcpToolHandler<T>(
 
       // Create detailed error message
       let errorMessage = "";
-      if (error instanceof MCPToolError) {
-        // Use the formatted error message for MCPToolError
-        errorMessage = (error as MCPToolError).format();
+      if (error instanceof LSMCPError) {
+        // Use the formatted error message for LSMCPError
+        errorMessage = error.format();
       } else if (error instanceof Error) {
         errorMessage = "Error: " + error.message;
         if (process.env.DEBUG && error.stack) {

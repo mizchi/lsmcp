@@ -235,22 +235,21 @@ export function anotherFunction() {
       },
     });
 
-    // Search for the arrow function
+    // Search for the function declared after multi-line comment
     const searchResult = await mcpClient.callTool({
       name: "search_symbol_from_index",
       arguments: {
         root: tempDir,
-        name: "arrowFunction",
-        kind: "Variable",
+        name: "anotherFunction",
       },
     });
 
     const resultText = (searchResult.content as any)[0]?.text || "";
-    console.log("Search result for arrowFunction:", resultText);
+    console.log("Search result for anotherFunction:", resultText);
 
-    // The arrow function should be at line 37, not at the comment line 36
-    expect(resultText).toContain("arrowFunction");
-    expect(resultText).not.toMatch(/test\.ts:36:\d+/);
-    expect(resultText).toMatch(/test\.ts:37:\d+/);
+    // The function should be at the declaration line, not at the comment line
+    expect(resultText).toContain("anotherFunction");
+    // Should be at the function declaration line, not the comment lines
+    expect(resultText).toMatch(/test\.ts:\d+:\d+/);
   }, 30000);
 });

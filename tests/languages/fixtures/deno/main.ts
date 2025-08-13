@@ -33,13 +33,13 @@ const idMap = service.processUsers(users);
 console.log("User ID map:", idMap);
 
 // This should cause a type error
-const invalidUser: User = {
+const _invalidUser: User = {
   id: "not-a-number", // Type error: string is not assignable to number
   name: "Invalid",
 };
 
 // This will also cause a type error
-const result: number = service.processUsers(users); // Type error: Map is not number
+const _result: number = service.processUsers(users); // Type error: Map is not number
 
 // Deno HTTP server example
 const handler = (_req: Request): Response => {

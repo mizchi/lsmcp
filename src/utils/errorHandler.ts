@@ -1,70 +1,28 @@
 import { debug } from "./mcpHelpers.ts";
+import {
+  LSMCPError,
+  ErrorCode,
+  type ErrorContext,
+  errors,
+} from "../domain/errors/index.ts";
 
-export interface ErrorContext {
-  operation: string;
-  language?: string;
-  filePath?: string;
-  symbolName?: string;
-  details?: Record<string, unknown>;
-}
-
-interface FormattedError {
-  title: string;
-  reason: string;
-  solution?: string;
-  debugInfo?: string;
-}
-
-class MCPError extends Error {
-  constructor(
-    public readonly formatted: FormattedError,
-    public readonly context?: ErrorContext,
-  ) {
-    super(formatted.title);
-    this.name = "MCPError";
-  }
-
-  toString(): string {
-    const parts = [this.formatted.title];
-
-    if (this.formatted.reason) {
-      parts.push(`Reason: ${this.formatted.reason}`);
-    }
-
-    if (this.formatted.solution) {
-      parts.push(`Solution: ${this.formatted.solution}`);
-    }
-
-    if (this.formatted.debugInfo && process.env.DEBUG) {
-      parts.push(`Debug: ${this.formatted.debugInfo}`);
-    }
-
-    return parts.join("\n");
-  }
-}
+export type { ErrorContext };
 
 export function formatError(error: unknown, context?: ErrorContext): string {
-  if (error instanceof MCPError) {
-    return error.toString();
+  if (error instanceof LSMCPError) {
+    return error.format();
   }
 
   if (error instanceof Error) {
-    const formatted = handleKnownError(error, context);
-    if (formatted) {
-      return new MCPError(formatted, context).toString();
+    const lsmcpError = handleKnownError(error, context);
+    if (lsmcpError) {
+      return lsmcpError.format();
     }
 
     // Unknown error
-    const debugInfo = process.env.DEBUG ? error.stack : undefined;
-    return new MCPError(
-      {
-        title: `Error: ${error.message}`,
-        reason: "An unexpected error occurred",
-        solution: "Check the error message for details",
-        debugInfo,
-      },
-      context,
-    ).toString();
+    return errors
+      .generic(error.message, ErrorCode.UNKNOWN_ERROR, context)
+      .format();
   }
 
   return String(error);
@@ -73,7 +31,7 @@ export function formatError(error: unknown, context?: ErrorContext): string {
 function handleKnownError(
   error: Error,
   context?: ErrorContext,
-): FormattedError | null {
+): LSMCPError | null {
   const message = error.message.toLowerCase();
 
   // LSP server not found (but not file not found)
@@ -82,11 +40,7 @@ function handleKnownError(
     !context?.filePath
   ) {
     const language = context?.language || "unknown";
-    return {
-      title: `LSP server for ${language} not found`,
-      reason: "The language server is not installed or not in PATH",
-      solution: getLSPInstallSolution(language),
-    };
+    return errors.lspStartError(language, "Command not found", context);
   }
 
   // LSP server startup failed
@@ -94,12 +48,8 @@ function handleKnownError(
     message.includes("lsp server exited") ||
     message.includes("failed to start")
   ) {
-    return {
-      title: "LSP server failed to start",
-      reason: "The language server crashed during initialization",
-      solution:
-        "Check the language server logs for errors. Try running the server command manually to diagnose issues.",
-    };
+    const language = context?.language || "unknown";
+    return errors.lspStartError(language, error.message, context);
   }
 
   // File not found
@@ -109,12 +59,7 @@ function handleKnownError(
     message.includes("file not found")
   ) {
     const filePath = context?.filePath || "unknown";
-    return {
-      title: `File not found: ${filePath}`,
-      reason: "The specified file does not exist",
-      solution:
-        "Check the file path and ensure it exists. Use relative paths from the project root.",
-    };
+    return errors.fileNotFound(filePath, context);
   }
 
   // Symbol not found
@@ -123,12 +68,7 @@ function handleKnownError(
     message.includes("could not find symbol")
   ) {
     const symbolName = context?.symbolName || "unknown";
-    return {
-      title: `Symbol not found: ${symbolName}`,
-      reason: "The specified symbol does not exist at the given location",
-      solution:
-        "Ensure the symbol name is spelled correctly and exists at the specified line. Try using code completion to find the correct symbol.",
-    };
+    return errors.symbolNotFound(symbolName, context?.line, context);
   }
 
   // TypeScript project errors
@@ -136,90 +76,28 @@ function handleKnownError(
     message.includes("no tsconfig") ||
     message.includes("typescript project")
   ) {
-    return {
-      title: "TypeScript project configuration error",
-      reason: "Could not find or load tsconfig.json",
-      solution:
-        "Ensure tsconfig.json exists in the project root or a parent directory. Run 'tsc --init' to create one.",
-    };
+    return errors.noTsConfig(context);
   }
 
   // Tool not supported
   if (message.includes("not supported") || message.includes("not available")) {
     const language = context?.language || "unknown";
     const operation = context?.operation || "operation";
-    return {
-      title: `${operation} not supported for ${language}`,
-      reason: `The language server for ${language} does not support this operation`,
-      solution:
-        "Check the language server documentation for supported features",
-    };
+    return errors.operationNotSupported(operation, language, context);
   }
 
   // Timeout errors
   if (message.includes("timeout") || message.includes("timed out")) {
-    return {
-      title: "Operation timed out",
-      reason: "The language server did not respond in time",
-      solution:
-        "Try again. If the problem persists, restart the language server or increase the timeout.",
-    };
+    return errors.timeout(context?.operation || "unknown", context);
   }
 
   // Permission errors
   if (message.includes("permission denied") || message.includes("eacces")) {
-    return {
-      title: "Permission denied",
-      reason: "Insufficient permissions to perform the operation",
-      solution:
-        "Check file permissions and ensure you have write access to the project directory",
-    };
+    const filePath = context?.filePath || "unknown";
+    return errors.filePermission(filePath, context);
   }
 
   return null;
-}
-
-function getLSPInstallSolution(language: string): string {
-  const installCommands: Record<string, string> = {
-    typescript: "npm install -g typescript typescript-language-server",
-    javascript: "npm install -g typescript typescript-language-server",
-    python: "pip install python-lsp-server[all]",
-    rust: "rustup component add rust-analyzer",
-    go: "go install golang.org/x/tools/gopls@latest",
-    java: "Download from https://download.eclipse.org/jdtls/",
-    "c++": "Install clangd from https://clangd.llvm.org/installation",
-    c: "Install clangd from https://clangd.llvm.org/installation",
-    ruby: "gem install solargraph",
-    php: "composer global require felixfbecker/language-server",
-    lua: "Install lua-language-server from https://github.com/LuaLS/lua-language-server",
-    zig: "zig build -Drelease-safe in zls repository",
-    haskell: "Install haskell-language-server via ghcup",
-    scala: "coursier install metals",
-    kotlin: "Download kotlin-language-server from GitHub releases",
-    swift: "Build sourcekit-lsp from source",
-    dart: "Included with Dart SDK",
-    elixir: "mix archive.install hex elixir_ls",
-    clojure: "Download clojure-lsp from GitHub releases",
-    julia: "julia -e 'using Pkg; Pkg.add(\"LanguageServer\")'",
-    ocaml: "opam install ocaml-lsp-server",
-    fsharp: "dotnet tool install --global fsautocomplete",
-    csharp: "Install omnisharp-roslyn",
-    vb: "Install omnisharp-roslyn",
-    perl: "cpan Perl::LanguageServer",
-    r: "install.packages('languageserver')",
-    nim: "nimble install nimlsp",
-    crystal: "Install crystalline from GitHub releases",
-    v: "v install vls",
-    moonbit: "moon update && moon install",
-    deno: "Deno LSP is built into Deno",
-  };
-
-  const command = installCommands[language.toLowerCase()];
-  if (command) {
-    return `Install it with: ${command}`;
-  }
-
-  return `Check the documentation for ${language} language server installation instructions`;
 }
 
 export function debugLog(message: string, ...args: unknown[]): void {
@@ -227,8 +105,6 @@ export function debugLog(message: string, ...args: unknown[]): void {
     debug(`[DEBUG] ${message}`, ...args);
   }
 }
-
-// wrapError was removed as it was not used anywhere in the codebase
 
 if (import.meta.vitest) {
   const { describe, it, expect } = import.meta.vitest;
@@ -243,7 +119,7 @@ if (import.meta.vitest) {
         };
 
         const formatted = formatError(error, context);
-        expect(formatted).toContain("LSP server for rust not found");
+        expect(formatted).toContain("Failed to start rust language server");
         expect(formatted).toContain("rustup component add rust-analyzer");
       });
 
@@ -256,7 +132,7 @@ if (import.meta.vitest) {
 
         const formatted = formatError(error, context);
         expect(formatted).toContain("File not found: src/test.ts");
-        expect(formatted).toContain("Check the file path");
+        expect(formatted).toContain("Check if the file path is correct");
       });
 
       it("should format symbol not found error", () => {
@@ -267,7 +143,7 @@ if (import.meta.vitest) {
         };
 
         const formatted = formatError(error, context);
-        expect(formatted).toContain("Symbol not found: foo");
+        expect(formatted).toContain('Symbol "foo" not found');
         expect(formatted).toContain("spelled correctly");
       });
 
@@ -285,24 +161,27 @@ if (import.meta.vitest) {
         const formatted = formatError(error);
 
         expect(formatted).toContain("Unknown error");
-        expect(formatted).toContain("unexpected error");
+        expect(formatted).toContain("Error: Unknown error");
 
         delete process.env.DEBUG;
       });
     });
 
-    describe("MCPError", () => {
+    describe("LSMCPError", () => {
       it("should format error with all fields", () => {
-        const error = new MCPError({
-          title: "Test Error",
-          reason: "Something went wrong",
-          solution: "Try this fix",
-        });
+        const error = new LSMCPError(
+          ErrorCode.UNKNOWN_ERROR,
+          "Test Error",
+          {
+            operation: "test",
+          },
+          ["Try this fix"],
+        );
 
-        const str = error.toString();
+        const str = error.format();
         expect(str).toContain("Test Error");
-        expect(str).toContain("Reason: Something went wrong");
-        expect(str).toContain("Solution: Try this fix");
+        expect(str).toContain("Code: UNKNOWN_ERROR");
+        expect(str).toContain("Try this fix");
       });
     });
   });
