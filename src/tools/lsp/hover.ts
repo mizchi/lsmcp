@@ -3,29 +3,7 @@ import { err, ok, type Result } from "neverthrow";
 import { createLSPTool, type LSPClient } from "@lsmcp/lsp-client";
 import { withLSPOperation } from "@lsmcp/lsp-client";
 import { getLanguageIdFromPath } from "@lsmcp/lsp-client";
-import { resolve } from "path";
-import { pathToFileURL } from "url";
-import * as fs from "fs";
-
-// Helper function to read file with URI
-function readFileWithUri(
-  root: string,
-  filePath: string,
-): {
-  content: string;
-  uri: string;
-  absolutePath: string;
-} {
-  const absolutePath = resolve(root, filePath);
-
-  try {
-    const content = fs.readFileSync(absolutePath, "utf-8");
-    const uri = pathToFileURL(absolutePath).toString();
-    return { content, uri, absolutePath };
-  } catch (error) {
-    throw new Error(`File not found: ${filePath}`);
-  }
-}
+import { resolveFileAndSymbol } from "./common.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -47,85 +25,6 @@ const schema = z.object({
 });
 
 type GetHoverRequest = z.infer<typeof schema>;
-
-// Helper function to resolve file and symbol position
-function resolveFileAndSymbol(params: {
-  root: string;
-  filePath: string;
-  line?: number | string;
-  symbolName?: string;
-  target?: string;
-}) {
-  const {
-    content: fileContent,
-    uri: fileUri,
-    absolutePath,
-  } = readFileWithUri(params.root, params.filePath);
-  const lines = fileContent.split("\n");
-
-  let lineIndex = 0;
-  let symbolIndex = 0;
-
-  if (params.line !== undefined) {
-    if (typeof params.line === "number") {
-      lineIndex = params.line - 1;
-    } else {
-      lineIndex = lines.findIndex((l: string) =>
-        l.includes(params.line as string),
-      );
-      if (lineIndex === -1) {
-        throw new Error(
-          `Line containing "${params.line}" not found in ${params.filePath}`,
-        );
-      }
-    }
-  }
-
-  if (params.symbolName) {
-    const lineContent = lines[lineIndex];
-    symbolIndex = lineContent.indexOf(params.symbolName);
-    if (symbolIndex === -1) {
-      throw new Error(
-        `Symbol "${params.symbolName}" not found on line ${lineIndex + 1} in ${params.filePath}`,
-      );
-    }
-  } else if (params.target) {
-    // If no line specified, search for target in entire file
-    if (params.line === undefined) {
-      for (let i = 0; i < lines.length; i++) {
-        const idx = lines[i].indexOf(params.target);
-        if (idx !== -1) {
-          lineIndex = i;
-          symbolIndex = idx;
-          break;
-        }
-      }
-      if (symbolIndex === -1) {
-        throw new Error(
-          `Target "${params.target}" not found in ${params.filePath}`,
-        );
-      }
-    } else {
-      // Search for target in specified line
-      const lineContent = lines[lineIndex];
-      symbolIndex = lineContent.indexOf(params.target);
-      if (symbolIndex === -1) {
-        throw new Error(
-          `Target "${params.target}" not found on line ${lineIndex + 1} in ${params.filePath}`,
-        );
-      }
-    }
-  }
-
-  return {
-    fileUri,
-    fileContent,
-    absolutePath,
-    lines,
-    lineIndex,
-    symbolIndex,
-  };
-}
 
 /**
  * LSP Hover response types

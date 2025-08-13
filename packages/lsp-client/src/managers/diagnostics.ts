@@ -7,15 +7,9 @@ import type {
   Diagnostic,
   PublishDiagnosticsParams,
   ServerCapabilities,
+  DocumentDiagnosticReport,
 } from "../protocol/types/index.ts";
 import { debug } from "../utils/debug.ts";
-
-// Type for LSP 3.17+ pull diagnostics
-interface DocumentDiagnosticReport {
-  kind: "full" | "unchanged";
-  items?: Diagnostic[];
-  resultId?: string;
-}
 
 const debugLog = (message: string, ...args: unknown[]) => {
   debug(`[lspClient] ${message}`, ...args);

@@ -6,6 +6,7 @@ import { pathToFileURL } from "url";
 import { SignatureHelp } from "@lsmcp/types";
 import type { McpToolDef } from "@lsmcp/types";
 import { resolveLineParameter } from "@lsmcp/lsp-client";
+import { withLSPDocument } from "./common.ts";
 
 const schemaShape = {
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -146,13 +147,8 @@ async function handleGetSignatureHelp(
     }
   }
 
-  // Open the document in LSP
-  client.openDocument(fileUri, content);
-
-  try {
-    // Wait a bit for LSP to process the document
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
+  // Use common LSP document wrapper
+  return await withLSPDocument(client, fileUri, content, async () => {
     // Get signature help
     const help = await client.getSignatureHelp(fileUri, {
       line: lineIndex,
@@ -170,10 +166,7 @@ async function handleGetSignatureHelp(
     return `Signature help at ${filePath}:${lineIndex + 1}:${
       character + 1
     }:\n\n${formatted}`;
-  } finally {
-    // Close the document
-    client.closeDocument(fileUri);
-  }
+  });
 }
 
 /**

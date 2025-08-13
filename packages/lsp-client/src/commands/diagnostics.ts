@@ -1,12 +1,5 @@
-import type { Diagnostic } from "@lsmcp/types";
+import type { Diagnostic, DocumentDiagnosticReport } from "@lsmcp/types";
 import type { LSPCommand } from "./types.ts";
-
-// Pull diagnostics support (LSP 3.17+)
-interface DocumentDiagnosticReport {
-  kind: "full" | "unchanged";
-  items?: Diagnostic[];
-  resultId?: string;
-}
 
 interface DocumentDiagnosticParams {
   uri: string;

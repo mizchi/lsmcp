@@ -116,3 +116,28 @@ export function readFileWithMetadata(root: string, filePath: string) {
   } = readFileWithUri(root, filePath);
   return { fileContent, fileUri, absolutePath };
 }
+
+/**
+ * Common LSP operation wrapper for opening document, executing operation, and closing
+ */
+export async function withLSPDocument<T>(
+  client: any,
+  fileUri: string,
+  content: string,
+  operation: () => Promise<T>,
+  delay: number = 500,
+): Promise<T> {
+  // Open the document in LSP
+  client.openDocument(fileUri, content);
+
+  try {
+    // Wait a bit for LSP to process the document
+    await new Promise((resolve) => setTimeout(resolve, delay));
+
+    // Execute the operation
+    return await operation();
+  } finally {
+    // Close the document
+    client.closeDocument(fileUri);
+  }
+}

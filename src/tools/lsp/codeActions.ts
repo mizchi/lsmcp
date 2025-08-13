@@ -6,6 +6,7 @@ import { pathToFileURL } from "url";
 import { CodeAction, CodeActionKind, Command } from "@lsmcp/types";
 import type { McpToolDef } from "@lsmcp/types";
 import { resolveLineParameter as resolveLineHelper } from "@lsmcp/lsp-client";
+import { withLSPDocument } from "./common.ts";
 
 const schemaShape = {
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -123,13 +124,8 @@ async function handleGetCodeActions(
     endLineIndex = resolveLineHelper(lines, endLine);
   }
 
-  // Open the document in LSP
-  client.openDocument(fileUri, content);
-
-  try {
-    // Wait a bit for LSP to process the document
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
+  // Use common LSP document wrapper
+  return await withLSPDocument(client, fileUri, content, async () => {
     // Get diagnostics for the range (to provide context for code actions)
     const diagnostics = client.getDiagnostics(fileUri);
     const rangeDiagnostics = diagnostics.filter((d: any) => {
@@ -201,10 +197,7 @@ async function handleGetCodeActions(
     }
 
     return result.trim();
-  } finally {
-    // Close the document
-    client.closeDocument(fileUri);
-  }
+  });
 }
 
 /**

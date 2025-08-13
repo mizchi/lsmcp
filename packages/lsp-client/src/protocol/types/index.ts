@@ -20,4 +20,5 @@ export type {
   LSPClientConfig,
   LSPClientState,
   HoverContents,
+  DocumentDiagnosticReport,
 } from "@lsmcp/types";

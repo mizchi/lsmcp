@@ -2,6 +2,13 @@ import { Diagnostic, DiagnosticSeverity } from "vscode-languageserver-types";
 
 // Diagnostic-related types
 
+// Pull diagnostics support (LSP 3.17+)
+export interface DocumentDiagnosticReport {
+  kind: "full" | "unchanged";
+  items?: Diagnostic[];
+  resultId?: string;
+}
+
 export interface DiagnosticResult {
   uri: string;
   diagnostics: Diagnostic[];
