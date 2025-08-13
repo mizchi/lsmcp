@@ -166,4 +166,25 @@ export class MemFileSystemApi implements FileSystemApi {
       });
     }
   }
+
+  // Utility methods for backward compatibility
+  async isDirectory(path: string): Promise<boolean> {
+    try {
+      const stats = await this.stat(path);
+      return stats.isDirectory();
+    } catch {
+      return false;
+    }
+  }
+
+  async listDirectory(path: string): Promise<string[]> {
+    return await this.readdir(path);
+  }
+}
+
+/**
+ * Helper function to create a memory-based FileSystemApi instance
+ */
+export function createMemFileSystemApi(fs: IFs): MemFileSystemApi {
+  return new MemFileSystemApi(fs);
 }
