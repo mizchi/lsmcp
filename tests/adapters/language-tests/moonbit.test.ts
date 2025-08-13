@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { join } from "path";
-import { moonbitAdapter } from "../../../src/adapters/moonbit.ts";
+import { moonbitAdapter } from "../../../src/presets/moonbit.ts";
 import { testLspConnection } from "../testHelpers.ts";
 
 describe("MoonBit Adapter", () => {

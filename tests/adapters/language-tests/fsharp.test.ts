@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { join } from "path";
-import { fsharpAdapter } from "../../../src/adapters/fsharp.ts";
+import { fsharpAdapter } from "../../../src/presets/fsharp.ts";
 import { testLspConnection } from "../testHelpers.ts";
 
 describe("F# Adapter", () => {

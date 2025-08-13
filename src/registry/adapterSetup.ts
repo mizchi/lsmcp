@@ -5,14 +5,14 @@
 import { PresetRegistry } from "../config/loader.ts";
 
 // Import all adapters
-import { typescriptAdapter } from "../adapters/typescriptLanguageServer.ts";
-import { tsgoAdapter } from "../adapters/tsgo.ts";
-import { denoAdapter } from "../adapters/deno.ts";
-import { pyrightAdapter } from "../adapters/pyright.ts";
-import { rustAnalyzerAdapter } from "../adapters/rustAnalyzer.ts";
-import { fsharpAdapter } from "../adapters/fsharp.ts";
-import { moonbitAdapter } from "../adapters/moonbit.ts";
-import { goplsAdapter } from "../adapters/gopls.ts";
+import { typescriptAdapter } from "../presets/typescript-language-server.ts";
+import { tsgoAdapter } from "../presets/tsgo.ts";
+import { denoAdapter } from "../presets/deno.ts";
+import { pyrightAdapter } from "../presets/pyright.ts";
+import { rustAnalyzerAdapter } from "../presets/rust-analyzer.ts";
+import { fsharpAdapter } from "../presets/fsharp.ts";
+import { moonbitAdapter } from "../presets/moonbit.ts";
+import { goplsAdapter } from "../presets/gopls.ts";
 
 /**
  * Register all built-in adapters

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { join } from "path";
-import { denoAdapter } from "../../../src/adapters/deno.ts";
+import { denoAdapter } from "../../../src/presets/deno.ts";
 import { testLspConnection } from "../testHelpers.ts";
 
 describe("Deno Adapter", () => {

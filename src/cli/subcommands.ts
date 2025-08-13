@@ -373,7 +373,7 @@ export async function indexCommand(
       });
 
       // Start LSP server
-      await lspClient.start();
+      await lspClient?.start();
 
       // Create file content provider
       const fileContentProvider = async (uri: string): Promise<string> => {
@@ -382,17 +382,18 @@ export async function indexCommand(
       };
 
       // Create symbol provider
-      const symbolProvider = createLSPSymbolProvider(
-        lspClient,
-        fileContentProvider,
-      );
+      const symbolProvider = lspClient
+        ? createLSPSymbolProvider(lspClient, fileContentProvider)
+        : null;
 
       // Create file system and cache
       const fileSystem = new NodeFileSystem();
       const cache = new SQLiteCache(projectRoot);
 
       // Create symbol index with all components
-      index = new SymbolIndex(projectRoot, symbolProvider, fileSystem, cache);
+      if (symbolProvider) {
+        index = new SymbolIndex(projectRoot, symbolProvider, fileSystem, cache);
+      }
     } catch (error) {
       console.error(
         `Failed to start LSP server: ${error instanceof Error ? error.message : String(error)}`,

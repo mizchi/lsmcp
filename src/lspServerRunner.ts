@@ -13,7 +13,7 @@ import {
 } from "./registry/toolRegistry.ts";
 import { getSerenityToolsList } from "./tools/index.ts";
 import { createCapabilityFilter } from "./registry/capabilityFilter.ts";
-import { resolveAdapterCommand } from "./adapters/utils.ts";
+import { resolveAdapterCommand } from "./presets/utils.ts";
 import { PresetRegistry, type ExtendedLSMCPConfig } from "./config/loader.ts";
 import type { LspAdapter } from "./types/lsp.ts";
 

@@ -7,7 +7,7 @@ import type {
   DidChangeTextDocumentParams,
   DidCloseTextDocumentParams,
   VersionedTextDocumentIdentifier,
-} from "../protocol/types-legacy.ts";
+} from "../protocol/types/index.ts";
 
 export class DocumentManager {
   private openDocuments = new Set<string>();

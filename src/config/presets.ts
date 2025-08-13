@@ -3,14 +3,14 @@
  */
 
 import type { PresetRegistry } from "./loader.ts";
-import { tsgoAdapter } from "../adapters/tsgo.ts";
-import { typescriptAdapter } from "../adapters/typescriptLanguageServer.ts";
-import { rustAnalyzerAdapter } from "../adapters/rustAnalyzer.ts";
-import { pyrightAdapter } from "../adapters/pyright.ts";
-import { goplsAdapter } from "../adapters/gopls.ts";
-import { fsharpAdapter } from "../adapters/fsharp.ts";
-import { denoAdapter } from "../adapters/deno.ts";
-import { moonbitAdapter } from "../adapters/moonbit.ts";
+import { tsgoAdapter } from "../presets/tsgo.ts";
+import { typescriptAdapter } from "../presets/typescript-language-server.ts";
+import { rustAnalyzerAdapter } from "../presets/rust-analyzer.ts";
+import { pyrightAdapter } from "../presets/pyright.ts";
+import { goplsAdapter } from "../presets/gopls.ts";
+import { fsharpAdapter } from "../presets/fsharp.ts";
+import { denoAdapter } from "../presets/deno.ts";
+import { moonbitAdapter } from "../presets/moonbit.ts";
 
 /**
  * Register all default presets

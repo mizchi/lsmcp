@@ -5,7 +5,7 @@ import type {
   LSPCommand,
 } from "./types.ts";
 import { isCompletionList } from "./types.ts";
-import type { LSPClient } from "../protocol/types-legacy.ts";
+import type { LSPClient } from "../protocol/types/index.ts";
 
 export function createCompletionCommand(): LSPCommand<
   CompletionParams,

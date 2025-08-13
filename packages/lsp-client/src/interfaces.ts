@@ -17,8 +17,14 @@ export interface IErrorHandler {
 
 // File system interface
 export interface IFileSystem {
-  readFile(path: string, encoding?: BufferEncoding): Promise<string>;
-  writeFile(path: string, content: string): Promise<void>;
+  readFile(path: string, encoding: BufferEncoding): Promise<string>;
+  writeFile(
+    path: string,
+    data: string,
+    encoding?: BufferEncoding,
+  ): Promise<void>;
+  readdir(path: string): Promise<string[]>;
+  stat(path: string): Promise<any>;
   exists(path: string): Promise<boolean>;
   isDirectory(path: string): Promise<boolean>;
   listDirectory(path: string): Promise<string[]>;

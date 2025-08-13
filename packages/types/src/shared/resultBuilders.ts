@@ -1,12 +1,19 @@
 import type {
   Diagnostic as LSPDiagnostic,
   Location,
-  SimpleDiagnostic,
 } from "@lsmcp/types/lsp";
 import { relative } from "path";
 
-// Re-export diagnostic type from types package
-export type { SimpleDiagnostic as Diagnostic } from "@lsmcp/types/lsp";
+// Define SimpleDiagnostic type
+export interface SimpleDiagnostic {
+  severity: "error" | "warning" | "info" | "hint";
+  line: number;
+  column: number;
+  endLine?: number;
+  endColumn?: number;
+  message: string;
+  source?: string;
+}
 
 /**
  * Builder for diagnostic results

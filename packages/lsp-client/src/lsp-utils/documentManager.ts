@@ -1,4 +1,4 @@
-import type { LSPClient } from "../protocol/types-legacy.ts";
+import type { LSPClient } from "../protocol/types/index.ts";
 import { ErrorContext, formatError } from "../utils/container-helpers.ts";
 
 /**

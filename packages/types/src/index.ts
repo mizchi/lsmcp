@@ -115,10 +115,10 @@ export type {
 export {
   // Builders
   DiagnosticResultBuilder,
-  LocationResultBuilder,
+  ReferenceResultBuilder,
   SymbolResultBuilder,
   type SimpleDiagnostic,
-} from "./lsp/builders.ts";
+} from "./shared/resultBuilders.ts";
 
 export type {
   // File system
@@ -136,12 +136,6 @@ export type {
   Memory,
 } from "./domain/project.ts";
 
-export type {
-  // Adapter
-  LspAdapter,
-  ServerCharacteristics,
-  AdapterCapabilities,
-} from "./domain/adapter.ts";
 
 export type {
   // Indexer

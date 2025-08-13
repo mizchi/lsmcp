@@ -146,7 +146,7 @@ describe("Indexer Integration", () => {
     // Mock different symbols for different files
     let callCount = 0;
     vi.mocked(mockLSPClient.getDocumentSymbols).mockImplementation(
-      async (uri) => {
+      async (uri: string) => {
         callCount++;
         if (uri.includes("file1")) {
           return [

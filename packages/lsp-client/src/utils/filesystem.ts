@@ -7,13 +7,21 @@ import * as path from "path";
 import type { IFileSystem } from "../interfaces.ts";
 
 export const nodeFileSystemApi: IFileSystem = {
-  async readFile(filePath: string): Promise<string> {
-    return fs.promises.readFile(filePath, "utf-8");
+  async readFile(filePath: string, encoding: BufferEncoding = "utf-8"): Promise<string> {
+    return fs.promises.readFile(filePath, encoding);
   },
 
-  async writeFile(filePath: string, content: string): Promise<void> {
+  async writeFile(filePath: string, data: string, encoding?: BufferEncoding): Promise<void> {
     await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
-    await fs.promises.writeFile(filePath, content, "utf-8");
+    await fs.promises.writeFile(filePath, data, encoding || "utf-8");
+  },
+
+  async readdir(path: string): Promise<string[]> {
+    return fs.promises.readdir(path);
+  },
+
+  async stat(path: string): Promise<any> {
+    return fs.promises.stat(path);
   },
 
   async exists(filePath: string): Promise<boolean> {

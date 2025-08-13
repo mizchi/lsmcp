@@ -2,13 +2,13 @@
  * LSP Client Package - Public API
  */
 
-import type { LSPClient } from "./protocol/types-legacy.ts";
+import type { LSPClient } from "./protocol/types/index.ts";
 
 // ============================================================================
 // Core Client API
 // ============================================================================
 export { createLSPClient } from "./core/client.ts";
-export type { LSPClient } from "./protocol/types-legacy.ts";
+export type { LSPClient } from "./protocol/types/index.ts";
 export type { LSPClientConfig, LSPClientState } from "./core/state.ts";
 
 // Factory function for creating and initializing clients
@@ -17,7 +17,7 @@ export { createAndInitializeLSPClient } from "./core/client-legacy.ts";
 // ============================================================================
 // Protocol Types
 // ============================================================================
-export * from "./protocol/types-legacy.ts";
+export * from "./protocol/types/index.ts";
 
 // ============================================================================
 // Process Management
@@ -33,7 +33,7 @@ export { withTemporaryDocument } from "./lsp-utils/documentManager.ts";
 // ============================================================================
 // Diagnostics
 // ============================================================================
-export { DiagnosticsManager } from "./diagnostics/manager.ts";
+export { DiagnosticsManager } from "./managers/diagnostics.ts";
 export { waitForDiagnosticsWithRetry } from "./diagnostics/utils.ts";
 
 // ============================================================================

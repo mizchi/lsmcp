@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { join } from "path";
-import { tsgoAdapter } from "../../../src/adapters/tsgo.ts";
+import { tsgoAdapter } from "../../../src/presets/tsgo.ts";
 import { testLspConnection } from "../testHelpers.ts";
 
 describe("tsgo Adapter", () => {

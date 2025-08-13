@@ -5,6 +5,7 @@
 import { existsSync } from "fs";
 import type { LSPClient } from "@lsmcp/lsp-client";
 import type { SymbolEntry } from "../symbolIndex.ts";
+import type { SymbolInformation } from "vscode-languageserver-types";
 import {
   type ExternalLibraryProvider,
   type DependencyInfo,
@@ -51,7 +52,7 @@ export class RustExternalLibraryProvider implements ExternalLibraryProvider {
     try {
       const symbols = await client.getWorkspaceSymbols(`${dependency.name}::`);
 
-      return symbols.map((symbol) => ({
+      return symbols.map((symbol: SymbolInformation) => ({
         name: symbol.name,
         kind: symbol.kind,
         location: symbol.location,

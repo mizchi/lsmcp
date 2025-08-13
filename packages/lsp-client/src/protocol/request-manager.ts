@@ -6,7 +6,7 @@ import type {
   LSPNotification,
   LSPRequest,
   LSPResponse,
-} from "../protocol/types-legacy.ts";
+} from "../protocol/types/index.ts";
 import { debug } from "../utils/debug.ts";
 
 const debugLog = (message: string, ...args: unknown[]) => {

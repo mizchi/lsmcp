@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { join } from "path";
-import { pyrightAdapter } from "../../../src/adapters/pyright.ts";
+import { pyrightAdapter } from "../../../src/presets/pyright.ts";
 import { testLspConnection } from "../testHelpers.ts";
 import { $ } from "zx";
 

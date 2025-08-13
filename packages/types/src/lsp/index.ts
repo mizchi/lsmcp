@@ -5,7 +5,6 @@ export * from "./client.ts";
 export { LSPMethods, type LSPMethod } from "./protocol.ts";
 export * from "./symbols.ts";
 export * from "./diagnostics.ts";
-export * from "./builders.ts";
 
 // Re-export commonly used types from vscode-languageserver-types
 export {

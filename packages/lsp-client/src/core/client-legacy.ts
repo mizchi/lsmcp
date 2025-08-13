@@ -35,7 +35,7 @@ import {
 import { ChildProcess } from "child_process";
 
 // Import new modular components
-import { DiagnosticsManager } from "../diagnostics/manager.ts";
+import { DiagnosticsManager } from "../managers/diagnostics.ts";
 import { DocumentManager } from "../managers/document-manager.ts";
 import { RequestManager } from "../protocol/request-manager.ts";
 import { applyWorkspaceEditManually } from "../utils/workspace-edit.ts";
@@ -92,7 +92,7 @@ import {
   ServerCapabilities,
   SignatureHelpResult,
   WorkspaceSymbolResult,
-} from "../protocol/types-legacy.ts";
+} from "../protocol/types/index.ts";
 import { debug } from "../utils/debug.ts";
 import { ErrorContext, formatError } from "../utils/container-helpers.ts";
 import { getLanguageIdFromPath } from "../client/context.ts";
@@ -400,7 +400,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       stderrBuffer += data.toString();
     });
 
-    state.process.on("exit", (code) => {
+    state.process.on("exit", (code: number | null) => {
       state.process = null;
 
       if (code !== 0 && code !== null) {
@@ -416,7 +416,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       }
     });
 
-    state.process.on("error", (error) => {
+    state.process.on("error", (error: Error) => {
       const context: ErrorContext = {
         operation: "LSP server startup",
         language: state.languageId,

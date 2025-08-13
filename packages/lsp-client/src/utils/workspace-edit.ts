@@ -8,7 +8,7 @@ import type {
   ApplyWorkspaceEditParams,
   ApplyWorkspaceEditResponse,
   TextEdit,
-} from "../protocol/types-legacy.ts";
+} from "../protocol/types/index.ts";
 import { getErrorMessage } from "@lsmcp/types";
 import type { FileSystemApi } from "../utils/container-helpers.ts";
 import { nodeFileSystemApi } from "../utils/container-helpers.ts";

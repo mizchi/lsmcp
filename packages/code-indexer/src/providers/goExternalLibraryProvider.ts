@@ -7,6 +7,7 @@ import { readFile } from "fs/promises";
 import { join } from "path";
 import type { LSPClient } from "@lsmcp/lsp-client";
 import type { SymbolEntry } from "../symbolIndex.ts";
+import type { SymbolInformation } from "vscode-languageserver-types";
 
 interface GoModule {
   module: string;
@@ -369,7 +370,7 @@ export async function getGoModuleSymbols(
     const symbols = await client.getWorkspaceSymbols(modulePath);
 
     // Convert to our format and mark as external
-    return symbols.map((symbol) => ({
+    return symbols.map((symbol: SymbolInformation) => ({
       name: symbol.name,
       kind: symbol.kind,
       location: symbol.location,

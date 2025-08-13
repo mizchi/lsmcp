@@ -58,6 +58,8 @@ export interface IFileSystem {
   readdir(path: string): Promise<string[]>;
   stat(path: string): Promise<any>;
   exists(path: string): Promise<boolean>;
+  isDirectory(path: string): Promise<boolean>;
+  listDirectory(path: string): Promise<string[]>;
 }
 
 // LSP Message types

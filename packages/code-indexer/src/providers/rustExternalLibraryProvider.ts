@@ -7,6 +7,7 @@ import { readFile } from "fs/promises";
 import { join } from "path";
 import type { LSPClient } from "@lsmcp/lsp-client";
 import type { SymbolEntry } from "../symbolIndex.ts";
+import type { SymbolInformation } from "vscode-languageserver-types";
 
 interface CargoDependency {
   name: string;
@@ -145,7 +146,7 @@ export async function getRustCrateSymbols(
     const symbols = await client.getWorkspaceSymbols(`${crateName}::`);
 
     // Convert LSP symbols to our SymbolEntry format
-    return symbols.map((symbol) => ({
+    return symbols.map((symbol: SymbolInformation) => ({
       name: symbol.name,
       kind: symbol.kind,
       location: symbol.location,

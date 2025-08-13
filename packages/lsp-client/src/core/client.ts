@@ -25,7 +25,7 @@ import type { LSPClientConfig } from "./state.ts";
 import { createInitialState } from "./state.ts";
 import { ConnectionHandler } from "./connection.ts";
 import { LifecycleManager } from "./lifecycle.ts";
-import { DocumentManager } from "../managers/document.ts";
+import { DocumentManager } from "../managers/document-manager.ts";
 import { DiagnosticsManager } from "../managers/diagnostics.ts";
 import { createFeatureCommands } from "../utils/features.ts";
 import { applyWorkspaceEditManually } from "../managers/workspace.ts";

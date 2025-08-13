@@ -1,5 +1,5 @@
 import type { Diagnostic } from "@lsmcp/types";
-import type { LSPClient } from "../protocol/types-legacy.ts";
+import type { LSPClient } from "../protocol/types/index.ts";
 
 export interface DiagnosticWaitOptions {
   timeout?: number;

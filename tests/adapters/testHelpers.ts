@@ -3,7 +3,7 @@ import { join } from "path";
 import { readFileSync } from "fs";
 import { createLSPClient } from "@lsmcp/lsp-client"; // from "lspClient.ts";
 import type { LspAdapter } from "../../src/types/lsp.ts";
-import { resolveAdapterCommand } from "../../src/adapters/utils.ts";
+import { resolveAdapterCommand } from "../../src/presets/utils.ts";
 import {
   processDefaultDiagnostics,
   processDeduplicatedDiagnostics,
@@ -132,7 +132,7 @@ let testClient: any = null;
 
 export async function setupLSPForTest(root: string): Promise<any> {
   const { typescriptAdapter } = await import(
-    "../../src/adapters/typescriptLanguageServer.ts"
+    "../../src/presets/typescript-language-server.ts"
   );
   const { command, args } = resolveAdapterCommand(typescriptAdapter, root);
 

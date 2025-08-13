@@ -1,7 +1,7 @@
 import type { Preset } from "../types/lsp.ts";
-import { extractTypeTool } from "../languageSpecific/ts/tools/tsExtractType.ts";
-import { generateAccessorsTool } from "../languageSpecific/ts/tools/tsGenerateAccessors.ts";
-import { callHierarchyTool } from "../languageSpecific/ts/tools/tsCallHierarchy.ts";
+import { extractTypeTool } from "../languageFeatures/ts/tools/tsExtractType.ts";
+import { generateAccessorsTool } from "../languageFeatures/ts/tools/tsGenerateAccessors.ts";
+import { callHierarchyTool } from "../languageFeatures/ts/tools/tsCallHierarchy.ts";
 
 /**
  * TypeScript Language Server adapter (default)

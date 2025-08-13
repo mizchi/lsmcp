@@ -1,5 +1,5 @@
 import { lspProcessPool, type PooledLSPClient } from "../process-pool.ts";
-import type { LSPClient } from "../protocol/types-legacy.ts";
+import type { LSPClient } from "../protocol/types/index.ts";
 
 let currentPooledClient: PooledLSPClient | null = null;
 let currentRoot: string | null = null;
