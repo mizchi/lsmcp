@@ -79,6 +79,20 @@ export class NodeFileSystemApi implements FileSystemApi {
   async resolve(...paths: string[]): Promise<string> {
     return resolve(...paths);
   }
+
+  // Utility methods
+  async isDirectory(path: string): Promise<boolean> {
+    try {
+      const stats = await stat(path);
+      return stats.isDirectory();
+    } catch {
+      return false;
+    }
+  }
+
+  async listDirectory(path: string): Promise<string[]> {
+    return await readdir(path);
+  }
 }
 
 export const nodeFileSystemApi = new NodeFileSystemApi();

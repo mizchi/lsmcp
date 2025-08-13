@@ -85,7 +85,7 @@ export async function runLanguageServerWithConfig(
 
     // Create file system API using Node.js implementation
     const { NodeFileSystemApi } = await import(
-      "./infrastructure/providers/NodeFsProvider.ts"
+      "./infrastructure/NodeFileSystemApi.ts"
     );
     const fileSystemApi = new NodeFileSystemApi();
 
@@ -271,7 +271,7 @@ export async function runLanguageServer(
 
     // Create file system API using Node.js implementation
     const { NodeFileSystemApi } = await import(
-      "./infrastructure/providers/NodeFsProvider.ts"
+      "./infrastructure/NodeFileSystemApi.ts"
     );
     const fileSystemApi = new NodeFileSystemApi();
 
@@ -388,7 +388,7 @@ export async function runCustomLspServer(
 
     // Create file system API using Node.js implementation
     const { NodeFileSystemApi } = await import(
-      "./infrastructure/providers/NodeFsProvider.ts"
+      "./infrastructure/NodeFileSystemApi.ts"
     );
     const fileSystemApi = new NodeFileSystemApi();
 
