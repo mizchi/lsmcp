@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./symbolIndex": "./src/symbolIndex.ts",
+    "./mcp/globalClient": "./src/mcp/globalClient.ts",
     "./*": "./src/*"
   },
   "license": "MIT",

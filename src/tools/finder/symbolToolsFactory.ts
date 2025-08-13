@@ -10,7 +10,7 @@ import { resolve } from "node:path";
 import { SymbolKind } from "vscode-languageserver-types";
 import { glob, type FileSystemInterface } from "gitaware-glob";
 import type { FileSystemApi } from "@lsmcp/types";
-import { nodeFileSystemApi } from "../../filesystem/NodeFileSystemApi.ts";
+import { nodeFileSystemApi } from "../../infrastructure/NodeFileSystemApi.ts";
 
 // Export for testing
 export async function getFilesRecursively(

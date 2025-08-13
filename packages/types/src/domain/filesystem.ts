@@ -36,24 +36,10 @@ export interface FileSystemApi {
     options?: { recursive?: boolean; force?: boolean },
   ): Promise<void>;
   realpath(path: string): Promise<string>;
-}
-
-/**
- * Sync file system interface for testing and special cases
- */
-export interface FileSystemSync {
-  readFileSync(path: string, encoding: BufferEncoding): string;
-  writeFileSync(path: string, data: string, encoding?: BufferEncoding): void;
-  existsSync(path: string): boolean;
-  mkdirSync(path: string, options?: { recursive?: boolean }): void;
-  unlinkSync(path: string): void;
-  readdirSync(path: string): string[];
-  statSync(path: string): {
-    isFile(): boolean;
-    isDirectory(): boolean;
-    size: number;
-    mtime: Date;
-  };
+  
+  // Path utilities
+  cwd(): Promise<string>;
+  resolve(...paths: string[]): Promise<string>;
 }
 
 /**

@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z, ZodObject, type ZodType } from "zod";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef, McpContext } from "@lsmcp/types";
 import type { FileSystemApi } from "@lsmcp/types";
 
 /**
@@ -27,17 +27,19 @@ export interface McpServerState {
   tools: Map<string, McpToolDef<ZodType>>;
   defaultRoot?: string;
   fileSystemApi?: FileSystemApi;
+  context?: McpContext;
 }
 
 /**
  * Convert a string-returning handler to MCP response format with error handling
  */
 export function toMcpToolHandler<T>(
-  handler: (args: T) => Promise<string> | string,
+  handler: (args: T, context?: McpContext) => Promise<string> | string,
+  context?: McpContext,
 ): (args: T, extra?: any) => Promise<any> {
   return async (args: T, _extra?: any) => {
     try {
-      const message = await handler(args);
+      const message = await handler(args, context);
       return {
         content: [
           {
@@ -154,9 +156,9 @@ function _registerToolWithServer<S extends ZodType>(
                   ? (args as Record<string, unknown>).root
                   : undefined) || state.defaultRoot,
             } as z.infer<S>;
-            return tool.execute(argsWithRoot);
+            return tool.execute(argsWithRoot, state.context);
           }
-        : tool.execute;
+        : (args: z.infer<S>) => tool.execute(args, state.context);
 
     // Register tool with McpServer using the correct overload
     if (tool.description) {
@@ -164,13 +166,13 @@ function _registerToolWithServer<S extends ZodType>(
         tool.name,
         tool.description,
         schemaShape,
-        toMcpToolHandler(wrappedHandler),
+        toMcpToolHandler(wrappedHandler, state.context),
       );
     } else {
       state.server.tool(
         tool.name,
         schemaShape,
-        toMcpToolHandler(wrappedHandler),
+        toMcpToolHandler(wrappedHandler, state.context),
       );
     }
   } else {
@@ -193,6 +195,7 @@ function _registerToolWithServer<S extends ZodType>(
 export interface McpServerManager {
   state: McpServerState;
   setDefaultRoot: (root: string) => void;
+  setContext: (context: McpContext) => void;
   registerTool: <S extends ZodType>(tool: McpToolDef<S>) => void;
   registerTools: (tools: McpToolDef<ZodType>[]) => void;
   start: () => Promise<void>;
@@ -210,6 +213,9 @@ export function createMcpServerManager(
   return {
     state,
     setDefaultRoot: (root: string) => setDefaultRoot(state, root),
+    setContext: (context: McpContext) => {
+      state.context = context;
+    },
     registerTool: <S extends ZodType>(tool: McpToolDef<S>) =>
       registerTool(state, tool),
     registerTools: (tools: McpToolDef<ZodType>[]) =>

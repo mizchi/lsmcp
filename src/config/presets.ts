@@ -1,30 +1,29 @@
 /**
- * Default presets for language servers
+ * Built-in preset adapters registration
  */
 
-import type { PresetRegistry } from "./loader.ts";
-import { tsgoAdapter } from "../presets/tsgo.ts";
+import { PresetRegistry } from "./loader.ts";
+
+// Import all adapters
 import { typescriptAdapter } from "../presets/typescript-language-server.ts";
-import { rustAnalyzerAdapter } from "../presets/rust-analyzer.ts";
-import { pyrightAdapter } from "../presets/pyright.ts";
-import { goplsAdapter } from "../presets/gopls.ts";
-import { fsharpAdapter } from "../presets/fsharp.ts";
+import { tsgoAdapter } from "../presets/tsgo.ts";
 import { denoAdapter } from "../presets/deno.ts";
+import { pyrightAdapter } from "../presets/pyright.ts";
+import { rustAnalyzerAdapter } from "../presets/rust-analyzer.ts";
+import { fsharpAdapter } from "../presets/fsharp.ts";
 import { moonbitAdapter } from "../presets/moonbit.ts";
+import { goplsAdapter } from "../presets/gopls.ts";
 
 /**
- * Register all default presets
+ * Register all built-in adapters to the registry
  */
-export function registerDefaultPresets(registry: PresetRegistry): void {
-  // TypeScript-based presets
-  registry.register(tsgoAdapter);
+export function registerBuiltinAdapters(registry: PresetRegistry): void {
   registry.register(typescriptAdapter);
+  registry.register(tsgoAdapter);
   registry.register(denoAdapter);
-
-  // Other language presets
-  registry.register(rustAnalyzerAdapter);
   registry.register(pyrightAdapter);
-  registry.register(goplsAdapter);
+  registry.register(rustAnalyzerAdapter);
   registry.register(fsharpAdapter);
   registry.register(moonbitAdapter);
+  registry.register(goplsAdapter);
 }

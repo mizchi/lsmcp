@@ -3,14 +3,14 @@ import type { McpToolDef } from "@lsmcp/types";
 import { commonSchemas } from "@lsmcp/types";
 import { relative } from "path";
 import { Position } from "vscode-languageserver-types";
-import { readFileWithMetadata } from "../../../filesystem/fileOperations.ts";
+import { readFileWithMetadata } from "../../../infrastructure/fileOperations.ts";
 import {
   createTypescriptLSPClient,
   openDocument,
   stopLSPClient,
   waitForDocumentProcessed,
 } from "@lsmcp/lsp-client";
-import { validateLineAndSymbol } from "../../../shared/validation/validation.ts";
+import { validateLineAndSymbol } from "../utils/validation.ts";
 
 const schema = z.object({
   root: commonSchemas.root,

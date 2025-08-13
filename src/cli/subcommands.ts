@@ -5,7 +5,7 @@
 import { readFile, writeFile, appendFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
-import type { LSMCPConfig } from "../config/configSchema.ts";
+import type { LSMCPConfig } from "../config/schema.ts";
 import {
   ConfigLoader as MainConfigLoader,
   PresetRegistry,
@@ -20,7 +20,7 @@ import { glob } from "gitaware-glob";
 import {
   detectProjectType,
   generateManualConfigBoilerplate,
-} from "./projectDetector.ts";
+} from "../utils/projectDetector.ts";
 import {
   createLSPClient,
   createLSPSymbolProvider,

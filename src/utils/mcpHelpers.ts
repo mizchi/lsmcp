@@ -6,7 +6,7 @@
 import { type ZodType } from "zod";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { MCPToolError } from "../shared/errors/mcpErrors.ts";
+import { MCPToolError } from "../domain/errors/mcpErrors.ts";
 import type { McpToolDef } from "@lsmcp/types";
 
 /**

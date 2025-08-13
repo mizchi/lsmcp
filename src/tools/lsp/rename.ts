@@ -1,7 +1,7 @@
 import type { LSPClient } from "@lsmcp/lsp-client";
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
-import { applyTextEdits } from "../../shared/text/applyTextEdits.ts";
+import { applyTextEdits } from "../../utils/applyTextEdits.ts";
 // Helper functions
 function parseLineNumber(content: string, line: number | string): number {
   if (typeof line === "number") {

@@ -1,7 +1,4 @@
-import type { Preset } from "../types/lsp.ts";
-import { extractTypeTool } from "../languageFeatures/ts/tools/tsExtractType.ts";
-import { generateAccessorsTool } from "../languageFeatures/ts/tools/tsGenerateAccessors.ts";
-import { callHierarchyTool } from "../languageFeatures/ts/tools/tsCallHierarchy.ts";
+import type { Preset } from "../config/schema.ts";
 
 /**
  * TypeScript Language Server adapter (default)
@@ -17,17 +14,6 @@ export const typescriptAdapter: Preset = {
       includeCompletionsWithInsertText: true,
     },
   },
-  customTools: [
-    extractTypeTool as unknown as import("@lsmcp/types").McpToolDef<
-      import("zod").ZodType
-    >,
-    generateAccessorsTool as unknown as import("@lsmcp/types").McpToolDef<
-      import("zod").ZodType
-    >,
-    callHierarchyTool as unknown as import("@lsmcp/types").McpToolDef<
-      import("zod").ZodType
-    >,
-  ],
   serverCharacteristics: {
     documentOpenDelay: 2000,
     readinessCheckTimeout: 1000,

@@ -3,7 +3,7 @@ import { err, ok, type Result } from "neverthrow";
 import { createLSPTool, type LSPClient } from "@lsmcp/lsp-client";
 import { withLSPOperation } from "@lsmcp/lsp-client";
 import { getLanguageIdFromPath } from "@lsmcp/lsp-client";
-import { readFileWithUri } from "../../shared/fileUtils.ts";
+import { readFileWithUri } from "../../infrastructure/fileOperations.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),

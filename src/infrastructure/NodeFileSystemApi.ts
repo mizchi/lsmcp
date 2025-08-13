@@ -9,6 +9,7 @@ import {
   realpath,
 } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import type { FileSystemApi } from "@lsmcp/types";
 
 export class NodeFileSystemApi implements FileSystemApi {
@@ -77,6 +78,14 @@ export class NodeFileSystemApi implements FileSystemApi {
 
   async realpath(path: string): Promise<string> {
     return await realpath(path);
+  }
+
+  async cwd(): Promise<string> {
+    return process.cwd();
+  }
+
+  async resolve(...paths: string[]): Promise<string> {
+    return resolve(...paths);
   }
 }
 

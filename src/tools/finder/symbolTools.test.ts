@@ -3,7 +3,7 @@ import { createGetSymbolsOverviewTool } from "./symbolToolsFactory.ts";
 import * as IndexerAdapter from "@lsmcp/code-indexer";
 import { SymbolKind } from "vscode-languageserver-types";
 import { createFsFromVolume, Volume } from "memfs";
-import { MemFileSystemApi } from "../../filesystem/MemFileSystemApi.ts";
+import { MemFileSystemApi } from "../../infrastructure/MemFileSystemApi.ts";
 import type { FileSystemApi } from "@lsmcp/types";
 
 // Mock only IndexerAdapter, not file system modules

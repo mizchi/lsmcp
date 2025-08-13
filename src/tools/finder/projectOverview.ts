@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef, McpContext } from "@lsmcp/types";
 import {
   getOrCreateIndex,
   getIndexStats,
@@ -125,7 +125,10 @@ function getDirectoryStructure(
 /**
  * Auto-index if needed (similar to search_symbol_from_index)
  */
-async function ensureIndexExists(rootPath: string): Promise<void> {
+async function ensureIndexExists(
+  rootPath: string,
+  context?: McpContext,
+): Promise<void> {
   const stats = getIndexStats(rootPath);
 
   if (stats.totalFiles === 0) {
@@ -133,8 +136,8 @@ async function ensureIndexExists(rootPath: string): Promise<void> {
       `[get_project_overview] No index found. Creating initial index...`,
     );
 
-    // TODO: Need to pass client from context
-    const index = getOrCreateIndex(rootPath, null);
+    // Pass context to get LSP client
+    const index = getOrCreateIndex(rootPath, context);
     if (!index) {
       throw new Error("Failed to create symbol index");
     }
@@ -197,11 +200,11 @@ export const getProjectOverviewTool: McpToolDef<
     "Get a quick overview of the project structure, key components, and statistics. " +
     "This tool automatically creates an index if needed and provides a concise summary.",
   schema: getProjectOverviewSchema,
-  execute: async ({ root }) => {
+  execute: async ({ root }, context?: McpContext) => {
     const rootPath = root || process.cwd();
 
     // Ensure index exists
-    await ensureIndexExists(rootPath);
+    await ensureIndexExists(rootPath, context);
 
     // Get project info
     const projectInfo = await getProjectInfo(rootPath);

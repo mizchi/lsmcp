@@ -4,19 +4,18 @@
 
 import { spawn } from "child_process";
 import { debug as debugLog } from "./utils/mcpHelpers.ts";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef, McpContext, LspClientAdapter } from "@lsmcp/types";
 import { ErrorContext, formatError } from "./utils/errorHandler.ts";
+import { createLSPTools } from "./tools/lsp/createLspTools.ts";
 import {
   filterUnsupportedTools,
-  createLSPTools,
-  highLevelTools,
-  onboardingToolsList,
-} from "./registry/toolRegistry.ts";
+  createCapabilityFilter,
+} from "./tools/filterTools.ts";
+import { highLevelTools, onboardingToolsList } from "./tools/toolLists.ts";
 import { getSerenityToolsList } from "./tools/index.ts";
-import { createCapabilityFilter } from "./registry/capabilityFilter.ts";
 import { resolveAdapterCommand } from "./presets/utils.ts";
 import { PresetRegistry, type ExtendedLSMCPConfig } from "./config/loader.ts";
-import type { LspAdapter } from "./types/lsp.ts";
+import type { LspAdapter } from "./config/schema.ts";
 
 export async function runLanguageServerWithConfig(
   config: ExtendedLSMCPConfig,
@@ -84,6 +83,19 @@ export async function runLanguageServerWithConfig(
       serverChars,
     );
 
+    // Create file system adapter using Node.js provider
+    const { nodeFsProvider } = await import(
+      "./infrastructure/providers/NodeFsProvider.ts"
+    );
+    const fileSystemAdapter = nodeFsProvider.createAdapter();
+
+    // Create MCP context
+    const mcpContext: McpContext = {
+      lspClient: lspClient as unknown as LspClientAdapter,
+      fs: fileSystemAdapter,
+      config: config as unknown as Record<string, unknown>,
+    };
+
     // Start MCP server
     const { createMcpServerManager } = await import(
       "./utils/mcpServerHelpers.ts"
@@ -93,10 +105,13 @@ export async function runLanguageServerWithConfig(
       version: "0.1.0",
     });
 
+    // Set context in server
+    server.setContext(mcpContext);
+
     // Create capability filter
     const capabilityFilter = createCapabilityFilter();
 
-    // Create LSP tools with the client
+    // Create LSP tools with the adapter
     const lspTools = createLSPTools(lspClient);
 
     // Register all tools (filtered by unsupported list AND capabilities)
@@ -110,8 +125,11 @@ export async function runLanguageServerWithConfig(
     if (config.languageFeatures) {
       serenityToolsConfig.languageFeatures = config.languageFeatures;
     }
-    if ((config as any).memoryAdvanced) {
-      serenityToolsConfig.memoryAdvanced = (config as any).memoryAdvanced;
+    // Support both old memoryAdvanced and new experiments.memory
+    const memoryEnabled =
+      (config as any).experiments?.memory || (config as any).memoryAdvanced;
+    if (memoryEnabled) {
+      serenityToolsConfig.memoryAdvanced = memoryEnabled;
     }
     const serenityTools = getSerenityToolsList(
       Object.keys(serenityToolsConfig).length > 0
@@ -126,7 +144,7 @@ export async function runLanguageServerWithConfig(
       ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];
 
-    // Add custom tools if available (note: would need adapter lookup for this)
+    // Register tools with the server
     server.registerTools(allTools);
 
     // Start the server
@@ -250,6 +268,19 @@ export async function runLanguageServer(
       serverChars,
     );
 
+    // Create file system adapter using Node.js provider
+    const { nodeFsProvider } = await import(
+      "./infrastructure/providers/NodeFsProvider.ts"
+    );
+    const fileSystemAdapter = nodeFsProvider.createAdapter();
+
+    // Create MCP context
+    const mcpContext: McpContext = {
+      lspClient: lspClient as unknown as LspClientAdapter,
+      fs: fileSystemAdapter,
+      config: preset as unknown as Record<string, unknown>,
+    };
+
     // Start MCP server
     const { createMcpServerManager } = await import(
       "./utils/mcpServerHelpers.ts"
@@ -259,10 +290,13 @@ export async function runLanguageServer(
       version: "0.1.0",
     });
 
+    // Set context in server
+    server.setContext(mcpContext);
+
     // Create capability filter
     const capabilityFilter = createCapabilityFilter();
 
-    // Create LSP tools with the client
+    // Create LSP tools with the adapter
     const lspTools = createLSPTools(lspClient);
 
     // Register all tools (filtered by unsupported list AND capabilities)
@@ -286,9 +320,6 @@ export async function runLanguageServer(
       ...serenityTools, // Serenity tools for symbol editing and memory (config-based)
       ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];
-    if (adapter?.customTools) {
-      allTools.push(...adapter.customTools);
-    }
     server.registerTools(allTools);
 
     // Start the server
@@ -353,6 +384,19 @@ export async function runCustomLspServer(
       undefined,
     );
 
+    // Create file system adapter using Node.js provider
+    const { nodeFsProvider } = await import(
+      "./infrastructure/providers/NodeFsProvider.ts"
+    );
+    const fileSystemAdapter = nodeFsProvider.createAdapter();
+
+    // Create MCP context
+    const mcpContext: McpContext = {
+      lspClient: lspClient as unknown as LspClientAdapter,
+      fs: fileSystemAdapter,
+      config: {} as Record<string, unknown>,
+    };
+
     // Start MCP server
     const { createMcpServerManager } = await import(
       "./utils/mcpServerHelpers.ts"
@@ -362,10 +406,13 @@ export async function runCustomLspServer(
       version: "0.1.0",
     });
 
+    // Set context in server
+    server.setContext(mcpContext);
+
     // Create capability filter
     const capabilityFilter = createCapabilityFilter();
 
-    // Create LSP tools with the client
+    // Create LSP tools with the adapter
     const lspTools = createLSPTools(lspClient);
 
     // Register all LSP tools (filtered by capabilities) and analysis tools

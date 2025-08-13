@@ -28,30 +28,7 @@ describe("gopls adapter", () => {
     expect(initOpts.gofumpt).toBe(true);
   });
 
-  describe("doctor", () => {
-    it("should check for gopls installation", async () => {
-      if (!goplsAdapter.doctor) {
-        throw new Error("Doctor function not defined");
-      }
-
-      const result = await goplsAdapter.doctor();
-
-      // The result will depend on whether gopls is installed
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      expect(typeof result.message).toBe("string");
-
-      // If gopls is not installed, we should get appropriate error messages
-      if (!result.success) {
-        expect(result.message).toMatch(
-          /gopls is not installed|go install golang\.org\/x\/tools\/gopls@latest/,
-        );
-      } else {
-        // If installed, we should see success messages
-        expect(result.message).toContain("gopls is installed");
-      }
-    });
-  });
+  // Doctor functionality has been removed
 
   describe("LSP functionality (if gopls is installed)", () => {
     let tmpDir: string;

@@ -123,6 +123,22 @@ export { isLargeFile } from "./diagnostics/utils.ts";
 export { createLSPSymbolProvider } from "./providers.ts";
 
 // ============================================================================
+// Capabilities
+// ============================================================================
+export { 
+  CapabilityChecker,
+  createToolCapabilityMap,
+  supportsDefinition,
+  supportsReferences,
+  supportsHover,
+  supportsCompletion,
+  supportsRename,
+  supportsFormatting,
+  supportsDiagnostics,
+  type ToolCapabilityRequirement 
+} from "./capabilities/CapabilityChecker.ts";
+
+// ============================================================================
 // Tool Creation Utilities (for MCP tools)
 // ============================================================================
 export { createLSPTool } from "./client/toolFactory.ts";

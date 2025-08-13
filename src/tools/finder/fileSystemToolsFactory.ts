@@ -3,7 +3,7 @@ import { join, relative } from "node:path";
 import { glob as gitawareGlob, type FileSystemInterface } from "gitaware-glob";
 import { minimatch } from "minimatch";
 import type { FileSystemApi } from "@lsmcp/types";
-import { nodeFileSystemApi } from "../../filesystem/NodeFileSystemApi.ts";
+import { nodeFileSystemApi } from "../../infrastructure/NodeFileSystemApi.ts";
 import type { McpToolDef } from "@lsmcp/types";
 
 const listDirSchema = z.object({

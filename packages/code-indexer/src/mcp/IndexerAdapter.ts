@@ -10,6 +10,8 @@ import { createLSPSymbolProvider } from "@lsmcp/lsp-client";
 import { fileURLToPath } from "url";
 import { readFile } from "fs/promises";
 import type { IndexedSymbol, SymbolQuery } from "../engine/types.ts";
+import type { McpContext } from "@lsmcp/types";
+import { getGlobalLspClient } from "./globalClient.ts";
 
 // Global index instances by root path
 const indexInstances = new Map<string, SymbolIndex>();
@@ -19,7 +21,7 @@ const indexInstances = new Map<string, SymbolIndex>();
  */
 export function getOrCreateIndex(
   rootPath: string,
-  client?: any,
+  context?: McpContext | any,
 ): SymbolIndex | null {
   // Check if we have an existing index
   let index = indexInstances.get(rootPath);
@@ -35,9 +37,19 @@ export function getOrCreateIndex(
       ? new MemoryCache()
       : new SQLiteCache(rootPath);
 
-  // Check if client is provided
-  if (!client) {
-    console.error(`[IndexerAdapter] No LSP client provided for ${rootPath}`);
+  // Extract LSP client from context or use provided client/global client
+  let lspClient: any;
+  if (context && typeof context === 'object' && 'lspClient' in context) {
+    lspClient = context.lspClient;
+  } else if (context) {
+    lspClient = context; // Legacy: direct client passed
+  } else {
+    lspClient = getGlobalLspClient();
+  }
+  
+  // Check if client is available
+  if (!lspClient) {
+    console.error(`[IndexerAdapter] No LSP client available for ${rootPath}`);
     return null;
   }
   console.error(
@@ -50,7 +62,7 @@ export function getOrCreateIndex(
     return await readFile(path, "utf-8");
   };
 
-  const symbolProvider = createLSPSymbolProvider(client, fileContentProvider);
+  const symbolProvider = createLSPSymbolProvider(lspClient, fileContentProvider);
 
   // Create index
   index = new SymbolIndex(rootPath, symbolProvider, fileSystem, cache);
@@ -91,7 +103,7 @@ export async function forceClearIndex(rootPath: string): Promise<void> {
 export async function indexFiles(
   rootPath: string,
   filePaths: string[],
-  options?: { concurrency?: number },
+  options?: { concurrency?: number; context?: McpContext },
 ): Promise<{
   success: boolean;
   totalFiles: number;
@@ -99,7 +111,7 @@ export async function indexFiles(
   duration: number;
   errors: Array<{ file: string; error: string }>;
 }> {
-  const index = getOrCreateIndex(rootPath, null);
+  const index = getOrCreateIndex(rootPath, options?.context);
   if (!index) {
     return {
       success: false,
@@ -180,14 +192,14 @@ export function getIndexStats(rootPath: string) {
 /**
  * Update index incrementally
  */
-export async function updateIndexIncremental(rootPath: string): Promise<{
+export async function updateIndexIncremental(rootPath: string, context?: McpContext): Promise<{
   success: boolean;
   updated: string[];
   removed: string[];
   errors: string[];
   message?: string;
 }> {
-  const index = getOrCreateIndex(rootPath, null);
+  const index = getOrCreateIndex(rootPath, context);
   if (!index) {
     return {
       success: false,

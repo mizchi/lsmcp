@@ -6,7 +6,7 @@ import { readFileSync } from "fs";
 import path from "path";
 import { ErrorContext, formatError } from "@lsmcp/lsp-client";
 import { validateLineAndSymbol } from "@lsmcp/lsp-client";
-import { readFileWithUri } from "../../shared/fileUtils.ts";
+import { readFileWithUri } from "../../infrastructure/fileOperations.ts";
 
 // Helper functions
 function readFileWithMetadata(root: string, filePath: string) {

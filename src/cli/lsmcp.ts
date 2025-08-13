@@ -15,10 +15,10 @@ import {
   globalPresetRegistry,
   type ConfigSources,
 } from "../config/loader.ts";
-import type { Preset } from "../types/lsp.ts";
+import type { Preset } from "../config/schema.ts";
 
 // Import modular components
-import { registerBuiltinAdapters } from "../registry/adapterSetup.ts";
+import { registerBuiltinAdapters } from "../config/presets.ts";
 import { showHelp, showListWithConfigLoader, showNoArgsHelp } from "./help.ts";
 import { runLanguageServerWithConfig } from "../lspServerRunner.ts";
 
@@ -31,7 +31,7 @@ registerBuiltinAdapters(adapterRegistry);
 
 // Import subcommands
 import { initCommand, indexCommand } from "./subcommands.ts";
-import { detectProjectType } from "./projectDetector.ts";
+import { detectProjectType } from "../utils/projectDetector.ts";
 
 // Parse command line arguments
 const { values, positionals } = parseArgs({

@@ -5,11 +5,112 @@
 
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
-import type { LSMCPConfig } from "./configSchema.ts";
-import { validateConfig } from "./configSchema.ts";
-import type { Preset } from "../types/lsp.ts";
-import { DEFAULT_BASE_CONFIG, PRESET_FILE_PATTERNS } from "./defaultConfig.ts";
-import { registerDefaultPresets } from "./presets.ts";
+import type { LSMCPConfig, ExtendedLSMCPConfig, Preset } from "./schema.ts";
+import { validateConfig } from "./schema.ts";
+import { registerBuiltinAdapters } from "./presets.ts";
+
+/**
+ * Default base configuration
+ */
+const DEFAULT_BASE_CONFIG: LSMCPConfig = {
+  preset: "tsgo",
+  files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  settings: {
+    autoIndex: false,
+    indexConcurrency: 5,
+    autoIndexDelay: 500,
+    enableWatchers: true,
+    memoryLimit: 1024,
+  },
+  symbolFilter: {
+    excludeKinds: [
+      "Variable",
+      "Constant",
+      "String",
+      "Number",
+      "Boolean",
+      "Array",
+      "Object",
+      "Key",
+      "Null",
+    ],
+    excludePatterns: ["callback", "temp", "tmp", "_", "^[a-z]$"],
+    includeOnlyTopLevel: false,
+  },
+  ignorePatterns: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
+  experiments: {
+    memory: false,
+  },
+};
+
+/**
+ * Preset-specific file patterns (from src/adapters/)
+ */
+const PRESET_FILE_PATTERNS: Record<string, string[]> = {
+  tsgo: ["**/*.ts", "**/*.tsx"],
+  typescript: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  deno: ["**/*.ts", "**/*.tsx"],
+  "rust-analyzer": ["**/*.rs"],
+  pyright: ["**/*.py", "**/*.pyi"],
+  gopls: ["**/*.go"],
+  fsharp: ["**/*.fs", "**/*.fsi", "**/*.fsx"],
+  moonbit: ["**/*.mbt", "**/*.mbti"],
+};
+
+/**
+ * Merge configurations with deep merging for nested objects
+ */
+function mergeConfigs(
+  base: Partial<LSMCPConfig>,
+  override: Partial<LSMCPConfig>,
+): LSMCPConfig {
+  const result = { ...base } as LSMCPConfig;
+
+  // Simple fields
+  if (override.preset !== undefined) {
+    result.preset = override.preset;
+  }
+
+  // Handle deprecated memoryAdvanced -> experiments.memory migration
+  if (override.memoryAdvanced !== undefined) {
+    result.experiments = result.experiments || {};
+    result.experiments.memory = override.memoryAdvanced;
+  }
+
+  // Deep merge experiments
+  if (override.experiments) {
+    result.experiments = {
+      ...base.experiments,
+      ...override.experiments,
+    };
+  }
+
+  // Deep merge settings
+  if (override.settings) {
+    result.settings = {
+      ...base.settings,
+      ...override.settings,
+    };
+  }
+
+  // Deep merge symbolFilter
+  if (override.symbolFilter) {
+    result.symbolFilter = {
+      ...base.symbolFilter,
+      ...override.symbolFilter,
+    };
+  }
+
+  // Override arrays completely (don't merge)
+  if (override.files !== undefined) {
+    result.files = override.files;
+  }
+  if (override.ignorePatterns !== undefined) {
+    result.ignorePatterns = override.ignorePatterns;
+  }
+
+  return result;
+}
 
 /**
  * Configuration sources in priority order
@@ -35,22 +136,8 @@ export interface LoadOptions {
   applyDefaults?: boolean;
 }
 
-/**
- * Extended configuration that includes preset runtime properties
- */
-export interface ExtendedLSMCPConfig extends LSMCPConfig {
-  // Runtime properties from preset
-  id?: string;
-  name?: string;
-  description?: string;
-  bin?: string;
-  args?: string[];
-  baseLanguage?: string;
-  initializationOptions?: unknown;
-  serverCharacteristics?: unknown;
-  unsupported?: string[];
-  languageFeatures?: Record<string, any>;
-}
+// Re-export ExtendedLSMCPConfig from schema
+export type { ExtendedLSMCPConfig } from "./schema.ts";
 
 /**
  * Result from loading configuration
@@ -91,7 +178,7 @@ export class PresetRegistry {
 export const globalPresetRegistry = new PresetRegistry();
 
 // Register default presets
-registerDefaultPresets(globalPresetRegistry);
+registerBuiltinAdapters(globalPresetRegistry);
 
 /**
  * Configuration loader class
@@ -227,7 +314,7 @@ export class ConfigLoader {
           if (presetConfig.languageFeatures) {
             if (parsed.languageFeatures) {
               // Deep merge if both exist
-              merged.languageFeatures = this.mergeConfigs(
+              merged.languageFeatures = this.mergeConfigObjects(
                 presetConfig.languageFeatures,
                 parsed.languageFeatures,
               );
@@ -410,7 +497,7 @@ export class ConfigLoader {
     }
 
     // Merge defaults with config, then add back extended fields
-    const merged = this.mergeConfigs(DEFAULT_BASE_CONFIG, config);
+    const merged = mergeConfigs(DEFAULT_BASE_CONFIG, config);
     const result = { ...merged, ...extendedFields } as ExtendedLSMCPConfig;
 
     return result;
@@ -419,7 +506,7 @@ export class ConfigLoader {
   /**
    * Deep merge two configurations
    */
-  private mergeConfigs<T extends Record<string, unknown>>(
+  private mergeConfigObjects<T extends Record<string, unknown>>(
     base: T,
     override: Partial<T>,
   ): T {
@@ -438,7 +525,7 @@ export class ConfigLoader {
 
       if (typeof overrideValue === "object" && !Array.isArray(overrideValue)) {
         const baseValue = base[key];
-        (result as Record<string, unknown>)[key] = this.mergeConfigs(
+        (result as Record<string, unknown>)[key] = this.mergeConfigObjects(
           (baseValue || {}) as Record<string, unknown>,
           overrideValue as Record<string, unknown>,
         );

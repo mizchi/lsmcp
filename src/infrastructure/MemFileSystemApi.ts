@@ -1,7 +1,7 @@
 import type { FileSystemApi } from "@lsmcp/types";
 import type { IFs } from "memfs";
 import type { Stats } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, resolve } from "node:path";
 
 export class MemFileSystemApi implements FileSystemApi {
   constructor(private fs: IFs) {}
@@ -145,6 +145,14 @@ export class MemFileSystemApi implements FileSystemApi {
         else resolve(resolvedPath as string);
       });
     });
+  }
+
+  async cwd(): Promise<string> {
+    return process.cwd();
+  }
+
+  async resolve(...paths: string[]): Promise<string> {
+    return resolve(...paths);
   }
 
   private async removeRecursive(path: string): Promise<void> {

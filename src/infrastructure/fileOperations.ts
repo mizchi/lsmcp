@@ -1,6 +1,6 @@
 import { resolve } from "path";
-import { ErrorCode, errors } from "../shared/errors/index.ts";
-import type { FileSystemSync } from "@lsmcp/types";
+import { pathToFileURL } from "url";
+import { ErrorCode, errors } from "../domain/errors/index.ts";
 import * as fs from "fs";
 
 interface FileReadResult {
@@ -13,26 +13,25 @@ interface FileReadResult {
  * Read a file and return its content along with path information
  * @param root Root directory path
  * @param filePath Relative file path
- * @param fs File system implementation (defaults to Node.js fs)
+ * @param fileSystem File system implementation (defaults to Node.js fs)
  * @returns FileReadResult with absolutePath, fileContent, and fileUri
  * @throws MCPToolError if file cannot be read
  */
-// Create a default fs implementation that matches FileSystemSync interface
-const defaultFs: FileSystemSync = {
-  readFileSync: (path, encoding) => fs.readFileSync(path, encoding),
-  writeFileSync: (path, data, encoding) =>
-    fs.writeFileSync(path, data, encoding),
-  existsSync: (path) => fs.existsSync(path),
-  mkdirSync: (path, options) => fs.mkdirSync(path, options),
-  unlinkSync: (path) => fs.unlinkSync(path),
-  readdirSync: (path) => fs.readdirSync(path),
-  statSync: (path) => fs.statSync(path),
-};
+// For testing purposes, fs can be overridden
+interface FileSystemLike {
+  readFileSync(path: string, encoding: BufferEncoding): string;
+  writeFileSync(path: string, data: string, encoding?: BufferEncoding): void;
+  existsSync(path: string): boolean;
+  mkdirSync(path: string, options?: { recursive?: boolean }): void;
+  unlinkSync(path: string): void;
+  readdirSync(path: string): string[];
+  statSync(path: string): any;
+}
 
 export function readFileWithMetadata(
   root: string,
   filePath: string,
-  fileSystem: FileSystemSync = defaultFs,
+  fileSystem: FileSystemLike = fs,
 ): FileReadResult {
   const absolutePath = resolve(root, filePath);
   const fileUri = `file://${absolutePath}`;
@@ -74,10 +73,10 @@ export function readFileWithMetadata(
 export function fileExists(
   root: string,
   filePath: string,
-  fs: FileSystemSync = defaultFs,
+  fileSystem: FileSystemLike = fs,
 ): boolean {
   const absolutePath = resolve(root, filePath);
-  return fs.existsSync(absolutePath);
+  return fileSystem.existsSync(absolutePath);
 }
 
 /**
@@ -92,18 +91,18 @@ export function writeFile(
   root: string,
   filePath: string,
   content: string,
-  fs: FileSystemSync = defaultFs,
+  fileSystem: FileSystemLike = fs,
 ): void {
   const absolutePath = resolve(root, filePath);
 
   try {
     // Ensure directory exists
     const dir = resolve(absolutePath, "..");
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    if (!fileSystem.existsSync(dir)) {
+      fileSystem.mkdirSync(dir, { recursive: true });
     }
 
-    fs.writeFileSync(absolutePath, content, "utf-8");
+    fileSystem.writeFileSync(absolutePath, content, "utf-8");
   } catch (error: any) {
     if (error.code === "EACCES") {
       throw errors.filePermission(filePath);
@@ -119,7 +118,7 @@ if (import.meta.vitest) {
 
   describe("fileOperations with memfs", () => {
     let vol: any;
-    let memFs: FileSystemSync;
+    let memFs: FileSystemLike;
 
     beforeEach(() => {
       vol = new Volume();
@@ -200,4 +199,48 @@ if (import.meta.vitest) {
       });
     });
   });
+}
+
+/**
+ * Read file content and generate file URI
+ * @param root Root directory path
+ * @param filePath Relative file path
+ * @returns File content and URI
+ * @throws Error if file not found
+ */
+export function readFileWithUri(
+  root: string,
+  filePath: string,
+): {
+  content: string;
+  uri: string;
+  absolutePath: string;
+} {
+  const absolutePath = resolve(root, filePath);
+
+  try {
+    const content = fs.readFileSync(absolutePath, "utf-8");
+    const uri = pathToFileURL(absolutePath).toString();
+    return { content, uri, absolutePath };
+  } catch (error) {
+    throw new Error(`File not found: ${filePath}`);
+  }
+}
+
+/**
+ * Read JSON file and parse it
+ * @param filePath Absolute or relative file path
+ * @returns Parsed JSON object
+ * @throws Error if file not found or invalid JSON
+ */
+export function readJsonFile<T = unknown>(filePath: string): T {
+  try {
+    const content = fs.readFileSync(filePath, "utf-8");
+    return JSON.parse(content) as T;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      throw new Error(`File not found: ${filePath}`);
+    }
+    throw new Error(`Failed to parse JSON from ${filePath}: ${error}`);
+  }
 }

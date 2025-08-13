@@ -1,6 +1,6 @@
-import { parseLineNumber } from "../text/parseLineNumber.ts";
-import { findSymbolInLine } from "../text/findSymbolInLine.ts";
-import { errors } from "../errors/index.ts";
+import { parseLineNumber } from "./parseLineNumber.ts";
+import { findSymbolInLine } from "./findSymbolInLine.ts";
+import { errors } from "../../../domain/errors/index.ts";
 
 interface LineAndSymbolResult {
   lineIndex: number;

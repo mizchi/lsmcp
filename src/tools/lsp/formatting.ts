@@ -5,7 +5,7 @@ import fs from "fs/promises";
 import { pathToFileURL } from "url";
 import { FormattingOptions, TextEdit } from "@lsmcp/types";
 import type { McpToolDef } from "@lsmcp/types";
-import { applyTextEdits } from "../../shared/text/applyTextEdits.ts";
+import { applyTextEdits } from "../../utils/applyTextEdits.ts";
 
 const schemaShape = {
   root: z.string().describe("Root directory for resolving relative paths"),

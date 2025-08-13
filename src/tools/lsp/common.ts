@@ -1,4 +1,4 @@
-import { readFileWithUri } from "../../shared/fileUtils.ts";
+import { readFileWithUri } from "../../infrastructure/fileOperations.ts";
 
 /**
  * Common function to resolve file and symbol position for LSP operations

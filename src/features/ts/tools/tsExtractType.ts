@@ -3,8 +3,8 @@ import type { McpToolDef } from "@lsmcp/types";
 import { commonSchemas } from "@lsmcp/types";
 import { CodeAction, Range, WorkspaceEdit } from "vscode-languageserver-types";
 import { readFileSync, writeFileSync } from "fs";
-import { errors } from "../../../shared/errors/index.ts";
-import { readFileWithMetadata } from "../../../filesystem/fileOperations.ts";
+import { errors } from "../../../domain/errors/index.ts";
+import { readFileWithMetadata } from "../../../infrastructure/fileOperations.ts";
 import {
   createTypescriptLSPClient,
   openDocument,

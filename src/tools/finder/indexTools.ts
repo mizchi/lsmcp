@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef, McpContext } from "@lsmcp/types";
 import {
   clearIndex,
   forceClearIndex,
@@ -47,7 +47,7 @@ export const indexFilesTool: McpToolDef<typeof indexFilesSchema> = {
   description:
     "Build or update the symbol index for files matching the pattern. This enables fast symbol queries.",
   schema: indexFilesSchema,
-  execute: async ({ pattern, root, concurrency }) => {
+  execute: async ({ pattern, root, concurrency }, context?: McpContext) => {
     const rootPath = root || process.cwd();
 
     // Find files matching pattern
@@ -71,8 +71,8 @@ export const indexFilesTool: McpToolDef<typeof indexFilesSchema> = {
     );
     console.error(`[index_files] First few files:`, files.slice(0, 5));
 
-    // Index files
-    const result = await indexFiles(rootPath, files, { concurrency });
+    // Index files with context
+    const result = await indexFiles(rootPath, files, { concurrency, context });
 
     let output = `Indexed ${files.length} files in ${result.duration}ms
 Total files in index: ${result.totalFiles}
@@ -151,17 +151,20 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
       "Constructor, Enum, Interface, Function, Variable, Constant, String, Number, Boolean, Array, Object, Key, " +
       "Null, EnumMember, Struct, Event, Operator, TypeParameter.",
     schema: searchSymbolSchema,
-    execute: async ({
-      name,
-      kind,
-      file,
-      containerName,
-      includeChildren,
-      includeExternal,
-      onlyExternal,
-      sourceLibrary,
-      root,
-    }) => {
+    execute: async (
+      {
+        name,
+        kind,
+        file,
+        containerName,
+        includeChildren,
+        includeExternal,
+        onlyExternal,
+        sourceLibrary,
+        root,
+      },
+      context?: McpContext,
+    ) => {
       const rootPath = root || process.cwd();
 
       // Get index stats first
@@ -174,8 +177,8 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
 
         // Check if LSP client is initialized
         // Get or create index
-        // TODO: Need to pass client from context
-        const index = getOrCreateIndex(rootPath, null);
+        // Pass context to get LSP client
+        const index = getOrCreateIndex(rootPath, context);
         if (!index) {
           return `Error: Failed to create symbol index. LSP client may not be properly initialized.`;
         }
@@ -249,7 +252,7 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
       } else {
         // Auto-update index with incremental changes if it already exists
         try {
-          const updateResult = await updateIndexIncremental(rootPath);
+          const updateResult = await updateIndexIncremental(rootPath, context);
           if (updateResult.success) {
             const updatedCount = updateResult.updated.length;
             const removedCount = updateResult.removed.length;
@@ -363,7 +366,7 @@ export const getIndexStatsFromIndexTool: McpToolDef<
     "Get statistics about the symbol index including file count, symbol count, and performance metrics. " +
     "This shows information about the pre-built index used for fast symbol searches.",
   schema: getIndexStatsSchema,
-  execute: async ({ root }) => {
+  execute: async ({ root }, _context?: McpContext) => {
     const rootPath = root || process.cwd();
     const stats = getIndexStats(rootPath);
 
@@ -394,7 +397,7 @@ export const clearIndexTool: McpToolDef<typeof clearIndexSchema> = {
     "Clear the symbol index and stop all file watchers. Use this to free memory or before re-indexing. " +
     "Use force=true to completely reset the index including all caches.",
   schema: clearIndexSchema,
-  execute: async ({ root, force }) => {
+  execute: async ({ root, force }, _context?: McpContext) => {
     const rootPath = root || process.cwd();
     const stats = getIndexStats(rootPath);
 
@@ -428,9 +431,9 @@ export const updateIndexIncrementalTool: McpToolDef<
     "Update symbol index incrementally based on git changes. Only re-indexes modified files. " +
     "This is faster than full re-indexing and should be used after making code changes.",
   schema: updateIndexIncrementalSchema,
-  execute: async ({ root }) => {
+  execute: async ({ root }, context?: McpContext) => {
     const rootPath = root || process.cwd();
-    const result = await updateIndexIncremental(rootPath);
+    const result = await updateIndexIncremental(rootPath, context);
 
     if (!result.success) {
       return `Failed to update index incrementally: ${result.message || result.errors.join(", ")}`;

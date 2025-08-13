@@ -2,7 +2,7 @@ import { spawn } from "child_process";
 import { join } from "path";
 import { readFileSync } from "fs";
 import { createLSPClient } from "@lsmcp/lsp-client"; // from "lspClient.ts";
-import type { LspAdapter } from "../../src/types/lsp.ts";
+import type { LspAdapter } from "../../src/config/schema.ts";
 import { resolveAdapterCommand } from "../../src/presets/utils.ts";
 import {
   processDefaultDiagnostics,
@@ -21,13 +21,7 @@ export async function testLspConnection(
   projectPath: string,
   checkFiles: string[],
 ): Promise<{ connected: boolean; diagnostics?: any[]; error?: string }> {
-  // Check doctor first if available
-  if (adapter.doctor) {
-    const doctorResult = await adapter.doctor();
-    if (!doctorResult.success) {
-      return { connected: false, error: doctorResult.message };
-    }
-  }
+  // Doctor functionality has been removed
 
   try {
     // Start LSP server

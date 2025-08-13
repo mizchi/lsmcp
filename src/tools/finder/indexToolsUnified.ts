@@ -5,7 +5,7 @@
 import { z } from "zod";
 import { forceClearIndex, getOrCreateIndex } from "@lsmcp/code-indexer";
 import { glob } from "gitaware-glob";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef, McpContext } from "@lsmcp/types";
 import { loadIndexConfig } from "@lsmcp/code-indexer";
 import { getAdapterDefaultPattern } from "@lsmcp/code-indexer";
 
@@ -44,7 +44,10 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
     "On subsequent runs, only updates modified files based on git changes. " +
     "Use noCache=true to force full re-indexing, or forceReset=true to completely clear and rebuild.",
   schema: indexSymbolsSchema,
-  execute: async ({ pattern, root, concurrency, noCache, forceReset }) => {
+  execute: async (
+    { pattern, root, concurrency, noCache, forceReset },
+    context?: McpContext,
+  ) => {
     const rootPath = root || process.cwd();
 
     // Determine actual pattern and concurrency from config/defaults
@@ -85,10 +88,10 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
       }
     }
 
-    // TODO: Need to pass client from context
+    // Pass context to get LSP client
 
     // Get or create index (this will create if not exists)
-    let index = getOrCreateIndex(rootPath, null);
+    let index = getOrCreateIndex(rootPath, context);
     if (!index) {
       return `Error: Failed to create symbol index. LSP client may not be properly initialized.`;
     }
@@ -98,7 +101,7 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
       console.error(`[index_symbols] Force resetting index for ${rootPath}`);
       await forceClearIndex(rootPath);
       // Re-create index after clearing
-      index = getOrCreateIndex(rootPath, null);
+      index = getOrCreateIndex(rootPath, context);
       if (!index) {
         return `Error: Failed to recreate index after reset.`;
       }

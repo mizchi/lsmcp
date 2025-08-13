@@ -7,7 +7,7 @@ import type { McpToolDef } from "@lsmcp/types";
 import { ReportManager } from "../../features/memory/database/reportManager.ts";
 import { MemoryDatabase } from "../../features/memory/database/memoryDatabase.ts";
 import { resolve } from "path";
-import type { LSMCPConfig } from "../../config/configSchema.ts";
+import type { LSMCPConfig } from "../../config/schema.ts";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
@@ -23,7 +23,10 @@ function isMemoryAdvancedEnabled(rootPath: string): boolean {
 
   try {
     const config = JSON.parse(readFileSync(configPath, "utf-8")) as LSMCPConfig;
-    return config.memoryAdvanced === true;
+    // Support both old memoryAdvanced and new experiments.memory
+    return (
+      config.experiments?.memory === true || config.memoryAdvanced === true
+    );
   } catch {
     return false;
   }
@@ -36,7 +39,7 @@ export const generateReportToolDef: McpToolDef<any> = {
   name: "generate_report",
   description: `Generate a comprehensive project report and store it in the memory database.
 Includes mechanical project overview and optionally AI analysis.
-Requires memory_advanced: true in .lsmcp/config.json`,
+Requires experiments.memory: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
     title: z
@@ -108,7 +111,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 export const getLatestReportToolDef: McpToolDef<any> = {
   name: "get_latest_report",
   description: `Get the latest project report for the current branch.
-Requires memory_advanced: true in .lsmcp/config.json`,
+Requires experiments.memory: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
     includeFullOverview: z
@@ -178,7 +181,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 export const getReportHistoryToolDef: McpToolDef<any> = {
   name: "get_report_history",
   description: `Get the history of project reports for the current branch.
-Requires memory_advanced: true in .lsmcp/config.json`,
+Requires experiments.memory: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
     limit: z
@@ -239,7 +242,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 export const updateAIAnalysisToolDef: McpToolDef<any> = {
   name: "update_ai_analysis",
   description: `Update or add AI analysis to an existing report.
-Requires memory_advanced: true in .lsmcp/config.json`,
+Requires experiments.memory: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
     reportId: z.string().describe("ID of the report to update"),
@@ -307,7 +310,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 export const getReportByCommitToolDef: McpToolDef<any> = {
   name: "get_report_by_commit",
   description: `Get a project report for a specific commit hash.
-Requires memory_advanced: true in .lsmcp/config.json`,
+Requires experiments.memory: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
     commitHash: z.string().describe("Git commit hash (full or partial)"),
@@ -368,7 +371,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 export const getMemoryStatsToolDef: McpToolDef<any> = {
   name: "get_memory_stats",
   description: `Get statistics about the memory database.
-Requires memory_advanced: true in .lsmcp/config.json`,
+Requires experiments.memory: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
   }),
@@ -407,7 +410,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 export const searchReportsByDateToolDef: McpToolDef<any> = {
   name: "search_reports_by_date",
   description: `Search project reports within a date range.
-Requires memory_advanced: true in .lsmcp/config.json`,
+Requires experiments.memory: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
     startDate: z.string().describe("Start date (ISO format or YYYY-MM-DD)"),
@@ -474,7 +477,7 @@ export const getAllReportsToolDef: McpToolDef<any> = {
   description: `Get all project reports with pagination and optional filters.
 Supports sorting and filtering by branch.
 By default, deprecated reports are excluded.
-Requires memory_advanced: true in .lsmcp/config.json`,
+Requires experiments.memory: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
     limit: z
@@ -556,7 +559,7 @@ export const getReportDetailsToolDef: McpToolDef<any> = {
   name: "get_report_details",
   description: `Get complete details of a specific project report.
 Includes full overview and AI analysis if available.
-Requires memory_advanced: true in .lsmcp/config.json`,
+Requires experiments.memory: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
     reportId: z.string().describe("ID of the report to retrieve"),
@@ -596,7 +599,7 @@ export const searchReportsByKeywordToolDef: McpToolDef<any> = {
   description: `Search project reports by keyword in overview or AI analysis.
 Searches in file statistics, language information, dependencies, and AI analysis.
 By default, deprecated reports are excluded.
-Requires memory_advanced: true in .lsmcp/config.json`,
+Requires experiments.memory: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
     keyword: z.string().describe("Keyword to search for"),
@@ -734,7 +737,7 @@ export const deprecateReportToolDef: McpToolDef<any> = {
   name: "deprecate_report",
   description: `Mark a report as deprecated.
 Deprecated reports are excluded from normal searches unless explicitly included.
-Requires memory_advanced: true in .lsmcp/config.json`,
+Requires experiments.memory: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
     reportId: z.string().describe("ID of the report to deprecate"),
@@ -772,7 +775,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 export const undeprecateReportToolDef: McpToolDef<any> = {
   name: "undeprecate_report",
   description: `Remove deprecated status from a report.
-Requires memory_advanced: true in .lsmcp/config.json`,
+Requires experiments.memory: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
     reportId: z.string().describe("ID of the report to undeprecate"),
@@ -808,7 +811,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 export const getDeprecatedReportsToolDef: McpToolDef<any> = {
   name: "get_deprecated_reports",
   description: `Get a list of deprecated reports.
-Requires memory_advanced: true in .lsmcp/config.json`,
+Requires experiments.memory: true in .lsmcp/config.json`,
   schema: z.object({
     root: z.string().describe("Root directory of the project"),
     limit: z
@@ -883,8 +886,13 @@ export function getAdvancedMemoryTools(): McpToolDef<any>[] {
  */
 export function getAdvancedMemoryToolsIfEnabled(config?: {
   memoryAdvanced?: boolean;
+  experiments?: {
+    memory?: boolean;
+  };
 }): McpToolDef<any>[] {
-  if (config?.memoryAdvanced) {
+  // Support both old memoryAdvanced and new experiments.memory
+  const memoryEnabled = config?.experiments?.memory || config?.memoryAdvanced;
+  if (memoryEnabled) {
     return getAdvancedMemoryTools();
   }
   return [];

@@ -99,6 +99,9 @@ export function getSerenityTools(config?: {
     python?: { enabled: boolean };
   };
   memoryAdvanced?: boolean;
+  experiments?: {
+    memory?: boolean;
+  };
 }): Record<string, McpToolDef<any>> {
   const tools = { ...coreTools };
 
@@ -112,9 +115,13 @@ export function getSerenityTools(config?: {
   //   Object.assign(tools, languageSpecificTools.rust);
   // }
 
-  // Add advanced memory tools if enabled
-  if (config?.memoryAdvanced) {
-    const advancedMemoryTools = getAdvancedMemoryToolsIfEnabled(config);
+  // Add advanced memory tools if enabled (support both old and new config)
+  const memoryEnabled = config?.experiments?.memory || config?.memoryAdvanced;
+  if (memoryEnabled) {
+    const advancedMemoryTools = getAdvancedMemoryToolsIfEnabled({
+      ...config,
+      memoryAdvanced: memoryEnabled,
+    });
     for (const tool of advancedMemoryTools) {
       (tools as any)[tool.name] = tool;
     }
@@ -153,6 +160,9 @@ export function getSerenityToolsList(config?: {
     python?: { enabled: boolean };
   };
   memoryAdvanced?: boolean;
+  experiments?: {
+    memory?: boolean;
+  };
 }): McpToolDef<any>[] {
   const tools = getSerenityTools(config);
   return Object.values(tools);

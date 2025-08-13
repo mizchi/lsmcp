@@ -1,4 +1,4 @@
-import type { Preset } from "../types/lsp.ts";
+import type { Preset } from "../config/schema.ts";
 
 /**
  * tsgo adapter - Fast TypeScript language server

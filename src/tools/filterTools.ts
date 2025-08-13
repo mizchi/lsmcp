@@ -1,43 +1,41 @@
 /**
- * Capability-based tool filtering
+ * Tool filtering utilities
  */
 
-import { debug, type ServerCapabilities } from "@lsmcp/lsp-client";
+import {
+  debug,
+  type ServerCapabilities,
+  CapabilityChecker,
+  createToolCapabilityMap,
+} from "@lsmcp/lsp-client";
 import type { McpToolDef } from "@lsmcp/types";
 
-/**
- * Mapping of tool names to their required LSP capabilities
- */
-const TOOL_CAPABILITY_MAP: Record<string, keyof ServerCapabilities> = {
-  get_hover: "hoverProvider",
-  find_references: "referencesProvider",
-  get_definitions: "definitionProvider",
-  get_workspace_symbols: "workspaceSymbolProvider",
-  get_document_symbols: "documentSymbolProvider",
-  rename_symbol: "renameProvider",
-  get_code_actions: "codeActionProvider",
-  format_document: "documentFormattingProvider",
-  get_completion: "completionProvider",
-  get_signature_help: "signatureHelpProvider",
-};
+// Use the centralized capability map from lsp-client
+const toolCapabilityMap = createToolCapabilityMap();
 
 /**
- * Special handling for certain capabilities
+ * Special handling for certain capabilities that require custom logic
  */
 const CAPABILITY_SPECIAL_CASES: Record<
   string,
-  (capabilities: ServerCapabilities) => boolean
+  (checker: CapabilityChecker) => boolean
 > = {
   // Diagnostics can be provided through different methods
-  get_diagnostics: (caps) => {
-    return !!(caps.diagnosticProvider || caps.textDocumentSync);
+  get_diagnostics: (checker) => {
+    return (
+      checker.hasCapability("diagnosticProvider") ||
+      checker.hasCapability("textDocumentSync")
+    );
   },
-  get_all_diagnostics: (caps) => {
-    return !!(caps.diagnosticProvider || caps.textDocumentSync);
+  get_all_diagnostics: (checker) => {
+    return (
+      checker.hasCapability("diagnosticProvider") ||
+      checker.hasCapability("textDocumentSync")
+    );
   },
   // Delete symbol is typically part of code actions
-  delete_symbol: (caps) => {
-    return !!caps.codeActionProvider;
+  delete_symbol: (checker) => {
+    return checker.hasCapability("codeActionProvider");
   },
 };
 
@@ -48,6 +46,8 @@ export function isToolSupportedByCapabilities(
   toolName: string,
   capabilities: ServerCapabilities | undefined,
 ): boolean {
+  const checker = new CapabilityChecker(capabilities);
+
   if (!capabilities) {
     // If we don't have capabilities yet, assume all tools are supported
     // This can happen during initialization
@@ -57,19 +57,18 @@ export function isToolSupportedByCapabilities(
   // Check special cases first
   const specialCase = CAPABILITY_SPECIAL_CASES[toolName];
   if (specialCase) {
-    return specialCase(capabilities);
+    return specialCase(checker);
   }
 
   // Check standard capability mapping
-  const requiredCapability = TOOL_CAPABILITY_MAP[toolName];
-  if (!requiredCapability) {
+  const requiredCapabilities = toolCapabilityMap.get(toolName);
+  if (!requiredCapabilities || requiredCapabilities.length === 0) {
     // If no mapping exists, assume the tool is supported
     return true;
   }
 
-  // Check if the capability exists and is truthy
-  const capabilityValue = capabilities[requiredCapability];
-  return !!capabilityValue;
+  // Check if all required capabilities are supported
+  return checker.hasCapabilities(requiredCapabilities);
 }
 
 /**
@@ -80,6 +79,8 @@ export function filterToolsByCapabilities(
   tools: McpToolDef<any>[],
   capabilities: ServerCapabilities | undefined,
 ): McpToolDef<any>[] {
+  const checker = new CapabilityChecker(capabilities);
+
   if (!capabilities) {
     // If no capabilities, return all tools
     debug("No server capabilities available, returning all tools");
@@ -99,24 +100,25 @@ export function filterToolsByCapabilities(
   debug(
     `Filtered tools: ${filtered.length} out of ${tools.length} tools are supported`,
   );
+
+  // Log detailed capability support for debugging
+  const support = checker.getCapabilitySupport();
+  debug("Server capability support:", support);
+
   return filtered;
 }
 
 /**
- * Get a list of unsupported tools based on capabilities
- * This can be used for logging or user feedback
+ * Filter tools based on unsupported list from config
  */
-export function getUnsupportedToolsByCapabilities(
+export function filterUnsupportedTools(
   tools: McpToolDef<any>[],
-  capabilities: ServerCapabilities | undefined,
-): string[] {
-  if (!capabilities) {
-    return [];
-  }
+  unsupported: string[] = [],
+): McpToolDef<any>[] {
+  if (unsupported.length === 0) return tools;
 
-  return tools
-    .filter((tool) => !isToolSupportedByCapabilities(tool.name, capabilities))
-    .map((tool) => tool.name);
+  const unsupportedSet = new Set(unsupported);
+  return tools.filter((tool) => !unsupportedSet.has(tool.name));
 }
 
 /**
@@ -125,6 +127,7 @@ export function getUnsupportedToolsByCapabilities(
  */
 export function createCapabilityFilter(client?: any) {
   let cachedCapabilities: ServerCapabilities | undefined;
+  let checker = new CapabilityChecker();
 
   return {
     /**
@@ -132,6 +135,7 @@ export function createCapabilityFilter(client?: any) {
      */
     updateCapabilities(capabilities: ServerCapabilities | undefined) {
       cachedCapabilities = capabilities;
+      checker.setCapabilities(capabilities);
       debug("Updated cached server capabilities");
     },
 
@@ -142,6 +146,12 @@ export function createCapabilityFilter(client?: any) {
       // Try to get fresh capabilities from the LSP client
       const currentCapabilities =
         client?.getServerCapabilities() || cachedCapabilities;
+
+      if (currentCapabilities && currentCapabilities !== cachedCapabilities) {
+        // Update checker if capabilities have changed
+        checker.setCapabilities(currentCapabilities);
+        cachedCapabilities = currentCapabilities;
+      }
 
       return filterToolsByCapabilities(tools, currentCapabilities);
     },
@@ -156,12 +166,10 @@ export function createCapabilityFilter(client?: any) {
     },
 
     /**
-     * Get list of unsupported tools
+     * Get the underlying CapabilityChecker instance
      */
-    getUnsupportedTools(tools: McpToolDef<any>[]): string[] {
-      const currentCapabilities =
-        client?.getServerCapabilities() || cachedCapabilities;
-      return getUnsupportedToolsByCapabilities(tools, currentCapabilities);
+    getChecker(): CapabilityChecker {
+      return checker;
     },
   };
 }

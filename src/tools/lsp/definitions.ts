@@ -5,7 +5,7 @@ import { err, ok, type Result } from "neverthrow";
 import type { McpToolDef } from "@lsmcp/types";
 import { debug } from "@lsmcp/lsp-client";
 import { validateLineAndSymbol } from "@lsmcp/lsp-client";
-import { readFileWithUri } from "../../shared/fileUtils.ts";
+import { readFileWithUri } from "../../infrastructure/fileOperations.ts";
 import { readFileSync } from "fs";
 import path from "path";
 

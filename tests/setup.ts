@@ -1,5 +1,5 @@
 import { beforeAll } from "vitest";
-import { findNodeModulesBin } from "../src/languageFeatures/ts/utils/findNodeModulesBin.js";
+import { findNodeModulesBin } from "../src/features/ts/utils/findNodeModulesBin.js";
 
 // Set up environment variables for all tests
 beforeAll(() => {

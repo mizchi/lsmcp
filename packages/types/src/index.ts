@@ -164,6 +164,16 @@ export type {
 
 export type {
   // MCP types
+  McpContext,
   McpToolDef,
   McpServerOptions,
 } from "./domain/mcp.ts";
+
+export type {
+  // Adapter types
+  FileSystemAdapter,
+  FileSystemProvider,
+  LspClientAdapter,
+  LspClientProvider,
+  LspClientConfig,
+} from "./domain/adapters.ts";
