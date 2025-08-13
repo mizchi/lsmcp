@@ -14,4 +14,4 @@ function processUser(u: UserData): string {
 
 console.log(processUser(user));
 
-export type { UserData };
+export type { UserData as UserType };

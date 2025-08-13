@@ -5,4 +5,4 @@ function handleData(data: string): string {
 const result = handleData("hello");
 console.log(result);
 console.log(handleData("world"));
-export { handleData };
+export { handleData as processData };

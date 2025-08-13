@@ -250,8 +250,11 @@ export function createSearchForPatternTool(
     }) => {
       try {
         const rootPath = process.cwd();
+        // Handle both relative and absolute paths
         const searchPath = relativePath
-          ? join(rootPath, relativePath)
+          ? relativePath.startsWith("/")
+            ? relativePath
+            : join(rootPath, relativePath)
           : rootPath;
 
         if (!(await fileSystemApi.exists(searchPath))) {
@@ -268,12 +271,17 @@ export function createSearchForPatternTool(
           filesToSearch = [searchPath];
         } else {
           // Get all files in the directory
+          // Use searchPath which is already absolute, or relativePath for glob pattern
+          const basePathForGlob =
+            relativePath && !relativePath.startsWith("/")
+              ? relativePath
+              : relative(rootPath, searchPath);
           const globPattern = restrictSearchToCodeFiles
             ? join(
-                relativePath || ".",
+                basePathForGlob || ".",
                 "**/*.{js,jsx,ts,tsx,py,java,go,rs,rb,php,c,cpp,h,hpp,cs,swift,kt,scala,clj,ex,exs,lua,r,m,mm,fs,fsx,ml,mli,hs,elm,vue,svelte}",
               )
-            : join(relativePath || ".", "**/*");
+            : join(basePathForGlob || ".", "**/*");
 
           const globOptions: {
             cwd: string;
@@ -326,7 +334,7 @@ export function createSearchForPatternTool(
         const regex = new RegExp(substringPattern, "gm");
 
         for (const file of filesToSearch) {
-          const filePath = join(rootPath, file);
+          const filePath = file.startsWith("/") ? file : join(rootPath, file);
           const content = await fileSystemApi.readFile(filePath);
           const lines = content.split("\n");
           const matches: string[] = [];

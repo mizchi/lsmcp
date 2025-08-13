@@ -252,10 +252,8 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
       } else {
         // Auto-update index with incremental changes if it already exists
         try {
-          // テスト互換のため context 未指定時は第2引数を渡さない
-          const updateResult = context
-            ? await updateIndexIncremental(rootPath, context)
-            : await updateIndexIncremental(rootPath);
+          // Always pass context (which may be undefined)
+          const updateResult = await updateIndexIncremental(rootPath, context);
           if (updateResult.success) {
             const updatedCount = updateResult.updated.length;
             const removedCount = updateResult.removed.length;

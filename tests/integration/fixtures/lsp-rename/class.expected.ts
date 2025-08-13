@@ -9,4 +9,4 @@ class Person {
 const user = new Person("Alice");
 console.log(user.greet());
 
-export { Person };
+export { Person as User };

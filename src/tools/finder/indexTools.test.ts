@@ -668,9 +668,10 @@ describe("searchSymbolFromIndexTool", () => {
         root: "/test",
       } as any);
 
-      // Verify updateIndexIncremental was called
+      // Verify updateIndexIncremental was called with context (undefined in tests)
       expect(IndexerAdapter.updateIndexIncremental).toHaveBeenCalledWith(
         "/test",
+        undefined,
       );
       expect(IndexerAdapter.updateIndexIncremental).toHaveBeenCalledBefore(
         IndexerAdapter.querySymbols as any,
@@ -703,9 +704,10 @@ describe("searchSymbolFromIndexTool", () => {
         root: "/test",
       } as any);
 
-      // Verify updateIndexIncremental was attempted
+      // Verify updateIndexIncremental was attempted with context (undefined in tests)
       expect(IndexerAdapter.updateIndexIncremental).toHaveBeenCalledWith(
         "/test",
+        undefined,
       );
 
       // Search should still work
@@ -730,6 +732,7 @@ describe("searchSymbolFromIndexTool", () => {
 
       expect(IndexerAdapter.updateIndexIncremental).toHaveBeenCalledWith(
         "/test",
+        undefined,
       );
       expect(result).toContain("No symbols found");
     });
