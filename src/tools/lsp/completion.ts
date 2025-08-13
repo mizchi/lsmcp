@@ -6,7 +6,7 @@ import type { ToolDef } from "@lsmcp/lsp-client";
 import { loadFileContext } from "@lsmcp/lsp-client";
 import { withTemporaryDocument } from "@lsmcp/lsp-client";
 import { resolveLineIndexOrThrow } from "@lsmcp/lsp-client";
-import { createAdvancedCompletionHandler } from "../../commands/completion.ts";
+import { createAdvancedCompletionHandler } from "@lsmcp/lsp-client";
 
 const schema = z.object({
   root: commonSchemas.root,

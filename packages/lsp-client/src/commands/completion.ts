@@ -7,6 +7,12 @@ import type {
 import { isCompletionList } from "./types.ts";
 import type { LSPClient } from "../protocol/types/index.ts";
 
+// Advanced completion handler options
+export interface AdvancedCompletionHandlerOptions {
+  includeAutoImport?: boolean;
+  resolve?: boolean;
+}
+
 export function createCompletionCommand(): LSPCommand<
   CompletionParams,
   CompletionItem[]
@@ -147,6 +153,38 @@ export function createCompletionHandler(client: LSPClient): CompletionHandler {
     resolveCompletionItem,
     getCompletionsWithImports,
   };
+}
+
+/**
+ * Advanced completion handler with filtering capabilities
+ */
+export function createAdvancedCompletionHandler(
+  options: AdvancedCompletionHandlerOptions = {},
+) {
+  return {
+    processCompletionItems: (items: CompletionItem[]): CompletionItem[] => {
+      // Process and filter completion items based on options
+      if (!options.includeAutoImport) {
+        items = items.filter((item) => !isAutoImportItem(item));
+      }
+
+      if (options.resolve) {
+        // In a real implementation, this would resolve additional details
+        // For now, just return the items as-is
+      }
+
+      return items;
+    },
+  };
+}
+
+function isAutoImportItem(item: CompletionItem): boolean {
+  // Check if the completion item is an auto-import suggestion
+  return (
+    item.detail?.includes("Auto import") ||
+    item.labelDetails?.description?.includes("import") ||
+    false
+  );
 }
 
 

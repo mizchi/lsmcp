@@ -63,7 +63,11 @@ export {
 // ============================================================================
 // Commands
 // ============================================================================
-export { createCompletionHandler } from "./commands/completion.ts";
+export { 
+  createCompletionHandler,
+  createAdvancedCompletionHandler,
+  type AdvancedCompletionHandlerOptions 
+} from "./commands/completion.ts";
 
 // ============================================================================
 // Adapters & Validation (for testing)
