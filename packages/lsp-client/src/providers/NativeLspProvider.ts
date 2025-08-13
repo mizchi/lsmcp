@@ -7,7 +7,6 @@ import { spawn } from "child_process";
 import type { ChildProcess } from "child_process";
 import {
   createAndInitializeLSPClient,
-  type LSPClient,
 } from "../index.ts";
 import type { 
   LspClientAdapter, 
@@ -32,7 +31,7 @@ export class NativeLspProvider implements LspClientProvider {
     }
 
     // Create and initialize LSP client
-    // LSPClient already implements the LspClientAdapter interface
+    // LSPClient now implements LspClientAdapter interface
     const client = await createAndInitializeLSPClient(
       config.rootPath,
       process!,
@@ -41,13 +40,9 @@ export class NativeLspProvider implements LspClientProvider {
       config.serverCapabilities as any,
     );
 
-    // Add languageId and rootPath properties to match LspClientAdapter interface
-    return Object.assign(client, {
-      languageId: config.languageId,
-      rootPath: config.rootPath,
-      // LSPClient already has start, stop, isInitialized methods
-      // and all LSP feature methods required by LspClientAdapter
-    }) as LSPClient & LspClientAdapter;
+    // LSPClient implements LspClientAdapter interface
+    // Cast is safe as LSPClient implements all required methods
+    return client as unknown as LspClientAdapter;
   }
 
   getInfo() {

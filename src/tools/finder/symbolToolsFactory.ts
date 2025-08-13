@@ -61,9 +61,18 @@ export async function getFilesRecursively(
     globOptions.fs = fileSystemApi as unknown as FileSystemInterface;
   }
 
-  const files = [];
-  for await (const file of glob(pattern, globOptions)) {
-    files.push(file);
+  const files: string[] = [];
+  try {
+    for await (const file of glob(pattern, globOptions)) {
+      files.push(file as string);
+    }
+  } catch (err) {
+    // Some environments may contain broken symlinks or missing dirs during tests.
+    // Ignore ENOENT from filesystem while continuing discovery.
+    const code = (err as any)?.code ?? (err as any)?.cause?.code;
+    if (code !== "ENOENT") {
+      throw err;
+    }
   }
 
   // Convert to relative paths from rootPath

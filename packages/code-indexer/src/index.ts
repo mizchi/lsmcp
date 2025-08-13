@@ -32,7 +32,7 @@ export {
   closeAllCaches,
 } from "./cache/symbolCacheIntegration.ts";
 
-// MCP-facing adapter
+// Adapter facade
 export {
   getOrCreateIndex,
   clearIndex,
@@ -42,6 +42,7 @@ export {
   getIndexStats,
   updateIndexIncremental,
 } from "./mcp/IndexerAdapter.ts";
+export type { IndexerDeps } from "./mcp/IndexerAdapter.ts";
 
 // Engine helpers and config
 // Symbol kind utilities are now re-exported from @lsmcp/types
@@ -62,7 +63,7 @@ export { loadIndexConfig } from "./config/configLoader.ts";
 export { markFileModified } from "./utils/autoIndex.ts";
 
 /**
- * Legacy indexer facade (stateful, used by some MCP tools and reports)
+ * Legacy indexer facade (stateful; used by some tools and reports)
  */
 export {
   getSymbolIndex,

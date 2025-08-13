@@ -1,5 +1,5 @@
 /**
- * MCP adapter for the indexer
+ * Adapter facade for the indexer
  */
 
 import { SymbolIndex } from "../engine/SymbolIndex.ts";
@@ -10,8 +10,17 @@ import { createLSPSymbolProvider } from "@lsmcp/lsp-client";
 import { fileURLToPath } from "url";
 import { readFile } from "fs/promises";
 import type { IndexedSymbol, SymbolQuery } from "../engine/types.ts";
-import type { McpContext } from "@lsmcp/types";
-import { getGlobalLspClient } from "./globalClient.ts";
+
+/**
+ * Dependencies for indexer facade.
+ * Callers pass plain deps; required fields will be picked if present.
+ */
+export type IndexerDeps = {
+  lspClient?: any;
+  fileSystem?: any;
+  fs?: any; // alias for compatibility
+  symbolProvider?: any;
+};
 
 // Global index instances by root path
 const indexInstances = new Map<string, SymbolIndex>();
@@ -21,7 +30,7 @@ const indexInstances = new Map<string, SymbolIndex>();
  */
 export function getOrCreateIndex(
   rootPath: string,
-  context?: McpContext | any,
+  context?: IndexerDeps | any,
 ): SymbolIndex | null {
   // Check if we have an existing index
   let index = indexInstances.get(rootPath);
@@ -29,40 +38,54 @@ export function getOrCreateIndex(
     return index;
   }
 
-  // Create components
-  const fileSystem = new NodeFileSystem();
+  // Resolve file system from context or fallback to NodeFileSystem
+  // Support both "fileSystem" and "fs" to align with common context shapes
+  const fileSystem =
+    context && typeof context === "object" && (
+      ("fileSystem" in context && (context as any).fileSystem) ||
+      ("fs" in context && (context as any).fs)
+    )
+      ? (("fileSystem" in (context as any) && (context as any).fileSystem) ?? (context as any).fs)
+      : new NodeFileSystem();
+
   // Use in-memory cache during vitest to avoid FS permissions under /test roots
   const cache =
     process.env.VITEST === "true" || process.env.VITEST
       ? new MemoryCache()
       : new SQLiteCache(rootPath);
 
-  // Extract LSP client from context or use provided client/global client
-  let lspClient: any;
-  if (context && typeof context === 'object' && 'lspClient' in context) {
-    lspClient = context.lspClient;
-  } else if (context) {
-    lspClient = context; // Legacy: direct client passed
+  // Prefer explicitly injected symbol provider
+  const hasSymbolProvider =
+    !!(context && typeof context === "object" && "symbolProvider" in context && context.symbolProvider);
+
+  let symbolProvider: any;
+
+  if (hasSymbolProvider) {
+    symbolProvider = context.symbolProvider;
   } else {
-    lspClient = getGlobalLspClient();
-  }
-  
-  // Check if client is available
-  if (!lspClient) {
-    console.error(`[IndexerAdapter] No LSP client available for ${rootPath}`);
-    return null;
-  }
-  console.error(
-    `[IndexerAdapter] Creating index for ${rootPath} with LSP client`,
-  );
+    // Extract LSP client ONLY from explicit context (global fallback is deprecated)
+    let lspClient: any = undefined;
+    if (context && typeof context === "object" && "lspClient" in context) {
+      lspClient = context.lspClient;
+    } else if (context) {
+      // Legacy: direct client passed
+      lspClient = context;
+    }
 
-  // Create file content provider
-  const fileContentProvider = async (uri: string): Promise<string> => {
-    const path = fileURLToPath(uri);
-    return await readFile(path, "utf-8");
-  };
+    if (!lspClient) {
+      console.error(
+        `[IndexerAdapter] No LSP client or symbolProvider available for ${rootPath}. Provide via { lspClient } or { symbolProvider }.`,
+      );
+      return null;
+    }
 
-  const symbolProvider = createLSPSymbolProvider(lspClient, fileContentProvider);
+    // Create LSPSymbolProvider from explicit LSP client
+    const fileContentProvider = async (uri: string): Promise<string> => {
+      const path = fileURLToPath(uri);
+      return await readFile(path, "utf-8");
+    };
+    symbolProvider = createLSPSymbolProvider(lspClient, fileContentProvider);
+  }
 
   // Create index
   index = new SymbolIndex(rootPath, symbolProvider, fileSystem, cache);
@@ -103,7 +126,7 @@ export async function forceClearIndex(rootPath: string): Promise<void> {
 export async function indexFiles(
   rootPath: string,
   filePaths: string[],
-  options?: { concurrency?: number; context?: McpContext },
+  options?: { concurrency?: number; context?: IndexerDeps },
 ): Promise<{
   success: boolean;
   totalFiles: number;
@@ -192,7 +215,7 @@ export function getIndexStats(rootPath: string) {
 /**
  * Update index incrementally
  */
-export async function updateIndexIncremental(rootPath: string, context?: McpContext): Promise<{
+export async function updateIndexIncremental(rootPath: string, context?: IndexerDeps): Promise<{
   success: boolean;
   updated: string[];
   removed: string[];

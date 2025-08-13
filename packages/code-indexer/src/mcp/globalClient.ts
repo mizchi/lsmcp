@@ -1,6 +1,6 @@
 /**
- * Global LSP client management for MCP tools
- * This is a temporary solution until we have proper dependency injection
+ * Global LSP client management for tools
+ * Temporary shim until proper dependency injection is wired everywhere.
  */
 
 let globalLspClient: any = null;

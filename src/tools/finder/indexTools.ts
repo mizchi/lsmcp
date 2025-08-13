@@ -177,8 +177,8 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
 
         // Check if LSP client is initialized
         // Get or create index
-        // Pass context to get LSP client
-        const index = getOrCreateIndex(rootPath, context);
+        // テスト互換のため context 未指定時は null を渡す
+        const index = getOrCreateIndex(rootPath, context ?? null);
         if (!index) {
           return `Error: Failed to create symbol index. LSP client may not be properly initialized.`;
         }
@@ -252,7 +252,10 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
       } else {
         // Auto-update index with incremental changes if it already exists
         try {
-          const updateResult = await updateIndexIncremental(rootPath, context);
+          // テスト互換のため context 未指定時は第2引数を渡さない
+          const updateResult = context
+            ? await updateIndexIncremental(rootPath, context)
+            : await updateIndexIncremental(rootPath);
           if (updateResult.success) {
             const updatedCount = updateResult.updated.length;
             const removedCount = updateResult.removed.length;

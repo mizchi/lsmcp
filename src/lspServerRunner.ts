@@ -4,7 +4,7 @@
 
 import { spawn } from "child_process";
 import { debug as debugLog } from "./utils/mcpHelpers.ts";
-import type { McpToolDef, McpContext, LspClientAdapter } from "@lsmcp/types";
+import type { McpToolDef, McpContext } from "@lsmcp/types";
 import { ErrorContext, formatError } from "./utils/errorHandler.ts";
 import { createLSPTools } from "./tools/lsp/createLspTools.ts";
 import {
@@ -90,10 +90,11 @@ export async function runLanguageServerWithConfig(
     const fileSystemAdapter = nodeFsProvider.createAdapter();
 
     // Create MCP context
+    // LSPClient implements LspClientAdapter interface
     const mcpContext: McpContext = {
-      lspClient: lspClient as unknown as LspClientAdapter,
+      lspClient: lspClient as any, // LSPClient implements LspClientAdapter
       fs: fileSystemAdapter,
-      config: config as unknown as Record<string, unknown>,
+      config: { ...config },
     };
 
     // Start MCP server
@@ -275,10 +276,11 @@ export async function runLanguageServer(
     const fileSystemAdapter = nodeFsProvider.createAdapter();
 
     // Create MCP context
+    // LSPClient implements LspClientAdapter interface
     const mcpContext: McpContext = {
-      lspClient: lspClient as unknown as LspClientAdapter,
+      lspClient: lspClient as any, // LSPClient implements LspClientAdapter
       fs: fileSystemAdapter,
-      config: preset as unknown as Record<string, unknown>,
+      config: { ...preset },
     };
 
     // Start MCP server
@@ -391,10 +393,11 @@ export async function runCustomLspServer(
     const fileSystemAdapter = nodeFsProvider.createAdapter();
 
     // Create MCP context
+    // LSPClient implements LspClientAdapter interface
     const mcpContext: McpContext = {
-      lspClient: lspClient as unknown as LspClientAdapter,
+      lspClient: lspClient as any, // LSPClient implements LspClientAdapter
       fs: fileSystemAdapter,
-      config: {} as Record<string, unknown>,
+      config: {},
     };
 
     // Start MCP server

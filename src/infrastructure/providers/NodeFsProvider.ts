@@ -1,37 +1,65 @@
 /**
  * Node.js FileSystem Provider
- * Provides a FileSystemAdapter implementation using NodeFileSystemApi
+ * Direct implementation of FileSystemAdapter
  */
 
 import type { FileSystemAdapter, FileSystemProvider } from "@lsmcp/types";
-import { nodeFileSystemApi } from "../NodeFileSystemApi.ts";
+import {
+  readFile,
+  writeFile,
+  readdir,
+  stat,
+  lstat,
+  mkdir,
+  rm,
+  realpath,
+} from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+import { dirname } from "node:path";
 
 /**
  * Node.js FileSystem Provider
- * Creates FileSystemAdapter instances using NodeFileSystemApi
+ * Creates FileSystemAdapter instances for Node.js file system
  */
 export class NodeFsProvider implements FileSystemProvider {
   createAdapter(): FileSystemAdapter {
-    // NodeFileSystemApi already implements most of the FileSystemAdapter interface
-    // We just need to adapt it to the simplified string-only interface
     return {
-      readFile: (path: string) => nodeFileSystemApi.readFile(path, "utf-8"),
-      writeFile: (path: string, data: string) =>
-        nodeFileSystemApi.writeFile(path, data, "utf-8"),
-      readdir: nodeFileSystemApi.readdir.bind(nodeFileSystemApi) as any,
-      mkdir: nodeFileSystemApi.mkdir.bind(nodeFileSystemApi),
-      rm: nodeFileSystemApi.rm.bind(nodeFileSystemApi),
-      stat: nodeFileSystemApi.stat.bind(nodeFileSystemApi),
-      lstat: nodeFileSystemApi.lstat.bind(nodeFileSystemApi),
-      exists: nodeFileSystemApi.exists.bind(nodeFileSystemApi),
-      realpath: nodeFileSystemApi.realpath.bind(nodeFileSystemApi),
-      cwd: nodeFileSystemApi.cwd.bind(nodeFileSystemApi),
-      resolve: nodeFileSystemApi.resolve.bind(nodeFileSystemApi),
+      readFile: async (path: string) => await readFile(path, "utf-8"),
 
-      // Add utility methods
+      writeFile: async (path: string, data: string) => {
+        // Ensure parent directory exists
+        const dir = dirname(path);
+        await mkdir(dir, { recursive: true }).catch(() => {});
+        await writeFile(path, data, "utf-8");
+      },
+
+      readdir: async (path: string, options?: any) => {
+        if (options?.withFileTypes) {
+          return await readdir(path, { withFileTypes: true } as any);
+        }
+        return await readdir(path);
+      },
+
+      mkdir: async (path: string, options?: { recursive?: boolean }) =>
+        await mkdir(path, options),
+
+      rm: async (
+        path: string,
+        options?: { recursive?: boolean; force?: boolean },
+      ) => await rm(path, options),
+
+      stat: async (path: string) => await stat(path),
+      lstat: async (path: string) => await lstat(path),
+      exists: async (path: string) => existsSync(path),
+      realpath: async (path: string) => await realpath(path),
+      cwd: async () => process.cwd(),
+      resolve: async (...paths: string[]) => resolve(...paths),
+
+      // Utility methods
       isFile: async (path: string) => {
         try {
-          const stats = await nodeFileSystemApi.stat(path);
+          const stats = await stat(path);
           return stats.isFile();
         } catch {
           return false;
@@ -39,7 +67,7 @@ export class NodeFsProvider implements FileSystemProvider {
       },
       isDirectory: async (path: string) => {
         try {
-          const stats = await nodeFileSystemApi.stat(path);
+          const stats = await stat(path);
           return stats.isDirectory();
         } catch {
           return false;

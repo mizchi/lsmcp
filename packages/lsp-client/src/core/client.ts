@@ -35,11 +35,14 @@ import type { IFileSystem } from "../interfaces.ts";
 
 export interface LSPClient {
   languageId: string;
+  rootPath: string;
   fileSystemApi: IFileSystem;
 
   // Lifecycle
   start(): Promise<void>;
   stop(): Promise<void>;
+  isInitialized(): boolean;
+  supportsFeature(feature: string): boolean;
 
   // Document management
   openDocument(uri: string, text: string, languageId?: string): void;
@@ -101,6 +104,7 @@ export interface LSPClient {
     pullDiagnostics: boolean;
   };
   getServerCapabilities(): ServerCapabilities | undefined;
+  supportsFeature(feature: string): boolean;
 }
 
 export function createLSPClient(config: LSPClientConfig): LSPClient {
@@ -114,11 +118,33 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   // Create the client interface
   const client: LSPClient = {
     languageId: state.languageId,
+    rootPath: state.rootPath,
     fileSystemApi: state.fileSystemApi,
 
     // Lifecycle
     start: () => lifecycle.start(),
     stop: () => lifecycle.stop(),
+    isInitialized: () => state.serverCapabilities !== undefined,
+    supportsFeature: (feature: string) => {
+      if (!state.serverCapabilities) return false;
+      // Check common LSP capabilities
+      const caps = state.serverCapabilities as any;
+      switch (feature) {
+        case 'hover': return !!caps.hoverProvider;
+        case 'completion': return !!caps.completionProvider;
+        case 'definition': return !!caps.definitionProvider;
+        case 'references': return !!caps.referencesProvider;
+        case 'rename': return !!caps.renameProvider;
+        case 'documentSymbol': return !!caps.documentSymbolProvider;
+        case 'workspaceSymbol': return !!caps.workspaceSymbolProvider;
+        case 'codeAction': return !!caps.codeActionProvider;
+        case 'formatting': return !!caps.documentFormattingProvider;
+        case 'rangeFormatting': return !!caps.documentRangeFormattingProvider;
+        case 'signatureHelp': return !!caps.signatureHelpProvider;
+        case 'diagnostics': return true; // Usually always supported
+        default: return false;
+      }
+    },
 
     // Document management
     openDocument(uri: string, text: string, languageId?: string): void {
