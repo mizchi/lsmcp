@@ -14,11 +14,9 @@ export type { SimpleDiagnostic as Diagnostic } from "@lsmcp/types/lsp";
 export class DiagnosticResultBuilder {
   private diagnostics: SimpleDiagnostic[] = [];
   private filePath?: string;
-  // @ts-ignore - used in constructor
-  private root?: string;
 
-  constructor(root?: string, filePath?: string) {
-    this.root = root;
+  constructor(_root?: string, filePath?: string) {
+    // root parameter is kept for backward compatibility but not used
     this.filePath = filePath;
   }
 
@@ -154,16 +152,18 @@ export class DiagnosticResultBuilder {
   }
 }
 
+type ReferenceItem = {
+  file: string;
+  line: number;
+  column: number;
+  text: string;
+};
+
 /**
  * Builder for reference results
  */
 export class ReferenceResultBuilder {
-  private references: Array<{
-    file: string;
-    line: number;
-    column: number;
-    text: string;
-  }> = [];
+  private references: ReferenceItem[] = [];
   private symbolName?: string;
   private root?: string;
 
@@ -199,8 +199,8 @@ export class ReferenceResultBuilder {
   /**
    * Group references by file
    */
-  groupByFile(): Map<string, typeof this.references> {
-    const groups = new Map<string, typeof this.references>();
+  groupByFile(): Map<string, ReferenceItem[]> {
+    const groups = new Map<string, ReferenceItem[]>();
 
     this.references.forEach((ref) => {
       const existing = groups.get(ref.file) || [];
@@ -216,10 +216,8 @@ export class ReferenceResultBuilder {
    */
   build(): {
     message: string;
-    // @ts-ignore - typeof this works at runtime
-    references: typeof this.references;
-    // @ts-ignore - typeof this works at runtime
-    byFile: Map<string, typeof this.references>;
+    references: ReferenceItem[];
+    byFile: Map<string, ReferenceItem[]>;
   } {
     const byFile = this.groupByFile();
     const fileCount = byFile.size;
@@ -249,7 +247,6 @@ export class ReferenceResultBuilder {
       lines.push("");
       result.byFile.forEach((refs, file) => {
         lines.push(`\n📄 ${file}:`);
-        // @ts-ignore - ref type is inferred correctly
         refs.forEach((ref) => {
           lines.push(`  ${ref.line}:${ref.column} - ${ref.text}`);
         });
@@ -260,16 +257,18 @@ export class ReferenceResultBuilder {
   }
 }
 
+type SymbolItem = {
+  name: string;
+  kind: string;
+  location?: { line: number; column: number };
+  containerName?: string;
+};
+
 /**
  * Builder for symbol results
  */
 export class SymbolResultBuilder {
-  private symbols: Array<{
-    name: string;
-    kind: string;
-    location?: { line: number; column: number };
-    containerName?: string;
-  }> = [];
+  private symbols: SymbolItem[] = [];
   private filePath?: string;
 
   constructor(filePath?: string) {
@@ -307,8 +306,8 @@ export class SymbolResultBuilder {
   /**
    * Group symbols by kind
    */
-  groupByKind(): Map<string, typeof this.symbols> {
-    const groups = new Map<string, typeof this.symbols>();
+  groupByKind(): Map<string, SymbolItem[]> {
+    const groups = new Map<string, SymbolItem[]>();
 
     this.symbols.forEach((symbol) => {
       const existing = groups.get(symbol.kind) || [];
@@ -324,10 +323,8 @@ export class SymbolResultBuilder {
    */
   build(): {
     message: string;
-    // @ts-ignore - typeof this works at runtime
-    symbols: typeof this.symbols;
-    // @ts-ignore - typeof this works at runtime
-    byKind: Map<string, typeof this.symbols>;
+    symbols: SymbolItem[];
+    byKind: Map<string, SymbolItem[]>;
   } {
     const byKind = this.groupByKind();
 
@@ -354,7 +351,6 @@ export class SymbolResultBuilder {
       lines.push("");
       result.byKind.forEach((symbols, kind) => {
         lines.push(`\n${kind}s:`);
-        // @ts-ignore - s type is inferred correctly
         symbols.forEach((s) => {
           let line = `  ${s.name}`;
           if (s.containerName) {

@@ -67,28 +67,3 @@ export function validateLine(
     lineContent: lineResult.lineText,
   };
 }
-
-/**
- * Find symbol position without specific line
- * @param fileContent The file content
- * @param symbolName Symbol name to find
- * @returns Line index and symbol index
- * @throws MCPToolError if symbol not found
- */
-// Not used currently - but keeping for type checking
-// @ts-ignore
-function findSymbolPosition(
-  fileContent: string,
-  symbolName: string,
-): { lineIndex: number; symbolIndex: number } {
-  const lines = fileContent.split("\n");
-
-  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-    const symbolResult = findSymbolInLine(lines[lineIndex], symbolName);
-    if (!("error" in symbolResult)) {
-      return { lineIndex, symbolIndex: symbolResult.characterIndex };
-    }
-  }
-
-  throw errors.symbolNotFound(symbolName, undefined);
-}

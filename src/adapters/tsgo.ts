@@ -39,4 +39,13 @@ export const tsgoAdapter: Preset = {
     // Disable some features that might cause issues
     maxTsServerMemory: 4096,
   },
+
+  // Language-specific features
+  languageFeatures: {
+    typescript: {
+      enabled: true,
+      indexNodeModules: true,
+      maxFiles: 5000,
+    },
+  },
 };

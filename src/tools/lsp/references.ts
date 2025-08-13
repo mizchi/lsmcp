@@ -4,14 +4,16 @@ import { err, ok, type Result } from "neverthrow";
 import { readFileSync } from "fs";
 import path from "path";
 import { ErrorContext, formatError } from "@lsmcp/lsp-client";
-import { pathToFileURL } from "url";
 import { validateLineAndSymbol } from "@lsmcp/lsp-client";
+import { readFileWithUri } from "../../shared/fileUtils.ts";
 
 // Helper functions
 function readFileWithMetadata(root: string, filePath: string) {
-  const absolutePath = path.resolve(root, filePath);
-  const fileContent = readFileSync(absolutePath, "utf-8");
-  const fileUri = pathToFileURL(absolutePath).toString();
+  const {
+    content: fileContent,
+    uri: fileUri,
+    absolutePath,
+  } = readFileWithUri(root, filePath);
   return { fileContent, fileUri, absolutePath };
 }
 

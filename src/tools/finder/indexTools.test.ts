@@ -484,7 +484,10 @@ describe("searchSymbolFromIndexTool", () => {
 
       // Verify index creation flow
       // LSP client check no longer needed
-      expect(IndexerAdapter.getOrCreateIndex).toHaveBeenCalledWith("/test");
+      expect(IndexerAdapter.getOrCreateIndex).toHaveBeenCalledWith(
+        "/test",
+        null,
+      );
       expect(glob).toHaveBeenCalledWith("**/*.{ts,tsx}", {
         cwd: "/test",
       });
@@ -509,15 +512,15 @@ describe("searchSymbolFromIndexTool", () => {
         lastUpdated: new Date(),
       });
 
-      // Mock no LSP client
-      // LSP client mocking no longer needed
+      // Mock index creation failure
+      vi.mocked(IndexerAdapter.getOrCreateIndex).mockReturnValue(null as any);
 
       const result = await searchSymbolFromIndexTool.execute({
         kind: "Class",
         root: "/test",
       } as any);
 
-      expect(result).toContain("LSP client not initialized");
+      expect(result).toContain("Failed to create symbol index");
       expect(IndexerAdapter.querySymbols).not.toHaveBeenCalled();
     });
 

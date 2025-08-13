@@ -307,7 +307,10 @@ describe("getProjectOverviewTool", () => {
     const result = await getProjectOverviewTool.execute({ root: mockRoot });
 
     // Verify index was created
-    expect(IndexerAdapter.getOrCreateIndex).toHaveBeenCalledWith(mockRoot);
+    expect(IndexerAdapter.getOrCreateIndex).toHaveBeenCalledWith(
+      mockRoot,
+      null,
+    );
     expect(result).toContain("**Files:** 3");
     expect(result).toContain("**Symbols:** 15");
   });

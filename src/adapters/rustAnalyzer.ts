@@ -16,4 +16,12 @@ export const rustAnalyzerAdapter: Preset = {
     //   enable: true,
     // },
   },
+
+  // Language-specific features
+  languageFeatures: {
+    rust: {
+      enabled: true,
+      indexCargo: true,
+    },
+  },
 };

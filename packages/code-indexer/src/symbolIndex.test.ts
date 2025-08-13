@@ -152,13 +152,16 @@ describe("SymbolIndex", () => {
 
   describe("initialize", () => {
     it("should initialize successfully", async () => {
-      await expect(initializeSymbolIndex(state)).resolves.not.toThrow();
+      const mockClient = { getDocumentSymbols: mockGetDocumentSymbols };
+      await expect(initializeSymbolIndex(state, mockClient)).resolves.not.toThrow();
+      expect(state.client).toBe(mockClient);
     });
   });
 
   describe("indexFile", () => {
     it("should index a file and update stats", async () => {
-      await initializeSymbolIndex(state);
+      const mockClient = { getDocumentSymbols: mockGetDocumentSymbols };
+      await initializeSymbolIndex(state, mockClient);
       await indexFile(state, "test.ts");
 
       const stats = getIndexStats(state);
@@ -167,7 +170,8 @@ describe("SymbolIndex", () => {
     });
 
     it("should emit fileIndexed event", async () => {
-      await initializeSymbolIndex(state);
+      const mockClient = { getDocumentSymbols: mockGetDocumentSymbols };
+      await initializeSymbolIndex(state, mockClient);
 
       const fileIndexedHandler = vi.fn();
       onIndexEvent(state, "fileIndexed", fileIndexedHandler);
@@ -184,7 +188,8 @@ describe("SymbolIndex", () => {
 
   describe("query", () => {
     beforeEach(async () => {
-      await initializeSymbolIndex(state);
+      const mockClient = { getDocumentSymbols: mockGetDocumentSymbols };
+      await initializeSymbolIndex(state, mockClient);
       await indexFile(state, "test.ts");
     });
 
@@ -238,7 +243,8 @@ describe("SymbolIndex", () => {
 
   describe("getFileSymbols", () => {
     beforeEach(async () => {
-      await initializeSymbolIndex(state);
+      const mockClient = { getDocumentSymbols: mockGetDocumentSymbols };
+      await initializeSymbolIndex(state, mockClient);
       await indexFile(state, "test.ts");
     });
 
@@ -257,7 +263,8 @@ describe("SymbolIndex", () => {
 
   describe("getSymbolAtPosition", () => {
     beforeEach(async () => {
-      await initializeSymbolIndex(state);
+      const mockClient = { getDocumentSymbols: mockGetDocumentSymbols };
+      await initializeSymbolIndex(state, mockClient);
       await indexFile(state, "test.ts");
     });
 
@@ -291,7 +298,8 @@ describe("SymbolIndex", () => {
 
   describe("clear", () => {
     beforeEach(async () => {
-      await initializeSymbolIndex(state);
+      const mockClient = { getDocumentSymbols: mockGetDocumentSymbols };
+      await initializeSymbolIndex(state, mockClient);
       await indexFile(state, "test.ts");
     });
 
@@ -320,7 +328,8 @@ describe("SymbolIndex", () => {
       // Reset mock call count
       mockGetDocumentSymbols.mockClear();
 
-      await initializeSymbolIndex(state);
+      const mockClient = { getDocumentSymbols: mockGetDocumentSymbols };
+      await initializeSymbolIndex(state, mockClient);
 
       const files = ["test1.ts", "test2.ts", "test3.ts"];
       await indexFiles(state, files, { concurrency: 2 });

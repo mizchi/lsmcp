@@ -6,6 +6,7 @@ import { lspGetDefinitionsTool } from "@lsmcp/lsp-client"; // from "tools/defini
 import { lspGetDiagnosticsTool } from "@lsmcp/lsp-client"; // from "tools/diagnostics.ts";
 import { lspRenameSymbolTool } from "@lsmcp/lsp-client"; // from "tools/rename.ts";
 import { lspGetDocumentSymbolsTool } from "@lsmcp/lsp-client"; // from "tools/documentSymbols.ts";
+import type { LSPClient } from "@lsmcp/lsp-client";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
@@ -14,7 +15,7 @@ const FIXTURES_DIR = path.join(__dirname, "fixtures/lsp-integration");
 
 describe("LSP integration tests", () => {
   let lspProcess: ChildProcess;
-  let lspClient: any;
+  let lspClient: LSPClient;
   let tmpDir: string;
 
   beforeAll(async () => {

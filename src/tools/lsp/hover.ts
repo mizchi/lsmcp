@@ -3,9 +3,7 @@ import { err, ok, type Result } from "neverthrow";
 import { createLSPTool, type LSPClient } from "@lsmcp/lsp-client";
 import { withLSPOperation } from "@lsmcp/lsp-client";
 import { getLanguageIdFromPath } from "@lsmcp/lsp-client";
-import { readFileSync } from "fs";
-import path from "path";
-import { pathToFileURL } from "url";
+import { readFileWithUri } from "../../shared/fileUtils.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -36,16 +34,11 @@ function resolveFileAndSymbol(params: {
   symbolName?: string;
   target?: string;
 }) {
-  const absolutePath = path.resolve(params.root, params.filePath);
-  let fileContent: string;
-
-  try {
-    fileContent = readFileSync(absolutePath, "utf-8");
-  } catch (error) {
-    throw new Error(`File not found: ${params.filePath}`);
-  }
-
-  const fileUri = pathToFileURL(absolutePath).toString();
+  const {
+    content: fileContent,
+    uri: fileUri,
+    absolutePath,
+  } = readFileWithUri(params.root, params.filePath);
   const lines = fileContent.split("\n");
 
   let lineIndex = 0;

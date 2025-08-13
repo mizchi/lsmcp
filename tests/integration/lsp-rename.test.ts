@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
 import { lspRenameSymbolTool } from "@lsmcp/lsp-client"; // from "tools/rename.ts";
+import type { LSPClient } from "@lsmcp/lsp-client";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
@@ -9,7 +10,7 @@ const FIXTURES_DIR = path.join(__dirname, "fixtures/lsp-rename");
 
 describe("lsp rename symbol", () => {
   let lspProcess: ChildProcess;
-  let lspClient: any;
+  let lspClient: LSPClient;
   let tmpDir: string;
 
   beforeAll(async () => {

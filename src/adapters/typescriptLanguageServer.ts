@@ -36,4 +36,13 @@ export const typescriptAdapter: Preset = {
     sendsInitialDiagnostics: true,
     operationTimeout: 15000,
   },
+
+  // Language-specific features
+  languageFeatures: {
+    typescript: {
+      enabled: true,
+      indexNodeModules: true,
+      maxFiles: 5000,
+    },
+  },
 };

@@ -9,6 +9,7 @@ import type { LSMCPConfig } from "./configSchema.ts";
 import { validateConfig } from "./configSchema.ts";
 import type { Preset } from "../types/lsp.ts";
 import { DEFAULT_BASE_CONFIG, PRESET_FILE_PATTERNS } from "./defaultConfig.ts";
+import { registerDefaultPresets } from "./presets.ts";
 
 /**
  * Configuration sources in priority order
@@ -88,6 +89,9 @@ export class PresetRegistry {
 
 // Global preset registry
 export const globalPresetRegistry = new PresetRegistry();
+
+// Register default presets
+registerDefaultPresets(globalPresetRegistry);
 
 /**
  * Configuration loader class
@@ -190,32 +194,48 @@ export class ConfigLoader {
       const content = readFileSync(absolutePath, "utf-8");
       const parsed = JSON.parse(content);
 
-      // Merge with defaults if requested
-      let merged = options.applyDefaults
-        ? this.mergeWithDefaults(parsed)
-        : { ...parsed }; // Always ensure version field
+      // Start with parsed config
+      let merged: Partial<ExtendedLSMCPConfig> = { ...parsed };
 
-      // If file has a preset field, expand it
+      // If file has a preset field, expand it FIRST
       if (parsed.preset) {
         // Try to get full preset info from registry
         const registeredPreset = globalPresetRegistry.get(parsed.preset);
         if (registeredPreset) {
           // Add full preset properties
+          const preset = registeredPreset as Preset;
           const presetConfig: Partial<ExtendedLSMCPConfig> = {
-            id: registeredPreset.presetId,
-            name: registeredPreset.name || registeredPreset.presetId,
-            bin: registeredPreset.bin,
-            args: registeredPreset.args || [],
-            baseLanguage: registeredPreset.baseLanguage,
-            initializationOptions: registeredPreset.initializationOptions,
-            serverCharacteristics: registeredPreset.serverCharacteristics,
-            unsupported: registeredPreset.unsupported,
-            languageFeatures: registeredPreset.languageFeatures as
+            id: preset.presetId,
+            name: preset.name || preset.presetId,
+            bin: preset.bin,
+            args: preset.args || [],
+            baseLanguage: preset.baseLanguage,
+            initializationOptions: preset.initializationOptions,
+            serverCharacteristics: preset.serverCharacteristics,
+            unsupported: preset.unsupported,
+            languageFeatures: preset.languageFeatures as
               | Record<string, any>
               | undefined,
-            files: registeredPreset.files,
+            files: preset.files,
           };
-          merged = this.mergeConfigs(presetConfig, merged);
+
+          // Merge preset config first, then user config on top
+          // Use spread to preserve all extended fields
+          merged = { ...presetConfig, ...parsed };
+
+          // Special handling for languageFeatures - preserve preset's if not overridden
+          if (presetConfig.languageFeatures) {
+            if (parsed.languageFeatures) {
+              // Deep merge if both exist
+              merged.languageFeatures = this.mergeConfigs(
+                presetConfig.languageFeatures,
+                parsed.languageFeatures,
+              );
+            } else if (!("languageFeatures" in parsed)) {
+              // If parsed doesn't have languageFeatures at all, use preset's
+              merged.languageFeatures = presetConfig.languageFeatures;
+            }
+          }
         } else {
           // Fall back to built-in preset file patterns
           if (PRESET_FILE_PATTERNS[parsed.preset]) {
@@ -223,15 +243,37 @@ export class ConfigLoader {
               preset: parsed.preset,
               files: PRESET_FILE_PATTERNS[parsed.preset],
             };
-            merged = this.mergeConfigs(presetConfig, merged);
+            merged = { ...presetConfig, ...parsed };
           }
         }
       }
 
+      // Apply defaults AFTER preset expansion
+      if (options.applyDefaults) {
+        merged = this.mergeWithDefaults(merged);
+      } else {
+        merged = merged as ExtendedLSMCPConfig;
+      }
+
+      // When validating, preserve extended fields
+      const finalConfig = options.validate
+        ? ({
+            ...validateConfig(merged),
+            id: merged.id,
+            name: merged.name,
+            description: merged.description,
+            bin: merged.bin,
+            args: merged.args,
+            baseLanguage: merged.baseLanguage,
+            initializationOptions: merged.initializationOptions,
+            serverCharacteristics: merged.serverCharacteristics,
+            unsupported: merged.unsupported,
+            languageFeatures: merged.languageFeatures,
+          } as ExtendedLSMCPConfig)
+        : (merged as ExtendedLSMCPConfig);
+
       return {
-        config: options.validate
-          ? (validateConfig(merged) as ExtendedLSMCPConfig)
-          : merged,
+        config: finalConfig,
         source: "file",
       };
     } catch (error) {
@@ -247,24 +289,25 @@ export class ConfigLoader {
   /**
    * Load configuration from a preset
    */
-  loadFromPreset(presetName: string, options: LoadOptions): LoadResult {
+  public loadFromPreset(presetName: string, options: LoadOptions): LoadResult {
     // First try to get from PresetRegistry
     const registeredPreset = globalPresetRegistry.get(presetName);
     if (registeredPreset) {
       // Convert Preset to ExtendedLSMCPConfig with all preset properties
+      const preset = registeredPreset as Preset;
       const config: Partial<ExtendedLSMCPConfig> = {
         preset: presetName,
-        files: registeredPreset.files,
+        files: preset.files,
         // Include all preset properties for runtime use
-        id: registeredPreset.presetId,
-        name: registeredPreset.name || registeredPreset.presetId,
-        bin: registeredPreset.bin,
-        args: registeredPreset.args || [],
-        baseLanguage: registeredPreset.baseLanguage,
-        initializationOptions: registeredPreset.initializationOptions,
-        serverCharacteristics: registeredPreset.serverCharacteristics,
-        unsupported: registeredPreset.unsupported,
-        languageFeatures: registeredPreset.languageFeatures as
+        id: preset.presetId,
+        name: preset.name || preset.presetId,
+        bin: preset.bin,
+        args: preset.args || [],
+        baseLanguage: preset.baseLanguage,
+        initializationOptions: preset.initializationOptions,
+        serverCharacteristics: preset.serverCharacteristics,
+        unsupported: preset.unsupported,
+        languageFeatures: preset.languageFeatures as
           | Record<string, any>
           | undefined,
       };
@@ -345,7 +388,32 @@ export class ConfigLoader {
   private mergeWithDefaults(
     config: Partial<ExtendedLSMCPConfig>,
   ): ExtendedLSMCPConfig {
-    return this.mergeConfigs(DEFAULT_BASE_CONFIG, config);
+    // Preserve extended fields that are not in DEFAULT_BASE_CONFIG
+    const extendedFields: Partial<ExtendedLSMCPConfig> = {};
+    const extendedKeys = [
+      "id",
+      "name",
+      "description",
+      "bin",
+      "args",
+      "baseLanguage",
+      "initializationOptions",
+      "serverCharacteristics",
+      "unsupported",
+      "languageFeatures",
+    ] as const;
+
+    for (const key of extendedKeys) {
+      if (config[key] !== undefined) {
+        (extendedFields as any)[key] = config[key];
+      }
+    }
+
+    // Merge defaults with config, then add back extended fields
+    const merged = this.mergeConfigs(DEFAULT_BASE_CONFIG, config);
+    const result = { ...merged, ...extendedFields } as ExtendedLSMCPConfig;
+
+    return result;
   }
 
   /**

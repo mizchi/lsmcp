@@ -3,13 +3,14 @@ import path from "path";
 import fs from "fs/promises";
 import { randomBytes } from "crypto";
 import { lspRenameSymbolTool } from "@lsmcp/lsp-client"; // from "tools/rename.ts";
+import type { LSPClient } from "@lsmcp/lsp-client";
 import { ChildProcess, spawn } from "child_process";
 
 const FIXTURES_DIR = path.join(__dirname, "../fixtures/lsp-rename");
 
 describe("lspRenameSymbol - multi-file rename", () => {
   let lspProcess: ChildProcess;
-  let lspClient: any;
+  let lspClient: LSPClient;
   let tmpDir: string;
 
   beforeAll(async () => {

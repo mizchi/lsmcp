@@ -14,9 +14,9 @@ describe("ConfigLoader with Preset Language Features", () => {
     loader = new ConfigLoader(tempDir);
   });
 
-  describe.skip("Preset-based language features", () => {
+  describe("Preset-based language features", () => {
     it("should enable TypeScript features for tsgo preset", async () => {
-      const result = await loader.loadFromPreset("tsgo", {
+      const result = loader.loadFromPreset("tsgo", {
         applyDefaults: true,
       });
 
@@ -29,7 +29,7 @@ describe("ConfigLoader with Preset Language Features", () => {
     });
 
     it("should enable TypeScript features for typescript preset", async () => {
-      const result = await loader.loadFromPreset("typescript", {
+      const result = loader.loadFromPreset("typescript", {
         applyDefaults: true,
       });
 
@@ -72,7 +72,7 @@ describe("ConfigLoader with Preset Language Features", () => {
     });
   });
 
-  describe.skip("Config file with preset", () => {
+  describe("Config file with preset", () => {
     it("should apply preset language features from config file", async () => {
       const configPath = join(tempDir, ".lsmcp", "config.json");
       const config = {
@@ -141,7 +141,7 @@ describe("ConfigLoader with Preset Language Features", () => {
     });
   });
 
-  describe.skip("Direct preset loading", () => {
+  describe("Direct preset loading", () => {
     it("should load preset with language features directly", async () => {
       const result = await loader.loadFromPreset("tsgo", {
         applyDefaults: false,
