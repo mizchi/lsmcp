@@ -95,6 +95,7 @@ export async function runLanguageServerWithConfig(
       lspClient: lspClient as any, // LSPClient implements LspClientAdapter
       fs: fileSystemApi,
       config: { ...config },
+      languageId: config.preset || config.id || "custom",
     };
 
     // Start MCP server

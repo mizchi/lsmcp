@@ -116,7 +116,6 @@ export class LifecycleManager {
 
     // Create a promise that rejects if the process exits unexpectedly
     processExitPromise = new Promise<void>((resolve, reject) => {
-      
       // If the process exits during initialization, reject the promise
       this.state.process!.once("exit", (code) => {
         this.state.process = null;
@@ -147,7 +146,10 @@ export class LifecycleManager {
     this.state.process.stderr?.on("data", (data: Buffer) => {
       stderrBuffer += data.toString();
       // Log stderr in real-time for debugging
-      const lines = data.toString().split('\n').filter(line => line.trim());
+      const lines = data
+        .toString()
+        .split("\n")
+        .filter((line) => line.trim());
       for (const line of lines) {
         debug(`[LSP stderr] ${line}`);
       }
@@ -155,23 +157,20 @@ export class LifecycleManager {
 
     // Initialize the LSP connection with race condition against process exit
     try {
-      await Promise.race([
-        this.initialize(),
-        processExitPromise,
-      ]);
-      
+      await Promise.race([this.initialize(), processExitPromise]);
+
       // If initialization succeeded, remove the exit handlers
       // and add a new one that just logs the exit
       this.state.process?.removeAllListeners("exit");
       this.state.process?.removeAllListeners("error");
-      
+
       this.state.process?.on("exit", (code) => {
         this.state.process = null;
         if (code !== 0 && code !== null) {
           debug(`[LSP] Server exited with code ${code}`);
         }
       });
-      
+
       this.state.process?.on("error", (error) => {
         debug(`[LSP] Server error: ${error.message}`);
       });
@@ -181,16 +180,14 @@ export class LifecycleManager {
         language: this.state.languageId,
         stderr: stderrBuffer.trim(),
       };
-      
+
       // Kill the process if it's still running
       if (this.state.process && !this.state.process.killed) {
         this.state.process.kill();
       }
-      
+
       throw new Error(
-        error instanceof Error 
-          ? error.message 
-          : formatError(error, context)
+        error instanceof Error ? error.message : formatError(error, context),
       );
     }
   }

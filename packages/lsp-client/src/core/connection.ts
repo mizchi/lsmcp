@@ -62,8 +62,11 @@ export class ConnectionHandler {
   }
 
   private handleMessage(message: LSPMessage): void {
-    debug("[LSP message]", (message as any).method || `Response #${(message as any).id}`, 
-          (message as any).method ? "notification/request" : "response");
+    debug(
+      "[LSP message]",
+      (message as any).method || `Response #${(message as any).id}`,
+      (message as any).method ? "notification/request" : "response",
+    );
 
     if (isLSPResponse(message)) {
       this.handleResponse(message as LSPResponse);
@@ -74,8 +77,10 @@ export class ConnectionHandler {
 
   private handleResponse(message: LSPResponse): void {
     const handler = this.state.responseHandlers.get(message.id);
-    debug(`[LSP response] id=${message.id}, has handler=${!!handler}, pending handlers=${Array.from(this.state.responseHandlers.keys()).join(', ')}`);
-    
+    debug(
+      `[LSP response] id=${message.id}, has handler=${!!handler}, pending handlers=${Array.from(this.state.responseHandlers.keys()).join(", ")}`,
+    );
+
     if (handler) {
       if (handler.timer) {
         clearTimeout(handler.timer);

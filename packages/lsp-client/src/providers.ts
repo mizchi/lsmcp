@@ -4,6 +4,7 @@
 
 import type { LSPClient } from "./protocol/types/index.ts";
 import type { DocumentSymbol } from "@lsmcp/types";
+import { fixFSharpSymbolPositions } from "./fsharp-position-fix.ts";
 
 /**
  * Symbol provider interface required by code-indexer
@@ -19,6 +20,7 @@ export class LSPSymbolProvider implements SymbolProvider {
   constructor(
     private client: LSPClient,
     private fileContentProvider: (uri: string) => Promise<string>,
+    private languageId?: string,
   ) {}
 
   async getDocumentSymbols(uri: string): Promise<DocumentSymbol[]> {
@@ -36,10 +38,22 @@ export class LSPSymbolProvider implements SymbolProvider {
         await new Promise((resolve) => setTimeout(resolve, 200));
 
         // Get symbols
-        const symbols = await this.client.getDocumentSymbols(uri);
+        let symbols = await this.client.getDocumentSymbols(uri);
         console.error(
           `[LSPSymbolProvider] Got ${symbols.length} symbols from ${uri}`,
         );
+
+        // Apply F# position fix if needed
+        if (
+          this.languageId === "fsharp" &&
+          (uri.endsWith(".fs") || uri.endsWith(".fsi") || uri.endsWith(".fsx"))
+        ) {
+          symbols = fixFSharpSymbolPositions(
+            symbols as DocumentSymbol[],
+            content,
+          );
+        }
+
         // Cast to DocumentSymbol[] as code-indexer expects
         return symbols as DocumentSymbol[];
       } finally {
@@ -65,6 +79,7 @@ export class LSPSymbolProvider implements SymbolProvider {
 export function createLSPSymbolProvider(
   client: LSPClient,
   fileContentProvider: (uri: string) => Promise<string>,
+  languageId?: string,
 ): SymbolProvider {
-  return new LSPSymbolProvider(client, fileContentProvider);
+  return new LSPSymbolProvider(client, fileContentProvider, languageId);
 }

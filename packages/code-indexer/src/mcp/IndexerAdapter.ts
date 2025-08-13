@@ -52,10 +52,12 @@ export function getOrCreateIndex(
   } else {
     fileSystem = new NodeFileSystem();
   }
-  
+
   // Debug: Check if fileSystem has the required methods
   if (typeof fileSystem.readFile !== "function") {
-    console.error("[IndexerAdapter] Warning: fileSystem.readFile is not a function. Using NodeFileSystem.");
+    console.error(
+      "[IndexerAdapter] Warning: fileSystem.readFile is not a function. Using NodeFileSystem.",
+    );
     fileSystem = new NodeFileSystem();
   }
 
@@ -99,7 +101,14 @@ export function getOrCreateIndex(
       const path = fileURLToPath(uri);
       return await readFile(path, "utf-8");
     };
-    symbolProvider = createLSPSymbolProvider(lspClient, fileContentProvider);
+
+    // Extract languageId from context if available
+    const languageId = context?.languageId || context?.presetId;
+    symbolProvider = createLSPSymbolProvider(
+      lspClient,
+      fileContentProvider,
+      languageId,
+    );
   }
 
   // Create index

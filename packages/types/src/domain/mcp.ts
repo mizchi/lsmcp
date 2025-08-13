@@ -16,6 +16,8 @@ export interface McpContext {
   fs: FileSystemApi;
   /** Configuration */
   config?: Record<string, unknown>;
+  /** Language ID or preset ID for language-specific handling */
+  languageId?: string;
 }
 
 /**
