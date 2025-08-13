@@ -353,33 +353,6 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
     },
   };
 
-// Statistics tool
-
-const getIndexStatsSchema = z.object({
-  root: z.string().describe("Root directory for the project").optional(),
-});
-
-export const getIndexStatsFromIndexTool: McpToolDef<
-  typeof getIndexStatsSchema
-> = {
-  name: "get_index_stats_from_index",
-  description:
-    "Get statistics about the symbol index including file count, symbol count, and performance metrics. " +
-    "This shows information about the pre-built index used for fast symbol searches.",
-  schema: getIndexStatsSchema,
-  execute: async ({ root }, _context?: McpContext) => {
-    const rootPath = root || process.cwd();
-    const stats = getIndexStats(rootPath);
-
-    return `Symbol Index Statistics:
-- Total files indexed: ${stats.totalFiles}
-- Total symbols: ${stats.totalSymbols}
-- Total indexing time: ${stats.indexingTime}ms
-- Average time per file: ${stats.totalFiles > 0 ? Math.round(stats.indexingTime / stats.totalFiles) : 0}ms
-- Last updated: ${stats.lastUpdated.toISOString()}`;
-  },
-};
-
 // Clear index tool
 
 const clearIndexSchema = z.object({
@@ -477,11 +450,11 @@ import { getProjectOverviewTool } from "./projectOverview.ts";
 
 // Export index tools - now includes the unified index_symbols tool
 export const indexTools = [
-  getProjectOverviewTool, // Quick project overview
+  getProjectOverviewTool, // Quick project overview with statistics
   indexSymbolsTool, // New unified tool that replaces index_files and update_index_from_index
   searchSymbolFromIndexTool,
-  getIndexStatsFromIndexTool,
   clearIndexTool,
+  // getIndexStatsFromIndexTool, // Removed - functionality merged into getProjectOverviewTool
   // updateIndexIncrementalTool, // Removed - functionality merged into indexSymbolsTool
   // indexFilesTool, // Removed - replaced by indexSymbolsTool
 ];

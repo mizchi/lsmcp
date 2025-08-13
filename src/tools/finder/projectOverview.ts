@@ -244,6 +244,20 @@ export const getProjectOverviewTool: McpToolDef<
     output += "### Statistics:\n";
     output += `- **Files:** ${stats.totalFiles}\n`;
     output += `- **Symbols:** ${stats.totalSymbols}\n`;
+    output += `- **Index size:** ${stats.totalFiles > 0 ? Math.round(stats.indexingTime / 1000) : 0}s\n`;
+    output += `- **Last updated:** ${stats.lastUpdated.toISOString()}\n`;
+
+    // Detailed symbol breakdown if available
+    if (stats.totalSymbols > 0) {
+      output += "\n**Symbol breakdown:**\n";
+      output += `  - Classes: ${classes.length}\n`;
+      output += `  - Interfaces: ${interfaces.length}\n`;
+      output += `  - Functions: ${functions.length}\n`;
+      output += `  - Methods: ${methods.length}\n`;
+      output += `  - Variables: ${variables.length}\n`;
+      output += `  - Constants: ${constants.length}\n`;
+      if (enums.length > 0) output += `  - Enums: ${enums.length}\n`;
+    }
     output += "\n";
 
     // Directory structure with file counts
