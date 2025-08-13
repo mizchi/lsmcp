@@ -108,9 +108,11 @@ export const myLanguageAdapter: LspClientConfig = {
 #### TypeScript/JavaScript
 
 **Prerequisites:**
+
 - Node.js 22+
 
 **Installation:**
+
 ```bash
 # Option 1: typescript-language-server (stable)
 npm install -g typescript typescript-language-server
@@ -120,6 +122,7 @@ npm install -g @typescript/native-preview
 ```
 
 **Testing:**
+
 ```bash
 pnpm test tests/adapters/language-tests/typescript.test.ts
 pnpm test tests/adapters/language-tests/tsgo.test.ts
@@ -128,9 +131,11 @@ pnpm test tests/adapters/language-tests/tsgo.test.ts
 #### Rust
 
 **Prerequisites:**
+
 - Rust toolchain (via rustup)
 
 **Installation:**
+
 ```bash
 # Install Rust and rust-analyzer
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -138,6 +143,7 @@ rustup component add rust-analyzer
 ```
 
 **Testing:**
+
 ```bash
 # Initialize test project
 cd tests/adapters/fixtures/rust
@@ -150,9 +156,11 @@ pnpm test tests/adapters/language-tests/rust.test.ts
 #### Python
 
 **Prerequisites:**
+
 - Python 3.8+
 
 **Installation:**
+
 ```bash
 # Option 1: Pyright (recommended)
 npm install -g pyright
@@ -166,6 +174,7 @@ uv tool install python-lsp-server[all]
 ```
 
 **Testing:**
+
 ```bash
 # Initialize test project (if using uv)
 cd tests/adapters/fixtures/python
@@ -178,9 +187,11 @@ pnpm test tests/adapters/language-tests/python.test.ts
 #### F#
 
 **Prerequisites:**
+
 - .NET SDK 8.0+
 
 **Installation:**
+
 ```bash
 # Install .NET SDK
 # See: https://dotnet.microsoft.com/download
@@ -190,6 +201,7 @@ dotnet tool install -g fsautocomplete
 ```
 
 **Testing:**
+
 ```bash
 pnpm test tests/adapters/language-tests/fsharp.test.ts
 ```
@@ -197,9 +209,11 @@ pnpm test tests/adapters/language-tests/fsharp.test.ts
 #### Go
 
 **Prerequisites:**
+
 - Go 1.19+
 
 **Installation:**
+
 ```bash
 # Install Go
 # See: https://go.dev/doc/install
@@ -209,6 +223,7 @@ go install golang.org/x/tools/gopls@latest
 ```
 
 **Testing:**
+
 ```bash
 pnpm test tests/adapters/language-tests/go.test.ts
 ```
@@ -216,9 +231,11 @@ pnpm test tests/adapters/language-tests/go.test.ts
 #### MoonBit
 
 **Prerequisites:**
+
 - MoonBit CLI
 
 **Installation:**
+
 ```bash
 # Install MoonBit
 curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
@@ -226,6 +243,7 @@ export PATH="$HOME/.moon/bin:$PATH"
 ```
 
 **Testing:**
+
 ```bash
 pnpm test tests/adapters/language-tests/moonbit.test.ts
 ```
@@ -322,6 +340,7 @@ chore: update dependencies
 ## Pull Request Process
 
 1. **Fork and Clone**
+
    ```bash
    git clone https://github.com/your-username/lsmcp.git
    cd lsmcp
@@ -329,6 +348,7 @@ chore: update dependencies
    ```
 
 2. **Create Branch**
+
    ```bash
    git checkout -b feat/my-feature
    # or
@@ -336,11 +356,13 @@ chore: update dependencies
    ```
 
 3. **Make Changes**
+
    - Write code
    - Add tests
    - Update documentation if needed
 
 4. **Test and Lint**
+
    ```bash
    pnpm build
    pnpm test
@@ -349,6 +371,7 @@ chore: update dependencies
    ```
 
 5. **Commit and Push**
+
    ```bash
    git add .
    git commit -m "feat: add amazing feature"
@@ -397,13 +420,7 @@ Create `.lsmcp/config.json` in your project:
 
 ```bash
 # Debug logging
-DEBUG=lsmcp:* pnpm test
-
-# Force specific LSP
-FORCE_LSP=typescript pnpm test
-
-# Custom LSP command
-LSP_COMMAND="my-lsp --stdio" pnpm test
+LSMCP_DEBUG=1 pnpm test
 ```
 
 ## Getting Help

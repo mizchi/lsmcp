@@ -5,25 +5,35 @@ import type { LSPClient } from "@lsmcp/lsp-client";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
+import { existsSync } from "fs";
+import { fileURLToPath } from "url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(__dirname, "../..");
 const FIXTURES_DIR = path.join(__dirname, "fixtures/lsp-rename");
 
-describe("lsp rename symbol", () => {
+describe("lsp rename symbol", { timeout: 30000 }, () => {
   let lspProcess: ChildProcess;
   let lspClient: LSPClient;
   let tmpDir: string;
   let lspRenameSymbolTool: any;
 
   beforeAll(async () => {
-    // Skip test if LSP_COMMAND is not set
-    if (!process.env.LSP_COMMAND) {
-      console.log("Skipping LSP rename tests: LSP_COMMAND not set");
-      return;
+    // Resolve typescript-language-server from project root
+    const tsLspPath = path.join(
+      projectRoot,
+      "node_modules",
+      ".bin",
+      "typescript-language-server",
+    );
+    if (!existsSync(tsLspPath)) {
+      throw new Error(
+        `typescript-language-server not found at ${tsLspPath}. Please run 'pnpm install' first.`,
+      );
     }
 
     // Start TypeScript language server
-    const [command, ...args] = process.env.LSP_COMMAND.split(" ");
-    lspProcess = spawn(command, args, {
+    lspProcess = spawn(tsLspPath, ["--stdio"], {
       cwd: __dirname,
       stdio: ["pipe", "pipe", "pipe"],
     });
@@ -39,14 +49,14 @@ describe("lsp rename symbol", () => {
 
     // Initialize tool with the LSP client
     lspRenameSymbolTool = createRenameSymbolTool(lspClient);
-  });
+  }, 30000);
 
   beforeAll(async () => {
     // Create temporary directory with random hash
     const hash = randomBytes(8).toString("hex");
     tmpDir = path.join(__dirname, `tmp-lsp-rename-${hash}`);
     await fs.mkdir(tmpDir, { recursive: true });
-  });
+  }, 30000);
 
   afterAll(async () => {
     // Cleanup
@@ -58,13 +68,9 @@ describe("lsp rename symbol", () => {
       if (lspClient) await lspClient.stop();
       lspProcess.kill();
     }
-  });
+  }, 30000);
 
   it("should rename a simple variable", async () => {
-    if (!process.env.LSP_COMMAND) {
-      return;
-    }
-
     // Copy test file to temp directory
     const inputFile = path.join(FIXTURES_DIR, "simple-variable.input.ts");
     const testFile = path.join(tmpDir, "simple-variable.ts");
@@ -93,10 +99,6 @@ describe("lsp rename symbol", () => {
   });
 
   it("should rename a function", async () => {
-    if (!process.env.LSP_COMMAND) {
-      return;
-    }
-
     // Copy test file to temp directory
     const inputFile = path.join(FIXTURES_DIR, "function.input.ts");
     const testFile = path.join(tmpDir, "function.ts");
@@ -125,10 +127,6 @@ describe("lsp rename symbol", () => {
   });
 
   it("should rename a class", async () => {
-    if (!process.env.LSP_COMMAND) {
-      return;
-    }
-
     // Copy test file to temp directory
     const inputFile = path.join(FIXTURES_DIR, "class.input.ts");
     const testFile = path.join(tmpDir, "class.ts");
@@ -157,10 +155,6 @@ describe("lsp rename symbol", () => {
   });
 
   it("should rename without specifying line number", async () => {
-    if (!process.env.LSP_COMMAND) {
-      return;
-    }
-
     // Copy test file to temp directory
     const inputFile = path.join(FIXTURES_DIR, "simple-variable.input.ts");
     const testFile = path.join(tmpDir, "simple-variable-no-line.ts");
@@ -188,10 +182,6 @@ describe("lsp rename symbol", () => {
   });
 
   it("should handle rename errors gracefully", async () => {
-    if (!process.env.LSP_COMMAND) {
-      return;
-    }
-
     // Try to rename a non-existent symbol
     await expect(
       lspRenameSymbolTool.execute({
@@ -205,10 +195,6 @@ describe("lsp rename symbol", () => {
   });
 
   it("should rename symbols across multiple files", async () => {
-    if (!process.env.LSP_COMMAND) {
-      return;
-    }
-
     // Copy test files to temp directory
     const exportInput = path.join(FIXTURES_DIR, "cross-file-export.input.ts");
     const importInput = path.join(FIXTURES_DIR, "cross-file-import.input.ts");
@@ -222,14 +208,14 @@ describe("lsp rename symbol", () => {
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
       filePath: "cross-file-export.input.ts",
-      line: 2, // export function processData
-      target: "processData",
+      line: 1, // export function sharedFunction
+      target: "sharedFunction",
       newName: "transformData",
     });
 
     // Verify result
     expect(result).toContain("Successfully renamed symbol");
-    expect(result).toContain('"processData" → "transformData"');
+    expect(result).toContain('"sharedFunction" → "transformData"');
 
     // Check that export file was updated
     expect(result).toContain("cross-file-export.input.ts");
@@ -251,10 +237,6 @@ describe("lsp rename symbol", () => {
   });
 
   it("should rename type aliases", async () => {
-    if (!process.env.LSP_COMMAND) {
-      return;
-    }
-
     // Copy test file to temp directory
     const inputFile = path.join(FIXTURES_DIR, "type-alias.input.ts");
     const testFile = path.join(tmpDir, "type-alias.ts");
@@ -264,9 +246,9 @@ describe("lsp rename symbol", () => {
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
       filePath: "type-alias.ts",
-      line: 2, // type UserData = {
-      target: "UserData",
-      newName: "PersonData",
+      line: 1, // type UserType = {
+      target: "UserType",
+      newName: "UserData",
     });
 
     // Verify result
@@ -283,10 +265,6 @@ describe("lsp rename symbol", () => {
   });
 
   it("should handle invalid rename targets", async () => {
-    if (!process.env.LSP_COMMAND) {
-      return;
-    }
-
     // Copy test file to temp directory
     const inputFile = path.join(FIXTURES_DIR, "simple-variable.input.ts");
     const testFile = path.join(tmpDir, "invalid-rename-test.ts");

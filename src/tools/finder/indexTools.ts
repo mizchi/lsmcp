@@ -177,8 +177,8 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
 
         // Check if LSP client is initialized
         // Get or create index
-        // テスト互換のため context 未指定時は null を渡す
-        const index = getOrCreateIndex(rootPath, context ?? null);
+        // Pass context which includes fs (FileSystemApi) and lspClient
+        const index = getOrCreateIndex(rootPath, context);
         if (!index) {
           return `Error: Failed to create symbol index. LSP client may not be properly initialized.`;
         }

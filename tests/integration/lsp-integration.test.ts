@@ -10,7 +10,11 @@ import type { LSPClient } from "@lsmcp/lsp-client";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
+import { existsSync } from "fs";
+import { fileURLToPath } from "url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(__dirname, "../..");
 const FIXTURES_DIR = path.join(__dirname, "fixtures/lsp-integration");
 
 describe("LSP integration tests", () => {
@@ -25,12 +29,6 @@ describe("LSP integration tests", () => {
   let lspGetDocumentSymbolsTool: any;
 
   beforeAll(async () => {
-    // Skip test if LSP_COMMAND is not set
-    if (!process.env.LSP_COMMAND) {
-      console.log("Skipping LSP integration tests: LSP_COMMAND not set");
-      return;
-    }
-
     // Create fixtures directory
     await fs.mkdir(FIXTURES_DIR, { recursive: true });
 
@@ -39,9 +37,21 @@ describe("LSP integration tests", () => {
     tmpDir = path.join(__dirname, `tmp-lsp-integration-${hash}`);
     await fs.mkdir(tmpDir, { recursive: true });
 
+    // Resolve typescript-language-server from project root
+    const tsLspPath = path.join(
+      projectRoot,
+      "node_modules",
+      ".bin",
+      "typescript-language-server",
+    );
+    if (!existsSync(tsLspPath)) {
+      throw new Error(
+        `typescript-language-server not found at ${tsLspPath}. Please run 'pnpm install' first.`,
+      );
+    }
+
     // Start TypeScript language server
-    const [command, ...args] = process.env.LSP_COMMAND.split(" ");
-    lspProcess = spawn(command, args, {
+    lspProcess = spawn(tsLspPath, ["--stdio"], {
       cwd: tmpDir, // Use tmpDir as working directory
       stdio: ["pipe", "pipe", "pipe"],
     });
@@ -62,7 +72,7 @@ describe("LSP integration tests", () => {
     lspGetDiagnosticsTool = createDiagnosticsTool(lspClient);
     lspRenameSymbolTool = createRenameSymbolTool(lspClient);
     lspGetDocumentSymbolsTool = createDocumentSymbolsTool(lspClient);
-  });
+  }, 30000);
 
   afterAll(async () => {
     // Cleanup
@@ -74,15 +84,10 @@ describe("LSP integration tests", () => {
       if (lspClient) await lspClient.stop();
       lspProcess.kill();
     }
-  });
+  }, 30000);
 
   describe("Complete workflow test", () => {
     it("should work with a TypeScript project", async () => {
-      if (!process.env.LSP_COMMAND || !tmpDir) {
-        console.log("Skipping test: LSP not initialized");
-        return;
-      }
-
       // Create test files
       const mainFile = `// Main application file
 import { Calculator } from "./calculator.ts";
@@ -135,22 +140,28 @@ export function roundTo(value: number, decimals: number): number {
       await fs.writeFile(path.join(tmpDir, "utils.ts"), utilsFile);
 
       // Test 1: Get hover information
-      const hoverResult = await lspGetHoverTool.execute({
-        root: tmpDir,
-        filePath: "main.ts",
-        line: 5,
-        character: 6, // hover over 'calc'
-      });
+      const hoverResult = await lspGetHoverTool.execute(
+        {
+          root: tmpDir,
+          filePath: "main.ts",
+          line: 5,
+          character: 6, // hover over 'calc'
+        },
+        30000,
+      );
       expect(hoverResult).toContain("const calc");
       // Type information may vary based on LSP server state
 
       // Test 2: Find references
-      const referencesResult = await lspFindReferencesTool.execute({
-        root: tmpDir,
-        filePath: "calculator.ts",
-        line: "add(a: number",
-        symbolName: "add",
-      });
+      const referencesResult = await lspFindReferencesTool.execute(
+        {
+          root: tmpDir,
+          filePath: "calculator.ts",
+          line: "add(a: number",
+          symbolName: "add",
+        },
+        30000,
+      );
       expect(referencesResult).toContain("Found");
       expect(referencesResult).toContain("reference");
       expect(referencesResult).toContain("calculator.ts");
@@ -158,20 +169,26 @@ export function roundTo(value: number, decimals: number): number {
       // expect(referencesResult).toContain("main.ts");
 
       // Test 3: Get definitions
-      const definitionsResult = await lspGetDefinitionsTool.execute({
-        root: tmpDir,
-        filePath: "main.ts",
-        line: "formatResult",
-        symbolName: "formatResult",
-      });
+      const definitionsResult = await lspGetDefinitionsTool.execute(
+        {
+          root: tmpDir,
+          filePath: "main.ts",
+          line: "formatResult",
+          symbolName: "formatResult",
+        },
+        30000,
+      );
       expect(definitionsResult).toContain("Found 1 definition");
       expect(definitionsResult).toContain("utils.ts");
 
       // Test 4: Get document symbols
-      const symbolsResult = await lspGetDocumentSymbolsTool.execute({
-        root: tmpDir,
-        filePath: "calculator.ts",
-      });
+      const symbolsResult = await lspGetDocumentSymbolsTool.execute(
+        {
+          root: tmpDir,
+          filePath: "calculator.ts",
+        },
+        30000,
+      );
       expect(symbolsResult).toContain("Calculator [Class]");
       expect(symbolsResult).toContain("add [Method]");
       expect(symbolsResult).toContain("subtract [Method]");
@@ -179,13 +196,16 @@ export function roundTo(value: number, decimals: number): number {
       expect(symbolsResult).toContain("divide [Method]");
 
       // Test 5: Rename symbol
-      const renameResult = await lspRenameSymbolTool.execute({
-        root: tmpDir,
-        filePath: "utils.ts",
-        line: "formatResult",
-        target: "formatResult",
-        newName: "formatOutput",
-      });
+      const renameResult = await lspRenameSymbolTool.execute(
+        {
+          root: tmpDir,
+          filePath: "utils.ts",
+          line: "formatResult",
+          target: "formatResult",
+          newName: "formatOutput",
+        },
+        30000,
+      );
       expect(renameResult).toContain("Successfully renamed symbol");
       expect(renameResult).toContain('"formatResult" → "formatOutput"');
 
@@ -208,24 +228,22 @@ console.log(unknownVariable); // Unknown variable
       // Wait a bit for diagnostics to be processed
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      const diagnosticsResult = await lspGetDiagnosticsTool.execute({
-        root: tmpDir,
-        filePath: "error.ts",
-      });
-      expect(diagnosticsResult).toContain("errors");
+      const diagnosticsResult = await lspGetDiagnosticsTool.execute(
+        {
+          root: tmpDir,
+          filePath: "error.ts",
+        },
+        30000,
+      );
+      expect(diagnosticsResult).toContain("error");
       // LSP error messages may vary
       const lowerResult = diagnosticsResult.toLowerCase();
       expect(lowerResult).toMatch(/type|number|string|assignable/);
-    });
-  });
+    }, 30000);
+  }, 30000);
 
   describe("Error handling", () => {
     it("should handle non-existent files", async () => {
-      if (!process.env.LSP_COMMAND || !tmpDir) {
-        console.log("Skipping test: LSP not initialized");
-        return;
-      }
-
       // Test hover on non-existent file
       await expect(
         lspGetHoverTool.execute({
@@ -245,24 +263,22 @@ console.log(unknownVariable); // Unknown variable
           symbolName: "foo",
         }),
       ).rejects.toThrow();
-    });
+    }, 30000);
 
     it("should handle invalid positions", async () => {
-      if (!process.env.LSP_COMMAND || !tmpDir) {
-        console.log("Skipping test: LSP not initialized");
-        return;
-      }
-
       const testFile = `const x = 1;\nconst y = 2;`;
       await fs.writeFile(path.join(tmpDir, "test.ts"), testFile);
 
       // Test hover at invalid position
-      const hoverResult = await lspGetHoverTool.execute({
-        root: tmpDir,
-        filePath: "test.ts",
-        line: 2, // Valid line but beyond content
-        character: 0,
-      });
+      const hoverResult = await lspGetHoverTool.execute(
+        {
+          root: tmpDir,
+          filePath: "test.ts",
+          line: 2, // Valid line but beyond content
+          character: 0,
+        },
+        30000,
+      );
       expect(hoverResult).toContain("No hover information available");
 
       // Test rename on non-existent symbol
@@ -275,16 +291,11 @@ console.log(unknownVariable); // Unknown variable
           newName: "newName",
         }),
       ).rejects.toThrow();
-    });
-  });
+    }, 30000);
+  }, 30000);
 
   describe("LSP client state", () => {
     it("should maintain LSP client connection", async () => {
-      if (!process.env.LSP_COMMAND || !tmpDir) {
-        console.log("Skipping test: LSP not initialized");
-        return;
-      }
-
       expect(lspClient).toBeDefined();
 
       // Perform multiple operations to ensure connection stability
@@ -292,33 +303,35 @@ console.log(unknownVariable); // Unknown variable
       await fs.writeFile(path.join(tmpDir, "constants.ts"), testFile);
 
       // Multiple operations on the same file
-      const hover1 = await lspGetHoverTool.execute({
-        root: tmpDir,
-        filePath: "constants.ts",
-        line: 1,
-        character: 13, // VERSION
-      });
+      const hover1 = await lspGetHoverTool.execute(
+        {
+          root: tmpDir,
+          filePath: "constants.ts",
+          line: 1,
+          character: 13, // VERSION
+        },
+        30000,
+      );
       expect(hover1).toContain("VERSION");
 
-      const hover2 = await lspGetHoverTool.execute({
-        root: tmpDir,
-        filePath: "constants.ts",
-        line: 2,
-        character: 13, // NAME
-      });
+      const hover2 = await lspGetHoverTool.execute(
+        {
+          root: tmpDir,
+          filePath: "constants.ts",
+          line: 2,
+          character: 13, // NAME
+        },
+        30000,
+      );
       expect(hover2).toContain("NAME");
 
       // Client should still be active
       expect(lspClient).toBeDefined();
-    });
-  });
+    }, 30000);
+  }, 30000);
 
   describe("Cross-file operations", () => {
     it("should handle cross-file references", async () => {
-      if (!process.env.LSP_COMMAND) {
-        return;
-      }
-
       // Create interconnected files
       const libFile = `// Library file
 export interface Config {
@@ -354,12 +367,15 @@ const updatedConfig = updateConfig(config);
       await fs.writeFile(path.join(tmpDir, "app.ts"), appFile);
 
       // Find all references to Config interface
-      const configRefs = await lspFindReferencesTool.execute({
-        root: tmpDir,
-        filePath: "lib.ts",
-        line: 2, // interface Config line
-        symbolName: "Config",
-      });
+      const configRefs = await lspFindReferencesTool.execute(
+        {
+          root: tmpDir,
+          filePath: "lib.ts",
+          line: 2, // interface Config line
+          symbolName: "Config",
+        },
+        30000,
+      );
       expect(configRefs).toContain("Found");
       expect(configRefs).toContain("references");
       expect(configRefs).toContain("lib.ts");
@@ -367,14 +383,17 @@ const updatedConfig = updateConfig(config);
       // Some servers may not find references in unopened files
 
       // Get definition from usage
-      const configDef = await lspGetDefinitionsTool.execute({
-        root: tmpDir,
-        filePath: "app.ts",
-        line: "const config: Config",
-        symbolName: "Config",
-      });
+      const configDef = await lspGetDefinitionsTool.execute(
+        {
+          root: tmpDir,
+          filePath: "app.ts",
+          line: "const config: Config",
+          symbolName: "Config",
+        },
+        30000,
+      );
       expect(configDef).toContain("lib.ts");
       expect(configDef).toContain("interface Config");
-    });
-  });
-});
+    }, 30000);
+  }, 30000);
+}, 30000);

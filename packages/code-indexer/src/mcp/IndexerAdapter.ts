@@ -40,14 +40,24 @@ export function getOrCreateIndex(
 
   // Resolve file system from context or fallback to NodeFileSystem
   // Support both "fileSystem" and "fs" to align with common context shapes
-  const fileSystem =
-    context &&
-    typeof context === "object" &&
-    (("fileSystem" in context && (context as any).fileSystem) ||
-      ("fs" in context && (context as any).fs))
-      ? (("fileSystem" in (context as any) && (context as any).fileSystem) ??
-        (context as any).fs)
-      : new NodeFileSystem();
+  let fileSystem: any;
+  if (context && typeof context === "object") {
+    if ("fs" in context && context.fs) {
+      fileSystem = context.fs;
+    } else if ("fileSystem" in context && context.fileSystem) {
+      fileSystem = context.fileSystem;
+    } else {
+      fileSystem = new NodeFileSystem();
+    }
+  } else {
+    fileSystem = new NodeFileSystem();
+  }
+  
+  // Debug: Check if fileSystem has the required methods
+  if (typeof fileSystem.readFile !== "function") {
+    console.error("[IndexerAdapter] Warning: fileSystem.readFile is not a function. Using NodeFileSystem.");
+    fileSystem = new NodeFileSystem();
+  }
 
   // Use in-memory cache during vitest to avoid FS permissions under /test roots
   const cache =

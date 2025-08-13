@@ -486,7 +486,7 @@ describe("searchSymbolFromIndexTool", () => {
       // LSP client check no longer needed
       expect(IndexerAdapter.getOrCreateIndex).toHaveBeenCalledWith(
         "/test",
-        null,
+        undefined,
       );
       expect(glob).toHaveBeenCalledWith("**/*.{ts,tsx}", {
         cwd: "/test",

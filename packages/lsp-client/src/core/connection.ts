@@ -8,6 +8,11 @@ import type {
   LSPResponse,
   LSPNotification,
 } from "../protocol/types/index.ts";
+import {
+  isLSPResponse,
+  isLSPNotification,
+  isLSPRequest,
+} from "../protocol/types/index.ts";
 import type { LSPClientState } from "./state.ts";
 import { debug } from "../utils/debug.ts";
 
@@ -57,11 +62,8 @@ export class ConnectionHandler {
   }
 
   private handleMessage(message: LSPMessage): void {
-    const {
-      isLSPResponse,
-      isLSPNotification,
-      isLSPRequest,
-    } = require("../protocol/types/index.ts");
+    debug("[LSP message]", (message as any).method || `Response #${(message as any).id}`, 
+          (message as any).method ? "notification/request" : "response");
 
     if (isLSPResponse(message)) {
       this.handleResponse(message as LSPResponse);
@@ -72,6 +74,8 @@ export class ConnectionHandler {
 
   private handleResponse(message: LSPResponse): void {
     const handler = this.state.responseHandlers.get(message.id);
+    debug(`[LSP response] id=${message.id}, has handler=${!!handler}, pending handlers=${Array.from(this.state.responseHandlers.keys()).join(', ')}`);
+    
     if (handler) {
       if (handler.timer) {
         clearTimeout(handler.timer);
@@ -83,14 +87,14 @@ export class ConnectionHandler {
       } else {
         handler.resolve(message.result);
       }
+    } else {
+      debug(`[LSP response] No handler found for response id ${message.id}`);
     }
   }
 
   private handleNotificationOrRequest(
     message: LSPNotification | LSPRequest,
   ): void {
-    const { isLSPRequest } = require("../protocol/types/index.ts");
-
     // Handle diagnostics notification
     if (
       message.method === "textDocument/publishDiagnostics" &&

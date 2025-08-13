@@ -91,8 +91,8 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
     // Pass context to get LSP client
 
     // Get or create index (this will create if not exists)
-    // テスト互換のため context 未指定時は null を渡す
-    let index = getOrCreateIndex(rootPath, context ?? null);
+    // Pass context which includes fs (FileSystemApi) and lspClient
+    let index = getOrCreateIndex(rootPath, context);
     if (!index) {
       return `Error: Failed to create symbol index. LSP client may not be properly initialized.`;
     }
@@ -102,7 +102,7 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
       console.error(`[index_symbols] Force resetting index for ${rootPath}`);
       await forceClearIndex(rootPath);
       // Re-create index after clearing
-      index = getOrCreateIndex(rootPath, context ?? null);
+      index = getOrCreateIndex(rootPath, context);
       if (!index) {
         return `Error: Failed to recreate index after reset.`;
       }

@@ -39,13 +39,13 @@ describe("LSP Diagnostics - Stale Content Issue #8", () => {
     );
 
     await client.connect(transport);
-  });
+  }, 30000);
 
   afterAll(async () => {
     // Clean up
     await client.close();
     await fs.rm(tmpDir, { recursive: true, force: true });
-  });
+  }, 30000);
 
   it("should detect errors in newly created file", async () => {
     const testFile = "new-file-with-errors.ts";
@@ -79,7 +79,7 @@ function foo(): string {
     expect(text).toMatch(/[2-3] errors?/);
     const lowerText = text.toLowerCase();
     expect(lowerText).toMatch(/type|number|string|undefined/);
-  });
+  }, 30000);
 
   it("should update diagnostics when file is modified", async () => {
     const testFile = "file-to-modify.ts";
@@ -128,7 +128,7 @@ function foo(): string {
     } else {
       expect(diagnosticText2).toContain("0 errors and 0 warnings");
     }
-  });
+  }, 30000);
 
   it("should handle multiple rapid file changes", async () => {
     const testFile = "rapid-changes.ts";
@@ -212,7 +212,7 @@ function foo(): string {
       expect(text2).toContain("0 errors"); // concurrent2.ts
       expect(text3).toContain("1 error"); // concurrent3.ts
     }
-  });
+  }, 30000);
 
   it("should not cache results between different file extensions", async () => {
     const tsFile = "test.ts";
@@ -255,5 +255,5 @@ function foo(): string {
       expect(tsText).toContain("1 error");
       expect(jsText).toContain("0 errors");
     }
-  });
-});
+  }, 30000);
+}, 30000);

@@ -136,8 +136,8 @@ async function ensureIndexExists(
       `[get_project_overview] No index found. Creating initial index...`,
     );
 
-    // Pass explicit null when no context for test compatibility
-    const index = getOrCreateIndex(rootPath, context ?? null);
+    // Pass context which includes fs (FileSystemApi) and lspClient
+    const index = getOrCreateIndex(rootPath, context);
     if (!index) {
       throw new Error("Failed to create symbol index");
     }

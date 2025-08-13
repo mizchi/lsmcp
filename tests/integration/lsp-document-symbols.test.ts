@@ -2,24 +2,34 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
 import { createDocumentSymbolsTool } from "../../src/tools/lsp/documentSymbols.ts";
 import path from "path";
+import { existsSync } from "fs";
+import { fileURLToPath } from "url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(__dirname, "../..");
 const FIXTURES_DIR = path.join(__dirname, "fixtures");
 
-describe("lsp document symbols", () => {
+describe("lsp document symbols", { timeout: 30000 }, () => {
   let lspProcess: ChildProcess;
   let lspClient: any;
   let lspGetDocumentSymbolsTool: any;
 
   beforeAll(async () => {
-    // Skip test if LSP_COMMAND is not set
-    if (!process.env.LSP_COMMAND) {
-      console.log("Skipping LSP document symbols tests: LSP_COMMAND not set");
-      return;
+    // Resolve typescript-language-server from project root
+    const tsLspPath = path.join(
+      projectRoot,
+      "node_modules",
+      ".bin",
+      "typescript-language-server",
+    );
+    if (!existsSync(tsLspPath)) {
+      throw new Error(
+        `typescript-language-server not found at ${tsLspPath}. Please run 'pnpm install' first.`,
+      );
     }
 
     // Start TypeScript language server
-    const [command, ...args] = process.env.LSP_COMMAND.split(" ");
-    lspProcess = spawn(command, args, {
+    lspProcess = spawn(tsLspPath, ["--stdio"], {
       cwd: __dirname,
       stdio: ["pipe", "pipe", "pipe"],
     });
@@ -35,20 +45,16 @@ describe("lsp document symbols", () => {
 
     // Initialize tool with the LSP client
     lspGetDocumentSymbolsTool = createDocumentSymbolsTool(lspClient);
-  });
+  }, 30000);
 
   afterAll(async () => {
     if (lspProcess) {
       if (lspClient) await lspClient.stop();
       lspProcess.kill();
     }
-  });
+  }, 30000);
 
   it("should get document symbols from a TypeScript file", async () => {
-    if (!process.env.LSP_COMMAND) {
-      return;
-    }
-
     const result = await lspGetDocumentSymbolsTool.execute({
       root: FIXTURES_DIR,
       filePath: "document-symbols-test.ts",
@@ -75,10 +81,6 @@ describe("lsp document symbols", () => {
   });
 
   it("should handle files with no symbols", async () => {
-    if (!process.env.LSP_COMMAND) {
-      return;
-    }
-
     // Create an empty test file
     const emptyFile = path.join(FIXTURES_DIR, "empty.ts");
     await import("fs/promises").then((fs) =>
@@ -101,10 +103,6 @@ describe("lsp document symbols", () => {
   });
 
   it("should handle non-existent files", async () => {
-    if (!process.env.LSP_COMMAND) {
-      return;
-    }
-
     await expect(
       lspGetDocumentSymbolsTool.execute({
         root: FIXTURES_DIR,

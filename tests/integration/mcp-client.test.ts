@@ -42,8 +42,6 @@ describe("MCP TypeScript Tools", () => {
     // Create transport with server parameters
     const cleanEnv = { ...process.env } as Record<string, string>;
     // Ensure TypeScript-specific tools are enabled
-    delete cleanEnv.FORCE_LSP;
-    delete cleanEnv.LSP_COMMAND;
 
     transport = new StdioClientTransport({
       command: "node",

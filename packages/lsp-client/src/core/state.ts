@@ -10,6 +10,7 @@ import type {
   DocumentUri,
 } from "../protocol/types/index.ts";
 import type { IFileSystem } from "../interfaces.ts";
+import { nodeFileSystemApi } from "../utils/filesystem.ts";
 
 export interface LSPClientState {
   process: ChildProcess | null;
@@ -61,7 +62,5 @@ export function createInitialState(config: LSPClientConfig): LSPClientState {
 }
 
 function createDefaultFileSystemApi(): IFileSystem {
-  // Import dynamically to avoid circular dependencies
-  const { nodeFileSystemApi } = require("../utils/filesystem.ts");
   return nodeFileSystemApi;
 }

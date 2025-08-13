@@ -8,10 +8,14 @@ import { createDocumentSymbolsTool } from "../../src/tools/lsp/documentSymbols.t
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
+import { existsSync } from "fs";
+import { fileURLToPath } from "url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(__dirname, "../..");
 const FIXTURES_DIR = path.join(__dirname, "fixtures/lsp-errors");
 
-describe("LSP error handling tests", () => {
+describe("LSP error handling tests", { timeout: 30000 }, () => {
   let lspProcess: ChildProcess;
   let lspClient: any;
   let tmpDir: string;
@@ -22,18 +26,24 @@ describe("LSP error handling tests", () => {
   let lspGetDocumentSymbolsTool: any;
 
   beforeAll(async () => {
-    // Skip test if LSP_COMMAND is not set
-    if (!process.env.LSP_COMMAND) {
-      console.log("Skipping LSP error handling tests: LSP_COMMAND not set");
-      return;
-    }
-
     // Create fixtures directory
     await fs.mkdir(FIXTURES_DIR, { recursive: true });
 
+    // Resolve typescript-language-server from project root
+    const tsLspPath = path.join(
+      projectRoot,
+      "node_modules",
+      ".bin",
+      "typescript-language-server",
+    );
+    if (!existsSync(tsLspPath)) {
+      throw new Error(
+        `typescript-language-server not found at ${tsLspPath}. Please run 'pnpm install' first.`,
+      );
+    }
+
     // Start TypeScript language server
-    const [command, ...args] = process.env.LSP_COMMAND.split(" ");
-    lspProcess = spawn(command, args, {
+    lspProcess = spawn(tsLspPath, ["--stdio"], {
       cwd: __dirname,
       stdio: ["pipe", "pipe", "pipe"],
     });
@@ -58,7 +68,7 @@ describe("LSP error handling tests", () => {
     const hash = randomBytes(8).toString("hex");
     tmpDir = path.join(__dirname, `tmp-lsp-errors-${hash}`);
     await fs.mkdir(tmpDir, { recursive: true });
-  });
+  }, 30000);
 
   afterAll(async () => {
     // Cleanup
@@ -70,14 +80,10 @@ describe("LSP error handling tests", () => {
       if (lspClient) await lspClient.stop();
       lspProcess.kill();
     }
-  });
+  }, 30000);
 
   describe("File system errors", () => {
     it("should handle non-existent files", async () => {
-      if (!process.env.LSP_COMMAND) {
-        return;
-      }
-
       // All tools should throw on non-existent files
       await expect(
         lspGetHoverTool.execute({
@@ -125,7 +131,7 @@ describe("LSP error handling tests", () => {
     });
 
     it("should handle permission errors", async () => {
-      if (!process.env.LSP_COMMAND || process.platform === "win32") {
+      if (process.platform === "win32") {
         return; // Skip on Windows
       }
 
@@ -151,10 +157,6 @@ describe("LSP error handling tests", () => {
 
   describe("Invalid input errors", () => {
     it("should handle invalid line numbers", async () => {
-      if (!process.env.LSP_COMMAND) {
-        return;
-      }
-
       const testFile = "const x = 1;";
       await fs.writeFile(path.join(tmpDir, "test.ts"), testFile);
 
@@ -181,10 +183,6 @@ describe("LSP error handling tests", () => {
     });
 
     it("should handle invalid characters", async () => {
-      if (!process.env.LSP_COMMAND) {
-        return;
-      }
-
       const testFile = "const x = 1;";
       await fs.writeFile(path.join(tmpDir, "test.ts"), testFile);
 
@@ -199,10 +197,6 @@ describe("LSP error handling tests", () => {
     });
 
     it("should handle empty search strings", async () => {
-      if (!process.env.LSP_COMMAND) {
-        return;
-      }
-
       const testFile = "const x = 1;";
       await fs.writeFile(path.join(tmpDir, "test.ts"), testFile);
 
@@ -218,10 +212,6 @@ describe("LSP error handling tests", () => {
     });
 
     it("should handle invalid rename targets", async () => {
-      if (!process.env.LSP_COMMAND) {
-        return;
-      }
-
       const testFile = `const message = "hello";
 console.log(message);`;
       await fs.writeFile(path.join(tmpDir, "test.ts"), testFile);
@@ -252,10 +242,6 @@ console.log(message);`;
 
   describe("LSP client errors", () => {
     it("should handle operations without initialized client", async () => {
-      if (!process.env.LSP_COMMAND) {
-        return;
-      }
-
       // Temporarily shut down the client
       await lspClient.stop();
 
@@ -282,10 +268,6 @@ console.log(message);`;
 
   describe("Symbol search errors", () => {
     it("should handle ambiguous symbol searches", async () => {
-      if (!process.env.LSP_COMMAND) {
-        return;
-      }
-
       const testFile = `function process() { return 1; }
 function process() { return 2; } // Duplicate
 const x = process();
@@ -305,10 +287,6 @@ const y = process();
     });
 
     it("should handle symbols not found on specified line", async () => {
-      if (!process.env.LSP_COMMAND) {
-        return;
-      }
-
       const testFile = `const x = 1;
 const y = 2;
 const z = 3;`;
@@ -329,10 +307,6 @@ const z = 3;`;
 
   describe("File content errors", () => {
     it("should handle empty files", async () => {
-      if (!process.env.LSP_COMMAND) {
-        return;
-      }
-
       const emptyFile = path.join(tmpDir, "empty.ts");
       await fs.writeFile(emptyFile, "");
 
@@ -354,10 +328,6 @@ const z = 3;`;
     });
 
     it("should handle files with only comments", async () => {
-      if (!process.env.LSP_COMMAND) {
-        return;
-      }
-
       const commentFile = `// This is a comment
 /* Multi-line
    comment */
@@ -372,10 +342,6 @@ const z = 3;`;
     });
 
     it("should handle binary files", async () => {
-      if (!process.env.LSP_COMMAND) {
-        return;
-      }
-
       // Create a binary file
       const binaryData = Buffer.from([0x00, 0x01, 0x02, 0xff, 0xfe, 0xfd]);
       const binaryFile = path.join(tmpDir, "binary.ts");

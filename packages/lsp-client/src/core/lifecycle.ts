@@ -112,6 +112,32 @@ export class LifecycleManager {
     }
 
     let stderrBuffer = "";
+    let processExitPromise: Promise<void> | null = null;
+
+    // Create a promise that rejects if the process exits unexpectedly
+    processExitPromise = new Promise<void>((resolve, reject) => {
+      
+      // If the process exits during initialization, reject the promise
+      this.state.process!.once("exit", (code) => {
+        this.state.process = null;
+
+        if (code !== 0 && code !== null) {
+          const stderr = stderrBuffer.trim();
+          const errorDetails = stderr ? `\nStderr output:\n${stderr}` : "";
+          const error = new Error(
+            `LSP server exited unexpectedly with code ${code}${errorDetails}`,
+          );
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+
+      this.state.process!.once("error", (error) => {
+        this.state.process = null;
+        reject(new Error(`LSP server process error: ${error.message}`));
+      });
+    });
 
     this.state.process.stdout?.on("data", (data: Buffer) => {
       this.state.buffer += data.toString();
@@ -120,41 +146,52 @@ export class LifecycleManager {
 
     this.state.process.stderr?.on("data", (data: Buffer) => {
       stderrBuffer += data.toString();
-    });
-
-    this.state.process.on("exit", (code) => {
-      this.state.process = null;
-
-      if (code !== 0 && code !== null) {
-        const context = {
-          operation: "LSP server process",
-          language: this.state.languageId,
-          details: { exitCode: code, stderr: stderrBuffer },
-        };
-        const error = new Error(
-          `LSP server exited unexpectedly with code ${code}`,
-        );
-        debug(formatError(error, context));
+      // Log stderr in real-time for debugging
+      const lines = data.toString().split('\n').filter(line => line.trim());
+      for (const line of lines) {
+        debug(`[LSP stderr] ${line}`);
       }
     });
 
-    this.state.process.on("error", (error) => {
-      const context = {
-        operation: "LSP server startup",
-        language: this.state.languageId,
-      };
-      debug(formatError(error, context));
-    });
-
-    // Initialize the LSP connection
+    // Initialize the LSP connection with race condition against process exit
     try {
-      await this.initialize();
+      await Promise.race([
+        this.initialize(),
+        processExitPromise,
+      ]);
+      
+      // If initialization succeeded, remove the exit handlers
+      // and add a new one that just logs the exit
+      this.state.process?.removeAllListeners("exit");
+      this.state.process?.removeAllListeners("error");
+      
+      this.state.process?.on("exit", (code) => {
+        this.state.process = null;
+        if (code !== 0 && code !== null) {
+          debug(`[LSP] Server exited with code ${code}`);
+        }
+      });
+      
+      this.state.process?.on("error", (error) => {
+        debug(`[LSP] Server error: ${error.message}`);
+      });
     } catch (error) {
       const context = {
         operation: "LSP initialization",
         language: this.state.languageId,
+        stderr: stderrBuffer.trim(),
       };
-      throw new Error(formatError(error, context));
+      
+      // Kill the process if it's still running
+      if (this.state.process && !this.state.process.killed) {
+        this.state.process.kill();
+      }
+      
+      throw new Error(
+        error instanceof Error 
+          ? error.message 
+          : formatError(error, context)
+      );
     }
   }
 
