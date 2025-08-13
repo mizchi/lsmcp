@@ -1,3 +1,5 @@
+import { LANGUAGE_PATTERNS, getTsJsPatterns } from "../../../../src/config/languagePatterns.ts";
+
 /**
  * Default index patterns for different language adapters
  */
@@ -11,74 +13,53 @@ export interface AdapterIndexDefaults {
 export const adapterDefaults: Record<string, AdapterIndexDefaults> = {
   // TypeScript/JavaScript adapters
   typescript: {
-    patterns: [
-      "**/*.ts",
-      "**/*.tsx",
-      "**/*.js",
-      "**/*.jsx",
-      "**/*.mjs",
-      "**/*.mts",
-    ],
+    patterns: getTsJsPatterns(),
     concurrency: 5,
   },
   "typescript-language-server": {
-    patterns: [
-      "**/*.ts",
-      "**/*.tsx",
-      "**/*.js",
-      "**/*.jsx",
-      "**/*.mjs",
-      "**/*.mts",
-    ],
+    patterns: getTsJsPatterns(),
     concurrency: 5,
   },
   tsgo: {
-    patterns: [
-      "**/*.ts",
-      "**/*.tsx",
-      "**/*.js",
-      "**/*.jsx",
-      "**/*.mjs",
-      "**/*.mts",
-    ],
+    patterns: getTsJsPatterns(),
     concurrency: 5,
   },
   deno: {
-    patterns: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+    patterns: [...LANGUAGE_PATTERNS.typescript, "**/*.js", "**/*.jsx"],
     concurrency: 5,
   },
 
   // Python adapters
   pyright: {
-    patterns: ["**/*.py", "**/*.pyi"],
+    patterns: LANGUAGE_PATTERNS.python,
     concurrency: 5,
   },
   ruff: {
-    patterns: ["**/*.py", "**/*.pyi"],
+    patterns: LANGUAGE_PATTERNS.python,
     concurrency: 5,
   },
 
   // Rust
   "rust-analyzer": {
-    patterns: ["**/*.rs"],
+    patterns: LANGUAGE_PATTERNS.rust,
     concurrency: 3, // Rust analyzer can be memory intensive
   },
 
   // Go
   gopls: {
-    patterns: ["**/*.go"],
+    patterns: LANGUAGE_PATTERNS.go,
     concurrency: 5,
   },
 
   // F#
   fsharp: {
-    patterns: ["**/*.fs", "**/*.fsx", "**/*.fsi"],
+    patterns: LANGUAGE_PATTERNS.fsharp,
     concurrency: 3,
   },
 
   // Moonbit
   moonbit: {
-    patterns: ["**/*.mbt"],
+    patterns: LANGUAGE_PATTERNS.moonbit,
     concurrency: 5,
   },
 

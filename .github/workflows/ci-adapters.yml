@@ -1,4 +1,4 @@
-name: CI - Language Adapters
+name: CI - Language Tests
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   # F# Language Server Test
-  fsharp-adapter:
+  fsharp-language:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -40,14 +40,14 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Run F# adapter tests
-        run: pnpm vitest run tests/adapters/language-tests/fsharp.test.ts
+      - name: Run F# language tests
+        run: pnpm vitest run tests/languages/language-tests/fsharp.test.ts
         env:
           CI: true
           TEST_FSHARP: true
 
   # Rust Language Server Test
-  rust-adapter:
+  rust-language:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -80,17 +80,17 @@ jobs:
 
       - name: Initialize Rust project
         run: |
-          cd tests/adapters/fixtures/rust
+          cd tests/languages/fixtures/rust
           cargo check || true
 
-      - name: Run Rust adapter tests
-        run: pnpm vitest run tests/adapters/language-tests/rust.test.ts
+      - name: Run Rust language tests
+        run: pnpm vitest run tests/languages/language-tests/rust.test.ts
         env:
           CI: true
           TEST_RUST: true
 
-  # TypeScript (tsgo) adapter test
-  tsgo-adapter:
+  # TypeScript (tsgo) language test
+  tsgo-language:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -116,14 +116,14 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Run tsgo adapter tests
-        run: pnpm vitest run tests/adapters/language-tests/tsgo.test.ts
+      - name: Run tsgo language tests
+        run: pnpm vitest run tests/languages/language-tests/tsgo.test.ts
         env:
           CI: true
           TEST_TSGO: true
 
-  # Python adapter test
-  python-adapter:
+  # Python language test
+  python-language:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -158,18 +158,18 @@ jobs:
 
       - name: Initialize Python project
         run: |
-          cd tests/adapters/fixtures/python
+          cd tests/languages/fixtures/python
           source ~/.cargo/env
           uv sync
 
-      - name: Run Python adapter tests
-        run: pnpm vitest run tests/adapters/language-tests/python.test.ts
+      - name: Run Python language tests
+        run: pnpm vitest run tests/languages/language-tests/python.test.ts
         env:
           CI: true
           TEST_PYTHON: true
 
-  # MoonBit adapter test
-  moonbit-adapter:
+  # MoonBit language test
+  moonbit-language:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -203,8 +203,8 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Run MoonBit adapter tests
-        run: pnpm vitest run tests/adapters/language-tests/moonbit.test.ts
+      - name: Run MoonBit language tests
+        run: pnpm vitest run tests/languages/language-tests/moonbit.test.ts
         env:
           CI: true
           TEST_MOONBIT: true

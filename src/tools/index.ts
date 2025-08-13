@@ -36,6 +36,7 @@ import {
   getSymbolsOverviewTool,
   querySymbolsTool,
 } from "./finder/symbolTools.ts";
+import { indexFilesTool } from "./finder/indexTools.ts";
 import {
   indexExternalLibrariesToolDef,
   getTypescriptDependenciesToolDef,
@@ -70,6 +71,9 @@ const coreTools = {
   // Symbol overview tools
   getSymbolsOverview: getSymbolsOverviewTool,
   querySymbols: querySymbolsTool,
+
+  // Index tools
+  indexFiles: indexFilesTool,
 };
 
 // Language-specific tools

@@ -31,6 +31,11 @@ export function debug(...args: unknown[]): void {
   }
 }
 
+/**
+ * @deprecated Use debugLog from debugLog.ts instead
+ */
+export { debugLog } from "./debugLog.ts";
+
 // Re-export commonly used types
 export { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 export { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";

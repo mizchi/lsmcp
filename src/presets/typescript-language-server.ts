@@ -1,4 +1,5 @@
 import type { Preset } from "../config/schema.ts";
+import { getTsJsPatterns } from "../config/languagePatterns.ts";
 
 /**
  * TypeScript Language Server adapter (default)
@@ -7,7 +8,7 @@ export const typescriptAdapter: Preset = {
   presetId: "typescript",
   bin: "typescript-language-server",
   args: ["--stdio"],
-  files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  files: getTsJsPatterns(),
   initializationOptions: {
     preferences: {
       includeCompletionsForModuleExports: true,
@@ -31,4 +32,7 @@ export const typescriptAdapter: Preset = {
       maxFiles: 5000,
     },
   },
+
+  // Unsupported features
+  unsupported: [],
 };

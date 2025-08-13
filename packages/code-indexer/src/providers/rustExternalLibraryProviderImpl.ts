@@ -13,6 +13,7 @@ import {
   type ExternalLibraryIndexResult,
   type IndexingOptions,
 } from "./externalLibraryInterface.ts";
+import { errorLog } from "../../../../src/utils/debugLog.ts";
 import {
   parseCargoToml,
   parseRustImports,
@@ -61,7 +62,7 @@ export class RustExternalLibraryProvider implements ExternalLibraryProvider {
         sourceLibrary: dependency.name,
       }));
     } catch (error) {
-      console.error(`Failed to get symbols for ${dependency.name}:`, error);
+      errorLog(`Failed to get symbols for ${dependency.name}:`, error);
       return [];
     }
   }

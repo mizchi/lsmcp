@@ -4,6 +4,7 @@
 
 import { updateIndexIncremental } from "../mcp/IndexerAdapter.ts";
 import { relative } from "path";
+import { errorLog } from "../../../../src/utils/debugLog.ts";
 
 // Track modified files that need re-indexing
 const modifiedFiles = new Set<string>();
@@ -41,10 +42,10 @@ async function performAutoIndex(rootPath: string): Promise<void> {
     const result = await updateIndexIncremental(rootPath);
 
     if (!result.success) {
-      console.error("Auto-index failed:", result.errors);
+      errorLog("Auto-index failed:", result.errors);
     }
   } catch (error) {
-    console.error("Auto-index error:", error);
+    errorLog("Auto-index error:", error);
   }
 }
 

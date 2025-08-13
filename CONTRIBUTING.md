@@ -100,7 +100,7 @@ export const myLanguageAdapter: LspClientConfig = {
 ```
 
 2. Register the adapter in `src/adapters/registry.ts`
-3. Add tests in `tests/adapters/language-tests/`
+3. Add tests in `tests/languages/language-tests/`
 4. Create an example project in `examples/my-language/`
 
 ### Language-Specific Setup Instructions
@@ -124,8 +124,8 @@ npm install -g @typescript/native-preview
 **Testing:**
 
 ```bash
-pnpm test tests/adapters/language-tests/typescript.test.ts
-pnpm test tests/adapters/language-tests/tsgo.test.ts
+pnpm test tests/languages/language-tests/typescript.test.ts
+pnpm test tests/languages/language-tests/tsgo.test.ts
 ```
 
 #### Rust
@@ -146,11 +146,11 @@ rustup component add rust-analyzer
 
 ```bash
 # Initialize test project
-cd tests/adapters/fixtures/rust
+cd tests/languages/fixtures/rust
 cargo check
 
 # Run tests
-pnpm test tests/adapters/language-tests/rust.test.ts
+pnpm test tests/languages/language-tests/rust.test.ts
 ```
 
 #### Python
@@ -177,11 +177,11 @@ uv tool install python-lsp-server[all]
 
 ```bash
 # Initialize test project (if using uv)
-cd tests/adapters/fixtures/python
+cd tests/languages/fixtures/python
 uv sync
 
 # Run tests
-pnpm test tests/adapters/language-tests/python.test.ts
+pnpm test tests/languages/language-tests/python.test.ts
 ```
 
 #### F#
@@ -203,7 +203,7 @@ dotnet tool install -g fsautocomplete
 **Testing:**
 
 ```bash
-pnpm test tests/adapters/language-tests/fsharp.test.ts
+pnpm test tests/languages/language-tests/fsharp.test.ts
 ```
 
 #### Go
@@ -225,7 +225,7 @@ go install golang.org/x/tools/gopls@latest
 **Testing:**
 
 ```bash
-pnpm test tests/adapters/language-tests/go.test.ts
+pnpm test tests/languages/language-tests/go.test.ts
 ```
 
 #### MoonBit
@@ -245,7 +245,7 @@ export PATH="$HOME/.moon/bin:$PATH"
 **Testing:**
 
 ```bash
-pnpm test tests/adapters/language-tests/moonbit.test.ts
+pnpm test tests/languages/language-tests/moonbit.test.ts
 ```
 
 ### CI Environment Variables

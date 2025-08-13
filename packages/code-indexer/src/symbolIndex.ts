@@ -3,6 +3,7 @@
  */
 
 import { EventEmitter } from "events";
+import { errorLog } from "../../../src/utils/debugLog.ts";
 import {
   DocumentSymbol,
   Location,
@@ -481,7 +482,7 @@ export async function indexFiles(
           processedCount++;
         } catch (error) {
           // Error is already emitted in indexFile
-          console.error(`Failed to index ${file}:`, error);
+          errorLog(`Failed to index ${file}:`, error);
         }
       }),
     );

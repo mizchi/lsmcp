@@ -26,7 +26,7 @@ describe("Deno Adapter", () => {
       checkFiles,
     );
 
-    // main.tsには2つの型エラーがあるはず
+    // main.ts should have 2 type errors
     expect(result.connected).toBe(true);
     expect(result.diagnostics).toHaveLength(2);
   });

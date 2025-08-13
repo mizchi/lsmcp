@@ -1,4 +1,5 @@
 import type { Preset } from "../config/schema.ts";
+import { LANGUAGE_PATTERNS } from "../config/languagePatterns.ts";
 
 /**
  * Deno language server adapter
@@ -7,7 +8,7 @@ export const denoAdapter: Preset = {
   presetId: "deno",
   bin: "deno",
   args: ["lsp"],
-  files: ["**/*.ts", "**/*.tsx"],
+  files: LANGUAGE_PATTERNS.typescript,
   initializationOptions: {
     enable: true,
     lint: true,

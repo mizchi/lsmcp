@@ -10,6 +10,7 @@ import type {
   IServerCharacteristicsProvider,
   IServerCharacteristics,
 } from "../interfaces.ts";
+import { errorLog } from "../../../../src/utils/debugLog.ts";
 
 // Default logger (no-op)
 export class DefaultLogger implements ILogger {
@@ -39,7 +40,7 @@ export class ConsoleLogger implements ILogger {
     console.warn(...args);
   }
   error(...args: any[]): void {
-    console.error(...args);
+    errorLog(...args);
   }
 }
 

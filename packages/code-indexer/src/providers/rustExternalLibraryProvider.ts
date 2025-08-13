@@ -4,6 +4,7 @@
 
 import { existsSync } from "fs";
 import { readFile } from "fs/promises";
+import { errorLog } from "../../../../src/utils/debugLog.ts";
 import { join } from "path";
 import type { LSPClient } from "@lsmcp/lsp-client";
 import type { SymbolEntry } from "../symbolIndex.ts";
@@ -90,7 +91,7 @@ export async function parseCargoToml(
 
     return dependencies;
   } catch (error) {
-    console.error("Failed to parse Cargo.toml:", error);
+    errorLog("Failed to parse Cargo.toml:", error);
     return [];
   }
 }
@@ -155,7 +156,7 @@ export async function getRustCrateSymbols(
       sourceLibrary: crateName,
     }));
   } catch (error) {
-    console.error(`Failed to get symbols for crate ${crateName}:`, error);
+    errorLog(`Failed to get symbols for crate ${crateName}:`, error);
     return [];
   }
 }

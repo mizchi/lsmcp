@@ -63,11 +63,11 @@ export default defineConfig({
       {
         extends: true,
         test: {
-          name: "adapters",
-          include: ["tests/adapters/**/*.test.ts"],
+          name: "languages",
+          include: ["tests/languages/**/*.test.ts"],
           exclude: [...GLOBAL_IGNORED_FILES],
-          testTimeout: 15000, // 15s timeout for adapter initialization tests
-          retry: 0, // No retry for adapter tests
+          testTimeout: 15000, // 15s timeout for language initialization tests
+          retry: 0, // No retry for language tests
         },
       },
       {

@@ -264,7 +264,7 @@ export const lspGetHoverTool = null as any;
 if (false && import.meta.vitest) {
   const { describe, it, expect, beforeAll, afterAll } = import.meta.vitest!;
   const { setupLSPForTest, teardownLSPForTest } = await import(
-    "../../../tests/adapters/testHelpers.ts"
+    "../../../tests/languages/testHelpers.ts"
   );
   const { default: path } = await import("path");
 

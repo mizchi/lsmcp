@@ -5,6 +5,7 @@ import { fileLocationSchema } from "@lsmcp/types";
 import type { McpToolDef } from "@lsmcp/types";
 import { loadFileContext } from "@lsmcp/lsp-client";
 import { withTemporaryDocument } from "@lsmcp/lsp-client";
+import { debugLogWithPrefix } from "../../utils/debugLog.ts";
 
 // Simple formatting functions
 function formatRange(range: any): string {
@@ -122,8 +123,9 @@ async function handleGetDocumentSymbols(
         JSON.stringify(symbols, null, 2),
       );
     } catch (error) {
-      console.error(
-        `[DEBUG] Error getting document symbols for ${filePath}:`,
+      debugLogWithPrefix(
+        "DEBUG",
+        `Error getting document symbols for ${filePath}:`,
         error,
       );
 

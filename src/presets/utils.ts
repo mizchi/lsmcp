@@ -1,5 +1,6 @@
 import { getNodeModulesCommand } from "../utils/nodeModulesUtils.ts";
 import type { LspClientConfig } from "../config/schema.ts";
+import { debugLogWithPrefix } from "../utils/debugLog.ts";
 
 /**
  * Convert an LSP client config to a language configuration, resolving node_modules binaries
@@ -53,7 +54,10 @@ export function resolveAdapterCommand(
     );
     // Log when we resolve to node_modules (only in debug mode)
     if (!resolved.command.includes("npx") && process.env.DEBUG_LSP) {
-      console.error(`[lsmcp] Resolved ${adapter.bin} to: ${resolved.command}`);
+      debugLogWithPrefix(
+        "lsmcp",
+        `Resolved ${adapter.bin} to: ${resolved.command}`,
+      );
     }
     return resolved;
   }

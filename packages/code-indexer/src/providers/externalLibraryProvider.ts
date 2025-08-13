@@ -5,6 +5,7 @@
 
 import { join, relative } from "path";
 import { readFile, stat } from "fs/promises";
+import { errorLog } from "../../../../src/utils/debugLog.ts";
 import { glob } from "glob";
 import { existsSync } from "fs";
 import type { DocumentSymbol } from "vscode-languageserver-types";
@@ -108,7 +109,7 @@ async function getLibraryInfo(
       typingsFiles: [],
     };
   } catch (error) {
-    console.error(`Failed to parse package.json at ${packageJsonPath}:`, error);
+    errorLog(`Failed to parse package.json at ${packageJsonPath}:`, error);
     return null;
   }
 }
@@ -228,7 +229,7 @@ export async function indexDeclarationFile(
       symbols: entries,
     };
   } catch (error) {
-    console.error(`Failed to index ${filePath}:`, error);
+    errorLog(`Failed to index ${filePath}:`, error);
     return null;
   }
 }
@@ -346,7 +347,7 @@ export async function getAvailableTypescriptDependencies(
 
     return existingDeps;
   } catch (error) {
-    console.error(`Failed to read package.json:`, error);
+    errorLog(`Failed to read package.json:`, error);
     return [];
   }
 }

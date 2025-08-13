@@ -6,6 +6,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { errors } from "../../../domain/errors/index.ts";
 import { resolve } from "path";
 import { pathToFileURL } from "url";
+import { debugLogWithPrefix } from "../../../utils/debugLog.ts";
 
 // Helper function
 function readFileWithMetadata(root: string, filePath: string) {
@@ -120,7 +121,8 @@ export const extractTypeTool: McpToolDef<typeof schema> = {
       }
 
       // Debug: Log available code actions
-      console.error(
+      debugLogWithPrefix(
+        "tsExtractType",
         "Available code actions:",
         codeActions.map((action: any) => ({
           title: action.title,
@@ -156,7 +158,8 @@ export const extractTypeTool: McpToolDef<typeof schema> = {
         );
 
         if (anyExtractActions.length > 0) {
-          console.error(
+          debugLogWithPrefix(
+            "tsExtractType",
             "Found extract actions but not the requested type:",
             anyExtractActions.map((a) => a.title),
           );
@@ -180,7 +183,11 @@ export const extractTypeTool: McpToolDef<typeof schema> = {
       if (action.command && !action.edit) {
         // TypeScript Language Server returns actions with commands
         // We need to execute the command to get the workspace edit
-        console.error("Action has command:", action.command);
+        debugLogWithPrefix(
+          "tsExtractType",
+          "Action has command:",
+          action.command,
+        );
 
         // Try to execute the command if it's a known refactoring command
         if (action.command.command === "_typescript.applyRefactoring") {
@@ -202,7 +209,11 @@ export const extractTypeTool: McpToolDef<typeof schema> = {
                 return `Successfully extracted ${extractType} "${typeName}"`;
               }
             } catch (err) {
-              console.error("Failed to execute command:", err);
+              debugLogWithPrefix(
+                "tsExtractType",
+                "Failed to execute command:",
+                err,
+              );
             }
           }
         }

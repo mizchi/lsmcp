@@ -1,4 +1,5 @@
 import type { Preset } from "../config/schema.ts";
+import { LANGUAGE_PATTERNS } from "../config/languagePatterns.ts";
 
 /**
  * tsgo adapter - Fast TypeScript language server
@@ -12,7 +13,7 @@ export const tsgoAdapter: Preset = {
   presetId: "tsgo",
   bin: "npx",
   args: ["tsgo", "--lsp", "--stdio"],
-  files: ["**/*.ts", "**/*.tsx"],
+  files: LANGUAGE_PATTERNS.typescript,
   disable: ["get_code_actions", "rename_symbol", "delete_symbol"],
   needsDiagnosticDeduplication: true,
 

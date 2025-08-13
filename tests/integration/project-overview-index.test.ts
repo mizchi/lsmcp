@@ -177,7 +177,7 @@ describe('Calculator', () => {
       expect(result.content).toBeDefined();
 
       // Check for expected content in the overview
-      // MCPレスポンスは配列形式なので、最初の要素のテキストを取得
+      // MCP responses are in array format, so get the text from the first element
       const content =
         Array.isArray(result.content) && result.content[0]?.text
           ? result.content[0].text
@@ -442,7 +442,7 @@ export class AutoUpdateClass {
       });
 
       expect(result).toBeDefined();
-      // MCPレスポンスは配列形式なので、最初の要素のテキストを取得
+      // MCP responses are in array format, so get the text from the first element
       const content =
         Array.isArray(result.content) && result.content[0]?.text
           ? result.content[0].text
@@ -457,7 +457,7 @@ export class AutoUpdateClass {
         },
       });
 
-      // MCPレスポンスは配列形式なので、最初の要素のテキストを取得
+      // MCP responses are in array format, so get the text from the first element
       const statsContent =
         Array.isArray(stats.content) && stats.content[0]?.text
           ? stats.content[0].text

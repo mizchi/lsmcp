@@ -6,7 +6,7 @@
 import { writeFileSync } from "fs";
 import { join } from "path";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { configSchema } from "../src/core/config/configSchema.ts";
+import { configSchema } from "../src/config/schema.ts";
 
 // Generate JSON Schema
 const jsonSchema = zodToJsonSchema(configSchema, {

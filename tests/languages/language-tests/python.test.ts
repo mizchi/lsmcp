@@ -33,35 +33,3 @@ describe("Pyright Adapter", () => {
     }
   });
 });
-
-describe.skip("Ruff Adapter", () => {
-  beforeAll(async () => {
-    await initializePythonEnvironment();
-  }, 15000); // 30s timeout for initialization
-
-  it.skip("should connect to Ruff language server", async () => {
-    // ruff adapter has been removed
-    // const checkFiles = ["main.py"];
-    // const result = await testLspConnection(
-    //   ruffAdapter,
-    //   projectRoot,
-    //   checkFiles,
-    // );
-    expect(true).toBe(true); // Placeholder
-    /*
-    expect(result).toMatchInlineSnapshot(`
-      {
-        "connected": true,
-        "diagnostics": [
-          {
-            "file": "main.py",
-            "line": 0,
-            "message": "Import block is un-sorted or un-formatted",
-            "severity": 2,
-            "source": "Ruff",
-          },
-        ],
-      }
-    `); */
-  });
-});

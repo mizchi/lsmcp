@@ -4,6 +4,7 @@
 
 import { existsSync } from "fs";
 import { readFile, readdir } from "fs/promises";
+import { errorLog } from "../../../../src/utils/debugLog.ts";
 import { join, resolve } from "path";
 import type { LSPClient } from "@lsmcp/lsp-client";
 import type { SymbolEntry } from "../symbolIndex.ts";
@@ -92,7 +93,7 @@ export async function parseRequirementsTxt(
 
     return packages;
   } catch (error) {
-    console.error("Failed to parse requirements.txt:", error);
+    errorLog("Failed to parse requirements.txt:", error);
     return [];
   }
 }
@@ -145,7 +146,7 @@ export async function parsePyprojectToml(rootPath: string): Promise<string[]> {
 
     return packages;
   } catch (error) {
-    console.error("Failed to parse pyproject.toml:", error);
+    errorLog("Failed to parse pyproject.toml:", error);
     return [];
   }
 }
@@ -222,7 +223,7 @@ export async function getInstalledPackages(
 
     return packages;
   } catch (error) {
-    console.error("Failed to scan site-packages:", error);
+    errorLog("Failed to scan site-packages:", error);
     return [];
   }
 }
@@ -336,7 +337,7 @@ export async function getPythonPackageSymbols(
       }
     }
   } catch (error) {
-    console.error(`Failed to get symbols for package ${packageName}:`, error);
+    errorLog(`Failed to get symbols for package ${packageName}:`, error);
   }
 
   return symbols;

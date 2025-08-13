@@ -11,6 +11,7 @@ import { SymbolKind } from "vscode-languageserver-types";
 import { glob, type FileSystemInterface } from "gitaware-glob";
 import type { FileSystemApi } from "@lsmcp/types";
 import { nodeFileSystemApi } from "../../infrastructure/NodeFileSystemApi.ts";
+import { errorLog } from "../../utils/debugLog.ts";
 
 // Export for testing
 export async function getFilesRecursively(
@@ -194,7 +195,7 @@ export function createGetSymbolsOverviewTool(
 
         return output;
       } catch (error) {
-        console.error("Directory scan error:", error);
+        errorLog("Directory scan error:", error);
         return JSON.stringify({
           error: `Directory scan error: ${error instanceof Error ? error.message : String(error)}`,
         });

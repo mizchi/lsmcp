@@ -6,6 +6,7 @@ import { spawn } from "child_process";
 import { debug as debugLog } from "./utils/mcpHelpers.ts";
 import type { McpToolDef, McpContext } from "@lsmcp/types";
 import { ErrorContext, formatError } from "./utils/errorHandler.ts";
+import { errorLog } from "./utils/debugLog.ts";
 import { createLSPTools } from "./tools/lsp/createLspTools.ts";
 import {
   filterUnsupportedTools,
@@ -165,13 +166,13 @@ export async function runLanguageServerWithConfig(
         language: config.id,
         details: { command: fullCommand },
       };
-      console.error(formatError(error, context));
+      errorLog(formatError(error, context));
       process.exit(1);
     });
 
     lspProcess.on("exit", (code) => {
       if (code !== 0) {
-        console.error(`LSP server exited with code ${code}`);
+        errorLog(`LSP server exited with code ${code}`);
         process.exit(code || 1);
       }
     });
@@ -181,7 +182,7 @@ export async function runLanguageServerWithConfig(
       language: config.id,
       details: { command: `${config.bin} ${config.args?.join(" ") || ""}` },
     };
-    console.error(formatError(error as Error, context));
+    errorLog(formatError(error as Error, context));
     process.exit(1);
   }
 }
@@ -202,11 +203,11 @@ export async function runLanguageServer(
   const preset = presetRegistry.get(language);
   if (!preset) {
     const supported = Array.from(presetRegistry.list());
-    console.error(`Error: Language '${language}' is not supported.`);
-    console.error(
+    errorLog(`Error: Language '${language}' is not supported.`);
+    errorLog(
       `Supported languages: ${supported.map((c) => c.presetId).join(", ")}`,
     );
-    console.error("Or use --bin option to specify a custom LSP server.");
+    errorLog("Or use --bin option to specify a custom LSP server.");
     process.exit(1);
   }
 
@@ -219,10 +220,8 @@ export async function runLanguageServer(
   const lspArgs = resolved.args;
 
   if (!lspBin) {
-    console.error(
-      `Error: No LSP command configured for language '${language}'.`,
-    );
-    console.error("Please use --bin option to specify a custom LSP server.");
+    errorLog(`Error: No LSP command configured for language '${language}'.`);
+    errorLog("Please use --bin option to specify a custom LSP server.");
     process.exit(1);
   }
 
@@ -336,13 +335,13 @@ export async function runLanguageServer(
         language,
         details: { command: fullCommand },
       };
-      console.error(formatError(error, context));
+      errorLog(formatError(error, context));
       process.exit(1);
     });
 
     lspProcess.on("exit", (code) => {
       if (code !== 0) {
-        console.error(`LSP server exited with code ${code}`);
+        errorLog(`LSP server exited with code ${code}`);
         process.exit(code || 1);
       }
     });
@@ -352,7 +351,7 @@ export async function runLanguageServer(
       language,
       details: { command: fullCommand },
     };
-    console.error(formatError(error as Error, context));
+    errorLog(formatError(error as Error, context));
     process.exit(1);
   }
 }
@@ -443,13 +442,13 @@ export async function runCustomLspServer(
         operation: "LSP server process",
         details: { command: bin },
       };
-      console.error(formatError(error, context));
+      errorLog(formatError(error, context));
       process.exit(1);
     });
 
     lspProcess.on("exit", (code) => {
       if (code !== 0) {
-        console.error(`LSP server exited with code ${code}`);
+        errorLog(`LSP server exited with code ${code}`);
         process.exit(code || 1);
       }
     });
@@ -458,7 +457,7 @@ export async function runCustomLspServer(
       operation: "MCP server startup",
       details: { command: bin },
     };
-    console.error(formatError(error as Error, context));
+    errorLog(formatError(error as Error, context));
     process.exit(1);
   }
 }

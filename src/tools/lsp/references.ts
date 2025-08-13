@@ -215,7 +215,7 @@ if (false && import.meta.vitest) {
   const { describe, it, expect, beforeAll, afterAll } = import.meta.vitest!;
   const { default: path } = await import("path");
   const { setupLSPForTest, teardownLSPForTest } = await import(
-    "../../../tests/adapters/testHelpers.ts"
+    "../../../tests/languages/testHelpers.ts"
   );
 
   describe("lspFindReferencesTool", () => {

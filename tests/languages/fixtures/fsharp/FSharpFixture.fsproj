@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="CommentedTypes.fs" />
     <Compile Include="Types.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

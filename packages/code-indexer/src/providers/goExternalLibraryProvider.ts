@@ -4,6 +4,7 @@
 
 import { existsSync } from "fs";
 import { readFile } from "fs/promises";
+import { errorLog } from "../../../../src/utils/debugLog.ts";
 import { join } from "path";
 import type { LSPClient } from "@lsmcp/lsp-client";
 import type { SymbolEntry } from "../symbolIndex.ts";
@@ -131,7 +132,7 @@ export async function parseGoMod(rootPath: string): Promise<GoModule | null> {
 
     return module;
   } catch (error) {
-    console.error("Failed to parse go.mod:", error);
+    errorLog("Failed to parse go.mod:", error);
     return null;
   }
 }
@@ -166,7 +167,7 @@ export async function parseGoSum(
 
     return versions;
   } catch (error) {
-    console.error("Failed to parse go.sum:", error);
+    errorLog("Failed to parse go.sum:", error);
     return versions;
   }
 }
@@ -379,7 +380,7 @@ export async function getGoModuleSymbols(
       sourceLibrary: modulePath,
     }));
   } catch (error) {
-    console.error(`Failed to get symbols for module ${modulePath}:`, error);
+    errorLog(`Failed to get symbols for module ${modulePath}:`, error);
     return [];
   }
 }

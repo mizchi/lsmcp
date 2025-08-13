@@ -1,4 +1,5 @@
 import { appendFileSync, existsSync, mkdirSync } from "fs";
+import { errorLog } from "../../../../src/utils/debugLog.ts";
 import { join } from "path";
 import { debugLog } from "../utils/debug.ts";
 import { LogLevel, type LogEntry, type DebugSession } from "@lsmcp/types";
@@ -383,8 +384,8 @@ function logToConsole(entry: LogEntry, logLevel: LogLevel): void {
 
   switch (entry.level) {
     case LogLevel.ERROR:
-      console.error(message);
-      if (entry.error) console.error(entry.error);
+      errorLog(message);
+      if (entry.error) errorLog(entry.error);
       break;
     case LogLevel.WARN:
       console.warn(message);
@@ -421,7 +422,7 @@ function logToFile(entry: LogEntry, logFile: string, logLevel: LogLevel): void {
       }
     }
   } catch (error) {
-    console.error("Failed to write to log file:", error);
+    errorLog("Failed to write to log file:", error);
   }
 }
 

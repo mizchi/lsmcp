@@ -3,6 +3,7 @@
  */
 
 import { readFile, writeFile, appendFile, mkdir } from "fs/promises";
+import { errorLog } from "../utils/debugLog.ts";
 import { join } from "path";
 import { existsSync } from "fs";
 import type { LSMCPConfig } from "../config/schema.ts";
@@ -152,7 +153,7 @@ export async function initCommand(
   if (preset && adapterRegistry) {
     const adapter = adapterRegistry.get(preset);
     if (!adapter) {
-      console.error(`❌ Unknown preset: ${preset}`);
+      errorLog(`❌ Unknown preset: ${preset}`);
       process.exit(1);
     }
 
@@ -253,7 +254,7 @@ export async function indexCommand(
   const configPath = join(projectRoot, ".lsmcp", "config.json");
 
   if (!existsSync(configPath)) {
-    console.error("❌ .lsmcp/config.json not found. Run 'lsmcp init' first.");
+    errorLog("❌ .lsmcp/config.json not found. Run 'lsmcp init' first.");
     process.exit(1);
   }
 
@@ -266,7 +267,7 @@ export async function indexCommand(
     });
     config = result.config;
   } catch (error) {
-    console.error(
+    errorLog(
       "❌ Invalid config.json:",
       error instanceof Error ? error.message : String(error),
     );
@@ -274,7 +275,7 @@ export async function indexCommand(
   }
 
   if (!config.files || config.files.length === 0) {
-    console.error("❌ No indexFiles patterns found in config.json");
+    errorLog("❌ No indexFiles patterns found in config.json");
     process.exit(1);
   }
 
@@ -340,21 +341,17 @@ export async function indexCommand(
 
       // Handle spawn errors
       lspProcess.on("error", (error) => {
-        console.error(`Failed to start ${adapterConfig.bin}: ${error.message}`);
+        errorLog(`Failed to start ${adapterConfig.bin}: ${error.message}`);
         if (error.message.includes("ENOENT")) {
-          console.error(
-            `Make sure ${adapterConfig.bin} is installed and in PATH`,
-          );
+          errorLog(`Make sure ${adapterConfig.bin} is installed and in PATH`);
           if (adapterConfig.presetId === "tsgo") {
-            console.error(
-              "Install with: npm install -g @typescript/native-preview",
-            );
+            errorLog("Install with: npm install -g @typescript/native-preview");
           } else if (adapterConfig.presetId === "typescript") {
-            console.error(
+            errorLog(
               "Install with: npm install -g typescript typescript-language-server",
             );
           } else if (adapterConfig.presetId === "rust-analyzer") {
-            console.error(
+            errorLog(
               "Install rust-analyzer from: https://rust-analyzer.github.io/",
             );
           }
@@ -395,7 +392,7 @@ export async function indexCommand(
         index = new SymbolIndex(projectRoot, symbolProvider, fileSystem, cache);
       }
     } catch (error) {
-      console.error(
+      errorLog(
         `Failed to start LSP server: ${error instanceof Error ? error.message : String(error)}`,
       );
 
@@ -405,24 +402,22 @@ export async function indexCommand(
         error.message.includes("Command not found")
       ) {
         if (config.preset === "tsgo") {
-          console.error("\nTo install tsgo:");
-          console.error("  npm install -g @typescript/native-preview");
-          console.error("\nAlternatively, you can use a different preset:");
-          console.error("  lsmcp init -p typescript");
+          errorLog("\nTo install tsgo:");
+          errorLog("  npm install -g @typescript/native-preview");
+          errorLog("\nAlternatively, you can use a different preset:");
+          errorLog("  lsmcp init -p typescript");
         } else if (config.preset === "typescript") {
-          console.error("\nTo install typescript-language-server:");
-          console.error(
-            "  npm install -g typescript typescript-language-server",
-          );
+          errorLog("\nTo install typescript-language-server:");
+          errorLog("  npm install -g typescript typescript-language-server");
         } else if (config.preset === "rust-analyzer") {
-          console.error("\nTo install rust-analyzer:");
-          console.error("  Visit: https://rust-analyzer.github.io/");
+          errorLog("\nTo install rust-analyzer:");
+          errorLog("  Visit: https://rust-analyzer.github.io/");
         } else if (config.preset === "pyright") {
-          console.error("\nTo install pyright:");
-          console.error("  npm install -g pyright");
+          errorLog("\nTo install pyright:");
+          errorLog("  npm install -g pyright");
         } else if (config.preset === "gopls") {
-          console.error("\nTo install gopls:");
-          console.error("  go install golang.org/x/tools/gopls@latest");
+          errorLog("\nTo install gopls:");
+          errorLog("  go install golang.org/x/tools/gopls@latest");
         }
       }
 
@@ -446,9 +441,7 @@ export async function indexCommand(
       console.log("   You can run 'lsmcp index' later to build the index.");
       return;
     } else {
-      console.error(
-        "❌ Failed to create symbol index. Make sure LSP is available.",
-      );
+      errorLog("❌ Failed to create symbol index. Make sure LSP is available.");
       process.exit(1);
     }
   }
@@ -506,9 +499,9 @@ export async function indexCommand(
       }
     }
   } else {
-    console.error("\n❌ Indexing failed");
+    errorLog("\n❌ Indexing failed");
     result.errors.forEach((err) => {
-      console.error(`   ${err.file}: ${err.error}`);
+      errorLog(`   ${err.file}: ${err.error}`);
     });
   }
 
@@ -518,7 +511,7 @@ export async function indexCommand(
       await lspClient.stop();
       console.log("\n✓ LSP server stopped");
     } catch (error) {
-      console.error(
+      errorLog(
         `Failed to stop LSP server: ${error instanceof Error ? error.message : String(error)}`,
       );
     }

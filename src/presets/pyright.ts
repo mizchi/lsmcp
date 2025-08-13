@@ -1,4 +1,5 @@
 import type { Preset } from "../config/schema.ts";
+import { LANGUAGE_PATTERNS } from "../config/languagePatterns.ts";
 
 /**
  * Pyright adapter - Microsoft's Python language server
@@ -7,7 +8,7 @@ export const pyrightAdapter: Preset = {
   presetId: "pyright",
   bin: "uv",
   args: ["run", "pyright-langserver", "--stdio"],
-  files: ["**/*.py", "**/*.pyi"],
+  files: LANGUAGE_PATTERNS.python,
   initializationOptions: {
     python: {
       analysis: {

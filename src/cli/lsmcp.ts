@@ -20,6 +20,7 @@ import type { Preset } from "../config/schema.ts";
 // Import modular components
 import { registerBuiltinAdapters } from "../config/presets.ts";
 import { showHelp, showListWithConfigLoader, showNoArgsHelp } from "./help.ts";
+import { errorLog } from "../utils/debugLog.ts";
 import { runLanguageServerWithConfig } from "../lspServerRunner.ts";
 
 // Initialize configuration system
@@ -216,7 +217,7 @@ async function mainWithConfigLoader() {
           lspSources.config.initializationOptions = parsedOptions;
         }
       } catch (error) {
-        console.error(
+        errorLog(
           `Error parsing initializationOptions JSON: ${
             error instanceof Error ? error.message : String(error)
           }`,
@@ -260,7 +261,7 @@ async function mainWithConfigLoader() {
     // Start LSP server with resolved configuration
     await runLanguageServerWithConfig(config, positionals);
   } catch (error) {
-    console.error(
+    errorLog(
       `Configuration error: ${
         error instanceof Error ? error.message : String(error)
       }`,
@@ -271,6 +272,6 @@ async function mainWithConfigLoader() {
 
 // Always run main when this script is executed directly
 main().catch((error) => {
-  console.error("Fatal error:", error);
+  errorLog("Fatal error:", error);
   process.exit(1);
 });

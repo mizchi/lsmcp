@@ -4,8 +4,8 @@ fn hello() -> Int {
 
 let x : String = "world"
 
-// 構文エラーのあるコード
+// Code with syntax error
 fn syntax_error() {
   let x = 42 + 
-  // 未完成の式
+  // Incomplete expression
 }

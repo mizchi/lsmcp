@@ -12,6 +12,7 @@ import {
 // Remove getLSPClient - no longer needed
 import { loadIndexConfig } from "@lsmcp/code-indexer";
 import { getAdapterDefaultPattern } from "@lsmcp/code-indexer";
+import { debugLogWithPrefix } from "../../utils/debugLog.ts";
 import { glob } from "gitaware-glob";
 import { SymbolKind } from "vscode-languageserver-types";
 import * as fs from "fs/promises";
@@ -132,8 +133,9 @@ async function ensureIndexExists(
   const stats = getIndexStats(rootPath);
 
   if (stats.totalFiles === 0) {
-    console.error(
-      `[get_project_overview] No index found. Creating initial index...`,
+    debugLogWithPrefix(
+      "get_project_overview",
+      "No index found. Creating initial index...",
     );
 
     // Pass context which includes fs (FileSystemApi) and lspClient
@@ -173,21 +175,26 @@ async function ensureIndexExists(
     }
 
     if (files.length === 0) {
-      console.error(
-        `[get_project_overview] No files found matching pattern: ${pattern}`,
+      debugLogWithPrefix(
+        "get_project_overview",
+        `No files found matching pattern: ${pattern}`,
       );
       return;
     }
 
-    console.error(`[get_project_overview] Indexing ${files.length} files...`);
+    debugLogWithPrefix(
+      "get_project_overview",
+      `Indexing ${files.length} files...`,
+    );
 
     const startTime = Date.now();
     await index.indexFiles(files, concurrency);
 
     const duration = Date.now() - startTime;
     const newStats = index.getStats();
-    console.error(
-      `[get_project_overview] Initial indexing completed: ${newStats.totalFiles} files, ${newStats.totalSymbols} symbols in ${duration}ms`,
+    debugLogWithPrefix(
+      "get_project_overview",
+      `Initial indexing completed: ${newStats.totalFiles} files, ${newStats.totalSymbols} symbols in ${duration}ms`,
     );
   }
 }

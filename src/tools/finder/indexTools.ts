@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import type { McpToolDef, McpContext } from "@lsmcp/types";
+import { debugLogWithPrefix } from "../../utils/debugLog.ts";
 import {
   clearIndex,
   forceClearIndex,
@@ -66,10 +67,11 @@ export const indexFilesTool: McpToolDef<typeof indexFilesSchema> = {
     }
 
     // Debug: log files found
-    console.error(
-      `[index_files] Found ${files.length} files matching pattern ${pattern}`,
+    debugLogWithPrefix(
+      "index_files",
+      `Found ${files.length} files matching pattern ${pattern}`,
     );
-    console.error(`[index_files] First few files:`, files.slice(0, 5));
+    debugLogWithPrefix("index_files", "First few files:", files.slice(0, 5));
 
     // Index files with context
     const result = await indexFiles(rootPath, files, { concurrency, context });
@@ -95,9 +97,16 @@ Total symbols: ${result.totalSymbols}`;
 // Symbol query tools
 
 // Accept string names for symbol kinds (case-insensitive)
-const symbolKindSchema = z.enum(
-  SYMBOL_KIND_NAMES as unknown as readonly [string, ...string[]],
-);
+// Custom schema that accepts case-insensitive kind names
+const symbolKindSchema = z.string().transform((val) => {
+  // Normalize to proper case (e.g., "class" -> "Class", "INTERFACE" -> "Interface")
+  const normalized = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+  // Check if it's a valid kind
+  if (!SYMBOL_KIND_NAMES.includes(normalized as any)) {
+    throw new Error(`Invalid symbol kind: ${val}`);
+  }
+  return normalized;
+});
 
 const searchSymbolSchema = z.object({
   name: z
@@ -171,8 +180,9 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
       const stats = getIndexStats(rootPath);
       if (stats.totalFiles === 0) {
         // Auto-create index if it doesn't exist
-        console.error(
-          `[search_symbol_from_index] No index found. Creating initial index...`,
+        debugLogWithPrefix(
+          "search_symbol_from_index",
+          "No index found. Creating initial index...",
         );
 
         // Check if LSP client is initialized
@@ -189,14 +199,16 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
 
         if (config?.indexFiles && config.indexFiles.length > 0) {
           pattern = config.indexFiles.join(",");
-          console.error(
-            `[search_symbol_from_index] Using patterns from .lsmcp/config.json: ${pattern}`,
+          debugLogWithPrefix(
+            "search_symbol_from_index",
+            `Using patterns from .lsmcp/config.json: ${pattern}`,
           );
         } else {
           // Try to detect adapter and use its defaults
           pattern = getAdapterDefaultPattern("typescript");
-          console.error(
-            `[search_symbol_from_index] Using default TypeScript patterns: ${pattern}`,
+          debugLogWithPrefix(
+            "search_symbol_from_index",
+            `Using default TypeScript patterns: ${pattern}`,
           );
         }
 
@@ -225,8 +237,9 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
           return `No files found matching pattern: ${pattern}`;
         }
 
-        console.error(
-          `[search_symbol_from_index] Indexing ${files.length} files...`,
+        debugLogWithPrefix(
+          "search_symbol_from_index",
+          `Indexing ${files.length} files...`,
         );
 
         // Perform initial indexing
@@ -237,8 +250,9 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
               progress.completed % 10 === 0 ||
               progress.completed === progress.total
             ) {
-              console.error(
-                `[search_symbol_from_index] Progress: ${progress.completed}/${progress.total} files`,
+              debugLogWithPrefix(
+                "search_symbol_from_index",
+                `Progress: ${progress.completed}/${progress.total} files`,
               );
             }
           },
@@ -246,8 +260,9 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
 
         const stats = index.getStats();
         const duration = Date.now() - startTime;
-        console.error(
-          `[search_symbol_from_index] Initial indexing completed: ${stats.totalFiles} files, ${stats.totalSymbols} symbols in ${duration}ms`,
+        debugLogWithPrefix(
+          "search_symbol_from_index",
+          `Initial indexing completed: ${stats.totalFiles} files, ${stats.totalSymbols} symbols in ${duration}ms`,
         );
       } else {
         // Auto-update index with incremental changes if it already exists
@@ -258,15 +273,17 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
             const updatedCount = updateResult.updated.length;
             const removedCount = updateResult.removed.length;
             if (updatedCount > 0 || removedCount > 0) {
-              console.error(
-                `[search_symbol_from_index] Auto-updated index: ${updatedCount} files updated, ${removedCount} files removed`,
+              debugLogWithPrefix(
+                "search_symbol_from_index",
+                `Auto-updated index: ${updatedCount} files updated, ${removedCount} files removed`,
               );
             }
           }
         } catch (error) {
           // Log error but continue with search
-          console.error(
-            `[search_symbol_from_index] Failed to auto-update index: ${error}`,
+          debugLogWithPrefix(
+            "search_symbol_from_index",
+            `Failed to auto-update index: ${error}`,
           );
         }
       }

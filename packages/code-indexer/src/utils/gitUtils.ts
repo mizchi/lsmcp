@@ -7,6 +7,7 @@ import { spawn } from "child_process";
 import { existsSync } from "fs";
 import { join, relative } from "path";
 import { Result, ok, err } from "neverthrow";
+import { debugLogWithPrefix } from "../../../../src/utils/debugLog.ts";
 
 // Error types
 export type GitError =
@@ -113,7 +114,7 @@ export async function getGitHashAsync(
     return ok(output.trim());
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[gitUtils] getGitHash error: ${message}`);
+    debugLogWithPrefix("gitUtils", `getGitHash error: ${message}`);
 
     if (message.includes("timed out")) {
       return err({
@@ -158,8 +159,9 @@ export async function getModifiedFilesAsync(
   rootPath: string,
   sinceHash: string,
 ): Promise<Result<string[], GitError>> {
-  console.error(
-    `[gitUtils] getModifiedFiles called with sinceHash: ${sinceHash}`,
+  debugLogWithPrefix(
+    "gitUtils",
+    `getModifiedFiles called with sinceHash: ${sinceHash}`,
   );
 
   // Validate hash format
@@ -173,7 +175,7 @@ export async function getModifiedFilesAsync(
   // Check if the hash exists
   const hashExists = await checkHashExists(rootPath, sinceHash);
   if (!hashExists) {
-    console.error(`[gitUtils] Hash ${sinceHash} not found in repository`);
+    debugLogWithPrefix("gitUtils", `Hash ${sinceHash} not found in repository`);
     return err({
       type: "HASH_NOT_FOUND",
       message: `Hash not found in repository`,
@@ -213,18 +215,19 @@ export async function getModifiedFilesAsync(
     addChanges(unstagedChanges);
 
     const result = Array.from(allChanges);
-    console.error(`[gitUtils] Found ${result.length} modified files`);
+    debugLogWithPrefix("gitUtils", `Found ${result.length} modified files`);
 
     if (result.length > 10000) {
-      console.error(
-        `[gitUtils] WARNING: Large number of modified files (${result.length}). This may impact performance.`,
+      debugLogWithPrefix(
+        "gitUtils",
+        `WARNING: Large number of modified files (${result.length}). This may impact performance.`,
       );
     }
 
     return ok(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[gitUtils] getModifiedFiles error: ${message}`);
+    debugLogWithPrefix("gitUtils", `getModifiedFiles error: ${message}`);
 
     if (message.includes("timed out")) {
       return err({
@@ -268,11 +271,11 @@ export async function getUntrackedFilesAsync(
       .filter((file) => file.length > 0)
       .map((file) => file.trim());
 
-    console.error(`[gitUtils] Found ${files.length} untracked files`);
+    debugLogWithPrefix("gitUtils", `Found ${files.length} untracked files`);
     return ok(files);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[gitUtils] getUntrackedFiles error: ${message}`);
+    debugLogWithPrefix("gitUtils", `getUntrackedFiles error: ${message}`);
 
     if (message.includes("timed out")) {
       return err({
@@ -317,7 +320,7 @@ export async function getFileGitHash(
       return ok(null);
     }
 
-    console.error(`[gitUtils] getFileGitHash error: ${message}`);
+    debugLogWithPrefix("gitUtils", `getFileGitHash error: ${message}`);
 
     if (message.includes("timed out")) {
       return err({

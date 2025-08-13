@@ -5,6 +5,7 @@
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import type { IndexConfig } from "./config.ts";
+import { errorLog } from "../../../../src/utils/debugLog.ts";
 
 /**
  * Load index configuration from .lsmcp/config.json
@@ -64,7 +65,7 @@ export function loadIndexConfig(rootPath: string): IndexConfig {
       ignorePatterns: userConfig.ignorePatterns ?? defaultConfig.ignorePatterns,
     };
   } catch (error) {
-    console.error(
+    errorLog(
       `[loadIndexConfig] Failed to load config from ${configPath}:`,
       error,
     );

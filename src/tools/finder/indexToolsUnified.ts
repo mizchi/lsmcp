@@ -8,6 +8,7 @@ import { glob } from "gitaware-glob";
 import type { McpToolDef, McpContext } from "@lsmcp/types";
 import { loadIndexConfig } from "@lsmcp/code-indexer";
 import { getAdapterDefaultPattern } from "@lsmcp/code-indexer";
+import { debugLogWithPrefix } from "../../utils/debugLog.ts";
 
 // Unified index_symbols schema
 const indexSymbolsSchema = z.object({
@@ -61,15 +62,17 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
       if (config?.indexFiles && config.indexFiles.length > 0) {
         // Use patterns from config.json
         actualPattern = config.indexFiles.join(",");
-        console.error(
-          `[index_symbols] Using patterns from .lsmcp/config.json: ${actualPattern}`,
+        debugLogWithPrefix(
+          "index_symbols",
+          `Using patterns from .lsmcp/config.json: ${actualPattern}`,
         );
       } else {
         // Try to detect adapter and use its defaults
         // Try to use default patterns
         actualPattern = getAdapterDefaultPattern("typescript");
-        console.error(
-          `[index_symbols] Using default TypeScript patterns: ${actualPattern}`,
+        debugLogWithPrefix(
+          "index_symbols",
+          `Using default TypeScript patterns: ${actualPattern}`,
         );
       }
     }
@@ -77,12 +80,12 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
     if (!actualConcurrency) {
       if (config?.settings?.indexConcurrency) {
         actualConcurrency = config.settings.indexConcurrency;
-        console.error(
+        debugLogWithPrefix(
           `[index_symbols] Using concurrency from .lsmcp/config.json: ${actualConcurrency}`,
         );
       } else {
         actualConcurrency = 5; // Default
-        console.error(
+        debugLogWithPrefix(
           `[index_symbols] Using default concurrency: ${actualConcurrency}`,
         );
       }
@@ -99,7 +102,10 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
 
     // Handle force reset
     if (forceReset) {
-      console.error(`[index_symbols] Force resetting index for ${rootPath}`);
+      debugLogWithPrefix(
+        "index_symbols",
+        `Force resetting index for ${rootPath}`,
+      );
       await forceClearIndex(rootPath);
       // Re-create index after clearing
       index = getOrCreateIndex(rootPath, context);
@@ -121,7 +127,7 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
     // Decide whether to do incremental or full indexing
     if (hasExistingIndex && !noCache) {
       // Try incremental update
-      console.error(
+      debugLogWithPrefix(
         `[index_symbols] Performing incremental update for ${rootPath}`,
       );
       output += "Performing incremental update based on git changes...\n\n";
@@ -169,7 +175,11 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
 
         filesIndexed = result.updated.length;
       } catch (error) {
-        console.error(`[index_symbols] Incremental update failed:`, error);
+        debugLogWithPrefix(
+          "index_symbols",
+          "Incremental update failed:",
+          error,
+        );
         output += `Incremental update failed: ${error instanceof Error ? error.message : String(error)}\n`;
         output += "Falling back to full indexing...\n\n";
         // Fall back to full indexing
@@ -179,7 +189,7 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
 
     // Perform full indexing if needed
     if (!hasExistingIndex || noCache) {
-      console.error(
+      debugLogWithPrefix(
         `[index_symbols] Performing full index for ${rootPath} with pattern ${actualPattern}`,
       );
       output +=
@@ -210,7 +220,10 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
         return output + `No files found matching pattern: ${actualPattern}`;
       }
 
-      console.error(`[index_symbols] Found ${files.length} files to index`);
+      debugLogWithPrefix(
+        "index_symbols",
+        `Found ${files.length} files to index`,
+      );
 
       // Clear existing index if forcing no cache
       if (noCache && hasExistingIndex) {

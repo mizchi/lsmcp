@@ -2,16 +2,19 @@
  * Debug and logging utilities
  */
 
+import { debugLogWithPrefix } from "../../../../src/utils/debugLog.ts";
+
 export function debug(...args: any[]): void {
   if (process.env.DEBUG) {
-    console.error("[LSP]", ...args);
+    debugLogWithPrefix("LSP", ...args);
   }
 }
 
 export function debugLog(message: string, data?: any): void {
   if (process.env.DEBUG) {
-    console.error(
-      `[LSP] ${message}`,
+    debugLogWithPrefix(
+      "LSP",
+      message,
       data ? JSON.stringify(data, null, 2) : "",
     );
   }

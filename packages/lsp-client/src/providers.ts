@@ -28,8 +28,6 @@ export class LSPSymbolProvider implements SymbolProvider {
       // Get file content
       const content = await this.fileContentProvider(uri);
 
-      console.error(`[LSPSymbolProvider] Getting symbols for ${uri}`);
-
       // Open document temporarily
       this.client.openDocument(uri, content);
 
@@ -39,9 +37,6 @@ export class LSPSymbolProvider implements SymbolProvider {
 
         // Get symbols
         let symbols = await this.client.getDocumentSymbols(uri);
-        console.error(
-          `[LSPSymbolProvider] Got ${symbols.length} symbols from ${uri}`,
-        );
 
         // Apply F# position fix if needed
         if (
@@ -61,13 +56,8 @@ export class LSPSymbolProvider implements SymbolProvider {
         this.client.closeDocument(uri);
       }
     } catch (error) {
-      // Log error but return empty array instead of throwing
-      // This prevents cascading failures during incremental updates
-      console.error(
-        `[LSPSymbolProvider] Error getting symbols for ${uri}:`,
-        error,
-      );
       // Return empty array for files that can't be processed
+      // This prevents cascading failures during incremental updates
       return [];
     }
   }

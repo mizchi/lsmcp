@@ -8,6 +8,7 @@ import { pathToFileURL } from "url";
 import type { SymbolEntry } from "../symbolIndex.ts";
 import type { LSPClient } from "@lsmcp/lsp-client";
 import { existsSync } from "fs";
+import { errorLog } from "../../../../src/utils/debugLog.ts";
 
 /**
  * Import information extracted from source file
@@ -240,7 +241,7 @@ export function resolveModulePath(
         return dtsPath;
       }
     } catch (error) {
-      console.error(`Failed to parse package.json for ${importSource}:`, error);
+      errorLog(`Failed to parse package.json for ${importSource}:`, error);
     }
   }
 
@@ -312,7 +313,7 @@ export async function resolveSymbolFromImports(
 
     return null;
   } catch (error) {
-    console.error(
+    errorLog(
       `Failed to resolve symbol ${symbolName} from ${filePath}:`,
       error,
     );
@@ -409,7 +410,7 @@ export async function getAvailableExternalSymbols(
 
     return availableSymbols;
   } catch (error) {
-    console.error(
+    errorLog(
       `Failed to get available external symbols from ${filePath}:`,
       error,
     );

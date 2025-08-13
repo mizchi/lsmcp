@@ -25,6 +25,7 @@ import {
   getUntrackedFilesAsync,
 } from "../utils/gitUtils.ts";
 import { shouldExcludeSymbol, type IndexConfig } from "../config/config.ts";
+import { debugLogWithPrefix } from "../../../../src/utils/debugLog.ts";
 
 export class SymbolIndex extends EventEmitter {
   private fileIndex: Map<string, FileSymbols> = new Map();
@@ -142,7 +143,7 @@ export class SymbolIndex extends EventEmitter {
       "../config/configLoader.ts"
     );
     this.config = loadConfig(this.rootPath);
-    console.error(`[SymbolIndex] Loaded config:`, this.config?.symbolFilter);
+    debugLogWithPrefix("SymbolIndex", "Loaded config:", this.config?.symbolFilter);
   }
 
   /**
@@ -181,8 +182,9 @@ export class SymbolIndex extends EventEmitter {
           processedFiles++;
         } catch (error) {
           failedFiles++;
-          console.error(
-            `[SymbolIndex] Failed to index ${file}: ${error instanceof Error ? error.message : String(error)}`,
+          debugLogWithPrefix(
+            "SymbolIndex",
+            `Failed to index ${file}: ${error instanceof Error ? error.message : String(error)}`,
           );
           if (!options?.skipFailures) {
             throw error;
@@ -211,8 +213,9 @@ export class SymbolIndex extends EventEmitter {
       this.stats.lastGitHash = gitHashResult.value;
     }
 
-    console.error(
-      `[SymbolIndex] Indexed ${processedFiles}/${totalFiles} files in ${duration}ms (${failedFiles} failures)`,
+    debugLogWithPrefix(
+      "SymbolIndex",
+      `Indexed ${processedFiles}/${totalFiles} files in ${duration}ms (${failedFiles} failures)`,
     );
 
     this.emit("indexingCompleted", {
@@ -405,15 +408,17 @@ export class SymbolIndex extends EventEmitter {
     errors: string[];
   }> {
     const batchSize = options?.batchSize || 5; // Reduced from 10 to 5 for better stability
-    console.error(
-      `[SymbolIndex] updateIncremental started for ${this.rootPath}`,
+    debugLogWithPrefix(
+      "SymbolIndex",
+      `updateIncremental started for ${this.rootPath}`,
     );
 
     const currentHashResult = await getGitHashAsync(this.rootPath);
 
     if (currentHashResult.isErr()) {
-      console.error(
-        `[SymbolIndex] Git hash error: ${currentHashResult.error.message}`,
+      debugLogWithPrefix(
+        "SymbolIndex",
+        `Git hash error: ${currentHashResult.error.message}`,
       );
       // Not a git repository or error, fall back to full index
       return {
@@ -424,7 +429,7 @@ export class SymbolIndex extends EventEmitter {
     }
 
     const currentHash = currentHashResult.value;
-    console.error(`[SymbolIndex] Current git hash: ${currentHash}`);
+    debugLogWithPrefix("SymbolIndex", `Current git hash: ${currentHash}`);
 
     // Check if not a git repository
     if (!currentHash) {
@@ -436,7 +441,7 @@ export class SymbolIndex extends EventEmitter {
     }
 
     const lastHash = this.stats.lastGitHash;
-    console.error(`[SymbolIndex] Last git hash: ${lastHash}`);
+    debugLogWithPrefix("SymbolIndex", `Last git hash: ${lastHash}`);
 
     if (!lastHash) {
       // First time, do full index
@@ -447,15 +452,16 @@ export class SymbolIndex extends EventEmitter {
       };
     }
 
-    console.error(`[SymbolIndex] Getting modified files since ${lastHash}`);
+    debugLogWithPrefix("SymbolIndex", `Getting modified files since ${lastHash}`);
     const modifiedFilesResult = await getModifiedFilesAsync(
       this.rootPath,
       lastHash,
     );
 
     if (modifiedFilesResult.isErr()) {
-      console.error(
-        `[SymbolIndex] Error getting modified files: ${modifiedFilesResult.error.message}`,
+      debugLogWithPrefix(
+        "SymbolIndex",
+        `Error getting modified files: ${modifiedFilesResult.error.message}`,
       );
       // If we can't get diff, fall back to full reindex
       return {
@@ -466,14 +472,15 @@ export class SymbolIndex extends EventEmitter {
     }
 
     const modifiedFiles = modifiedFilesResult.value;
-    console.error(`[SymbolIndex] Found ${modifiedFiles.length} modified files`);
+    debugLogWithPrefix("SymbolIndex", `Found ${modifiedFiles.length} modified files`);
 
-    console.error(`[SymbolIndex] Getting untracked files`);
+    debugLogWithPrefix("SymbolIndex", "Getting untracked files");
     const untrackedFilesResult = await getUntrackedFilesAsync(this.rootPath);
 
     if (untrackedFilesResult.isErr()) {
-      console.error(
-        `[SymbolIndex] Error getting untracked files: ${untrackedFilesResult.error.message}`,
+      debugLogWithPrefix(
+        "SymbolIndex",
+        `Error getting untracked files: ${untrackedFilesResult.error.message}`,
       );
       // Continue with just modified files if untracked fails
     }
@@ -481,8 +488,9 @@ export class SymbolIndex extends EventEmitter {
     const untrackedFiles = untrackedFilesResult.isOk()
       ? untrackedFilesResult.value
       : [];
-    console.error(
-      `[SymbolIndex] Found ${untrackedFiles.length} untracked files`,
+    debugLogWithPrefix(
+      "SymbolIndex",
+      `Found ${untrackedFiles.length} untracked files`,
     );
 
     // Filter both modified and untracked files to only include TypeScript/JavaScript files
@@ -495,11 +503,13 @@ export class SymbolIndex extends EventEmitter {
     const tsModifiedFiles = modifiedFiles.filter(isSupported);
     const tsUntrackedFiles = untrackedFiles.filter(isSupported);
 
-    console.error(
-      `[SymbolIndex] Filtered to ${tsModifiedFiles.length} modified TS/JS files`,
+    debugLogWithPrefix(
+      "SymbolIndex",
+      `Filtered to ${tsModifiedFiles.length} modified TS/JS files`,
     );
-    console.error(
-      `[SymbolIndex] Filtered to ${tsUntrackedFiles.length} untracked TS/JS files`,
+    debugLogWithPrefix(
+      "SymbolIndex",
+      `Filtered to ${tsUntrackedFiles.length} untracked TS/JS files`,
     );
 
     // Combine modified and untracked files
@@ -586,8 +596,9 @@ export class SymbolIndex extends EventEmitter {
     this.stats.lastGitHash = currentHash;
     this.stats.lastUpdated = new Date();
 
-    console.error(
-      `[SymbolIndex] Incremental update completed: ${updated.length} updated, ${removed.length} removed, ${errors.length} errors`,
+    debugLogWithPrefix(
+      "SymbolIndex",
+      `Incremental update completed: ${updated.length} updated, ${removed.length} removed, ${errors.length} errors`,
     );
 
     return { updated, removed, errors };

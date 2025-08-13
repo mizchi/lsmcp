@@ -13,222 +13,18 @@
           "description": "JSON Schema reference",
           "markdownDescription": "JSON Schema reference"
         },
-        "version": {
-          "type": "string",
-          "const": "1.0",
-          "description": "Config file format version",
-          "markdownDescription": "Config file format version"
-        },
         "preset": {
           "type": "string",
           "description": "Preset adapter to use",
           "markdownDescription": "Preset adapter to use"
         },
-        "indexFiles": {
+        "files": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "default": [
-            "**/*.ts",
-            "**/*.tsx",
-            "**/*.js",
-            "**/*.jsx"
-          ],
           "description": "Glob patterns for files to index",
           "markdownDescription": "Glob patterns for files to index"
-        },
-        "lsp": {
-          "type": "object",
-          "properties": {
-            "bin": {
-              "type": "string",
-              "description": "LSP server binary path or command",
-              "markdownDescription": "LSP server binary path or command"
-            },
-            "args": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "default": [],
-              "description": "Arguments for the LSP server",
-              "markdownDescription": "Arguments for the LSP server"
-            },
-            "initializationOptions": {
-              "description": "LSP initialization options",
-              "markdownDescription": "LSP initialization options"
-            },
-            "unsupported": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "List of unsupported MCP tools",
-              "markdownDescription": "List of unsupported MCP tools"
-            },
-            "serverCapabilities": {
-              "type": "object",
-              "properties": {
-                "supportsRename": {
-                  "type": "boolean"
-                },
-                "supportsReferences": {
-                  "type": "boolean"
-                },
-                "supportsDefinition": {
-                  "type": "boolean"
-                },
-                "supportsHover": {
-                  "type": "boolean"
-                },
-                "supportsDocumentSymbol": {
-                  "type": "boolean"
-                },
-                "supportsWorkspaceSymbol": {
-                  "type": "boolean"
-                },
-                "supportsCompletion": {
-                  "type": "boolean"
-                },
-                "supportsSignatureHelp": {
-                  "type": "boolean"
-                },
-                "supportsDocumentFormatting": {
-                  "type": "boolean"
-                },
-                "supportsRangeFormatting": {
-                  "type": "boolean"
-                },
-                "supportsCodeAction": {
-                  "type": "boolean"
-                },
-                "supportsDiagnostics": {
-                  "type": "boolean"
-                },
-                "supportsInlayHint": {
-                  "type": "boolean"
-                },
-                "supportsSemanticTokens": {
-                  "type": "boolean"
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "required": [
-            "bin"
-          ],
-          "additionalProperties": false,
-          "description": "LSP server configuration",
-          "markdownDescription": "LSP server configuration"
-        },
-        "adapter": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string",
-              "description": "Unique identifier for the adapter",
-              "markdownDescription": "Unique identifier for the adapter"
-            },
-            "name": {
-              "type": "string",
-              "description": "Display name for the adapter",
-              "markdownDescription": "Display name for the adapter"
-            },
-            "bin": {
-              "type": "string",
-              "description": "LSP server binary path or command",
-              "markdownDescription": "LSP server binary path or command"
-            },
-            "args": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "default": [],
-              "description": "Arguments for the LSP server",
-              "markdownDescription": "Arguments for the LSP server"
-            },
-            "baseLanguage": {
-              "type": "string",
-              "description": "Base language ID (e.g., 'typescript')",
-              "markdownDescription": "Base language ID (e.g., 'typescript')"
-            },
-            "description": {
-              "type": "string",
-              "description": "Description of the adapter",
-              "markdownDescription": "Description of the adapter"
-            },
-            "unsupported": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "List of unsupported MCP tools",
-              "markdownDescription": "List of unsupported MCP tools"
-            },
-            "initializationOptions": {
-              "description": "LSP initialization options",
-              "markdownDescription": "LSP initialization options"
-            },
-            "serverCapabilities": {
-              "type": "object",
-              "properties": {
-                "supportsRename": {
-                  "type": "boolean"
-                },
-                "supportsReferences": {
-                  "type": "boolean"
-                },
-                "supportsDefinition": {
-                  "type": "boolean"
-                },
-                "supportsHover": {
-                  "type": "boolean"
-                },
-                "supportsDocumentSymbol": {
-                  "type": "boolean"
-                },
-                "supportsWorkspaceSymbol": {
-                  "type": "boolean"
-                },
-                "supportsCompletion": {
-                  "type": "boolean"
-                },
-                "supportsSignatureHelp": {
-                  "type": "boolean"
-                },
-                "supportsDocumentFormatting": {
-                  "type": "boolean"
-                },
-                "supportsRangeFormatting": {
-                  "type": "boolean"
-                },
-                "supportsCodeAction": {
-                  "type": "boolean"
-                },
-                "supportsDiagnostics": {
-                  "type": "boolean"
-                },
-                "supportsInlayHint": {
-                  "type": "boolean"
-                },
-                "supportsSemanticTokens": {
-                  "type": "boolean"
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "required": [
-            "id",
-            "name",
-            "bin"
-          ],
-          "additionalProperties": false,
-          "description": "Deprecated: Use 'lsp' field instead",
-          "markdownDescription": "Deprecated: Use 'lsp' field instead"
         },
         "settings": {
           "type": "object",
@@ -317,11 +113,96 @@
           "description": "Symbol filtering configuration",
           "markdownDescription": "Symbol filtering configuration"
         },
+        "experiments": {
+          "type": "object",
+          "properties": {
+            "memory": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable advanced memory features with database storage",
+              "markdownDescription": "Enable advanced memory features with database storage"
+            }
+          },
+          "additionalProperties": false,
+          "default": {},
+          "description": "Experimental features configuration",
+          "markdownDescription": "Experimental features configuration"
+        },
         "memoryAdvanced": {
           "type": "boolean",
-          "default": false,
-          "description": "Enable advanced memory features with database storage for project reports",
-          "markdownDescription": "Enable advanced memory features with database storage for project reports. When enabled, provides comprehensive project analysis and reporting tools with SQLite-based storage in `.lsmcp/cache/memory.db`. Reports include mechanical metrics, AI analysis, and can be marked as deprecated."
+          "description": "[Deprecated] Use experiments.memory instead",
+          "markdownDescription": "[Deprecated] Use experiments.memory instead"
+        },
+        "bin": {
+          "type": "string",
+          "description": "LSP server binary command",
+          "markdownDescription": "LSP server binary command"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Command line arguments",
+          "markdownDescription": "Command line arguments"
+        },
+        "initializationOptions": {
+          "description": "LSP initialization options",
+          "markdownDescription": "LSP initialization options"
+        },
+        "unsupported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Unsupported LSP features",
+          "markdownDescription": "Unsupported LSP features"
+        },
+        "serverCharacteristics": {
+          "type": "object",
+          "properties": {
+            "documentOpenDelay": {
+              "type": "number",
+              "description": "Time to wait after opening a document before sending requests (ms)",
+              "markdownDescription": "Time to wait after opening a document before sending requests (ms)"
+            },
+            "readinessCheckTimeout": {
+              "type": "number",
+              "description": "Time to wait for server readiness check (ms)",
+              "markdownDescription": "Time to wait for server readiness check (ms)"
+            },
+            "initialDiagnosticsTimeout": {
+              "type": "number",
+              "description": "Time to wait for initial diagnostics (ms)",
+              "markdownDescription": "Time to wait for initial diagnostics (ms)"
+            },
+            "requiresProjectInit": {
+              "type": "boolean",
+              "description": "Whether the server requires project-level initialization",
+              "markdownDescription": "Whether the server requires project-level initialization"
+            },
+            "sendsInitialDiagnostics": {
+              "type": "boolean",
+              "description": "Whether the server sends diagnostics on document open",
+              "markdownDescription": "Whether the server sends diagnostics on document open"
+            },
+            "operationTimeout": {
+              "type": "number",
+              "description": "Maximum timeout for general operations (ms)",
+              "markdownDescription": "Maximum timeout for general operations (ms)"
+            },
+            "supportsIncrementalSync": {
+              "type": "boolean",
+              "description": "Whether the server supports incremental document synchronization",
+              "markdownDescription": "Whether the server supports incremental document synchronization"
+            },
+            "supportsPullDiagnostics": {
+              "type": "boolean",
+              "description": "Whether the server supports pull diagnostics",
+              "markdownDescription": "Whether the server supports pull diagnostics"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -362,13 +243,6 @@
           "Constant"
         ],
         "includeOnlyTopLevel": true
-      }
-    },
-    {
-      "preset": "tsgo",
-      "memoryAdvanced": true,
-      "settings": {
-        "autoIndex": true
       }
     }
   ]

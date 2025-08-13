@@ -3,6 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z, ZodObject, type ZodType } from "zod";
 import type { McpToolDef, McpContext } from "@lsmcp/types";
 import type { FileSystemApi } from "@lsmcp/types";
+import { debugLogWithPrefix } from "./debugLog.ts";
 
 /**
  * MCP Server configuration options
@@ -49,8 +50,9 @@ export function toMcpToolHandler<T>(
         ],
       };
     } catch (error) {
-      console.error(
-        `[MCP] Tool execution error in ${
+      debugLogWithPrefix(
+        "MCP",
+        `Tool execution error in ${
           (handler as any).name || "unknown"
         }: ${error}`,
       );

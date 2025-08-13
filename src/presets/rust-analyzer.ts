@@ -1,4 +1,5 @@
 import type { Preset } from "../config/schema.ts";
+import { LANGUAGE_PATTERNS } from "../config/languagePatterns.ts";
 
 /**
  * rust-analyzer adapter
@@ -7,7 +8,7 @@ export const rustAnalyzerAdapter: Preset = {
   presetId: "rust-analyzer",
   bin: "rust-analyzer",
   args: [],
-  files: ["**/*.rs"],
+  files: LANGUAGE_PATTERNS.rust,
   initializationOptions: {
     cargo: {
       features: "all",

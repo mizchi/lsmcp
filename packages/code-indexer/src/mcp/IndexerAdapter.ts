@@ -10,6 +10,7 @@ import { createLSPSymbolProvider } from "@lsmcp/lsp-client";
 import { fileURLToPath } from "url";
 import { readFile } from "fs/promises";
 import type { IndexedSymbol, SymbolQuery } from "../engine/types.ts";
+import { debugLogWithPrefix, errorLog } from "../../../../src/utils/debugLog.ts";
 
 /**
  * Dependencies for indexer facade.
@@ -55,8 +56,9 @@ export function getOrCreateIndex(
 
   // Debug: Check if fileSystem has the required methods
   if (typeof fileSystem.readFile !== "function") {
-    console.error(
-      "[IndexerAdapter] Warning: fileSystem.readFile is not a function. Using NodeFileSystem.",
+    debugLogWithPrefix(
+      "IndexerAdapter",
+      "Warning: fileSystem.readFile is not a function. Using NodeFileSystem.",
     );
     fileSystem = new NodeFileSystem();
   }
@@ -90,7 +92,7 @@ export function getOrCreateIndex(
     }
 
     if (!lspClient) {
-      console.error(
+      errorLog(
         `[IndexerAdapter] No LSP client or symbolProvider available for ${rootPath}. Provide via { lspClient } or { symbolProvider }.`,
       );
       return null;

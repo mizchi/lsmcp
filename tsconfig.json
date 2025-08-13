@@ -20,5 +20,5 @@
     "noUnusedParameters": true
   },
   "include": ["src/**/*", "tests/**/*", "packages/**/*"],
-  "exclude": ["tests/fixtures/**/*", "tests/adapters/fixtures/**/*", "tests/integration/tmp-lsp-errors-*/**/*"]
+  "exclude": ["tests/fixtures/**/*", "tests/languages/fixtures/**/*", "tests/integration/tmp-lsp-errors-*/**/*"]
 }

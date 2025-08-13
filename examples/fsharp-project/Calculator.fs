@@ -1,6 +1,6 @@
 module Calculator
 
-// 基本的な算術演算
+// Basic arithmetic operations
 let add x y = x + y
 let subtract x y = x - y
 let multiply x y = x * y
@@ -10,16 +10,16 @@ let divide x y =
     else 
         x / y
 
-// 高階関数の例
+// Higher-order function example
 let applyOperation op x y = op x y
 
-// レコード型
+// Record type
 type CalculationResult = {
     Operation: string
     Result: int
 }
 
-// 計算を実行して結果を返す
+// Execute calculation and return result
 let calculate opName x y =
     let result = 
         match opName with
@@ -30,21 +30,21 @@ let calculate opName x y =
         | _ -> failwith "Unknown operation"
     { Operation = opName; Result = result }
 
-// パターンマッチングの例
+// Pattern matching example
 let describeNumber n =
     match n with
     | 0 -> "Zero"
     | n when n > 0 -> "Positive"
     | _ -> "Negative"
 
-// リスト操作
+// List operations
 let sumList numbers =
     List.fold (+) 0 numbers
 
-// エラーを含むコード（テスト用）
+// Code with errors (for testing)
 let buggyFunction x =
-    let y = unknownVariable // エラー: unknownVariable is not defined
+    let y = unknownVariable // Error: unknownVariable is not defined
     x + y
 
-// 型エラーのテスト
-let typeError: string = 123 // エラー: int を string に代入
+// Type error test
+let typeError: string = 123 // Error: assigning int to string
