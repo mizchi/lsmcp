@@ -78,7 +78,7 @@ export interface CompletionHandler {
    * Resolve a completion item for additional details
    */
   resolveCompletionItem(item: CompletionItem): Promise<CompletionItem>;
-  
+
   /**
    * Get completions with optional auto-import filtering
    */
@@ -130,21 +130,24 @@ export function createCompletionHandler(client: LSPClient): CompletionHandler {
     includeAutoImport: boolean = true,
   ): Promise<CompletionItem[]> {
     const items = await getCompletion(uri, position);
-    
+
     if (!includeAutoImport) {
       // Filter out auto-import completions
-      return items.filter(item => {
+      return items.filter((item) => {
         // Check if the item is an auto-import
-        const detail = item.detail || '';
-        const documentation = typeof item.documentation === 'string' 
-          ? item.documentation 
-          : item.documentation?.value || '';
-        
-        return !detail.includes('Auto import') && 
-               !documentation.includes('Auto import');
+        const detail = item.detail || "";
+        const documentation =
+          typeof item.documentation === "string"
+            ? item.documentation
+            : item.documentation?.value || "";
+
+        return (
+          !detail.includes("Auto import") &&
+          !documentation.includes("Auto import")
+        );
       });
     }
-    
+
     return items;
   }
 
@@ -186,5 +189,3 @@ function isAutoImportItem(item: CompletionItem): boolean {
     false
   );
 }
-
-

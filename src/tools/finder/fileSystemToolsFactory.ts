@@ -4,7 +4,7 @@ import { glob as gitawareGlob, type FileSystemInterface } from "gitaware-glob";
 import { minimatch } from "minimatch";
 import type { FileSystemApi } from "@lsmcp/types";
 import { nodeFileSystemApi } from "../../filesystem/NodeFileSystemApi.ts";
-import { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 
 const listDirSchema = z.object({
   relativePath: z
@@ -25,7 +25,7 @@ const listDirSchema = z.object({
 
 export function createListDirTool(
   fileSystemApi: FileSystemApi = nodeFileSystemApi,
-): ToolDef<typeof listDirSchema> {
+): McpToolDef<typeof listDirSchema> {
   return {
     name: "list_dir",
     description:
@@ -108,7 +108,7 @@ const findFileSchema = z.object({
 
 export function createFindFileTool(
   fileSystemApi: FileSystemApi = nodeFileSystemApi,
-): ToolDef<typeof findFileSchema> {
+): McpToolDef<typeof findFileSchema> {
   return {
     name: "find_file",
     description:
@@ -232,7 +232,7 @@ const searchForPatternSchema = z.object({
 
 export function createSearchForPatternTool(
   fileSystemApi: FileSystemApi = nodeFileSystemApi,
-): ToolDef<typeof searchForPatternSchema> {
+): McpToolDef<typeof searchForPatternSchema> {
   return {
     name: "search_for_pattern",
     description:

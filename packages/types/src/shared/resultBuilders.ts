@@ -1,7 +1,4 @@
-import type {
-  Diagnostic as LSPDiagnostic,
-  Location,
-} from "@lsmcp/types/lsp";
+import type { Diagnostic as LSPDiagnostic, Location } from "@lsmcp/types/lsp";
 import { relative } from "path";
 
 // Define SimpleDiagnostic type

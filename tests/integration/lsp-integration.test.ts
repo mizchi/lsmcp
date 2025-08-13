@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
-import { lspGetHoverTool } from "@lsmcp/lsp-client"; // from "tools/hover.ts";
-import { lspFindReferencesTool } from "@lsmcp/lsp-client"; // from "tools/references.ts";
-import { lspGetDefinitionsTool } from "@lsmcp/lsp-client"; // from "tools/definitions.ts";
-import { lspGetDiagnosticsTool } from "@lsmcp/lsp-client"; // from "tools/diagnostics.ts";
-import { lspRenameSymbolTool } from "@lsmcp/lsp-client"; // from "tools/rename.ts";
-import { lspGetDocumentSymbolsTool } from "@lsmcp/lsp-client"; // from "tools/documentSymbols.ts";
+import { createHoverTool } from "../../src/tools/lsp/hover.ts";
+import { createReferencesTool } from "../../src/tools/lsp/references.ts";
+import { createDefinitionsTool } from "../../src/tools/lsp/definitions.ts";
+import { createDiagnosticsTool } from "../../src/tools/lsp/diagnostics.ts";
+import { createRenameSymbolTool } from "../../src/tools/lsp/rename.ts";
+import { createDocumentSymbolsTool } from "../../src/tools/lsp/documentSymbols.ts";
 import type { LSPClient } from "@lsmcp/lsp-client";
 import fs from "fs/promises";
 import path from "path";
@@ -17,6 +17,12 @@ describe("LSP integration tests", () => {
   let lspProcess: ChildProcess;
   let lspClient: LSPClient;
   let tmpDir: string;
+  let lspGetHoverTool: any;
+  let lspFindReferencesTool: any;
+  let lspGetDefinitionsTool: any;
+  let lspGetDiagnosticsTool: any;
+  let lspRenameSymbolTool: any;
+  let lspGetDocumentSymbolsTool: any;
 
   beforeAll(async () => {
     // Skip test if LSP_COMMAND is not set
@@ -48,6 +54,14 @@ describe("LSP integration tests", () => {
       languageId: "typescript",
     });
     await lspClient.start();
+
+    // Initialize tools with the LSP client
+    lspGetHoverTool = createHoverTool(lspClient);
+    lspFindReferencesTool = createReferencesTool(lspClient);
+    lspGetDefinitionsTool = createDefinitionsTool(lspClient);
+    lspGetDiagnosticsTool = createDiagnosticsTool(lspClient);
+    lspRenameSymbolTool = createRenameSymbolTool(lspClient);
+    lspGetDocumentSymbolsTool = createDocumentSymbolsTool(lspClient);
   });
 
   afterAll(async () => {

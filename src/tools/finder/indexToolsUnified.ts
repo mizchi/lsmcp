@@ -5,7 +5,7 @@
 import { z } from "zod";
 import { forceClearIndex, getOrCreateIndex } from "@lsmcp/code-indexer";
 import { glob } from "gitaware-glob";
-import { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import { loadIndexConfig } from "@lsmcp/code-indexer";
 import { getAdapterDefaultPattern } from "@lsmcp/code-indexer";
 
@@ -36,7 +36,7 @@ const indexSymbolsSchema = z.object({
     .describe("Completely reset the index before starting (clears all caches)"),
 });
 
-export const indexSymbolsTool: ToolDef<typeof indexSymbolsSchema> = {
+export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
   name: "index_symbols",
   description:
     "Smart symbol indexing that automatically detects and applies incremental updates. " +

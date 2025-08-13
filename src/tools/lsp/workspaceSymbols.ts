@@ -1,7 +1,7 @@
 import type { LSPClient } from "@lsmcp/lsp-client";
 import { z } from "zod";
 import { SymbolInformation, SymbolKind } from "@lsmcp/types";
-import type { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import { fileURLToPath } from "url";
 
 const schemaShape = {
@@ -162,7 +162,7 @@ async function handleGetWorkspaceSymbols(
  */
 export function createWorkspaceSymbolsTool(
   client: LSPClient,
-): ToolDef<typeof schema> {
+): McpToolDef<typeof schema> {
   return {
     name: "get_workspace_symbols",
     description:

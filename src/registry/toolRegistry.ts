@@ -13,26 +13,27 @@ import { serenityTools } from "../tools/index.ts";
 
 // Import onboarding tools
 import { indexOnboardingTools } from "../features/memory/onboarding/onboardingTools.ts";
-import { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 
 /**
  * Create LSP tools with injected client
  */
-export function createLSPTools(client: LSPClient): ToolDef<any>[] {
+export function createLSPTools(client: LSPClient): McpToolDef<any>[] {
   return createLSPToolsWithClient(client);
 }
 
 // Legacy export - should not be used
-export const lspTools: ToolDef<any>[] = [];
+export const lspTools: McpToolDef<any>[] = [];
 
 // Define high-level analysis tools (not affected by LSP capabilities)
-export const highLevelTools: ToolDef<any>[] = [...indexTools];
+export const highLevelTools: McpToolDef<any>[] = [...indexTools];
 
 // Define serenity tools
-export const serenityToolsList: ToolDef<any>[] = Object.values(serenityTools);
+export const serenityToolsList: McpToolDef<any>[] =
+  Object.values(serenityTools);
 
 // Define onboarding tools
-export const onboardingToolsList: ToolDef<any>[] = indexOnboardingTools;
+export const onboardingToolsList: McpToolDef<any>[] = indexOnboardingTools;
 
 // Tool name mapping for unsupported filtering
 const toolNameMap: Record<string, string> = {
@@ -56,9 +57,9 @@ const toolNameMap: Record<string, string> = {
  * Filter tools based on unsupported list
  */
 export function filterUnsupportedTools(
-  tools: ToolDef<any>[],
+  tools: McpToolDef<any>[],
   unsupported: string[] = [],
-): ToolDef<any>[] {
+): McpToolDef<any>[] {
   if (unsupported.length === 0) return tools;
 
   const unsupportedToolNames = new Set(

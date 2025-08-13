@@ -11,7 +11,7 @@ export * from "./finder/externalLibraryTools.ts";
 export * from "./finder/symbolResolverTools.ts";
 
 // Re-export all tools as a collection
-import type { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import {
   replaceSymbolBodyTool,
   insertBeforeSymbolTool,
@@ -99,7 +99,7 @@ export function getSerenityTools(config?: {
     python?: { enabled: boolean };
   };
   memoryAdvanced?: boolean;
-}): Record<string, ToolDef<any>> {
+}): Record<string, McpToolDef<any>> {
   const tools = { ...coreTools };
 
   // Add TypeScript tools if enabled (default: disabled)
@@ -139,7 +139,8 @@ export const serenityTools = {
 };
 
 // Export as a list for easy registration
-export const serenityToolsList: ToolDef<any>[] = Object.values(serenityTools);
+export const serenityToolsList: McpToolDef<any>[] =
+  Object.values(serenityTools);
 
 /**
  * Get Serenity tools list based on configuration
@@ -152,7 +153,7 @@ export function getSerenityToolsList(config?: {
     python?: { enabled: boolean };
   };
   memoryAdvanced?: boolean;
-}): ToolDef<any>[] {
+}): McpToolDef<any>[] {
   const tools = getSerenityTools(config);
   return Object.values(tools);
 }

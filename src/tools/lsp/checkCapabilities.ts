@@ -1,6 +1,6 @@
 import type { LSPClient } from "@lsmcp/lsp-client";
 import { z } from "zod";
-import type { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 // These imports should be provided by the consumer
 // import { getUnsupportedToolsByCapabilities } from "../../../../src/mcp/registry/capabilityFilter.ts";
 // import { lspTools } from "../../../../src/mcp/registry/toolRegistry.ts";
@@ -142,7 +142,7 @@ function formatSaveCapability(save: any): string {
  */
 export function createCheckCapabilitiesTool(
   client: LSPClient,
-): ToolDef<typeof schema> {
+): McpToolDef<typeof schema> {
   return {
     name: "check_capabilities",
     description:

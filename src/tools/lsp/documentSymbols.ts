@@ -2,7 +2,7 @@ import type { LSPClient } from "@lsmcp/lsp-client";
 import { z } from "zod";
 import { DocumentSymbol, SymbolInformation, SymbolKind } from "@lsmcp/types";
 import { fileLocationSchema } from "@lsmcp/types";
-import type { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import { loadFileContext } from "@lsmcp/lsp-client";
 import { withTemporaryDocument } from "@lsmcp/lsp-client";
 
@@ -190,7 +190,7 @@ async function handleGetDocumentSymbols(
  */
 export function createDocumentSymbolsTool(
   client: LSPClient,
-): ToolDef<typeof schema> {
+): McpToolDef<typeof schema> {
   return {
     name: "get_document_symbols",
     description:

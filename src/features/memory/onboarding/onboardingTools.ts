@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import type { ToolDef } from "../../../utils/mcpHelpers.ts";
+import type { McpToolDef } from "@lsmcp/types";
 import { platform } from "node:os";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -17,7 +17,7 @@ const checkIndexOnboardingSchema = z.object({
   root: z.string().describe("Root directory of the project"),
 });
 
-export const checkIndexOnboardingTool: ToolDef<
+export const checkIndexOnboardingTool: McpToolDef<
   typeof checkIndexOnboardingSchema
 > = {
   name: "check_index_onboarding",
@@ -46,7 +46,7 @@ const indexOnboardingSchema = z.object({
   root: z.string().describe("Root directory of the project"),
 });
 
-export const indexOnboardingTool: ToolDef<typeof indexOnboardingSchema> = {
+export const indexOnboardingTool: McpToolDef<typeof indexOnboardingSchema> = {
   name: "index_onboarding",
   description: "Get instructions for onboarding the symbol index for a project",
   schema: indexOnboardingSchema,
@@ -58,7 +58,7 @@ export const indexOnboardingTool: ToolDef<typeof indexOnboardingSchema> = {
 
 const getSymbolSearchGuidanceSchema = z.object({});
 
-export const getSymbolSearchGuidanceTool: ToolDef<
+export const getSymbolSearchGuidanceTool: McpToolDef<
   typeof getSymbolSearchGuidanceSchema
 > = {
   name: "get_symbol_search_guidance",
@@ -71,7 +71,7 @@ export const getSymbolSearchGuidanceTool: ToolDef<
 
 const getCompressionGuidanceSchema = z.object({});
 
-export const getCompressionGuidanceTool: ToolDef<
+export const getCompressionGuidanceTool: McpToolDef<
   typeof getCompressionGuidanceSchema
 > = {
   name: "get_compression_guidance",

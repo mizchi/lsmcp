@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ToolDef } from "../../../utils/mcpHelpers.ts";
+import type { McpToolDef } from "@lsmcp/types";
 import { commonSchemas } from "@lsmcp/types";
 import { relative } from "path";
 import { Position } from "vscode-languageserver-types";
@@ -43,7 +43,7 @@ interface Range {
   end: Position;
 }
 
-export const callHierarchyTool: ToolDef<typeof schema> = {
+export const callHierarchyTool: McpToolDef<typeof schema> = {
   name: "call_hierarchy",
   description:
     "Get call hierarchy (incoming/outgoing calls) for a function or method (TypeScript only)",

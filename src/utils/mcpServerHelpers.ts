@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z, ZodObject, type ZodType } from "zod";
-import type { ToolDef } from "./mcpHelpers.ts";
+import type { McpToolDef } from "@lsmcp/types";
 import type { FileSystemApi } from "@lsmcp/types";
 
 /**
@@ -24,7 +24,7 @@ export interface McpServerOptions {
  */
 export interface McpServerState {
   server: McpServer;
-  tools: Map<string, ToolDef<ZodType>>;
+  tools: Map<string, McpToolDef<ZodType>>;
   defaultRoot?: string;
   fileSystemApi?: FileSystemApi;
 }
@@ -98,9 +98,9 @@ export function setDefaultRoot(state: McpServerState, root: string): void {
  */
 export function registerTool<S extends ZodType>(
   state: McpServerState,
-  tool: ToolDef<S>,
+  tool: McpToolDef<S>,
 ): void {
-  state.tools.set(tool.name, tool as unknown as ToolDef<ZodType>);
+  state.tools.set(tool.name, tool as unknown as McpToolDef<ZodType>);
   _registerToolWithServer(state, tool);
 }
 
@@ -109,7 +109,7 @@ export function registerTool<S extends ZodType>(
  */
 export function registerTools(
   state: McpServerState,
-  tools: ToolDef<ZodType>[],
+  tools: McpToolDef<ZodType>[],
 ): void {
   for (const tool of tools) {
     registerTool(state, tool);
@@ -136,7 +136,7 @@ export function getServer(state: McpServerState): McpServer {
  */
 function _registerToolWithServer<S extends ZodType>(
   state: McpServerState,
-  tool: ToolDef<S>,
+  tool: McpToolDef<S>,
 ): void {
   // Check if the schema is a ZodObject to extract shape
   if (tool.schema instanceof ZodObject) {
@@ -193,8 +193,8 @@ function _registerToolWithServer<S extends ZodType>(
 export interface McpServerManager {
   state: McpServerState;
   setDefaultRoot: (root: string) => void;
-  registerTool: <S extends ZodType>(tool: ToolDef<S>) => void;
-  registerTools: (tools: ToolDef<ZodType>[]) => void;
+  registerTool: <S extends ZodType>(tool: McpToolDef<S>) => void;
+  registerTools: (tools: McpToolDef<ZodType>[]) => void;
   start: () => Promise<void>;
   getServer: () => McpServer;
 }
@@ -210,9 +210,10 @@ export function createMcpServerManager(
   return {
     state,
     setDefaultRoot: (root: string) => setDefaultRoot(state, root),
-    registerTool: <S extends ZodType>(tool: ToolDef<S>) =>
+    registerTool: <S extends ZodType>(tool: McpToolDef<S>) =>
       registerTool(state, tool),
-    registerTools: (tools: ToolDef<ZodType>[]) => registerTools(state, tools),
+    registerTools: (tools: McpToolDef<ZodType>[]) =>
+      registerTools(state, tools),
     start: () => startServer(state),
     getServer: () => getServer(state),
   };

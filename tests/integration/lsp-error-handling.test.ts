@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
-import { lspGetHoverTool } from "@lsmcp/lsp-client"; // from "tools/hover.ts";
-import { lspFindReferencesTool } from "@lsmcp/lsp-client"; // from "tools/references.ts";
-import { lspGetDefinitionsTool } from "@lsmcp/lsp-client"; // from "tools/definitions.ts";
-import { lspRenameSymbolTool } from "@lsmcp/lsp-client"; // from "tools/rename.ts";
-import { lspGetDocumentSymbolsTool } from "@lsmcp/lsp-client"; // from "tools/documentSymbols.ts";
+import { createHoverTool } from "../../src/tools/lsp/hover.ts";
+import { createReferencesTool } from "../../src/tools/lsp/references.ts";
+import { createDefinitionsTool } from "../../src/tools/lsp/definitions.ts";
+import { createRenameSymbolTool } from "../../src/tools/lsp/rename.ts";
+import { createDocumentSymbolsTool } from "../../src/tools/lsp/documentSymbols.ts";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
@@ -15,6 +15,11 @@ describe("LSP error handling tests", () => {
   let lspProcess: ChildProcess;
   let lspClient: any;
   let tmpDir: string;
+  let lspGetHoverTool: any;
+  let lspFindReferencesTool: any;
+  let lspGetDefinitionsTool: any;
+  let lspRenameSymbolTool: any;
+  let lspGetDocumentSymbolsTool: any;
 
   beforeAll(async () => {
     // Skip test if LSP_COMMAND is not set
@@ -41,6 +46,13 @@ describe("LSP error handling tests", () => {
       languageId: "typescript",
     });
     await lspClient.start();
+
+    // Initialize tools with the LSP client
+    lspGetHoverTool = createHoverTool(lspClient);
+    lspFindReferencesTool = createReferencesTool(lspClient);
+    lspGetDefinitionsTool = createDefinitionsTool(lspClient);
+    lspRenameSymbolTool = createRenameSymbolTool(lspClient);
+    lspGetDocumentSymbolsTool = createDocumentSymbolsTool(lspClient);
 
     // Create temporary directory
     const hash = randomBytes(8).toString("hex");

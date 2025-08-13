@@ -1,15 +1,6 @@
 import { z, type ZodType } from "zod";
 import type { Result } from "neverthrow";
-
-/**
- * Tool definition interface compatible with MCP
- */
-export interface ToolDef<TSchema extends ZodType> {
-  name: string;
-  description: string;
-  schema: TSchema;
-  execute: (args: z.infer<TSchema>) => Promise<string>;
-}
+import type { McpToolDef } from "@lsmcp/types";
 
 /**
  * Options for creating a tool with the factory
@@ -53,7 +44,7 @@ export interface CreateToolOptions<TSchema extends ZodType, TSuccess> {
  */
 export function createTool<TSchema extends ZodType, TSuccess>(
   options: CreateToolOptions<TSchema, TSuccess>,
-): ToolDef<TSchema> {
+): McpToolDef<TSchema> {
   const { name, description, schema, handler, formatSuccess, formatError } =
     options;
 
@@ -103,7 +94,7 @@ export interface CreateLSPToolOptions<TSchema extends ZodType, TSuccess>
  */
 export function createLSPTool<TSchema extends ZodType, TSuccess>(
   options: CreateLSPToolOptions<TSchema, TSuccess>,
-): ToolDef<TSchema> {
+): McpToolDef<TSchema> {
   const { language = "unknown", ...rest } = options;
 
   return createTool({

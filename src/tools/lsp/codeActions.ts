@@ -4,7 +4,7 @@ import path from "path";
 import fs from "fs/promises";
 import { pathToFileURL } from "url";
 import { CodeAction, CodeActionKind, Command } from "@lsmcp/types";
-import type { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import { resolveLineParameter as resolveLineHelper } from "@lsmcp/lsp-client";
 
 const schemaShape = {
@@ -212,7 +212,7 @@ async function handleGetCodeActions(
  */
 export function createCodeActionsTool(
   client: LSPClient,
-): ToolDef<typeof schema> {
+): McpToolDef<typeof schema> {
   return {
     name: "get_code_actions",
     description:

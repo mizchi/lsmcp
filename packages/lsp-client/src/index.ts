@@ -63,10 +63,10 @@ export {
 // ============================================================================
 // Commands
 // ============================================================================
-export { 
+export {
   createCompletionHandler,
   createAdvancedCompletionHandler,
-  type AdvancedCompletionHandlerOptions 
+  type AdvancedCompletionHandlerOptions,
 } from "./commands/completion.ts";
 
 // ============================================================================
@@ -126,7 +126,6 @@ export { createLSPSymbolProvider } from "./providers.ts";
 // Tool Creation Utilities (for MCP tools)
 // ============================================================================
 export { createLSPTool } from "./client/toolFactory.ts";
-export type { ToolDef } from "./client/toolFactory.ts";
 
 // ============================================================================
 // File & Line Utilities (for MCP tools)
@@ -151,7 +150,7 @@ export { validateLineAndSymbol } from "./utils/validation.ts";
 // ============================================================================
 export { createLSPClient as initialize } from "./core/client.ts";
 export async function shutdown(client: LSPClient): Promise<void> {
-  if (client && typeof client.stop === 'function') {
+  if (client && typeof client.stop === "function") {
     await client.stop();
   }
 }
@@ -165,18 +164,7 @@ export async function shutdownLSPClient(client: LSPClient): Promise<void> {
 
 // Direct initialization function - no global state
 export async function initializeLSPClient(client: LSPClient): Promise<void> {
-  if (client && typeof client.start === 'function') {
+  if (client && typeof client.start === "function") {
     await client.start();
   }
 }
-
-// Re-export tools for tests (these are now in src/mcp-tools)
-// Legacy exports for backward compatibility - will be removed
-// These are now null to indicate they should not be used
-export const lspGetHoverTool = null as any;
-export const lspFindReferencesTool = null as any;
-export const lspGetDefinitionsTool = null as any;
-export const lspGetDiagnosticsTool = null as any;
-export const lspRenameSymbolTool = null as any;
-export const lspGetDocumentSymbolsTool = null as any;
-export const lspDeleteSymbolTool = null as any;

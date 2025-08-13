@@ -3,7 +3,6 @@ import { join } from "path";
 import { debugLog } from "../utils/debug.ts";
 import { LogLevel, type LogEntry, type DebugSession } from "@lsmcp/types";
 
-// Re-export for backward compatibility
 export { LogLevel, type LogEntry } from "@lsmcp/types";
 
 // Use DebugSession directly from @lsmcp/types
@@ -11,7 +10,10 @@ export { LogLevel, type LogEntry } from "@lsmcp/types";
 interface DebugLoggerState {
   logLevel: LogLevel;
   logFile?: string;
-  sessions: Map<string, DebugSession & { featureUsage?: Record<string, number> }>;
+  sessions: Map<
+    string,
+    DebugSession & { featureUsage?: Record<string, number> }
+  >;
   currentSession?: string;
   enableFileLogging: boolean;
   enableConsoleLogging: boolean;
@@ -178,8 +180,7 @@ export function logLSPRequest(
     if (session) {
       session.metrics.totalRequests++;
       if (!session.featureUsage) session.featureUsage = {};
-      session.featureUsage[method] =
-        (session.featureUsage[method] || 0) + 1;
+      session.featureUsage[method] = (session.featureUsage[method] || 0) + 1;
     }
   }
 }
@@ -324,7 +325,9 @@ export function exportSessionText(
   lines.push("");
 
   lines.push(`=== Feature Usage ===`);
-  for (const [feature, count] of Object.entries((session as any).featureUsage || {})) {
+  for (const [feature, count] of Object.entries(
+    (session as any).featureUsage || {},
+  )) {
     lines.push(`${feature}: ${count}`);
   }
   lines.push("");

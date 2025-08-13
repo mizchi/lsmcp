@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import type { ToolDef } from "../../utils/mcpHelpers.ts";
+import type { McpToolDef } from "@lsmcp/types";
 import {
   getOrCreateIndex,
   getIndexStats,
@@ -189,201 +189,200 @@ async function ensureIndexExists(rootPath: string): Promise<void> {
   }
 }
 
-export const getProjectOverviewTool: ToolDef<typeof getProjectOverviewSchema> =
-  {
-    name: "get_project_overview",
-    description:
-      "Get a quick overview of the project structure, key components, and statistics. " +
-      "This tool automatically creates an index if needed and provides a concise summary.",
-    schema: getProjectOverviewSchema,
-    execute: async ({ root }) => {
-      const rootPath = root || process.cwd();
+export const getProjectOverviewTool: McpToolDef<
+  typeof getProjectOverviewSchema
+> = {
+  name: "get_project_overview",
+  description:
+    "Get a quick overview of the project structure, key components, and statistics. " +
+    "This tool automatically creates an index if needed and provides a concise summary.",
+  schema: getProjectOverviewSchema,
+  execute: async ({ root }) => {
+    const rootPath = root || process.cwd();
 
-      // Ensure index exists
-      await ensureIndexExists(rootPath);
+    // Ensure index exists
+    await ensureIndexExists(rootPath);
 
-      // Get project info
-      const projectInfo = await getProjectInfo(rootPath);
+    // Get project info
+    const projectInfo = await getProjectInfo(rootPath);
 
-      // Get statistics
-      const stats = getIndexStats(rootPath);
+    // Get statistics
+    const stats = getIndexStats(rootPath);
 
-      // Get all symbols for analysis
-      const allSymbols = querySymbols(rootPath, {});
+    // Get all symbols for analysis
+    const allSymbols = querySymbols(rootPath, {});
 
-      // Get symbols by kind
-      const functions = querySymbols(rootPath, { kind: SymbolKind.Function });
-      const methods = querySymbols(rootPath, { kind: SymbolKind.Method });
-      const classes = querySymbols(rootPath, { kind: SymbolKind.Class });
-      const interfaces = querySymbols(rootPath, { kind: SymbolKind.Interface });
-      const enums = querySymbols(rootPath, { kind: SymbolKind.Enum });
-      const constants = querySymbols(rootPath, { kind: SymbolKind.Constant });
-      const variables = querySymbols(rootPath, { kind: SymbolKind.Variable });
+    // Get symbols by kind
+    const functions = querySymbols(rootPath, { kind: SymbolKind.Function });
+    const methods = querySymbols(rootPath, { kind: SymbolKind.Method });
+    const classes = querySymbols(rootPath, { kind: SymbolKind.Class });
+    const interfaces = querySymbols(rootPath, { kind: SymbolKind.Interface });
+    const enums = querySymbols(rootPath, { kind: SymbolKind.Enum });
+    const constants = querySymbols(rootPath, { kind: SymbolKind.Constant });
+    const variables = querySymbols(rootPath, { kind: SymbolKind.Variable });
 
-      // Get directory structure with file counts
-      const directories = getDirectoryStructure(rootPath, allSymbols);
+    // Get directory structure with file counts
+    const directories = getDirectoryStructure(rootPath, allSymbols);
 
-      // Build overview
-      let output = "## Project Overview\n\n";
+    // Build overview
+    let output = "## Project Overview\n\n";
 
-      // Project info
-      if (projectInfo.name) {
-        output += `**Project:** ${projectInfo.name}`;
-        if (projectInfo.version) output += ` v${projectInfo.version}`;
-        output += "\n";
-        if (projectInfo.description) output += `${projectInfo.description}\n`;
-        if (projectInfo.type) output += `**Type:** ${projectInfo.type}\n`;
-        output += "\n";
-      }
-
-      // Statistics
-      output += "### Statistics:\n";
-      output += `- **Files:** ${stats.totalFiles}\n`;
-      output += `- **Symbols:** ${stats.totalSymbols}\n`;
+    // Project info
+    if (projectInfo.name) {
+      output += `**Project:** ${projectInfo.name}`;
+      if (projectInfo.version) output += ` v${projectInfo.version}`;
       output += "\n";
+      if (projectInfo.description) output += `${projectInfo.description}\n`;
+      if (projectInfo.type) output += `**Type:** ${projectInfo.type}\n`;
+      output += "\n";
+    }
 
-      // Directory structure with file counts
-      if (directories.size > 0) {
-        output += "### Structure:\n```\n";
-        for (const [dir, fileCount] of directories) {
-          const depth = dir.split("/").length - 1;
-          const indent = "  ".repeat(depth);
-          const name = dir.split("/").pop();
-          output += `${indent}${name}/ (${fileCount} files)\n`;
-        }
-        output += "```\n\n";
+    // Statistics
+    output += "### Statistics:\n";
+    output += `- **Files:** ${stats.totalFiles}\n`;
+    output += `- **Symbols:** ${stats.totalSymbols}\n`;
+    output += "\n";
+
+    // Directory structure with file counts
+    if (directories.size > 0) {
+      output += "### Structure:\n```\n";
+      for (const [dir, fileCount] of directories) {
+        const depth = dir.split("/").length - 1;
+        const indent = "  ".repeat(depth);
+        const name = dir.split("/").pop();
+        output += `${indent}${name}/ (${fileCount} files)\n`;
       }
+      output += "```\n\n";
+    }
 
-      // Key components
-      output += "### Key Components:\n\n";
+    // Key components
+    output += "### Key Components:\n\n";
 
-      // Functions (prioritized)
-      if (functions.length > 0 || methods.length > 0) {
-        const allFunctions = [...functions, ...methods];
+    // Functions (prioritized)
+    if (functions.length > 0 || methods.length > 0) {
+      const allFunctions = [...functions, ...methods];
 
-        // Categorize functions
-        const exportedFunctions = allFunctions.filter((f) => !f.containerName);
-        const classMethods = allFunctions.filter((f) => f.containerName);
+      // Categorize functions
+      const exportedFunctions = allFunctions.filter((f) => !f.containerName);
+      const classMethods = allFunctions.filter((f) => f.containerName);
 
-        output += `**Functions & Methods** (${allFunctions.length} total):\n`;
+      output += `**Functions & Methods** (${allFunctions.length} total):\n`;
 
-        // Show exported/top-level functions first
-        if (exportedFunctions.length > 0) {
-          output += `\nExported Functions (${exportedFunctions.length}):\n`;
-          exportedFunctions.slice(0, 10).forEach((f) => {
-            const filePath = f.location
-              ? path.basename(fileURLToPath(f.location.uri))
-              : "";
-            output += `  • ${f.name} - ${filePath}\n`;
-          });
-          if (exportedFunctions.length > 10) {
-            output += `  ... and ${exportedFunctions.length - 10} more\n`;
-          }
-        }
-
-        // Show class methods
-        if (classMethods.length > 0) {
-          const methodsByClass = new Map<string, any[]>();
-          classMethods.forEach((m) => {
-            const container = m.containerName || "Unknown";
-            if (!methodsByClass.has(container)) {
-              methodsByClass.set(container, []);
-            }
-            methodsByClass.get(container)!.push(m);
-          });
-
-          output += `\nClass Methods:\n`;
-          let shown = 0;
-          for (const [className, methods] of methodsByClass) {
-            if (shown >= 5) break; // Limit number of classes shown
-            output += `  ${className}:\n`;
-            methods.slice(0, 3).forEach((m) => {
-              output += `    • ${m.name}\n`;
-            });
-            if (methods.length > 3) {
-              output += `    ... and ${methods.length - 3} more\n`;
-            }
-            shown++;
-          }
-          if (methodsByClass.size > 5) {
-            output += `  ... and ${methodsByClass.size - 5} more classes\n`;
-          }
-        }
-        output += "\n";
-      }
-
-      // Classes (with member counts)
-      if (classes.length > 0) {
-        const limit = 10;
-        output += `**Classes** (${classes.length}):\n`;
-        classes.slice(0, limit).forEach((c) => {
-          const classMethods = methods.filter(
-            (m) => m.containerName === c.name,
-          );
-          const filePath = c.location
-            ? path.basename(fileURLToPath(c.location.uri))
+      // Show exported/top-level functions first
+      if (exportedFunctions.length > 0) {
+        output += `\nExported Functions (${exportedFunctions.length}):\n`;
+        exportedFunctions.slice(0, 10).forEach((f) => {
+          const filePath = f.location
+            ? path.basename(fileURLToPath(f.location.uri))
             : "";
-          output += `  • ${c.name} (${classMethods.length} methods) - ${filePath}\n`;
+          output += `  • ${f.name} - ${filePath}\n`;
         });
-        if (classes.length > limit) {
-          output += `  ... and ${classes.length - limit} more\n`;
+        if (exportedFunctions.length > 10) {
+          output += `  ... and ${exportedFunctions.length - 10} more\n`;
         }
-        output += "\n";
       }
 
-      // Interfaces
-      if (interfaces.length > 0) {
-        const limit = 8;
-        output += `**Interfaces** (${interfaces.length}):\n`;
-        interfaces.slice(0, limit).forEach((i) => {
-          const filePath = i.location
-            ? path.basename(fileURLToPath(i.location.uri))
-            : "";
-          output += `  • ${i.name} - ${filePath}\n`;
+      // Show class methods
+      if (classMethods.length > 0) {
+        const methodsByClass = new Map<string, any[]>();
+        classMethods.forEach((m) => {
+          const container = m.containerName || "Unknown";
+          if (!methodsByClass.has(container)) {
+            methodsByClass.set(container, []);
+          }
+          methodsByClass.get(container)!.push(m);
         });
-        if (interfaces.length > limit) {
-          output += `  ... and ${interfaces.length - limit} more\n`;
+
+        output += `\nClass Methods:\n`;
+        let shown = 0;
+        for (const [className, methods] of methodsByClass) {
+          if (shown >= 5) break; // Limit number of classes shown
+          output += `  ${className}:\n`;
+          methods.slice(0, 3).forEach((m) => {
+            output += `    • ${m.name}\n`;
+          });
+          if (methods.length > 3) {
+            output += `    ... and ${methods.length - 3} more\n`;
+          }
+          shown++;
         }
-        output += "\n";
-      }
-
-      // Enums
-      if (enums.length > 0) {
-        output += `**Enums** (${enums.length}):\n`;
-        enums.slice(0, 5).forEach((e) => {
-          output += `  • ${e.name}\n`;
-        });
-        if (enums.length > 5) {
-          output += `  ... and ${enums.length - 5} more\n`;
+        if (methodsByClass.size > 5) {
+          output += `  ... and ${methodsByClass.size - 5} more classes\n`;
         }
-        output += "\n";
       }
+      output += "\n";
+    }
 
-      // Constants & Variables summary
-      if (constants.length > 0 || variables.length > 0) {
-        output += `**Data**:\n`;
-        if (constants.length > 0)
-          output += `  • Constants: ${constants.length}\n`;
-        if (variables.length > 0)
-          output += `  • Variables: ${variables.length}\n`;
-        output += "\n";
+    // Classes (with member counts)
+    if (classes.length > 0) {
+      const limit = 10;
+      output += `**Classes** (${classes.length}):\n`;
+      classes.slice(0, limit).forEach((c) => {
+        const classMethods = methods.filter((m) => m.containerName === c.name);
+        const filePath = c.location
+          ? path.basename(fileURLToPath(c.location.uri))
+          : "";
+        output += `  • ${c.name} (${classMethods.length} methods) - ${filePath}\n`;
+      });
+      if (classes.length > limit) {
+        output += `  ... and ${classes.length - limit} more\n`;
       }
+      output += "\n";
+    }
 
-      // Dependencies
-      if (projectInfo.dependencies && projectInfo.dependencies.length > 0) {
-        output += "### Dependencies:\n";
-        projectInfo.dependencies.forEach((dep) => {
-          output += `• ${dep}\n`;
-        });
-        output += "\n";
+    // Interfaces
+    if (interfaces.length > 0) {
+      const limit = 8;
+      output += `**Interfaces** (${interfaces.length}):\n`;
+      interfaces.slice(0, limit).forEach((i) => {
+        const filePath = i.location
+          ? path.basename(fileURLToPath(i.location.uri))
+          : "";
+        output += `  • ${i.name} - ${filePath}\n`;
+      });
+      if (interfaces.length > limit) {
+        output += `  ... and ${interfaces.length - limit} more\n`;
       }
+      output += "\n";
+    }
 
-      // Suggestions
-      output += "### Next Steps:\n";
-      output += "1. Use `search_symbol_from_index` to find specific symbols\n";
-      output += "2. Use `get_document_symbols` to explore specific files\n";
-      output += "3. Use `find_references` to trace symbol usage\n";
+    // Enums
+    if (enums.length > 0) {
+      output += `**Enums** (${enums.length}):\n`;
+      enums.slice(0, 5).forEach((e) => {
+        output += `  • ${e.name}\n`;
+      });
+      if (enums.length > 5) {
+        output += `  ... and ${enums.length - 5} more\n`;
+      }
+      output += "\n";
+    }
 
-      return output;
-    },
-  };
+    // Constants & Variables summary
+    if (constants.length > 0 || variables.length > 0) {
+      output += `**Data**:\n`;
+      if (constants.length > 0)
+        output += `  • Constants: ${constants.length}\n`;
+      if (variables.length > 0)
+        output += `  • Variables: ${variables.length}\n`;
+      output += "\n";
+    }
+
+    // Dependencies
+    if (projectInfo.dependencies && projectInfo.dependencies.length > 0) {
+      output += "### Dependencies:\n";
+      projectInfo.dependencies.forEach((dep) => {
+        output += `• ${dep}\n`;
+      });
+      output += "\n";
+    }
+
+    // Suggestions
+    output += "### Next Steps:\n";
+    output += "1. Use `search_symbol_from_index` to find specific symbols\n";
+    output += "2. Use `get_document_symbols` to explore specific files\n";
+    output += "3. Use `find_references` to trace symbol usage\n";
+
+    return output;
+  },
+};

@@ -4,7 +4,7 @@ import path from "path";
 import fs from "fs/promises";
 import { pathToFileURL } from "url";
 import { FormattingOptions, TextEdit } from "@lsmcp/types";
-import type { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import { applyTextEdits } from "../../shared/text/applyTextEdits.ts";
 
 const schemaShape = {
@@ -172,7 +172,7 @@ async function handleFormatDocument(
  */
 export function createFormatDocumentTool(
   client: LSPClient,
-): ToolDef<typeof schema> {
+): McpToolDef<typeof schema> {
   return {
     name: "format_document",
     description:

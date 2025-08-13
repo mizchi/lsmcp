@@ -48,11 +48,18 @@ export function getServerCharacteristics(
 export type FileSystemApi = import("../interfaces.ts").IFileSystem;
 
 export const nodeFileSystemApi: FileSystemApi = {
-  async readFile(path: string, encoding: BufferEncoding = "utf-8"): Promise<string> {
+  async readFile(
+    path: string,
+    encoding: BufferEncoding = "utf-8",
+  ): Promise<string> {
     const fs = await import("fs/promises");
     return fs.readFile(path, encoding);
   },
-  async writeFile(path: string, data: string, encoding?: BufferEncoding): Promise<void> {
+  async writeFile(
+    path: string,
+    data: string,
+    encoding?: BufferEncoding,
+  ): Promise<void> {
     const fs = await import("fs/promises");
     await fs.writeFile(path, data, encoding || "utf-8");
   },

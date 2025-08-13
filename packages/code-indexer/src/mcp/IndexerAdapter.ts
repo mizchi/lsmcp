@@ -17,7 +17,10 @@ const indexInstances = new Map<string, SymbolIndex>();
 /**
  * Get or create a symbol index for a root path
  */
-export function getOrCreateIndex(rootPath: string, client?: any): SymbolIndex | null {
+export function getOrCreateIndex(
+  rootPath: string,
+  client?: any,
+): SymbolIndex | null {
   // Check if we have an existing index
   let index = indexInstances.get(rootPath);
   if (index) {

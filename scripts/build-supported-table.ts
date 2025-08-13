@@ -38,9 +38,9 @@ async function loadAdapters(): Promise<AdapterInfo[]> {
   const adapters: AdapterInfo[] = [];
 
   // Find all adapter files
-  const adapterFiles = await glob("src/adapters/*.ts", { cwd: rootDir });
+  const adapterFiles = glob("src/presets/*.ts", { cwd: rootDir });
 
-  for (const file of adapterFiles) {
+  for await (const file of adapterFiles) {
     if (file.includes("utils.ts") || file.includes("diagnosticProcessors.ts")) {
       continue;
     }

@@ -2,7 +2,8 @@
  * Factory for creating LSP tools with injected client
  */
 
-import type { LSPClient, ToolDef } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 
 // Import individual tool creators
 import { createHoverTool } from "../tools/lsp/hover.ts";
@@ -23,7 +24,7 @@ import { createDeleteSymbolTool } from "../tools/lsp/deleteSymbol.ts";
 /**
  * Create all LSP tools with an injected client
  */
-export function createLSPToolsWithClient(client: LSPClient): ToolDef<any>[] {
+export function createLSPToolsWithClient(client: LSPClient): McpToolDef<any>[] {
   return [
     createHoverTool(client),
     createReferencesTool(client),

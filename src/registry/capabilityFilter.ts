@@ -2,11 +2,8 @@
  * Capability-based tool filtering
  */
 
-import {
-  debug,
-  type ServerCapabilities,
-  type ToolDef,
-} from "@lsmcp/lsp-client";
+import { debug, type ServerCapabilities } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 
 /**
  * Mapping of tool names to their required LSP capabilities
@@ -80,9 +77,9 @@ export function isToolSupportedByCapabilities(
  * This should be called after the LSP server is initialized
  */
 export function filterToolsByCapabilities(
-  tools: ToolDef<any>[],
+  tools: McpToolDef<any>[],
   capabilities: ServerCapabilities | undefined,
-): ToolDef<any>[] {
+): McpToolDef<any>[] {
   if (!capabilities) {
     // If no capabilities, return all tools
     debug("No server capabilities available, returning all tools");
@@ -110,7 +107,7 @@ export function filterToolsByCapabilities(
  * This can be used for logging or user feedback
  */
 export function getUnsupportedToolsByCapabilities(
-  tools: ToolDef<any>[],
+  tools: McpToolDef<any>[],
   capabilities: ServerCapabilities | undefined,
 ): string[] {
   if (!capabilities) {
@@ -141,7 +138,7 @@ export function createCapabilityFilter(client?: any) {
     /**
      * Filter tools based on current capabilities
      */
-    filterTools(tools: ToolDef<any>[]): ToolDef<any>[] {
+    filterTools(tools: McpToolDef<any>[]): McpToolDef<any>[] {
       // Try to get fresh capabilities from the LSP client
       const currentCapabilities =
         client?.getServerCapabilities() || cachedCapabilities;
@@ -161,7 +158,7 @@ export function createCapabilityFilter(client?: any) {
     /**
      * Get list of unsupported tools
      */
-    getUnsupportedTools(tools: ToolDef<any>[]): string[] {
+    getUnsupportedTools(tools: McpToolDef<any>[]): string[] {
       const currentCapabilities =
         client?.getServerCapabilities() || cachedCapabilities;
       return getUnsupportedToolsByCapabilities(tools, currentCapabilities);

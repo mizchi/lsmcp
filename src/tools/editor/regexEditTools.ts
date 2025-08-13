@@ -8,7 +8,7 @@ export interface SerenityEditResult {
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { markFileModified } from "@lsmcp/code-indexer";
-import { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 
 const replaceRegexSchema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -23,7 +23,7 @@ const replaceRegexSchema = z.object({
     .describe("Replace all occurrences if true"),
 });
 
-export const replaceRegexTool: ToolDef<typeof replaceRegexSchema> = {
+export const replaceRegexTool: McpToolDef<typeof replaceRegexSchema> = {
   name: "replace_regex",
   description:
     "Replace content using regular expressions with dotall and multiline flags",

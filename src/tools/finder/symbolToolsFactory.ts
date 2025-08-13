@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ToolDef } from "../../utils/mcpHelpers.ts";
+import type { McpToolDef } from "@lsmcp/types";
 import {
   getOrCreateIndex,
   indexFiles,
@@ -91,7 +91,7 @@ const getSymbolsOverviewSchema = z.object({
 
 export function createGetSymbolsOverviewTool(
   fileSystemApi: FileSystemApi = nodeFileSystemApi,
-): ToolDef<typeof getSymbolsOverviewSchema> {
+): McpToolDef<typeof getSymbolsOverviewSchema> {
   return {
     name: "get_symbols_overview",
     description:
@@ -219,7 +219,7 @@ const querySymbolsSchema = z.object({
 
 export function createQuerySymbolsTool(
   _fileSystemApi: FileSystemApi = nodeFileSystemApi,
-): ToolDef<typeof querySymbolsSchema> {
+): McpToolDef<typeof querySymbolsSchema> {
   return {
     name: "query_symbols",
     description:

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ToolDef } from "../../utils/mcpHelpers.ts";
+import type { McpToolDef } from "@lsmcp/types";
 import {
   searchSymbolsInCache,
   getSymbolCacheManager,
@@ -10,7 +10,7 @@ const searchCachedSymbolsSchema = z.object({
   pattern: z.string().describe("Search pattern for symbol names"),
 });
 
-export const searchCachedSymbolsFromIndexTool: ToolDef<
+export const searchCachedSymbolsFromIndexTool: McpToolDef<
   typeof searchCachedSymbolsSchema
 > = {
   name: "search_cached_symbols_from_index",
@@ -50,7 +50,9 @@ const getCacheStatsSchema = z.object({
   root: z.string().describe("Root directory for the project"),
 });
 
-export const getCacheStatsFromIndexTool: ToolDef<typeof getCacheStatsSchema> = {
+export const getCacheStatsFromIndexTool: McpToolDef<
+  typeof getCacheStatsSchema
+> = {
   name: "get_cache_stats_from_index",
   description:
     "Get statistics about the symbol cache. This shows information about the internal SQLite cache used for persistence.",
@@ -77,7 +79,7 @@ const clearCacheSchema = z.object({
   root: z.string().describe("Root directory for the project"),
 });
 
-export const clearCacheFromIndexTool: ToolDef<typeof clearCacheSchema> = {
+export const clearCacheFromIndexTool: McpToolDef<typeof clearCacheSchema> = {
   name: "clear_symbol_cache_from_index",
   description:
     "Clear the SQLite symbol cache for the project. This is usually handled automatically. " +

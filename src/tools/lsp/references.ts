@@ -1,4 +1,5 @@
-import type { LSPClient, ToolDef } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
 import { readFileSync } from "fs";
@@ -175,7 +176,7 @@ export async function findReferences(
  */
 export function createReferencesTool(
   client: LSPClient,
-): ToolDef<typeof schema> {
+): McpToolDef<typeof schema> {
   return {
     name: "find_references",
     description: "Find all references to symbol across the codebase using LSP",

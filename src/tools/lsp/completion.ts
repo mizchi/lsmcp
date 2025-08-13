@@ -2,7 +2,7 @@ import type { LSPClient } from "@lsmcp/lsp-client";
 import { z } from "zod";
 import { CompletionItem, CompletionItemKind } from "@lsmcp/types";
 import { commonSchemas } from "@lsmcp/types";
-import type { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import { loadFileContext } from "@lsmcp/lsp-client";
 import { withTemporaryDocument } from "@lsmcp/lsp-client";
 import { resolveLineIndexOrThrow } from "@lsmcp/lsp-client";
@@ -199,7 +199,7 @@ async function handleGetCompletion(
  */
 export function createCompletionTool(
   client: LSPClient,
-): ToolDef<typeof schema> {
+): McpToolDef<typeof schema> {
   return {
     name: "get_completion",
     description:

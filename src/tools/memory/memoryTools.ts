@@ -1,12 +1,12 @@
 import { z } from "zod";
-import type { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import { MemoryManager } from "../../features/memory/memoryManager.ts";
 
 const listMemoriesSchema = z.object({
   root: z.string().describe("Root directory of the project"),
 });
 
-export const listMemoriesTool: ToolDef<typeof listMemoriesSchema> = {
+export const listMemoriesTool: McpToolDef<typeof listMemoriesSchema> = {
   name: "list_memories",
   description: "List available memories for the current project",
   schema: listMemoriesSchema,
@@ -22,7 +22,7 @@ const readMemorySchema = z.object({
   memoryName: z.string().describe("Name of the memory to read"),
 });
 
-export const readMemoryTool: ToolDef<typeof readMemorySchema> = {
+export const readMemoryTool: McpToolDef<typeof readMemorySchema> = {
   name: "read_memory",
   description: "Read a specific memory from the project",
   schema: readMemorySchema,
@@ -44,7 +44,7 @@ const writeMemorySchema = z.object({
   content: z.string().describe("Content to save in the memory"),
 });
 
-export const writeMemoryTool: ToolDef<typeof writeMemorySchema> = {
+export const writeMemoryTool: McpToolDef<typeof writeMemorySchema> = {
   name: "write_memory",
   description: "Write or update a memory for the project",
   schema: writeMemorySchema,
@@ -60,7 +60,7 @@ const deleteMemorySchema = z.object({
   memoryName: z.string().describe("Name of the memory to delete"),
 });
 
-export const deleteMemoryTool: ToolDef<typeof deleteMemorySchema> = {
+export const deleteMemoryTool: McpToolDef<typeof deleteMemorySchema> = {
   name: "delete_memory",
   description: "Delete a memory from the project",
   schema: deleteMemorySchema,

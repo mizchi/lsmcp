@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ToolDef } from "../../../utils/mcpHelpers.ts";
+import type { McpToolDef } from "@lsmcp/types";
 import { commonSchemas } from "@lsmcp/types";
 import { CodeAction, Range, WorkspaceEdit } from "vscode-languageserver-types";
 import { readFileSync, writeFileSync } from "fs";
@@ -22,7 +22,7 @@ const schema = z.object({
     .describe("Name of the property to generate accessors for"),
 });
 
-export const generateAccessorsTool: ToolDef<typeof schema> = {
+export const generateAccessorsTool: McpToolDef<typeof schema> = {
   name: "generate_accessors",
   description:
     "Generate get/set accessor methods for a class property (TypeScript only)",

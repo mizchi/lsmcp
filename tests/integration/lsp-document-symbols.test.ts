@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
-import { lspGetDocumentSymbolsTool } from "@lsmcp/lsp-client"; // from "tools/documentSymbols.ts";
+import { createDocumentSymbolsTool } from "../../src/tools/lsp/documentSymbols.ts";
 import path from "path";
 
 const FIXTURES_DIR = path.join(__dirname, "fixtures");
@@ -8,6 +8,7 @@ const FIXTURES_DIR = path.join(__dirname, "fixtures");
 describe("lsp document symbols", () => {
   let lspProcess: ChildProcess;
   let lspClient: any;
+  let lspGetDocumentSymbolsTool: any;
 
   beforeAll(async () => {
     // Skip test if LSP_COMMAND is not set
@@ -31,6 +32,9 @@ describe("lsp document symbols", () => {
       languageId: "typescript",
     });
     await lspClient.start();
+
+    // Initialize tool with the LSP client
+    lspGetDocumentSymbolsTool = createDocumentSymbolsTool(lspClient);
   });
 
   afterAll(async () => {

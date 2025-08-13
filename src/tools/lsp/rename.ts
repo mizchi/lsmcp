@@ -44,7 +44,7 @@ function findTargetInFile(
   throw new Error(`Target "${target}" not found in file`);
 }
 
-import type { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import path from "path";
 import { Position, TextEdit, WorkspaceEdit } from "@lsmcp/types";
@@ -443,7 +443,7 @@ async function findProjectFiles(rootPath: string): Promise<string[]> {
  */
 export function createRenameSymbolTool(
   client: LSPClient,
-): ToolDef<typeof schema> {
+): McpToolDef<typeof schema> {
   return {
     name: "rename_symbol",
     description:

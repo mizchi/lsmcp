@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ToolDef } from "../../../utils/mcpHelpers.ts";
+import type { McpToolDef } from "@lsmcp/types";
 import { commonSchemas } from "@lsmcp/types";
 import { CodeAction, Range, WorkspaceEdit } from "vscode-languageserver-types";
 import { readFileSync, writeFileSync } from "fs";
@@ -23,7 +23,7 @@ const schema = z.object({
   typeName: z.string().describe("Name for the extracted type"),
 });
 
-export const extractTypeTool: ToolDef<typeof schema> = {
+export const extractTypeTool: McpToolDef<typeof schema> = {
   name: "extract_type",
   description:
     "Extract selected type expression into a type alias or interface (TypeScript only)",

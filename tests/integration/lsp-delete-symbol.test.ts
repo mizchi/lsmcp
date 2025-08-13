@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
-import { lspDeleteSymbolTool } from "@lsmcp/lsp-client"; // from "tools/deleteSymbol.ts";
+import { createDeleteSymbolTool } from "../../src/tools/lsp/deleteSymbol.ts";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
@@ -11,6 +11,7 @@ describe("lsp delete symbol", () => {
   let lspProcess: ChildProcess;
   let lspClient: any;
   let tmpDir: string;
+  let lspDeleteSymbolTool: any;
 
   beforeAll(async () => {
     // Skip test if LSP_COMMAND is not set
@@ -34,6 +35,9 @@ describe("lsp delete symbol", () => {
       languageId: "typescript",
     });
     await lspClient.start();
+
+    // Initialize tool with the LSP client
+    lspDeleteSymbolTool = createDeleteSymbolTool(lspClient);
   });
 
   beforeAll(async () => {

@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
-import { lspRenameSymbolTool } from "@lsmcp/lsp-client"; // from "tools/rename.ts";
+import { createRenameSymbolTool } from "../../src/tools/lsp/rename.ts";
 import type { LSPClient } from "@lsmcp/lsp-client";
 import fs from "fs/promises";
 import path from "path";
@@ -12,6 +12,7 @@ describe("lsp rename symbol", () => {
   let lspProcess: ChildProcess;
   let lspClient: LSPClient;
   let tmpDir: string;
+  let lspRenameSymbolTool: any;
 
   beforeAll(async () => {
     // Skip test if LSP_COMMAND is not set
@@ -35,6 +36,9 @@ describe("lsp rename symbol", () => {
       languageId: "typescript",
     });
     await lspClient.start();
+
+    // Initialize tool with the LSP client
+    lspRenameSymbolTool = createRenameSymbolTool(lspClient);
   });
 
   beforeAll(async () => {

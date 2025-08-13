@@ -2,7 +2,7 @@ import type { LSPClient } from "@lsmcp/lsp-client";
 import { z } from "zod";
 import { commonSchemas } from "@lsmcp/types";
 import { err, ok, type Result } from "neverthrow";
-import type { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import { debug } from "@lsmcp/lsp-client";
 import { validateLineAndSymbol } from "@lsmcp/lsp-client";
 import { readFileWithUri } from "../../shared/fileUtils.ts";
@@ -352,7 +352,7 @@ export async function getDefinitions(
  */
 export function createDefinitionsTool(
   client: LSPClient,
-): ToolDef<typeof schema> {
+): McpToolDef<typeof schema> {
   return {
     name: "get_definitions",
     description: "Get the definition(s) of a symbol using LSP",

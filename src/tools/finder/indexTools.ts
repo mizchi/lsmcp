@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import type { ToolDef } from "../../utils/mcpHelpers.ts";
+import type { McpToolDef } from "@lsmcp/types";
 import {
   clearIndex,
   forceClearIndex,
@@ -42,7 +42,7 @@ const indexFilesSchema = z.object({
     .describe("Number of files to index in parallel"),
 });
 
-export const indexFilesTool: ToolDef<typeof indexFilesSchema> = {
+export const indexFilesTool: McpToolDef<typeof indexFilesSchema> = {
   name: "index_files",
   description:
     "Build or update the symbol index for files matching the pattern. This enables fast symbol queries.",
@@ -141,212 +141,213 @@ const searchSymbolSchema = z.object({
   root: z.string().describe("Root directory for the project").optional(),
 });
 
-export const searchSymbolFromIndexTool: ToolDef<typeof searchSymbolSchema> = {
-  name: "search_symbol_from_index",
-  description:
-    "Search symbols in the indexed codebase using various filters. Much faster than file-based search when you need to search for symbols across many files. " +
-    "Automatically updates the index with incremental changes before searching to ensure results are up-to-date. " +
-    "Use 'kind' parameter with case-insensitive values like: File, Module, Namespace, Package, Class, Method, Property, Field, " +
-    "Constructor, Enum, Interface, Function, Variable, Constant, String, Number, Boolean, Array, Object, Key, " +
-    "Null, EnumMember, Struct, Event, Operator, TypeParameter.",
-  schema: searchSymbolSchema,
-  execute: async ({
-    name,
-    kind,
-    file,
-    containerName,
-    includeChildren,
-    includeExternal,
-    onlyExternal,
-    sourceLibrary,
-    root,
-  }) => {
-    const rootPath = root || process.cwd();
-
-    // Get index stats first
-    const stats = getIndexStats(rootPath);
-    if (stats.totalFiles === 0) {
-      // Auto-create index if it doesn't exist
-      console.error(
-        `[search_symbol_from_index] No index found. Creating initial index...`,
-      );
-
-      // Check if LSP client is initialized
-      // Get or create index
-      // TODO: Need to pass client from context
-      const index = getOrCreateIndex(rootPath, null);
-      if (!index) {
-        return `Error: Failed to create symbol index. LSP client may not be properly initialized.`;
-      }
-
-      // Determine pattern for initial indexing
-      let pattern: string;
-      const config = loadIndexConfig(rootPath);
-
-      if (config?.indexFiles && config.indexFiles.length > 0) {
-        pattern = config.indexFiles.join(",");
-        console.error(
-          `[search_symbol_from_index] Using patterns from .lsmcp/config.json: ${pattern}`,
-        );
-      } else {
-        // Try to detect adapter and use its defaults
-        pattern = getAdapterDefaultPattern("typescript");
-        console.error(
-          `[search_symbol_from_index] Using default TypeScript patterns: ${pattern}`,
-        );
-      }
-
-      // Determine concurrency
-      const concurrency = config?.settings?.indexConcurrency || 5;
-
-      // Find files to index
-      const files: string[] = [];
-      // Handle patterns with braces properly (e.g., **/*.{ts,tsx})
-      const patterns =
-        pattern.includes("{") && pattern.includes("}")
-          ? [pattern]
-          : pattern.split(",").map((p) => p.trim());
-
-      for (const p of patterns) {
-        for await (const file of glob(p, { cwd: rootPath })) {
-          if (typeof file === "string") {
-            files.push(file);
-          } else if (file && typeof file === "object" && "name" in file) {
-            files.push((file as any).name);
-          }
-        }
-      }
-
-      if (files.length === 0) {
-        return `No files found matching pattern: ${pattern}`;
-      }
-
-      console.error(
-        `[search_symbol_from_index] Indexing ${files.length} files...`,
-      );
-
-      // Perform initial indexing
-      const startTime = Date.now();
-      await index.indexFiles(files, concurrency, {
-        onProgress: (progress: any) => {
-          if (
-            progress.completed % 10 === 0 ||
-            progress.completed === progress.total
-          ) {
-            console.error(
-              `[search_symbol_from_index] Progress: ${progress.completed}/${progress.total} files`,
-            );
-          }
-        },
-      });
-
-      const stats = index.getStats();
-      const duration = Date.now() - startTime;
-      console.error(
-        `[search_symbol_from_index] Initial indexing completed: ${stats.totalFiles} files, ${stats.totalSymbols} symbols in ${duration}ms`,
-      );
-    } else {
-      // Auto-update index with incremental changes if it already exists
-      try {
-        const updateResult = await updateIndexIncremental(rootPath);
-        if (updateResult.success) {
-          const updatedCount = updateResult.updated.length;
-          const removedCount = updateResult.removed.length;
-          if (updatedCount > 0 || removedCount > 0) {
-            console.error(
-              `[search_symbol_from_index] Auto-updated index: ${updatedCount} files updated, ${removedCount} files removed`,
-            );
-          }
-        }
-      } catch (error) {
-        // Log error but continue with search
-        console.error(
-          `[search_symbol_from_index] Failed to auto-update index: ${error}`,
-        );
-      }
-    }
-
-    // Build query
-    const query: any = {
+export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
+  {
+    name: "search_symbol_from_index",
+    description:
+      "Search symbols in the indexed codebase using various filters. Much faster than file-based search when you need to search for symbols across many files. " +
+      "Automatically updates the index with incremental changes before searching to ensure results are up-to-date. " +
+      "Use 'kind' parameter with case-insensitive values like: File, Module, Namespace, Package, Class, Method, Property, Field, " +
+      "Constructor, Enum, Interface, Function, Variable, Constant, String, Number, Boolean, Array, Object, Key, " +
+      "Null, EnumMember, Struct, Event, Operator, TypeParameter.",
+    schema: searchSymbolSchema,
+    execute: async ({
       name,
+      kind,
+      file,
       containerName,
       includeChildren,
-      file,
       includeExternal,
       onlyExternal,
       sourceLibrary,
-    };
+      root,
+    }) => {
+      const rootPath = root || process.cwd();
 
-    // Use the parseSymbolKind function to handle case-insensitive strings
-    if (kind) {
-      try {
-        const parsedKinds = parseSymbolKind(kind);
-        query.kind =
-          parsedKinds && parsedKinds.length === 1
-            ? parsedKinds[0]
-            : parsedKinds;
-      } catch (error) {
-        // Provide helpful error message
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        return (
-          `Error parsing symbol kind: ${errorMessage}
-
-` +
-          `Valid values (case-insensitive): ${SYMBOL_KIND_NAMES.join(", ")}
-
-` +
-          `Examples:
-` +
-          `  - { "kind": "Class" }
-` +
-          `  - { "kind": "class" }  // Case-insensitive
-` +
-          `  - { "kind": ["Class", "Interface", "Function"] }
-` +
-          `  - { "kind": ["CLASS", "interface", "FUNCTION"] }  // Mixed case works`
+      // Get index stats first
+      const stats = getIndexStats(rootPath);
+      if (stats.totalFiles === 0) {
+        // Auto-create index if it doesn't exist
+        console.error(
+          `[search_symbol_from_index] No index found. Creating initial index...`,
         );
+
+        // Check if LSP client is initialized
+        // Get or create index
+        // TODO: Need to pass client from context
+        const index = getOrCreateIndex(rootPath, null);
+        if (!index) {
+          return `Error: Failed to create symbol index. LSP client may not be properly initialized.`;
+        }
+
+        // Determine pattern for initial indexing
+        let pattern: string;
+        const config = loadIndexConfig(rootPath);
+
+        if (config?.indexFiles && config.indexFiles.length > 0) {
+          pattern = config.indexFiles.join(",");
+          console.error(
+            `[search_symbol_from_index] Using patterns from .lsmcp/config.json: ${pattern}`,
+          );
+        } else {
+          // Try to detect adapter and use its defaults
+          pattern = getAdapterDefaultPattern("typescript");
+          console.error(
+            `[search_symbol_from_index] Using default TypeScript patterns: ${pattern}`,
+          );
+        }
+
+        // Determine concurrency
+        const concurrency = config?.settings?.indexConcurrency || 5;
+
+        // Find files to index
+        const files: string[] = [];
+        // Handle patterns with braces properly (e.g., **/*.{ts,tsx})
+        const patterns =
+          pattern.includes("{") && pattern.includes("}")
+            ? [pattern]
+            : pattern.split(",").map((p) => p.trim());
+
+        for (const p of patterns) {
+          for await (const file of glob(p, { cwd: rootPath })) {
+            if (typeof file === "string") {
+              files.push(file);
+            } else if (file && typeof file === "object" && "name" in file) {
+              files.push((file as any).name);
+            }
+          }
+        }
+
+        if (files.length === 0) {
+          return `No files found matching pattern: ${pattern}`;
+        }
+
+        console.error(
+          `[search_symbol_from_index] Indexing ${files.length} files...`,
+        );
+
+        // Perform initial indexing
+        const startTime = Date.now();
+        await index.indexFiles(files, concurrency, {
+          onProgress: (progress: any) => {
+            if (
+              progress.completed % 10 === 0 ||
+              progress.completed === progress.total
+            ) {
+              console.error(
+                `[search_symbol_from_index] Progress: ${progress.completed}/${progress.total} files`,
+              );
+            }
+          },
+        });
+
+        const stats = index.getStats();
+        const duration = Date.now() - startTime;
+        console.error(
+          `[search_symbol_from_index] Initial indexing completed: ${stats.totalFiles} files, ${stats.totalSymbols} symbols in ${duration}ms`,
+        );
+      } else {
+        // Auto-update index with incremental changes if it already exists
+        try {
+          const updateResult = await updateIndexIncremental(rootPath);
+          if (updateResult.success) {
+            const updatedCount = updateResult.updated.length;
+            const removedCount = updateResult.removed.length;
+            if (updatedCount > 0 || removedCount > 0) {
+              console.error(
+                `[search_symbol_from_index] Auto-updated index: ${updatedCount} files updated, ${removedCount} files removed`,
+              );
+            }
+          }
+        } catch (error) {
+          // Log error but continue with search
+          console.error(
+            `[search_symbol_from_index] Failed to auto-update index: ${error}`,
+          );
+        }
       }
-    }
 
-    // Execute query
-    const results = querySymbols(rootPath, query);
+      // Build query
+      const query: any = {
+        name,
+        containerName,
+        includeChildren,
+        file,
+        includeExternal,
+        onlyExternal,
+        sourceLibrary,
+      };
 
-    if (results.length === 0) {
-      return "No symbols found matching the query.";
-    }
+      // Use the parseSymbolKind function to handle case-insensitive strings
+      if (kind) {
+        try {
+          const parsedKinds = parseSymbolKind(kind);
+          query.kind =
+            parsedKinds && parsedKinds.length === 1
+              ? parsedKinds[0]
+              : parsedKinds;
+        } catch (error) {
+          // Provide helpful error message
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          return (
+            `Error parsing symbol kind: ${errorMessage}
 
-    // Format results
-    let output = `Found ${results.length} symbol(s):\n\n`;
+` +
+            `Valid values (case-insensitive): ${SYMBOL_KIND_NAMES.join(", ")}
 
-    for (const symbol of results.slice(0, 50)) {
-      const filePath = fileURLToPath(symbol.location.uri);
-      const relativePath = relative(rootPath, filePath);
-      const range = symbol.location.range;
-      const kindName =
-        getSymbolKindName(symbol.kind) || `Unknown(${symbol.kind})`;
-
-      output += `${symbol.name} [${kindName}]`;
-      if (symbol.containerName) {
-        output += ` in ${symbol.containerName}`;
+` +
+            `Examples:
+` +
+            `  - { "kind": "Class" }
+` +
+            `  - { "kind": "class" }  // Case-insensitive
+` +
+            `  - { "kind": ["Class", "Interface", "Function"] }
+` +
+            `  - { "kind": ["CLASS", "interface", "FUNCTION"] }  // Mixed case works`
+          );
+        }
       }
-      if (symbol.deprecated) {
-        output += " (deprecated)";
-      }
-      output += `\n  ${relativePath}:${range.start.line + 1}:${range.start.character + 1}\n`;
-      if (symbol.detail) {
-        output += `  ${symbol.detail}\n`;
-      }
-      output += "\n";
-    }
 
-    if (results.length > 50) {
-      output += `\n... and ${results.length - 50} more results`;
-    }
+      // Execute query
+      const results = querySymbols(rootPath, query);
 
-    return output;
-  },
-};
+      if (results.length === 0) {
+        return "No symbols found matching the query.";
+      }
+
+      // Format results
+      let output = `Found ${results.length} symbol(s):\n\n`;
+
+      for (const symbol of results.slice(0, 50)) {
+        const filePath = fileURLToPath(symbol.location.uri);
+        const relativePath = relative(rootPath, filePath);
+        const range = symbol.location.range;
+        const kindName =
+          getSymbolKindName(symbol.kind) || `Unknown(${symbol.kind})`;
+
+        output += `${symbol.name} [${kindName}]`;
+        if (symbol.containerName) {
+          output += ` in ${symbol.containerName}`;
+        }
+        if (symbol.deprecated) {
+          output += " (deprecated)";
+        }
+        output += `\n  ${relativePath}:${range.start.line + 1}:${range.start.character + 1}\n`;
+        if (symbol.detail) {
+          output += `  ${symbol.detail}\n`;
+        }
+        output += "\n";
+      }
+
+      if (results.length > 50) {
+        output += `\n... and ${results.length - 50} more results`;
+      }
+
+      return output;
+    },
+  };
 
 // Statistics tool
 
@@ -354,7 +355,9 @@ const getIndexStatsSchema = z.object({
   root: z.string().describe("Root directory for the project").optional(),
 });
 
-export const getIndexStatsFromIndexTool: ToolDef<typeof getIndexStatsSchema> = {
+export const getIndexStatsFromIndexTool: McpToolDef<
+  typeof getIndexStatsSchema
+> = {
   name: "get_index_stats_from_index",
   description:
     "Get statistics about the symbol index including file count, symbol count, and performance metrics. " +
@@ -385,7 +388,7 @@ const clearIndexSchema = z.object({
     ),
 });
 
-export const clearIndexTool: ToolDef<typeof clearIndexSchema> = {
+export const clearIndexTool: McpToolDef<typeof clearIndexSchema> = {
   name: "clear_index",
   description:
     "Clear the symbol index and stop all file watchers. Use this to free memory or before re-indexing. " +
@@ -417,7 +420,7 @@ const updateIndexIncrementalSchema = z.object({
   root: z.string().describe("Root directory for the project").optional(),
 });
 
-export const updateIndexIncrementalTool: ToolDef<
+export const updateIndexIncrementalTool: McpToolDef<
   typeof updateIndexIncrementalSchema
 > = {
   name: "update_index_from_index",

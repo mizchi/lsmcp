@@ -3,7 +3,7 @@
  */
 
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
-import type { ToolDef } from "../../utils/mcpHelpers.ts";
+import type { McpToolDef } from "@lsmcp/types";
 import { z } from "zod";
 import { resolve } from "path";
 import {
@@ -339,7 +339,7 @@ export function getExternalLibraryToolsWithConfig(config?: {
  * Export tools as ToolDef for MCP registration
  */
 
-export const indexExternalLibrariesToolDef: ToolDef<any> = {
+export const indexExternalLibrariesToolDef: McpToolDef<any> = {
   name: "index_external_libraries",
   description: `Index TypeScript declaration files from node_modules to enable symbol search in external dependencies.
 This tool scans node_modules for .d.ts files and indexes their symbols for fast searching.`,
@@ -361,7 +361,7 @@ This tool scans node_modules for .d.ts files and indexes their symbols for fast 
   execute: handleIndexExternalLibraries,
 };
 
-export const getTypescriptDependenciesToolDef: ToolDef<any> = {
+export const getTypescriptDependenciesToolDef: McpToolDef<any> = {
   name: "get_typescript_dependencies",
   description: `List all TypeScript dependencies available in the project (from package.json and node_modules).
 Shows which external libraries have TypeScript declarations that can be indexed.`,
@@ -371,7 +371,7 @@ Shows which external libraries have TypeScript declarations that can be indexed.
   execute: handleGetTypescriptDependencies,
 };
 
-export const searchExternalLibrarySymbolsToolDef: ToolDef<any> = {
+export const searchExternalLibrarySymbolsToolDef: McpToolDef<any> = {
   name: "search_external_library_symbols",
   description: `Search for symbols in indexed external libraries (node_modules).
 Requires running index_external_libraries first.`,

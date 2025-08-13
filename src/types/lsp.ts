@@ -2,7 +2,7 @@
  * LSP-related type definitions
  */
 
-import { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import type { ZodType } from "zod";
 
 /**
@@ -83,7 +83,7 @@ export interface LspAdapter {
   needsDiagnosticDeduplication?: boolean;
 
   /** Custom MCP tools specific to this adapter */
-  customTools?: ToolDef<ZodType>[];
+  customTools?: McpToolDef<ZodType>[];
 
   /** Server-specific behavior characteristics */
   serverCharacteristics?: ServerCharacteristics;

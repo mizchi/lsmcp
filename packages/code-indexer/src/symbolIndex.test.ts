@@ -153,7 +153,9 @@ describe("SymbolIndex", () => {
   describe("initialize", () => {
     it("should initialize successfully", async () => {
       const mockClient = { getDocumentSymbols: mockGetDocumentSymbols };
-      await expect(initializeSymbolIndex(state, mockClient)).resolves.not.toThrow();
+      await expect(
+        initializeSymbolIndex(state, mockClient),
+      ).resolves.not.toThrow();
       expect(state.client).toBe(mockClient);
     });
   });

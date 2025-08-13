@@ -3,7 +3,8 @@
  */
 
 import { spawn } from "child_process";
-import { debug as debugLog, type ToolDef } from "./utils/mcpHelpers.ts";
+import { debug as debugLog } from "./utils/mcpHelpers.ts";
+import type { McpToolDef } from "@lsmcp/types";
 import { ErrorContext, formatError } from "./utils/errorHandler.ts";
 import {
   filterUnsupportedTools,
@@ -118,7 +119,7 @@ export async function runLanguageServerWithConfig(
         : undefined,
     );
 
-    const allTools: ToolDef<import("zod").ZodType>[] = [
+    const allTools: McpToolDef<import("zod").ZodType>[] = [
       ...filteredLspTools,
       ...highLevelTools, // Analysis tools are always available
       ...serenityTools, // Serenity tools for symbol editing and memory (config-based)
@@ -279,7 +280,7 @@ export async function runLanguageServer(
         : undefined,
     );
 
-    const allTools: ToolDef<import("zod").ZodType>[] = [
+    const allTools: McpToolDef<import("zod").ZodType>[] = [
       ...filteredLspTools,
       ...highLevelTools, // Analysis tools are always available
       ...serenityTools, // Serenity tools for symbol editing and memory (config-based)
@@ -373,7 +374,7 @@ export async function runCustomLspServer(
     // Note: adapter/resolved doesn't have languageFeatures yet - using undefined
     const serenityTools = getSerenityToolsList(undefined);
 
-    const allTools: ToolDef<import("zod").ZodType>[] = [
+    const allTools: McpToolDef<import("zod").ZodType>[] = [
       ...filteredLspTools,
       ...highLevelTools, // Analysis tools are always available
       ...serenityTools, // Serenity tools for symbol editing and memory (config-based)

@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import type { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import { ReportManager } from "../../features/memory/database/reportManager.ts";
 import { MemoryDatabase } from "../../features/memory/database/memoryDatabase.ts";
 import { resolve } from "path";
@@ -32,7 +32,7 @@ function isMemoryAdvancedEnabled(rootPath: string): boolean {
 /**
  * Generate and store a project report
  */
-export const generateReportToolDef: ToolDef<any> = {
+export const generateReportToolDef: McpToolDef<any> = {
   name: "generate_report",
   description: `Generate a comprehensive project report and store it in the memory database.
 Includes mechanical project overview and optionally AI analysis.
@@ -105,7 +105,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 /**
  * Get the latest report for the current branch
  */
-export const getLatestReportToolDef: ToolDef<any> = {
+export const getLatestReportToolDef: McpToolDef<any> = {
   name: "get_latest_report",
   description: `Get the latest project report for the current branch.
 Requires memory_advanced: true in .lsmcp/config.json`,
@@ -175,7 +175,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 /**
  * Get report history for the current branch
  */
-export const getReportHistoryToolDef: ToolDef<any> = {
+export const getReportHistoryToolDef: McpToolDef<any> = {
   name: "get_report_history",
   description: `Get the history of project reports for the current branch.
 Requires memory_advanced: true in .lsmcp/config.json`,
@@ -236,7 +236,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 /**
  * Update AI analysis for an existing report
  */
-export const updateAIAnalysisToolDef: ToolDef<any> = {
+export const updateAIAnalysisToolDef: McpToolDef<any> = {
   name: "update_ai_analysis",
   description: `Update or add AI analysis to an existing report.
 Requires memory_advanced: true in .lsmcp/config.json`,
@@ -304,7 +304,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 /**
  * Get report by commit hash
  */
-export const getReportByCommitToolDef: ToolDef<any> = {
+export const getReportByCommitToolDef: McpToolDef<any> = {
   name: "get_report_by_commit",
   description: `Get a project report for a specific commit hash.
 Requires memory_advanced: true in .lsmcp/config.json`,
@@ -365,7 +365,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 /**
  * Get memory database statistics
  */
-export const getMemoryStatsToolDef: ToolDef<any> = {
+export const getMemoryStatsToolDef: McpToolDef<any> = {
   name: "get_memory_stats",
   description: `Get statistics about the memory database.
 Requires memory_advanced: true in .lsmcp/config.json`,
@@ -404,7 +404,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 /**
  * Search reports by date range
  */
-export const searchReportsByDateToolDef: ToolDef<any> = {
+export const searchReportsByDateToolDef: McpToolDef<any> = {
   name: "search_reports_by_date",
   description: `Search project reports within a date range.
 Requires memory_advanced: true in .lsmcp/config.json`,
@@ -469,7 +469,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 /**
  * Get all reports with pagination and filters
  */
-export const getAllReportsToolDef: ToolDef<any> = {
+export const getAllReportsToolDef: McpToolDef<any> = {
   name: "get_all_reports",
   description: `Get all project reports with pagination and optional filters.
 Supports sorting and filtering by branch.
@@ -552,7 +552,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 /**
  * Get detailed report information
  */
-export const getReportDetailsToolDef: ToolDef<any> = {
+export const getReportDetailsToolDef: McpToolDef<any> = {
   name: "get_report_details",
   description: `Get complete details of a specific project report.
 Includes full overview and AI analysis if available.
@@ -591,7 +591,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 /**
  * Search reports by keyword
  */
-export const searchReportsByKeywordToolDef: ToolDef<any> = {
+export const searchReportsByKeywordToolDef: McpToolDef<any> = {
   name: "search_reports_by_keyword",
   description: `Search project reports by keyword in overview or AI analysis.
 Searches in file statistics, language information, dependencies, and AI analysis.
@@ -730,7 +730,7 @@ function extractRelevantInfo(
 /**
  * Deprecate a report
  */
-export const deprecateReportToolDef: ToolDef<any> = {
+export const deprecateReportToolDef: McpToolDef<any> = {
   name: "deprecate_report",
   description: `Mark a report as deprecated.
 Deprecated reports are excluded from normal searches unless explicitly included.
@@ -769,7 +769,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 /**
  * Undeprecate a report
  */
-export const undeprecateReportToolDef: ToolDef<any> = {
+export const undeprecateReportToolDef: McpToolDef<any> = {
   name: "undeprecate_report",
   description: `Remove deprecated status from a report.
 Requires memory_advanced: true in .lsmcp/config.json`,
@@ -805,7 +805,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 /**
  * Get deprecated reports
  */
-export const getDeprecatedReportsToolDef: ToolDef<any> = {
+export const getDeprecatedReportsToolDef: McpToolDef<any> = {
   name: "get_deprecated_reports",
   description: `Get a list of deprecated reports.
 Requires memory_advanced: true in .lsmcp/config.json`,
@@ -860,7 +860,7 @@ Requires memory_advanced: true in .lsmcp/config.json`,
 /**
  * Get all advanced memory tools
  */
-export function getAdvancedMemoryTools(): ToolDef<any>[] {
+export function getAdvancedMemoryTools(): McpToolDef<any>[] {
   return [
     generateReportToolDef,
     getLatestReportToolDef,
@@ -883,7 +883,7 @@ export function getAdvancedMemoryTools(): ToolDef<any>[] {
  */
 export function getAdvancedMemoryToolsIfEnabled(config?: {
   memoryAdvanced?: boolean;
-}): ToolDef<any>[] {
+}): McpToolDef<any>[] {
   if (config?.memoryAdvanced) {
     return getAdvancedMemoryTools();
   }

@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "lsmcp": {
+      "command": "npx",
+      "args": ["-y", "@mizchi/lsmcp", "--preset", "typescript"]
+    },
+    "lsmcp-tsgo-bin-examples": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mizchi/lsmcp",
+        "--preset",
+        "typescript",
+        "--bin",
+        "tsgo --lsp --stdio"
+      ],
+      "disabled": true
+    }
+  }
+}

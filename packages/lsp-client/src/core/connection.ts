@@ -98,7 +98,9 @@ export class ConnectionHandler {
     ) {
       const params = message.params as any;
       if (params?.uri && params?.diagnostics) {
-        const validDiagnostics = params.diagnostics.filter((d: any) => d && d.range);
+        const validDiagnostics = params.diagnostics.filter(
+          (d: any) => d && d.range,
+        );
         this.state.diagnostics.set(params.uri, validDiagnostics);
         this.state.eventEmitter.emit("diagnostics", {
           ...params,

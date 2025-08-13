@@ -27,14 +27,14 @@ export class ClientManager {
       languageId?: string;
       initializationOptions?: Record<string, unknown>;
       serverCharacteristics?: IServerCharacteristics;
-    }
+    },
   ): Promise<LSPClient> {
     if (this.clients.has(id)) {
       throw new Error(`Client with id '${id}' already exists`);
     }
 
     const client = createLSPClient(options);
-    
+
     this.clients.set(id, {
       id,
       client,
@@ -60,7 +60,7 @@ export class ClientManager {
     process: ChildProcess,
     languageId?: string,
     initializationOptions?: Record<string, unknown>,
-    serverCharacteristics?: IServerCharacteristics
+    serverCharacteristics?: IServerCharacteristics,
   ): Promise<LSPClient> {
     if (this.clients.has(id)) {
       throw new Error(`Client with id '${id}' already exists`);
@@ -71,7 +71,7 @@ export class ClientManager {
       process,
       languageId,
       initializationOptions,
-      serverCharacteristics
+      serverCharacteristics,
     );
 
     this.clients.set(id, {
@@ -142,7 +142,7 @@ export class ClientManager {
 
     // Stop the client
     await managed.client.stop().catch(() => {});
-    
+
     // Remove from map
     this.clients.delete(id);
 
@@ -158,9 +158,9 @@ export class ClientManager {
    */
   async removeAllClients(): Promise<void> {
     const promises = Array.from(this.clients.values()).map((managed) =>
-      managed.client.stop().catch(() => {})
+      managed.client.stop().catch(() => {}),
     );
-    
+
     await Promise.all(promises);
     this.clients.clear();
     this.defaultClientId = null;

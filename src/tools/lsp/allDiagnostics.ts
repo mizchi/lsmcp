@@ -3,7 +3,7 @@ import { z } from "zod";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { minimatch } from "minimatch";
-import type { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import { debug } from "@lsmcp/lsp-client";
 import { pathToFileURL } from "url";
 import { Diagnostic } from "@lsmcp/types";
@@ -310,7 +310,7 @@ async function getAllDiagnosticsWithLSP(
  */
 export function createAllDiagnosticsTool(
   client: LSPClient,
-): ToolDef<typeof schema> {
+): McpToolDef<typeof schema> {
   return {
     name: "get_all_diagnostics",
     description:

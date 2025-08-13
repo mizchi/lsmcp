@@ -18,13 +18,13 @@ export const typescriptAdapter: Preset = {
     },
   },
   customTools: [
-    extractTypeTool as unknown as import("../utils/mcpHelpers.ts").ToolDef<
+    extractTypeTool as unknown as import("@lsmcp/types").McpToolDef<
       import("zod").ZodType
     >,
-    generateAccessorsTool as unknown as import("../utils/mcpHelpers.ts").ToolDef<
+    generateAccessorsTool as unknown as import("@lsmcp/types").McpToolDef<
       import("zod").ZodType
     >,
-    callHierarchyTool as unknown as import("../utils/mcpHelpers.ts").ToolDef<
+    callHierarchyTool as unknown as import("@lsmcp/types").McpToolDef<
       import("zod").ZodType
     >,
   ],

@@ -136,7 +136,6 @@ export type {
   Memory,
 } from "./domain/project.ts";
 
-
 export type {
   // Indexer
   SymbolIndex,
@@ -162,3 +161,9 @@ export type {
   // Result type
   Result,
 } from "./shared/result.ts";
+
+export type {
+  // MCP types
+  McpToolDef,
+  McpServerOptions,
+} from "./domain/mcp.ts";

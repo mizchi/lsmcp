@@ -2,7 +2,7 @@
  * MCP tools for symbol resolution
  */
 
-import type { ToolDef } from "../../utils/mcpHelpers.ts";
+import type { McpToolDef } from "@lsmcp/types";
 import { z } from "zod";
 import { resolve } from "path";
 // Remove getLSPClient - no longer needed
@@ -17,7 +17,7 @@ import {
 /**
  * Tool: Resolve symbol from imports
  */
-export const resolveSymbolToolDef: ToolDef<any> = {
+export const resolveSymbolToolDef: McpToolDef<any> = {
   name: "resolve_symbol",
   description: `Resolve a symbol to its definition in external libraries by analyzing import statements.
 For example, if a file imports { ok, Ok, Err } from 'neverthrow', this tool can resolve where these symbols are defined.`,
@@ -36,7 +36,7 @@ For example, if a file imports { ok, Ok, Err } from 'neverthrow', this tool can 
 /**
  * Tool: Get available external symbols
  */
-export const getAvailableExternalSymbolsToolDef: ToolDef<any> = {
+export const getAvailableExternalSymbolsToolDef: McpToolDef<any> = {
   name: "get_available_external_symbols",
   description: `Get all symbols available from external libraries imported in a file.
 Shows what symbols are imported and from which modules they come from.`,
@@ -50,7 +50,7 @@ Shows what symbols are imported and from which modules they come from.`,
 /**
  * Tool: Parse imports from file
  */
-export const parseImportsToolDef: ToolDef<any> = {
+export const parseImportsToolDef: McpToolDef<any> = {
   name: "parse_imports",
   description: `Parse and analyze import statements in a TypeScript/JavaScript file.
 Shows all imports, their sources, and any aliases used.`,

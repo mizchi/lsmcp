@@ -3,10 +3,11 @@
  * Provides utilities and base classes for building MCP servers
  */
 
-import { type z, type ZodType } from "zod";
+import { type ZodType } from "zod";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { MCPToolError } from "../shared/errors/mcpErrors.ts";
+import type { McpToolDef } from "@lsmcp/types";
 
 /**
  * Debug logging for MCP servers.
@@ -44,30 +45,6 @@ export interface ToolResult {
     text: string;
   }>;
   isError?: boolean;
-}
-
-/**
- * Tool definition interface
- */
-export interface ToolDef<S extends ZodType> {
-  name: string;
-  description: string;
-  schema: S;
-  execute: (args: z.infer<S>) => Promise<string>;
-}
-
-/**
- * MCP Server configuration options
- */
-export interface McpServerOptions {
-  name: string;
-  version: string;
-  description?: string;
-  capabilities?: {
-    tools?: boolean;
-    resources?: boolean;
-    prompts?: boolean;
-  };
 }
 
 /**
@@ -123,7 +100,9 @@ export function toMcpToolHandler<T>(
 /**
  * Create a simple tool definition
  */
-export function createTool<S extends ZodType>(tool: ToolDef<S>): ToolDef<S> {
+export function createTool<S extends ZodType>(
+  tool: McpToolDef<S>,
+): McpToolDef<S> {
   return tool;
 }
 
@@ -197,7 +176,7 @@ export function mergeArrays<T>(
  */
 export function generatePermissions(
   serverName: string,
-  tools: ToolDef<ZodType>[],
+  tools: McpToolDef<ZodType>[],
 ): string[] {
   return tools.map((tool) => `mcp__${serverName}__${tool.name}`);
 }
@@ -265,7 +244,7 @@ if (import.meta.vitest) {
 
   describe("generatePermissions", () => {
     it("should generate permission names from tool definitions", () => {
-      const tools: ToolDef<ZodType>[] = [
+      const tools: McpToolDef<ZodType>[] = [
         {
           name: "test_tool",
           description: "Test tool",
@@ -295,7 +274,7 @@ if (import.meta.vitest) {
 
   describe("createTool", () => {
     it("should return the tool definition as-is", () => {
-      const tool: ToolDef<any> = {
+      const tool: McpToolDef<any> = {
         name: "my_tool",
         description: "My tool",
         schema: z.object({ value: z.number() }),

@@ -10,7 +10,7 @@ import {
   TextEdit,
   WorkspaceEdit,
 } from "@lsmcp/types";
-import type { ToolDef } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@lsmcp/types";
 import { resolveLineParameter } from "@lsmcp/lsp-client";
 
 const schemaShape = {
@@ -223,7 +223,7 @@ function formatDeleteSymbolResult(result: DeleteSymbolResult): string {
 
 export function createDeleteSymbolTool(
   client: LSPClient,
-): ToolDef<typeof schema> {
+): McpToolDef<typeof schema> {
   return {
     name: "delete_symbol",
     description:
