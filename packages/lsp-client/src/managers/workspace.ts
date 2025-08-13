@@ -23,7 +23,7 @@ export async function applyWorkspaceEditManually(
     const filePath = uri.startsWith("file://") ? uri.slice(7) : uri;
 
     // Read current content
-    const currentContent = await fileSystemApi.readFile(filePath, "utf8");
+    const currentContent = await fileSystemApi.readFile(filePath);
 
     // Apply edits
     const newContent = applyTextEdits(currentContent, edits);

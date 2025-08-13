@@ -36,7 +36,17 @@ describe("Indexer Integration", () => {
       `),
       exists: vi.fn().mockResolvedValue(true),
       stat: vi.fn().mockResolvedValue({ mtime: new Date() }),
-    };
+      writeFile: vi.fn().mockResolvedValue(undefined),
+      readdir: vi.fn().mockResolvedValue([]),
+      lstat: vi.fn().mockResolvedValue({ mtime: new Date() }),
+      mkdir: vi.fn().mockResolvedValue(undefined),
+      rm: vi.fn().mockResolvedValue(undefined),
+      realpath: vi.fn().mockResolvedValue("/test/path"),
+      cwd: vi.fn().mockResolvedValue("/"),
+      resolve: vi
+        .fn()
+        .mockImplementation((...paths: string[]) => paths.join("/")),
+    } as any;
 
     // Create symbol provider
     const symbolProvider = createLSPSymbolProvider(

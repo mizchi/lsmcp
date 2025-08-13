@@ -5,7 +5,8 @@
  * - createTestExecutionContext to seed context for getOrCreateIndex or direct SymbolIndex usage
  */
 
-import type { FileSystem, SymbolProvider } from "@lsmcp/code-indexer";
+import type { SymbolProvider } from "@lsmcp/code-indexer";
+import type { FileSystemApi } from "@lsmcp/types";
 import {
   SymbolKind,
   type DocumentSymbol,
@@ -19,7 +20,7 @@ import {
  *   exists(path: string): Promise<boolean>
  *   stat(path: string): Promise<{ mtime: Date }>
  */
-export class InMemoryFileSystem implements FileSystem {
+export class InMemoryFileSystem implements FileSystemApi {
   private files = new Map<string, { content: string; mtime: Date }>();
 
   constructor(seed?: Record<string, string>) {
@@ -64,18 +65,88 @@ export class InMemoryFileSystem implements FileSystem {
     return entry.content;
   }
 
+  async writeFile(
+    path: string,
+    data: string | Buffer,
+    encoding?: BufferEncoding,
+  ): Promise<void> {
+    const p = this.normalizePath(path);
+    const content =
+      typeof data === "string" ? data : data.toString(encoding || "utf-8");
+    this.setFile(p, content);
+  }
+
+  async readdir(path: string, _options?: any): Promise<any> {
+    const p = this.normalizePath(path);
+    const files = Array.from(this.files.keys())
+      .filter(
+        (f) => f.startsWith(p + "/") && !f.slice(p.length + 1).includes("/"),
+      )
+      .map((f) => f.slice(p.length + 1));
+    return files;
+  }
+
   async exists(path: string): Promise<boolean> {
     const p = this.normalizePath(path);
     return this.files.has(p);
   }
 
-  async stat(path: string): Promise<{ mtime: Date }> {
+  async stat(path: string): Promise<any> {
     const p = this.normalizePath(path);
     const entry = this.files.get(p);
     if (!entry) {
       throw new Error(`File not found in InMemoryFileSystem: ${p}`);
     }
-    return { mtime: entry.mtime };
+    return {
+      mtime: entry.mtime,
+      isFile: () => true,
+      isDirectory: () => false,
+      isBlockDevice: () => false,
+      isCharacterDevice: () => false,
+      isSymbolicLink: () => false,
+      isFIFO: () => false,
+      isSocket: () => false,
+      size: entry.content.length,
+    };
+  }
+
+  async lstat(path: string): Promise<any> {
+    return this.stat(path);
+  }
+
+  async mkdir(
+    _path: string,
+    _options?: { recursive?: boolean },
+  ): Promise<string | undefined> {
+    return undefined;
+  }
+
+  async rm(
+    path: string,
+    _options?: { recursive?: boolean; force?: boolean },
+  ): Promise<void> {
+    const p = this.normalizePath(path);
+    this.files.delete(p);
+  }
+
+  async realpath(path: string): Promise<string> {
+    return this.normalizePath(path);
+  }
+
+  async cwd(): Promise<string> {
+    return "/";
+  }
+
+  async resolve(...paths: string[]): Promise<string> {
+    return paths.join("/");
+  }
+
+  async isDirectory(_path: string): Promise<boolean> {
+    return false;
+  }
+
+  async listDirectory(path: string): Promise<string[]> {
+    return this.readdir(path);
   }
 }
 

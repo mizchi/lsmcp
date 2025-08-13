@@ -4,7 +4,20 @@ import { commonSchemas } from "@lsmcp/types";
 import { CodeAction, Range, WorkspaceEdit } from "vscode-languageserver-types";
 import { readFileSync, writeFileSync } from "fs";
 import { errors } from "../../../domain/errors/index.ts";
-import { readFileWithMetadata } from "../../../infrastructure/fileOperations.ts";
+import { resolve } from "path";
+import { pathToFileURL } from "url";
+
+// Helper function
+function readFileWithMetadata(root: string, filePath: string) {
+  const absolutePath = resolve(root, filePath);
+  try {
+    const fileContent = readFileSync(absolutePath, "utf-8");
+    const fileUri = pathToFileURL(absolutePath).toString();
+    return { fileContent, fileUri, absolutePath };
+  } catch (error) {
+    throw new Error(`File not found: ${filePath}`);
+  }
+}
 import {
   createTypescriptLSPClient,
   openDocument,

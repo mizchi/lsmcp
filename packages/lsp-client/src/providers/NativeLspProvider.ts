@@ -5,13 +5,11 @@
 
 import { spawn } from "child_process";
 import type { ChildProcess } from "child_process";
-import {
-  createAndInitializeLSPClient,
-} from "../index.ts";
-import type { 
-  LspClientAdapter, 
-  LspClientProvider, 
-  LspClientConfig 
+import { createAndInitializeLSPClient } from "../index.ts";
+import type {
+  LspClientAdapter,
+  LspClientProvider,
+  LspClientConfig,
 } from "@lsmcp/types";
 
 /**
@@ -21,7 +19,7 @@ import type {
 export class NativeLspProvider implements LspClientProvider {
   async createAdapter(config: LspClientConfig): Promise<LspClientAdapter> {
     let process: ChildProcess | undefined;
-    
+
     // Spawn LSP server process if command is provided
     if (config.command) {
       process = spawn(config.command, config.args || [], {
@@ -47,9 +45,9 @@ export class NativeLspProvider implements LspClientProvider {
 
   getInfo() {
     return {
-      name: 'Native LSP Client',
-      type: 'native' as const,
-      description: 'Native LSP client implementation using @lsmcp/lsp-client',
+      name: "Native LSP Client",
+      type: "native" as const,
+      description: "Native LSP client implementation using @lsmcp/lsp-client",
     };
   }
 

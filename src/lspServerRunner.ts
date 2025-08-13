@@ -83,17 +83,17 @@ export async function runLanguageServerWithConfig(
       serverChars,
     );
 
-    // Create file system adapter using Node.js provider
-    const { nodeFsProvider } = await import(
+    // Create file system API using Node.js implementation
+    const { NodeFileSystemApi } = await import(
       "./infrastructure/providers/NodeFsProvider.ts"
     );
-    const fileSystemAdapter = nodeFsProvider.createAdapter();
+    const fileSystemApi = new NodeFileSystemApi();
 
     // Create MCP context
     // LSPClient implements LspClientAdapter interface
     const mcpContext: McpContext = {
       lspClient: lspClient as any, // LSPClient implements LspClientAdapter
-      fs: fileSystemAdapter,
+      fs: fileSystemApi,
       config: { ...config },
     };
 
@@ -269,17 +269,17 @@ export async function runLanguageServer(
       serverChars,
     );
 
-    // Create file system adapter using Node.js provider
-    const { nodeFsProvider } = await import(
+    // Create file system API using Node.js implementation
+    const { NodeFileSystemApi } = await import(
       "./infrastructure/providers/NodeFsProvider.ts"
     );
-    const fileSystemAdapter = nodeFsProvider.createAdapter();
+    const fileSystemApi = new NodeFileSystemApi();
 
     // Create MCP context
     // LSPClient implements LspClientAdapter interface
     const mcpContext: McpContext = {
       lspClient: lspClient as any, // LSPClient implements LspClientAdapter
-      fs: fileSystemAdapter,
+      fs: fileSystemApi,
       config: { ...preset },
     };
 
@@ -386,17 +386,17 @@ export async function runCustomLspServer(
       undefined,
     );
 
-    // Create file system adapter using Node.js provider
-    const { nodeFsProvider } = await import(
+    // Create file system API using Node.js implementation
+    const { NodeFileSystemApi } = await import(
       "./infrastructure/providers/NodeFsProvider.ts"
     );
-    const fileSystemAdapter = nodeFsProvider.createAdapter();
+    const fileSystemApi = new NodeFileSystemApi();
 
     // Create MCP context
     // LSPClient implements LspClientAdapter interface
     const mcpContext: McpContext = {
       lspClient: lspClient as any, // LSPClient implements LspClientAdapter
-      fs: fileSystemAdapter,
+      fs: fileSystemApi,
       config: {},
     };
 

@@ -13,16 +13,8 @@ import { resolve } from "node:path";
 import type { FileSystemApi } from "@lsmcp/types";
 
 export class NodeFileSystemApi implements FileSystemApi {
-  readFile(path: string, encoding: BufferEncoding): Promise<string>;
-  readFile(path: string): Promise<Buffer>;
-  async readFile(
-    path: string,
-    encoding?: BufferEncoding,
-  ): Promise<string | Buffer> {
-    if (encoding) {
-      return await readFile(path, encoding);
-    }
-    return await readFile(path);
+  async readFile(path: string): Promise<string> {
+    return await readFile(path, "utf-8");
   }
 
   async writeFile(

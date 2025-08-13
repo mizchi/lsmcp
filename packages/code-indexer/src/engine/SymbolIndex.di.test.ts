@@ -8,7 +8,10 @@ import { SymbolIndex } from "./SymbolIndex.ts";
 import { SymbolKind } from "vscode-languageserver-types";
 import { pathToFileURL } from "url";
 import { resolve } from "path";
-import { InMemoryFileSystem, TestSymbolProvider } from "../../../../tests/helpers/testUtils.ts";
+import {
+  InMemoryFileSystem,
+  TestSymbolProvider,
+} from "../../../../tests/helpers/testUtils.ts";
 
 describe("SymbolIndex (DI)", () => {
   it("indexes a single file and can query symbols", async () => {

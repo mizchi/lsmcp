@@ -1,5 +1,5 @@
 import { type ChildProcess, spawn } from "node:child_process";
-import { createLSPClient, type LSPClient } from "./core/client-legacy.ts";
+import { createLSPClient, type LSPClient } from "./core/client.ts";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 

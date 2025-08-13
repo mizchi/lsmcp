@@ -47,20 +47,9 @@ export {
 };
 import { ChildProcess } from "child_process";
 import { EventEmitter } from "events";
-// Backward compatibility interface
-export interface IFileSystem {
-  readFile(path: string, encoding: BufferEncoding): Promise<string>;
-  writeFile(
-    path: string,
-    data: string,
-    encoding?: BufferEncoding,
-  ): Promise<void>;
-  readdir(path: string): Promise<string[]>;
-  stat(path: string): Promise<any>;
-  exists(path: string): Promise<boolean>;
-  isDirectory(path: string): Promise<boolean>;
-  listDirectory(path: string): Promise<string[]>;
-}
+import type { FileSystemApi } from "../domain/filesystem.ts";
+// Backward compatibility type alias
+export type IFileSystem = FileSystemApi;
 
 // LSP Message types
 export interface LSPRequest {
@@ -334,7 +323,7 @@ export interface LSPClientState {
   languageId: string;
   serverCapabilities?: ServerCapabilities;
   serverCharacteristics?: any; // IServerCharacteristics type from adapter
-  fileSystemApi: IFileSystem;
+  fileSystemApi: FileSystemApi;
 }
 
 export interface LSPClientConfig {
@@ -345,12 +334,12 @@ export interface LSPClientConfig {
   clientVersion?: string; // Default: "0.1.0"
   initializationOptions?: unknown; // Language-specific initialization options
   serverCharacteristics?: any; // IServerCharacteristics type from adapter
-  fileSystemApi?: IFileSystem; // Optional FileSystem API instance
+  fileSystemApi?: FileSystemApi; // Optional FileSystem API instance
 }
 
 export type LSPClient = {
   languageId: string;
-  fileSystemApi: IFileSystem;
+  fileSystemApi: FileSystemApi;
   start: () => Promise<void>;
   stop: () => Promise<void>;
   openDocument: (uri: string, text: string, languageId?: string) => void;

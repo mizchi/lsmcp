@@ -5,18 +5,20 @@ import { err, ok, type Result } from "neverthrow";
 import type { McpToolDef } from "@lsmcp/types";
 import { debug } from "@lsmcp/lsp-client";
 import { validateLineAndSymbol } from "@lsmcp/lsp-client";
-import { readFileWithUri } from "../../infrastructure/fileOperations.ts";
 import { readFileSync } from "fs";
 import path from "path";
+import { pathToFileURL } from "url";
 
 // Helper functions
 function readFileWithMetadata(root: string, filePath: string) {
-  const {
-    content: fileContent,
-    uri: fileUri,
-    absolutePath,
-  } = readFileWithUri(root, filePath);
-  return { fileContent, fileUri, absolutePath };
+  const absolutePath = path.resolve(root, filePath);
+  try {
+    const fileContent = readFileSync(absolutePath, "utf-8");
+    const fileUri = pathToFileURL(absolutePath).toString();
+    return { fileContent, fileUri, absolutePath };
+  } catch (error) {
+    throw new Error(`File not found: ${filePath}`);
+  }
 }
 
 const schema = z.object({

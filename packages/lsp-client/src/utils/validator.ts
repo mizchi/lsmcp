@@ -1,7 +1,8 @@
 import { ChildProcess } from "child_process";
 import { Position } from "@lsmcp/types";
-import { LSPClient, LSPClientConfig } from "../protocol/types/index.ts";
-import { createLSPClient } from "../core/client-legacy.ts";
+import { LSPClient } from "../protocol/types/index.ts";
+import { createLSPClient } from "../core/client.ts";
+import type { LSPClientConfig } from "../core/state.ts";
 import { debugLog } from "../utils/debug.ts";
 
 export interface LSPCapabilities {
@@ -143,7 +144,9 @@ export class LSPValidator {
         rootPath: this.config.rootPath,
         process: this.config.process,
         languageId: this.config.languageId,
-        initializationOptions: this.config.initializationOptions,
+        initializationOptions: this.config.initializationOptions as
+          | Record<string, unknown>
+          | undefined,
       };
 
       this.client = createLSPClient(clientConfig);

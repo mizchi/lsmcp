@@ -32,17 +32,17 @@ export class CapabilityChecker {
     }
 
     const value = this.capabilities[capability];
-    
+
     // Handle boolean capabilities
     if (typeof value === "boolean") {
       return value;
     }
-    
+
     // Handle object capabilities (non-null means supported)
     if (typeof value === "object" && value !== null) {
       return true;
     }
-    
+
     return false;
   }
 
@@ -50,7 +50,7 @@ export class CapabilityChecker {
    * Check if server supports multiple capabilities
    */
   hasCapabilities(capabilities: (keyof ServerCapabilities)[]): boolean {
-    return capabilities.every(cap => this.hasCapability(cap));
+    return capabilities.every((cap) => this.hasCapability(cap));
   }
 
   /**
@@ -65,14 +65,14 @@ export class CapabilityChecker {
    */
   filterTools<T extends { name: string }>(
     tools: T[],
-    requirements: Map<string, (keyof ServerCapabilities)[]>
+    requirements: Map<string, (keyof ServerCapabilities)[]>,
   ): T[] {
     if (!this.capabilities) {
       // If no capabilities, return all tools (optimistic)
       return tools;
     }
 
-    return tools.filter(tool => {
+    return tools.filter((tool) => {
       const required = requirements.get(tool.name);
       if (!required || required.length === 0) {
         // No requirements means always supported
@@ -87,7 +87,7 @@ export class CapabilityChecker {
    */
   getCapabilitySupport(): Record<string, boolean> {
     const support: Record<string, boolean> = {};
-    
+
     if (!this.capabilities) {
       return support;
     }
@@ -133,7 +133,9 @@ export class CapabilityChecker {
   /**
    * Get human-readable capability names
    */
-  static getCapabilityDisplayName(capability: keyof ServerCapabilities): string {
+  static getCapabilityDisplayName(
+    capability: keyof ServerCapabilities,
+  ): string {
     const displayNames: Record<string, string> = {
       definitionProvider: "Go to Definition",
       referencesProvider: "Find References",
@@ -171,7 +173,10 @@ export class CapabilityChecker {
 /**
  * Create a mapping of tool names to required capabilities
  */
-export function createToolCapabilityMap(): Map<string, (keyof ServerCapabilities)[]> {
+export function createToolCapabilityMap(): Map<
+  string,
+  (keyof ServerCapabilities)[]
+> {
   const map = new Map<string, (keyof ServerCapabilities)[]>();
 
   // LSP tool requirements
@@ -187,10 +192,10 @@ export function createToolCapabilityMap(): Map<string, (keyof ServerCapabilities
   map.set("get_workspace_symbols", ["workspaceSymbolProvider"]);
   map.set("get_code_actions", ["codeActionProvider"]);
   map.set("rename_symbol", ["renameProvider"]);
-  
+
   // Some tools might work with either of multiple capabilities
   // (These need special handling)
-  
+
   return map;
 }
 
@@ -198,11 +203,15 @@ export function createToolCapabilityMap(): Map<string, (keyof ServerCapabilities
  * Export functions for checking specific capabilities
  */
 export function supportsDefinition(capabilities?: ServerCapabilities): boolean {
-  return new CapabilityChecker(capabilities).hasCapability("definitionProvider");
+  return new CapabilityChecker(capabilities).hasCapability(
+    "definitionProvider",
+  );
 }
 
 export function supportsReferences(capabilities?: ServerCapabilities): boolean {
-  return new CapabilityChecker(capabilities).hasCapability("referencesProvider");
+  return new CapabilityChecker(capabilities).hasCapability(
+    "referencesProvider",
+  );
 }
 
 export function supportsHover(capabilities?: ServerCapabilities): boolean {
@@ -210,7 +219,9 @@ export function supportsHover(capabilities?: ServerCapabilities): boolean {
 }
 
 export function supportsCompletion(capabilities?: ServerCapabilities): boolean {
-  return new CapabilityChecker(capabilities).hasCapability("completionProvider");
+  return new CapabilityChecker(capabilities).hasCapability(
+    "completionProvider",
+  );
 }
 
 export function supportsRename(capabilities?: ServerCapabilities): boolean {
@@ -218,12 +229,18 @@ export function supportsRename(capabilities?: ServerCapabilities): boolean {
 }
 
 export function supportsFormatting(capabilities?: ServerCapabilities): boolean {
-  return new CapabilityChecker(capabilities).hasCapability("documentFormattingProvider");
+  return new CapabilityChecker(capabilities).hasCapability(
+    "documentFormattingProvider",
+  );
 }
 
-export function supportsDiagnostics(capabilities?: ServerCapabilities): boolean {
+export function supportsDiagnostics(
+  capabilities?: ServerCapabilities,
+): boolean {
   const checker = new CapabilityChecker(capabilities);
   // Either push or pull diagnostics
-  return checker.hasCapability("diagnosticProvider") || 
-         checker.hasCapability("textDocumentSync");
+  return (
+    checker.hasCapability("diagnosticProvider") ||
+    checker.hasCapability("textDocumentSync")
+  );
 }

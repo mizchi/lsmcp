@@ -2,7 +2,7 @@
  * TypeScript-specific LSP helpers
  */
 
-import { createLSPClient, type LSPClient } from "../core/client-legacy.ts";
+import { createLSPClient, type LSPClient } from "../core/client.ts";
 import type { ChildProcess } from "child_process";
 import { spawn } from "child_process";
 // import { resolve } from "path";  // Currently unused

@@ -3,7 +3,29 @@ import { err, ok, type Result } from "neverthrow";
 import { createLSPTool, type LSPClient } from "@lsmcp/lsp-client";
 import { withLSPOperation } from "@lsmcp/lsp-client";
 import { getLanguageIdFromPath } from "@lsmcp/lsp-client";
-import { readFileWithUri } from "../../infrastructure/fileOperations.ts";
+import { resolve } from "path";
+import { pathToFileURL } from "url";
+import * as fs from "fs";
+
+// Helper function to read file with URI
+function readFileWithUri(
+  root: string,
+  filePath: string,
+): {
+  content: string;
+  uri: string;
+  absolutePath: string;
+} {
+  const absolutePath = resolve(root, filePath);
+
+  try {
+    const content = fs.readFileSync(absolutePath, "utf-8");
+    const uri = pathToFileURL(absolutePath).toString();
+    return { content, uri, absolutePath };
+  } catch (error) {
+    throw new Error(`File not found: ${filePath}`);
+  }
+}
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -48,7 +70,9 @@ function resolveFileAndSymbol(params: {
     if (typeof params.line === "number") {
       lineIndex = params.line - 1;
     } else {
-      lineIndex = lines.findIndex((l) => l.includes(params.line as string));
+      lineIndex = lines.findIndex((l: string) =>
+        l.includes(params.line as string),
+      );
       if (lineIndex === -1) {
         throw new Error(
           `Line containing "${params.line}" not found in ${params.filePath}`,

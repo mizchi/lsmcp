@@ -6,24 +6,12 @@ import { dirname, resolve } from "node:path";
 export class MemFileSystemApi implements FileSystemApi {
   constructor(private fs: IFs) {}
 
-  readFile(path: string, encoding: BufferEncoding): Promise<string>;
-  readFile(path: string): Promise<Buffer>;
-  async readFile(
-    path: string,
-    encoding?: BufferEncoding,
-  ): Promise<string | Buffer> {
+  async readFile(path: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      if (encoding) {
-        this.fs.readFile(path, encoding, (err, data) => {
-          if (err) reject(err);
-          else resolve(data as string);
-        });
-      } else {
-        this.fs.readFile(path, (err, data) => {
-          if (err) reject(err);
-          else resolve(data as Buffer);
-        });
-      }
+      this.fs.readFile(path, "utf-8", (err, data) => {
+        if (err) reject(err);
+        else resolve(data as string);
+      });
     });
   }
 

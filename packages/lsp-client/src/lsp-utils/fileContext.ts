@@ -47,7 +47,7 @@ export async function loadFileContext(
 
   // Read the file content
   try {
-    const content = await fs.readFile(absolutePath, "utf-8");
+    const content = await fs.readFile(absolutePath);
     return { absolutePath, fileUri, content };
   } catch (error) {
     const context: ErrorContext = {

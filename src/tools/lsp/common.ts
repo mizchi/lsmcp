@@ -1,4 +1,6 @@
-import { readFileWithUri } from "../../infrastructure/fileOperations.ts";
+import { resolve } from "path";
+import { pathToFileURL } from "url";
+import * as fs from "fs";
 
 /**
  * Common function to resolve file and symbol position for LSP operations
@@ -24,7 +26,9 @@ export function resolveFileAndSymbol(params: {
     if (typeof params.line === "number") {
       lineIndex = params.line - 1;
     } else {
-      lineIndex = lines.findIndex((l) => l.includes(params.line as string));
+      lineIndex = lines.findIndex((l: string) =>
+        l.includes(params.line as string),
+      );
       if (lineIndex === -1) {
         throw new Error(
           `Line containing "${params.line}" not found in ${params.filePath}`,
@@ -82,6 +86,28 @@ export function resolveFileAndSymbol(params: {
 /**
  * Helper to read file with metadata (simplified version)
  */
+/**
+ * Read file content and generate file URI
+ */
+function readFileWithUri(
+  root: string,
+  filePath: string,
+): {
+  content: string;
+  uri: string;
+  absolutePath: string;
+} {
+  const absolutePath = resolve(root, filePath);
+
+  try {
+    const content = fs.readFileSync(absolutePath, "utf-8");
+    const uri = pathToFileURL(absolutePath).toString();
+    return { content, uri, absolutePath };
+  } catch (error) {
+    throw new Error(`File not found: ${filePath}`);
+  }
+}
+
 export function readFileWithMetadata(root: string, filePath: string) {
   const {
     content: fileContent,

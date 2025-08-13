@@ -3,7 +3,21 @@ import type { McpToolDef } from "@lsmcp/types";
 import { commonSchemas } from "@lsmcp/types";
 import { relative } from "path";
 import { Position } from "vscode-languageserver-types";
-import { readFileWithMetadata } from "../../../infrastructure/fileOperations.ts";
+import { readFileSync } from "fs";
+import { resolve } from "path";
+import { pathToFileURL } from "url";
+
+// Helper function
+function readFileWithMetadata(root: string, filePath: string) {
+  const absolutePath = resolve(root, filePath);
+  try {
+    const fileContent = readFileSync(absolutePath, "utf-8");
+    const fileUri = pathToFileURL(absolutePath).toString();
+    return { fileContent, fileUri, absolutePath };
+  } catch (error) {
+    throw new Error(`File not found: ${filePath}`);
+  }
+}
 import {
   createTypescriptLSPClient,
   openDocument,

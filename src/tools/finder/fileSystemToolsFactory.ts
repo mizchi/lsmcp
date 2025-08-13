@@ -327,7 +327,7 @@ export function createSearchForPatternTool(
 
         for (const file of filesToSearch) {
           const filePath = join(rootPath, file);
-          const content = await fileSystemApi.readFile(filePath, "utf-8");
+          const content = await fileSystemApi.readFile(filePath);
           const lines = content.split("\n");
           const matches: string[] = [];
 

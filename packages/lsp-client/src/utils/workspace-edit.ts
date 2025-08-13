@@ -31,7 +31,7 @@ export async function applyWorkspaceEditManually(
       const filePath = fileURLToPath(uri);
 
       // Read current content
-      const currentContent = await fs.readFile(filePath, "utf8");
+      const currentContent = await fs.readFile(filePath);
 
       // Apply edits
       const newContent = applyTextEdits(currentContent, edits as TextEdit[]);

@@ -15,20 +15,8 @@ export interface IErrorHandler {
   formatError(error: any, context?: Record<string, any>): string;
 }
 
-// File system interface
-export interface IFileSystem {
-  readFile(path: string, encoding: BufferEncoding): Promise<string>;
-  writeFile(
-    path: string,
-    data: string,
-    encoding?: BufferEncoding,
-  ): Promise<void>;
-  readdir(path: string): Promise<string[]>;
-  stat(path: string): Promise<any>;
-  exists(path: string): Promise<boolean>;
-  isDirectory(path: string): Promise<boolean>;
-  listDirectory(path: string): Promise<string[]>;
-}
+// Re-export FileSystemApi as IFileSystem for backward compatibility
+export type { FileSystemApi as IFileSystem } from "@lsmcp/types";
 
 // Language detection interface
 export interface ILanguageDetector {

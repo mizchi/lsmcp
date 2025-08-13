@@ -59,13 +59,9 @@ export interface SymbolProvider {
 }
 
 /**
- * File system interface
+ * Re-export FileSystemApi as FileSystem for backward compatibility
  */
-export interface FileSystem {
-  readFile(path: string): Promise<string>;
-  exists(path: string): Promise<boolean>;
-  stat(path: string): Promise<{ mtime: Date }>;
-}
+export type { FileSystemApi as FileSystem } from "@lsmcp/types";
 
 /**
  * Cache interface

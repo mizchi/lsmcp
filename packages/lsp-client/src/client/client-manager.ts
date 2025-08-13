@@ -1,7 +1,7 @@
 import type { LSPClient } from "../protocol/types/index.ts";
 import type { ChildProcess } from "child_process";
 import { createLSPClient } from "../core/client.ts";
-import { createAndInitializeLSPClient } from "../core/client-legacy.ts";
+import { createAndInitializeLSPClient } from "../core/client.ts";
 import type { IServerCharacteristics } from "../interfaces.ts";
 
 export interface ManagedClient {

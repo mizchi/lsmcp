@@ -7,8 +7,7 @@ import type { Stats } from "node:fs";
  */
 export interface FileSystemApi {
   // Overloaded readFile methods
-  readFile(path: string, encoding: BufferEncoding): Promise<string>;
-  readFile(path: string): Promise<Buffer>;
+  readFile(path: string): Promise<string>;
 
   writeFile(
     path: string,
@@ -36,10 +35,14 @@ export interface FileSystemApi {
     options?: { recursive?: boolean; force?: boolean },
   ): Promise<void>;
   realpath(path: string): Promise<string>;
-  
+
   // Path utilities
   cwd(): Promise<string>;
   resolve(...paths: string[]): Promise<string>;
+
+  // Additional methods for backward compatibility
+  isDirectory?(path: string): Promise<boolean>;
+  listDirectory?(path: string): Promise<string[]>;
 }
 
 /**

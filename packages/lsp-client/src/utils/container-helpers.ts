@@ -45,26 +45,27 @@ export function getServerCharacteristics(
 }
 
 // FileSystem helpers
-export type FileSystemApi = import("../interfaces.ts").IFileSystem;
+import type { FileSystemApi } from "@lsmcp/types";
+export type { FileSystemApi };
 
 export const nodeFileSystemApi: FileSystemApi = {
-  async readFile(
-    path: string,
-    encoding: BufferEncoding = "utf-8",
-  ): Promise<string> {
+  async readFile(path: string): Promise<string> {
     const fs = await import("fs/promises");
-    return fs.readFile(path, encoding);
+    return fs.readFile(path, "utf-8");
   },
   async writeFile(
     path: string,
-    data: string,
+    data: string | Buffer,
     encoding?: BufferEncoding,
   ): Promise<void> {
     const fs = await import("fs/promises");
     await fs.writeFile(path, data, encoding || "utf-8");
   },
-  async readdir(path: string): Promise<string[]> {
+  async readdir(path: string, options?: any): Promise<any> {
     const fs = await import("fs/promises");
+    if (options?.withFileTypes) {
+      return fs.readdir(path, options);
+    }
     return fs.readdir(path);
   },
   async stat(path: string): Promise<any> {
@@ -88,5 +89,34 @@ export const nodeFileSystemApi: FileSystemApi = {
   async listDirectory(path: string): Promise<string[]> {
     const fs = await import("fs/promises");
     return fs.readdir(path);
+  },
+  async lstat(path: string): Promise<any> {
+    const fs = await import("fs/promises");
+    return fs.lstat(path);
+  },
+  async mkdir(
+    path: string,
+    options?: { recursive?: boolean },
+  ): Promise<string | undefined> {
+    const fs = await import("fs/promises");
+    return fs.mkdir(path, options) as any;
+  },
+  async rm(
+    path: string,
+    options?: { recursive?: boolean; force?: boolean },
+  ): Promise<void> {
+    const fs = await import("fs/promises");
+    await fs.rm(path, options);
+  },
+  async realpath(path: string): Promise<string> {
+    const fs = await import("fs/promises");
+    return fs.realpath(path);
+  },
+  async cwd(): Promise<string> {
+    return process.cwd();
+  },
+  async resolve(...paths: string[]): Promise<string> {
+    const path = await import("path");
+    return path.resolve(...paths);
   },
 };

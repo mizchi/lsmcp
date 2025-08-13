@@ -31,7 +31,8 @@ import { createFeatureCommands } from "../utils/features.ts";
 import { applyWorkspaceEditManually } from "../managers/workspace.ts";
 import { getLanguageIdFromPath } from "../utils/language.ts";
 import { debug } from "../utils/debug.ts";
-import type { IFileSystem } from "../interfaces.ts";
+import type { IFileSystem, IServerCharacteristics } from "../interfaces.ts";
+import type { ChildProcess } from "child_process";
 
 export interface LSPClient {
   languageId: string;
@@ -130,19 +131,32 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       // Check common LSP capabilities
       const caps = state.serverCapabilities as any;
       switch (feature) {
-        case 'hover': return !!caps.hoverProvider;
-        case 'completion': return !!caps.completionProvider;
-        case 'definition': return !!caps.definitionProvider;
-        case 'references': return !!caps.referencesProvider;
-        case 'rename': return !!caps.renameProvider;
-        case 'documentSymbol': return !!caps.documentSymbolProvider;
-        case 'workspaceSymbol': return !!caps.workspaceSymbolProvider;
-        case 'codeAction': return !!caps.codeActionProvider;
-        case 'formatting': return !!caps.documentFormattingProvider;
-        case 'rangeFormatting': return !!caps.documentRangeFormattingProvider;
-        case 'signatureHelp': return !!caps.signatureHelpProvider;
-        case 'diagnostics': return true; // Usually always supported
-        default: return false;
+        case "hover":
+          return !!caps.hoverProvider;
+        case "completion":
+          return !!caps.completionProvider;
+        case "definition":
+          return !!caps.definitionProvider;
+        case "references":
+          return !!caps.referencesProvider;
+        case "rename":
+          return !!caps.renameProvider;
+        case "documentSymbol":
+          return !!caps.documentSymbolProvider;
+        case "workspaceSymbol":
+          return !!caps.workspaceSymbolProvider;
+        case "codeAction":
+          return !!caps.codeActionProvider;
+        case "formatting":
+          return !!caps.documentFormattingProvider;
+        case "rangeFormatting":
+          return !!caps.documentRangeFormattingProvider;
+        case "signatureHelp":
+          return !!caps.signatureHelpProvider;
+        case "diagnostics":
+          return true; // Usually always supported
+        default:
+          return false;
       }
     },
 
@@ -459,5 +473,32 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     },
   };
 
+  return client;
+}
+
+/**
+ * Create and initialize an LSP client
+ * @deprecated Use createLSPClient and call start() separately
+ */
+export async function createAndInitializeLSPClient(
+  rootPath: string,
+  process: ChildProcess,
+  languageId?: string,
+  initializationOptions?: unknown,
+  serverCharacteristics?: IServerCharacteristics,
+  fileSystemApi?: IFileSystem,
+): Promise<LSPClient> {
+  const client = createLSPClient({
+    rootPath,
+    process,
+    languageId,
+    initializationOptions: initializationOptions as
+      | Record<string, unknown>
+      | undefined,
+    serverCharacteristics,
+    fileSystemApi,
+  });
+
+  await client.start();
   return client;
 }

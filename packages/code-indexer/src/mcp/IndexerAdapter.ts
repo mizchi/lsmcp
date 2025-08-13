@@ -41,11 +41,12 @@ export function getOrCreateIndex(
   // Resolve file system from context or fallback to NodeFileSystem
   // Support both "fileSystem" and "fs" to align with common context shapes
   const fileSystem =
-    context && typeof context === "object" && (
-      ("fileSystem" in context && (context as any).fileSystem) ||
-      ("fs" in context && (context as any).fs)
-    )
-      ? (("fileSystem" in (context as any) && (context as any).fileSystem) ?? (context as any).fs)
+    context &&
+    typeof context === "object" &&
+    (("fileSystem" in context && (context as any).fileSystem) ||
+      ("fs" in context && (context as any).fs))
+      ? (("fileSystem" in (context as any) && (context as any).fileSystem) ??
+        (context as any).fs)
       : new NodeFileSystem();
 
   // Use in-memory cache during vitest to avoid FS permissions under /test roots
@@ -55,8 +56,12 @@ export function getOrCreateIndex(
       : new SQLiteCache(rootPath);
 
   // Prefer explicitly injected symbol provider
-  const hasSymbolProvider =
-    !!(context && typeof context === "object" && "symbolProvider" in context && context.symbolProvider);
+  const hasSymbolProvider = !!(
+    context &&
+    typeof context === "object" &&
+    "symbolProvider" in context &&
+    context.symbolProvider
+  );
 
   let symbolProvider: any;
 
@@ -215,7 +220,10 @@ export function getIndexStats(rootPath: string) {
 /**
  * Update index incrementally
  */
-export async function updateIndexIncremental(rootPath: string, context?: IndexerDeps): Promise<{
+export async function updateIndexIncremental(
+  rootPath: string,
+  context?: IndexerDeps,
+): Promise<{
   success: boolean;
   updated: string[];
   removed: string[];

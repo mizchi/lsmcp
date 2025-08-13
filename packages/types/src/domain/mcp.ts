@@ -3,7 +3,7 @@
  */
 
 import type { z, ZodType } from "zod";
-import type { FileSystemAdapter } from "./adapters.ts";
+import type { FileSystemApi } from "./filesystem.ts";
 import type { LspClientAdapter } from "./adapters.ts";
 
 /**
@@ -12,8 +12,8 @@ import type { LspClientAdapter } from "./adapters.ts";
 export interface McpContext {
   /** LSP client adapter instance (required) */
   lspClient: LspClientAdapter;
-  /** File system adapter (required) */
-  fs: FileSystemAdapter;
+  /** File system API (required) */
+  fs: FileSystemApi;
   /** Configuration */
   config?: Record<string, unknown>;
 }

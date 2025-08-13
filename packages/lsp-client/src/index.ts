@@ -12,7 +12,7 @@ export type { LSPClient } from "./protocol/types/index.ts";
 export type { LSPClientConfig, LSPClientState } from "./core/state.ts";
 
 // Factory function for creating and initializing clients
-export { createAndInitializeLSPClient } from "./core/client-legacy.ts";
+export { createAndInitializeLSPClient } from "./core/client.ts";
 
 // ============================================================================
 // Protocol Types
@@ -125,7 +125,7 @@ export { createLSPSymbolProvider } from "./providers.ts";
 // ============================================================================
 // Capabilities
 // ============================================================================
-export { 
+export {
   CapabilityChecker,
   createToolCapabilityMap,
   supportsDefinition,
@@ -135,7 +135,7 @@ export {
   supportsRename,
   supportsFormatting,
   supportsDiagnostics,
-  type ToolCapabilityRequirement 
+  type ToolCapabilityRequirement,
 } from "./capabilities/CapabilityChecker.ts";
 
 // ============================================================================
