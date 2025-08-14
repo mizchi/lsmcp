@@ -1,5 +1,6 @@
 import { getNodeModulesCommand } from "../utils/nodeModulesUtils.ts";
 import type { LspClientConfig } from "../config/schema.ts";
+import { resolveAdapterCommand as resolveWithBinFinder } from "../utils/binFinder.ts";
 import { debugLogWithPrefix } from "../utils/debugLog.ts";
 
 /**
@@ -9,7 +10,17 @@ export function adapterToLanguageConfig(
   adapter: LspClientConfig,
   projectRoot?: string,
 ): LspClientConfig {
-  // Check if this is a node_modules binary that should be resolved
+  // Use the new binFinder if binFindStrategy is available
+  if (adapter.binFindStrategy && !adapter.args?.length) {
+    const resolved = resolveWithBinFinder(adapter, projectRoot);
+    return {
+      ...adapter,
+      bin: resolved.command,
+      args: resolved.args,
+    };
+  }
+
+  // Legacy behavior for backward compatibility
   const nodeModulesBinaries = [
     "typescript-language-server",
     "tsgo",
@@ -40,6 +51,12 @@ export function resolveAdapterCommand(
   adapter: LspClientConfig,
   projectRoot?: string,
 ): { command: string; args: string[] } {
+  // Use the new binFinder if binFindStrategy is available
+  if (adapter.binFindStrategy && !adapter.args?.length) {
+    return resolveWithBinFinder(adapter, projectRoot);
+  }
+
+  // Legacy behavior for backward compatibility
   const nodeModulesBinaries = [
     "typescript-language-server",
     "tsgo",

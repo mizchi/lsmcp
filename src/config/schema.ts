@@ -81,6 +81,22 @@ export const serverCapabilitiesSchema = z.object({
 
 export type ServerCapabilities = z.infer<typeof serverCapabilitiesSchema>;
 
+// Binary find strategy schema
+export const binFindStrategySchema = z.object({
+  /** List of binary names to search for in order */
+  searchPaths: z
+    .array(z.string())
+    .describe("Binary names to search for in order of preference"),
+
+  /** NPX package to use as fallback */
+  npxPackage: z
+    .string()
+    .optional()
+    .describe("NPX package name to use as fallback if binary not found"),
+});
+
+export type BinFindStrategy = z.infer<typeof binFindStrategySchema>;
+
 // LSP client config base schema (common fields)
 export const lspClientConfigBaseSchema = z.object({
   /** Adapter ID */
@@ -94,6 +110,11 @@ export const lspClientConfigBaseSchema = z.object({
     .array(z.string())
     .optional()
     .describe("Command line arguments for the LSP server"),
+
+  /** Binary find strategy (ignored when bin/args are explicitly set) */
+  binFindStrategy: binFindStrategySchema
+    .optional()
+    .describe("Strategy for finding the LSP server binary"),
 
   /** LSP initialization options */
   initializationOptions: z

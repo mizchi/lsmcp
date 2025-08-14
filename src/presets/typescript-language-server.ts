@@ -8,6 +8,10 @@ export const typescriptAdapter: Preset = {
   presetId: "typescript",
   bin: "typescript-language-server",
   args: ["--stdio"],
+  binFindStrategy: {
+    searchPaths: ["typescript-language-server"],
+    npxPackage: "typescript-language-server",
+  },
   files: getTsJsPatterns(),
   initializationOptions: {
     preferences: {
