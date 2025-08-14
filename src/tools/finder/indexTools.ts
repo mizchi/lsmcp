@@ -197,27 +197,35 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
         let pattern: string;
         const config = loadIndexConfig(rootPath);
 
-        // Priority: 1. files, 2. preset defaults, 3. empty (no auto-indexing)
+        // Priority: 1. files from config, 2. files from context, 3. preset defaults, 4. empty (no auto-indexing)
         if (config?.files && config.files.length > 0) {
           pattern = config.files.join(",");
           debugLogWithPrefix(
             "search_symbol_from_index",
             `Using patterns from config.files: ${pattern}`,
           );
-        } else if (config?.preset) {
+        } else if (context?.config?.files && Array.isArray(context.config.files)) {
+          // Check if files are provided in context (from preset)
+          pattern = (context.config.files as string[]).join(",");
+          debugLogWithPrefix(
+            "search_symbol_from_index",
+            `Using patterns from context.config.files: ${pattern}`,
+          );
+        } else if (context?.config?.preset) {
           // Use preset-specific patterns
-          pattern = getAdapterDefaultPattern(config.preset);
+          const presetId = context.config.preset as string;
+          pattern = getAdapterDefaultPattern(presetId);
           if (!pattern) {
             // Preset not found or has no default patterns
             debugLogWithPrefix(
               "search_symbol_from_index",
-              `Unknown preset '${config.preset}' or preset has no default patterns`,
+              `Unknown preset '${presetId}' or preset has no default patterns`,
             );
-            return `Unknown preset '${config.preset}' or preset has no default patterns. Please specify 'files' in your .lsmcp/config.json`;
+            return `Unknown preset '${presetId}' or preset has no default patterns. Please specify 'files' in your .lsmcp/config.json`;
           }
           debugLogWithPrefix(
             "search_symbol_from_index",
-            `Using patterns from preset '${config.preset}': ${pattern}`,
+            `Using patterns from preset '${presetId}': ${pattern}`,
           );
         } else {
           // No preset or files configured - don't auto-index

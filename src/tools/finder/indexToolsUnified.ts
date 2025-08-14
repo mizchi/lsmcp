@@ -59,7 +59,7 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
     const config = loadIndexConfig(rootPath);
 
     if (!actualPattern) {
-      // Priority: 1. files, 2. preset defaults, 3. error
+      // Priority: 1. files from config, 2. files from context, 3. preset defaults, 4. error
       if (config?.files && config.files.length > 0) {
         // Use patterns from config.json
         actualPattern = config.files.join(",");
@@ -67,23 +67,31 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
           "index_symbols",
           `Using patterns from config.files: ${actualPattern}`,
         );
-      } else if (config?.preset) {
+      } else if (context?.config?.files && Array.isArray(context.config.files)) {
+        // Check if files are provided in context (from preset)
+        actualPattern = (context.config.files as string[]).join(",");
+        debugLogWithPrefix(
+          "index_symbols",
+          `Using patterns from context.config.files: ${actualPattern}`,
+        );
+      } else if (context?.config?.preset) {
         // Use preset-specific patterns
-        actualPattern = getAdapterDefaultPattern(config.preset);
+        const presetId = context.config.preset as string;
+        actualPattern = getAdapterDefaultPattern(presetId);
         if (!actualPattern) {
           // Preset not found or has no default patterns
           debugLogWithPrefix(
             "index_symbols",
-            `Unknown preset '${config.preset}' or preset has no default patterns`,
+            `Unknown preset '${presetId}' or preset has no default patterns`,
           );
           return {
             success: false,
-            message: `Unknown preset '${config.preset}' or preset has no default patterns. Please specify 'files' in your .lsmcp/config.json`,
+            message: `Unknown preset '${presetId}' or preset has no default patterns. Please specify 'files' in your .lsmcp/config.json`,
           };
         }
         debugLogWithPrefix(
           "index_symbols",
-          `Using patterns from preset '${config.preset}': ${actualPattern}`,
+          `Using patterns from preset '${presetId}': ${actualPattern}`,
         );
       } else {
         // No preset or files configured
