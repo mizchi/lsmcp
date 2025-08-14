@@ -381,6 +381,7 @@ export interface ExtendedLSMCPConfig extends LSMCPConfig {
   serverCapabilities?: ServerCapabilities;
   languageFeatures?: Record<string, any>;
   needsDiagnosticDeduplication?: boolean;
+  binFindStrategy?: BinFindStrategy;
 }
 
 // Default symbol filter configuration

@@ -13,10 +13,8 @@ export const ruffAdapter: Preset = {
       { type: "uv", tool: "ruff" },
       // 2. Check global installation
       { type: "global", names: ["ruff", "ruff-lsp"] },
-      // 3. Try uvx as fallback
-      { type: "uvx", package: "ruff" },
-      // 4. Check Python virtual environments
-      { type: "venv", names: ["ruff", "ruff-lsp"] },
+      // 3. Check Python virtual environments
+      { type: "venv", names: ["ruff", "ruff-lsp"], venvDirs: [".venv", "venv"] },
     ],
     defaultArgs: ["server"],
   },

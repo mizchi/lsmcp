@@ -8,7 +8,7 @@ import { join } from "path";
 import { execSync } from "child_process";
 import { PresetRegistry, globalPresetRegistry } from "../config/loader.ts";
 import { resolveAdapterCommand } from "../presets/utils.ts";
-import type { AdapterConfig } from "../config/schema.ts";
+import type { Preset } from "../config/schema.ts";
 import { registerBuiltinAdapters } from "../config/presets.ts";
 
 export interface DoctorResult {
@@ -199,7 +199,7 @@ async function checkAvailableServers(
         try {
           // Use binFindStrategy if available
           const resolved = resolveAdapterCommand(
-            adapter as AdapterConfig,
+            adapter as Preset,
             projectRoot,
           );
           command = resolved.command;

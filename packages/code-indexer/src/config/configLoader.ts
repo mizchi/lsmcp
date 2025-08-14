@@ -53,7 +53,7 @@ export function loadIndexConfig(rootPath: string): IndexConfig {
 
     // Merge user config with defaults
     return {
-      indexFiles: userConfig.indexFiles ?? defaultConfig.indexFiles,
+      files: userConfig.files ?? defaultConfig.files,
       settings: {
         ...defaultConfig.settings,
         ...userConfig.settings,
@@ -80,10 +80,10 @@ export function loadIndexConfig(rootPath: string): IndexConfig {
 export function getDefaultIndexPattern(rootPath: string): string {
   const config = loadIndexConfig(rootPath);
 
-  if (config?.indexFiles && config.indexFiles.length > 0) {
+  if (config?.files && config.files.length > 0) {
     // Join multiple patterns with comma (will be handled by glob)
     // Convert array patterns to a single glob pattern
-    return config.indexFiles.join(",");
+    return config.files.join(",");
   }
 
   // Default fallback
