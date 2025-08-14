@@ -1,3 +1,18 @@
+# [0.10.0-rc.2](https://github.com/mizchi/lsmcp/compare/v0.10.0-rc.1...v0.10.0-rc.2) (2025-08-14)
+
+
+### Bug Fixes
+
+* correct F# symbol positions when fsautocomplete returns comment lines ([cf88b87](https://github.com/mizchi/lsmcp/commit/cf88b87292367c3cfe6b3cd6d81c9104398aa7c8)), closes [#33](https://github.com/mizchi/lsmcp/issues/33)
+* improve F# symbol position fix to handle record fields ([60a6a28](https://github.com/mizchi/lsmcp/commit/60a6a281b92683df98365fbedf1cbc7f62a3c9d6))
+
+
+### Features
+
+* generate lsmcp.schema.json from zod schema and implement environment auto-detection ([774e615](https://github.com/mizchi/lsmcp/commit/774e615fd63839011efbd051d2ef2b6fb91408d4))
+
+
+
 ## [0.10.0-rc.2] - 2025-08-13
 
 ### Added
