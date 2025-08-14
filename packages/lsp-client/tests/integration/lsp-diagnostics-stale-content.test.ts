@@ -27,7 +27,7 @@ describe("LSP Diagnostics - Stale Content Issue #8", () => {
     // Start MCP server with LSP support
     transport = new StdioClientTransport({
       command: "node",
-      args: [path.join(__dirname, "../../dist/lsmcp.js"), "-p", "typescript"],
+      args: [path.join(__dirname, "../../../../dist/lsmcp.js"), "-p", "typescript"],
       env: Object.fromEntries(
         Object.entries(process.env).filter(([_, v]) => v !== undefined),
       ) as Record<string, string>,

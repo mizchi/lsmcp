@@ -21,8 +21,17 @@ describe("tsgoAdapter", () => {
   describe("adapter configuration", () => {
     it("should have correct basic configuration", () => {
       expect(tsgoAdapter.presetId).toBe("tsgo");
-      expect(tsgoAdapter.bin).toBe("npx");
-      expect(tsgoAdapter.args).toEqual(["tsgo", "--lsp", "--stdio"]);
+      expect(tsgoAdapter.bin).toBeUndefined();
+      expect(tsgoAdapter.args).toBeUndefined();
+      expect(tsgoAdapter.binFindStrategy).toBeDefined();
+      expect(tsgoAdapter.binFindStrategy?.searchPaths).toEqual(["tsgo"]);
+      expect(tsgoAdapter.binFindStrategy?.npxPackage).toBe(
+        "@typescript/native-preview",
+      );
+      expect(tsgoAdapter.binFindStrategy?.defaultArgs).toEqual([
+        "--lsp",
+        "--stdio",
+      ]);
     });
 
     it("should have appropriate unsupported tools", () => {
@@ -65,17 +74,24 @@ describe("tsgoAdapter", () => {
   });
 
   describe("resolveAdapterCommand", () => {
-    it("should return npx command with args as configured", () => {
-      // Since tsgoAdapter.bin is "npx", it won't go through nodeModulesBinaries resolution
+    it("should use binFindStrategy to resolve command", () => {
+      // The command will be resolved through binFindStrategy
       const result = resolveAdapterCommand(tsgoAdapter, "/project");
 
-      expect(result).toEqual({
-        command: "npx",
-        args: ["tsgo", "--lsp", "--stdio"],
-      });
+      // It should either find tsgo or fallback to npx
+      expect(result).toBeDefined();
+      expect(result.command).toBeDefined();
+      expect(result.args).toContain("--lsp");
+      expect(result.args).toContain("--stdio");
+
+      // If npx fallback is used
+      if (result.command === "npx") {
+        expect(result.args).toContain("-y");
+        expect(result.args).toContain("@typescript/native-preview");
+      }
     });
 
-    it("should not call getNodeModulesCommand for npx bin", async () => {
+    it("should not call getNodeModulesCommand when using binFindStrategy", async () => {
       const { getNodeModulesCommand } = await import(
         "../utils/nodeModulesUtils.ts"
       );
@@ -84,10 +100,8 @@ describe("tsgoAdapter", () => {
       const result = resolveAdapterCommand(tsgoAdapter, "/project");
 
       expect(mockGetNodeModulesCommand).not.toHaveBeenCalled();
-      expect(result).toEqual({
-        command: "npx",
-        args: ["tsgo", "--lsp", "--stdio"],
-      });
+      expect(result.args).toContain("--lsp");
+      expect(result.args).toContain("--stdio");
     });
   });
 });

@@ -39,7 +39,7 @@ export default defineConfig({
         test: {
           name: "unit",
           includeSource: ["src/**/*.ts", "packages/**/*.ts"],
-          include: ["src/**/*.test.ts", "packages/**/*.test.ts"],
+          include: ["src/**/*.test.ts", "packages/**/*.test.ts", "tests/unit/**/*.test.ts"],
           exclude: [
             ...GLOBAL_IGNORED_FILES,
             // These files contain LSP integration tests that should not run as unit tests
