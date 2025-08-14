@@ -9,7 +9,7 @@
   },
   "scripts": {
     "prepublishOnly": "pnpm build",
-    "build": "tsdown",
+    "build": "tsx scripts/generate-schema.ts && tsdown",
     "watch": "tsdown --watch",
     "typecheck": "tsgo",
     "typecheck:tsc": "tsc --noEmit -p tsconfig.json",
