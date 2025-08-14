@@ -31,10 +31,24 @@ describe("binFindStrategy integration", () => {
   describe("tsgo preset with binFindStrategy", () => {
     it("should have binFindStrategy defined", () => {
       expect(tsgoAdapter.binFindStrategy).toBeDefined();
-      expect(tsgoAdapter.binFindStrategy?.searchPaths).toEqual(["tsgo"]);
-      expect(tsgoAdapter.binFindStrategy?.npxPackage).toBe(
-        "@typescript/native-preview",
+      expect(tsgoAdapter.binFindStrategy?.strategies).toBeDefined();
+      expect(tsgoAdapter.binFindStrategy?.strategies?.length).toBeGreaterThan(0);
+      // Check for node_modules strategy
+      const nodeModulesStrategy = tsgoAdapter.binFindStrategy?.strategies?.find(
+        (s) => s.type === "node_modules"
       );
+      expect(nodeModulesStrategy).toBeDefined();
+      if (nodeModulesStrategy && "names" in nodeModulesStrategy) {
+        expect(nodeModulesStrategy.names).toContain("tsgo");
+      }
+      // Check for npx strategy
+      const npxStrategy = tsgoAdapter.binFindStrategy?.strategies?.find(
+        (s) => s.type === "npx"
+      );
+      expect(npxStrategy).toBeDefined();
+      if (npxStrategy && "package" in npxStrategy) {
+        expect(npxStrategy.package).toBe("@typescript/native-preview");
+      }
       expect(tsgoAdapter.binFindStrategy?.defaultArgs).toEqual([
         "--lsp",
         "--stdio",
@@ -167,8 +181,10 @@ export { add };
       // Create a preset with a non-existent binary
       const customPreset = {
         binFindStrategy: {
-          searchPaths: ["non-existent-lsp-server"],
-          npxPackage: "@typescript/native-preview",
+          strategies: [
+            { type: "node_modules" as const, names: ["non-existent-lsp-server"] },
+            { type: "npx" as const, package: "@typescript/native-preview" },
+          ],
           defaultArgs: ["--lsp", "--stdio"],
         },
       };
@@ -187,7 +203,9 @@ export { add };
       // Create a preset without npx fallback
       const customPreset = {
         binFindStrategy: {
-          searchPaths: ["non-existent-lsp-server"],
+          strategies: [
+            { type: "node_modules" as const, names: ["non-existent-lsp-server"] },
+          ],
           defaultArgs: ["--lsp"],
         },
       };
