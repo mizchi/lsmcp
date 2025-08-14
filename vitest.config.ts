@@ -8,12 +8,16 @@ export default defineConfig({
     alias: [
       // Runtime alias for the new package entry
       {
-        find: "@lsmcp/code-indexer",
+        find: "@internal/code-indexer",
         replacement: path.resolve(__dirname, "packages/code-indexer/src/index.ts"),
       },
       {
-        find: "@lsmcp/lsp-client",
+        find: "@internal/lsp-client",
         replacement: path.resolve(__dirname, "packages/lsp-client/src/index.ts"),
+      },
+      {
+        find: "@internal/types",
+        replacement: path.resolve(__dirname, "packages/types/src/index.ts"),
       },
       // Alias to access repo root src as "lsmcp/*" from packages
       {

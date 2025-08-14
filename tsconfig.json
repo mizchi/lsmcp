@@ -9,10 +9,12 @@
     "forceConsistentCasingInFileNames": true,
     "allowImportingTsExtensions": true,
     "paths": {
-      "@lsmcp/code-indexer": ["./packages/code-indexer/src/index.ts"],
-      "@lsmcp/lsp-client": ["./packages/lsp-client/src/index.ts"],
-      "@lsmcp/types": ["./packages/types/src/index.ts"],
-      "@lsmcp/utils": ["./src/utils/index.ts"]
+      "@internal/code-indexer": ["./packages/code-indexer/src/index.ts"],
+      "@internal/code-indexer/*": ["./packages/code-indexer/src/*"],
+      "@internal/lsp-client": ["./packages/lsp-client/src/index.ts"],
+      "@internal/lsp-client/*": ["./packages/lsp-client/src/*"],
+      "@internal/types": ["./packages/types/src/index.ts"],
+      "@internal/types/*": ["./packages/types/src/*"]
     },
     "lib": ["esnext", "dom"],
     "types": ["vitest/importMeta"],

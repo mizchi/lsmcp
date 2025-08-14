@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { lspGetDefinitionsTool } from "./definitions.ts";
-import { setupLSPForTest, teardownLSPForTest } from "@lsmcp/lsp-client";
+import { setupLSPForTest, teardownLSPForTest } from "@internal/lsp-client";
 import path from "path";
 
 describe.skip("lspGetDefinitionsTool with include_body", () => {

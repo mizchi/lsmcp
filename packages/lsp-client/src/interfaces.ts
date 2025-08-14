@@ -16,7 +16,7 @@ export interface IErrorHandler {
 }
 
 // Re-export FileSystemApi as IFileSystem for backward compatibility
-export type { FileSystemApi as IFileSystem } from "@lsmcp/types";
+export type { FileSystemApi as IFileSystem } from "@internal/types";
 
 // Language detection interface
 export interface ILanguageDetector {

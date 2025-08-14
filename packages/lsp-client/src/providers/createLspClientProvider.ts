@@ -2,7 +2,7 @@
  * Factory function to create LSP Client providers
  */
 
-import type { FileSystemApi, LspClientProvider } from "@lsmcp/types";
+import type { FileSystemApi, LspClientProvider } from "@internal/types";
 import { NativeLspProvider } from "./NativeLspProvider.ts";
 
 /**

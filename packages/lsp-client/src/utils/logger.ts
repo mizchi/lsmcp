@@ -2,11 +2,11 @@ import { appendFileSync, existsSync, mkdirSync } from "fs";
 import { errorLog } from "../../../../src/utils/debugLog.ts";
 import { join } from "path";
 import { debugLog } from "../utils/debug.ts";
-import { LogLevel, type LogEntry, type DebugSession } from "@lsmcp/types";
+import { LogLevel, type LogEntry, type DebugSession } from "@internal/types";
 
-export { LogLevel, type LogEntry } from "@lsmcp/types";
+export { LogLevel, type LogEntry } from "@internal/types";
 
-// Use DebugSession directly from @lsmcp/types
+// Use DebugSession directly from @internal/types
 
 interface DebugLoggerState {
   logLevel: LogLevel;

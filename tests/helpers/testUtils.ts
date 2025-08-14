@@ -5,8 +5,8 @@
  * - createTestExecutionContext to seed context for getOrCreateIndex or direct SymbolIndex usage
  */
 
-import type { SymbolProvider } from "@lsmcp/code-indexer";
-import type { FileSystemApi } from "@lsmcp/types";
+import type { SymbolProvider } from "@internal/code-indexer";
+import type { FileSystemApi } from "@internal/types";
 import {
   SymbolKind,
   type DocumentSymbol,

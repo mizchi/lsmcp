@@ -2,7 +2,7 @@
  * Tool list exports
  */
 
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 
 // Import analysis tools
 import { indexTools } from "./finder/indexTools.ts";

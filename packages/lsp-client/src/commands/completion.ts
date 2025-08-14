@@ -1,4 +1,4 @@
-import type { CompletionItem, Position } from "@lsmcp/types";
+import type { CompletionItem, Position } from "@internal/types";
 import type {
   CompletionParams,
   CompletionResult,

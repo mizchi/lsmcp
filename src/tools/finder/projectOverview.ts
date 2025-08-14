@@ -3,15 +3,15 @@
  */
 
 import { z } from "zod";
-import type { McpToolDef, McpContext } from "@lsmcp/types";
+import type { McpToolDef, McpContext } from "@internal/types";
 import {
   getOrCreateIndex,
   getIndexStats,
   querySymbols,
-} from "@lsmcp/code-indexer";
+} from "@internal/code-indexer";
 // Remove getLSPClient - no longer needed
-import { loadIndexConfig } from "@lsmcp/code-indexer";
-import { getAdapterDefaultPattern } from "@lsmcp/code-indexer";
+import { loadIndexConfig } from "@internal/code-indexer";
+import { getAdapterDefaultPattern } from "@internal/code-indexer";
 import { debugLogWithPrefix } from "../../utils/debugLog.ts";
 import { glob } from "gitaware-glob";
 import { SymbolKind } from "vscode-languageserver-types";

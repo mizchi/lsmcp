@@ -10,7 +10,7 @@ import type {
   LspClientAdapter,
   LspClientProvider,
   LspClientConfig,
-} from "@lsmcp/types";
+} from "@internal/types";
 
 /**
  * Native LSP Client Provider
@@ -47,7 +47,7 @@ export class NativeLspProvider implements LspClientProvider {
     return {
       name: "Native LSP Client",
       type: "native" as const,
-      description: "Native LSP client implementation using @lsmcp/lsp-client",
+      description: "Native LSP client implementation using @internal/lsp-client",
     };
   }
 

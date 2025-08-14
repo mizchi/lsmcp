@@ -6,7 +6,7 @@ import { SymbolIndex } from "../engine/SymbolIndex.ts";
 import { NodeFileSystem } from "../engine/NodeFileSystem.ts";
 import { SQLiteCache } from "../cache/SQLiteCache.ts";
 import { MemoryCache } from "../cache/MemoryCache.ts";
-import { createLSPSymbolProvider } from "@lsmcp/lsp-client";
+import { createLSPSymbolProvider } from "@internal/lsp-client";
 import { fileURLToPath } from "url";
 import { readFile } from "fs/promises";
 import type { IndexedSymbol, SymbolQuery } from "../engine/types.ts";

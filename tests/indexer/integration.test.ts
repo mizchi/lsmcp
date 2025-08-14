@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { SymbolIndex, MemoryCache } from "@lsmcp/code-indexer";
-import { createLSPSymbolProvider, type LSPClient } from "@lsmcp/lsp-client";
+import { SymbolIndex, MemoryCache } from "@internal/code-indexer";
+import { createLSPSymbolProvider, type LSPClient } from "@internal/lsp-client";
 import { SymbolKind } from "vscode-languageserver-types";
 
 describe("Indexer Integration", () => {

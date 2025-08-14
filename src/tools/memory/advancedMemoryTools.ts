@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 import { ReportManager } from "../../features/memory/database/reportManager.ts";
 import { MemoryDatabase } from "../../features/memory/database/memoryDatabase.ts";
 import { resolve } from "path";

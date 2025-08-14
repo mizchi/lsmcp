@@ -1,4 +1,4 @@
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
 import { applyTextEdits } from "../../utils/applyTextEdits.ts";
@@ -44,11 +44,11 @@ function findTargetInFile(
   throw new Error(`Target "${target}" not found in file`);
 }
 
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import path from "path";
-import { Position, TextEdit, WorkspaceEdit } from "@lsmcp/types";
-import { debug } from "@lsmcp/lsp-client";
+import { Position, TextEdit, WorkspaceEdit } from "@internal/types";
+import { debug } from "@internal/lsp-client";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),

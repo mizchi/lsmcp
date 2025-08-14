@@ -1,12 +1,12 @@
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import { z } from "zod";
-import { CompletionItem, CompletionItemKind } from "@lsmcp/types";
-import { commonSchemas } from "@lsmcp/types";
-import type { McpToolDef } from "@lsmcp/types";
-import { loadFileContext } from "@lsmcp/lsp-client";
-import { withTemporaryDocument } from "@lsmcp/lsp-client";
-import { resolveLineIndexOrThrow } from "@lsmcp/lsp-client";
-import { createAdvancedCompletionHandler } from "@lsmcp/lsp-client";
+import { CompletionItem, CompletionItemKind } from "@internal/types";
+import { commonSchemas } from "@internal/types";
+import type { McpToolDef } from "@internal/types";
+import { loadFileContext } from "@internal/lsp-client";
+import { withTemporaryDocument } from "@internal/lsp-client";
+import { resolveLineIndexOrThrow } from "@internal/lsp-client";
+import { createAdvancedCompletionHandler } from "@internal/lsp-client";
 
 const schema = z.object({
   root: commonSchemas.root,

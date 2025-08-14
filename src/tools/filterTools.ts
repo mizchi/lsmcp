@@ -7,8 +7,8 @@ import {
   type ServerCapabilities,
   CapabilityChecker,
   createToolCapabilityMap,
-} from "@lsmcp/lsp-client";
-import type { McpToolDef } from "@lsmcp/types";
+} from "@internal/lsp-client";
+import type { McpToolDef } from "@internal/types";
 
 // Use the centralized capability map from lsp-client
 const toolCapabilityMap = createToolCapabilityMap();

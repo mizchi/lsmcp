@@ -18,7 +18,7 @@ import type {
   SymbolInformation,
   TextEdit,
   WorkspaceEdit,
-} from "@lsmcp/types";
+} from "@internal/types";
 
 /**
  * Base interface for all LSP commands

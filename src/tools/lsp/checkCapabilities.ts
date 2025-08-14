@@ -1,6 +1,6 @@
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import { z } from "zod";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 // These imports should be provided by the consumer
 // import { getUnsupportedToolsByCapabilities } from "../../../../src/mcp/registry/capabilityFilter.ts";
 // import { lspTools } from "../../../../src/mcp/registry/toolRegistry.ts";

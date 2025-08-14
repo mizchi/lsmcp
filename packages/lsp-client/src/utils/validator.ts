@@ -1,5 +1,5 @@
 import { ChildProcess } from "child_process";
-import { Position } from "@lsmcp/types";
+import { Position } from "@internal/types";
 import { LSPClient } from "../protocol/types/index.ts";
 import { createLSPClient } from "../core/client.ts";
 import type { LSPClientConfig } from "../core/state.ts";

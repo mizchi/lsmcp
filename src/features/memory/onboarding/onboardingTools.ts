@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 import { platform } from "node:os";
 import { existsSync } from "node:fs";
 import { join } from "node:path";

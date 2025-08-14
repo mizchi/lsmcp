@@ -44,7 +44,7 @@ export function isLSPNotification(
   return "method" in message && !("id" in message);
 }
 
-// Re-export commonly used types from @lsmcp/types
+// Re-export commonly used types from @internal/types
 export {
   CodeAction,
   Command,
@@ -65,7 +65,7 @@ export {
   SymbolInformation,
   TextEdit,
   WorkspaceEdit,
-} from "@lsmcp/types";
+} from "@internal/types";
 
 // Type aliases need to be exported separately
-export type { Definition, SignatureHelp } from "@lsmcp/types";
+export type { Definition, SignatureHelp } from "@internal/types";

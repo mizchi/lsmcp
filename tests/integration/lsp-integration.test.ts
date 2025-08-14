@@ -6,7 +6,7 @@ import { createDefinitionsTool } from "../../src/tools/lsp/definitions.ts";
 import { createDiagnosticsTool } from "../../src/tools/lsp/diagnostics.ts";
 import { createRenameSymbolTool } from "../../src/tools/lsp/rename.ts";
 import { createDocumentSymbolsTool } from "../../src/tools/lsp/documentSymbols.ts";
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
@@ -57,7 +57,7 @@ describe("LSP integration tests", () => {
     });
 
     // Initialize LSP client with tmpDir
-    const { createLSPClient } = await import("@lsmcp/lsp-client");
+    const { createLSPClient } = await import("@internal/lsp-client");
     lspClient = createLSPClient({
       process: lspProcess,
       rootPath: tmpDir,

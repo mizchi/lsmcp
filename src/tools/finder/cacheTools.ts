@@ -1,9 +1,9 @@
 import { z } from "zod";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 import {
   searchSymbolsInCache,
   getSymbolCacheManager,
-} from "@lsmcp/code-indexer";
+} from "@internal/code-indexer";
 
 const searchCachedSymbolsSchema = z.object({
   root: z.string().describe("Root directory for the project"),

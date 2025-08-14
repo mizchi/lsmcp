@@ -6,7 +6,7 @@ import {
   getOrCreateIndex,
   indexFiles,
   querySymbols as queryIndexSymbols,
-} from "@lsmcp/code-indexer";
+} from "@internal/code-indexer";
 import { vi } from "vitest";
 
 // Test fixture directory

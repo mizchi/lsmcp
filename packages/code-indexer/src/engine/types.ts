@@ -61,7 +61,7 @@ export interface SymbolProvider {
 /**
  * Re-export FileSystemApi as FileSystem for backward compatibility
  */
-export type { FileSystemApi as FileSystem } from "@lsmcp/types";
+export type { FileSystemApi as FileSystem } from "@internal/types";
 
 /**
  * Cache interface

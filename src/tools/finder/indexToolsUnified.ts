@@ -3,11 +3,11 @@
  */
 
 import { z } from "zod";
-import { forceClearIndex, getOrCreateIndex } from "@lsmcp/code-indexer";
+import { forceClearIndex, getOrCreateIndex } from "@internal/code-indexer";
 import { glob } from "gitaware-glob";
-import type { McpToolDef, McpContext } from "@lsmcp/types";
-import { loadIndexConfig } from "@lsmcp/code-indexer";
-import { getAdapterDefaultPattern } from "@lsmcp/code-indexer";
+import type { McpToolDef, McpContext } from "@internal/types";
+import { loadIndexConfig } from "@internal/code-indexer";
+import { getAdapterDefaultPattern } from "@internal/code-indexer";
 import { debugLogWithPrefix } from "../../utils/debugLog.ts";
 
 // Unified index_symbols schema

@@ -1,6 +1,6 @@
 import { z, type ZodType } from "zod";
 import type { Result } from "neverthrow";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 
 /**
  * Options for creating a tool with the factory

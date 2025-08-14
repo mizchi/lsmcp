@@ -6,7 +6,7 @@ import { existsSync } from "fs";
 import { readFile, readdir } from "fs/promises";
 import { errorLog } from "../../../../src/utils/debugLog.ts";
 import { join, resolve } from "path";
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import type { SymbolEntry } from "../symbolIndex.ts";
 import { glob } from "glob";
 

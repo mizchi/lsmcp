@@ -16,7 +16,7 @@ import {
   Command,
   TextEdit,
   WorkspaceEdit,
-} from "@lsmcp/types";
+} from "@internal/types";
 
 // Server capabilities
 export interface ServerCapabilities {

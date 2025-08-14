@@ -1,15 +1,15 @@
 import { z } from "zod";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 import {
   getOrCreateIndex,
   indexFiles,
   querySymbols as queryIndexSymbols,
   type SymbolQuery,
-} from "@lsmcp/code-indexer";
+} from "@internal/code-indexer";
 import { resolve } from "node:path";
 import { SymbolKind } from "vscode-languageserver-types";
 import { glob, type FileSystemInterface } from "gitaware-glob";
-import type { FileSystemApi } from "@lsmcp/types";
+import type { FileSystemApi } from "@internal/types";
 import { nodeFileSystemApi } from "../../infrastructure/NodeFileSystemApi.ts";
 import { errorLog } from "../../utils/debugLog.ts";
 

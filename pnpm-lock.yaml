@@ -8,15 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@lsmcp/code-indexer':
-        specifier: workspace:*
-        version: link:packages/code-indexer
-      '@lsmcp/lsp-client':
-        specifier: workspace:*
-        version: link:packages/lsp-client
-      '@lsmcp/types':
-        specifier: workspace:*
-        version: link:packages/types
       gitaware-glob:
         specifier: ^0.2.0
         version: 0.2.0
@@ -36,6 +27,15 @@ importers:
       '@biomejs/biome':
         specifier: ^2.0.6
         version: 2.0.6
+      '@internal/code-indexer':
+        specifier: workspace:*
+        version: link:packages/code-indexer
+      '@internal/lsp-client':
+        specifier: workspace:*
+        version: link:packages/lsp-client
+      '@internal/types':
+        specifier: workspace:*
+        version: link:packages/types
       '@modelcontextprotocol/sdk':
         specifier: ^1.12.1
         version: 1.12.1
@@ -120,16 +120,16 @@ importers:
 
   packages/code-indexer:
     dependencies:
-      '@lsmcp/lsp-client':
+      '@internal/lsp-client':
         specifier: workspace:*
         version: link:../lsp-client
-      '@lsmcp/types':
+      '@internal/types':
         specifier: workspace:*
         version: link:../types
 
   packages/lsp-client:
     dependencies:
-      '@lsmcp/types':
+      '@internal/types':
         specifier: workspace:*
         version: link:../types
       neverthrow:

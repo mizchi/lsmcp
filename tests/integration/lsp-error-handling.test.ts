@@ -49,7 +49,7 @@ describe.skip("LSP error handling tests", { timeout: 30000 }, () => {
     });
 
     // Initialize LSP client
-    const { createLSPClient } = await import("@lsmcp/lsp-client");
+    const { createLSPClient } = await import("@internal/lsp-client");
     lspClient = createLSPClient({
       process: lspProcess,
       rootPath: __dirname,
@@ -256,7 +256,9 @@ console.log(message);`;
       ).rejects.toThrow(/LSP.*not.*started|not initialized/);
 
       // Re-initialize for other tests
-      const { createLSPClient: createLSP } = await import("@lsmcp/lsp-client");
+      const { createLSPClient: createLSP } = await import(
+        "@internal/lsp-client"
+      );
       lspClient = createLSP({
         process: lspProcess,
         rootPath: __dirname,

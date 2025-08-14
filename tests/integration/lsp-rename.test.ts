@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
 import { createRenameSymbolTool } from "../../src/tools/lsp/rename.ts";
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
@@ -39,7 +39,7 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     });
 
     // Initialize LSP client
-    const { createLSPClient } = await import("@lsmcp/lsp-client");
+    const { createLSPClient } = await import("@internal/lsp-client");
     lspClient = createLSPClient({
       process: lspProcess,
       rootPath: __dirname,

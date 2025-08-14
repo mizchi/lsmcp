@@ -4,7 +4,7 @@
 
 import { spawn } from "child_process";
 import { debug as debugLog } from "./utils/mcpHelpers.ts";
-import type { McpToolDef, McpContext } from "@lsmcp/types";
+import type { McpToolDef, McpContext } from "@internal/types";
 import { ErrorContext, formatError } from "./utils/errorHandler.ts";
 import { errorLog } from "./utils/debugLog.ts";
 import { createLSPTools } from "./tools/lsp/createLspTools.ts";
@@ -75,7 +75,9 @@ export async function runLanguageServerWithConfig(
       : undefined;
 
     // Create and initialize LSP client
-    const { createAndInitializeLSPClient } = await import("@lsmcp/lsp-client");
+    const { createAndInitializeLSPClient } = await import(
+      "@internal/lsp-client"
+    );
     const lspClient = await createAndInitializeLSPClient(
       projectRoot,
       lspProcess,
@@ -260,7 +262,9 @@ export async function runLanguageServer(
       : undefined;
 
     // Create and initialize LSP client
-    const { createAndInitializeLSPClient } = await import("@lsmcp/lsp-client");
+    const { createAndInitializeLSPClient } = await import(
+      "@internal/lsp-client"
+    );
     const lspClient = await createAndInitializeLSPClient(
       projectRoot,
       lspProcess,
@@ -377,7 +381,9 @@ export async function runCustomLspServer(
     });
 
     // Create and initialize LSP client
-    const { createAndInitializeLSPClient } = await import("@lsmcp/lsp-client");
+    const { createAndInitializeLSPClient } = await import(
+      "@internal/lsp-client"
+    );
     const lspClient = await createAndInitializeLSPClient(
       projectRoot,
       lspProcess,

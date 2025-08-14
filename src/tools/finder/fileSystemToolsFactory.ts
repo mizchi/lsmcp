@@ -2,9 +2,9 @@ import { z } from "zod";
 import { join, relative } from "node:path";
 import { glob as gitawareGlob, type FileSystemInterface } from "gitaware-glob";
 import { minimatch } from "minimatch";
-import type { FileSystemApi } from "@lsmcp/types";
+import type { FileSystemApi } from "@internal/types";
 import { nodeFileSystemApi } from "../../infrastructure/NodeFileSystemApi.ts";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 
 const listDirSchema = z.object({
   relativePath: z
@@ -65,6 +65,7 @@ export function createListDirTool(
           files: [],
         };
 
+        // Collect files
         for await (const path of gitawareGlob(globPattern, globOptions)) {
           const isDirectory = path.endsWith("/");
           const cleanPath = isDirectory ? path.slice(0, -1) : path;
@@ -73,6 +74,34 @@ export function createListDirTool(
             result.directories.push(cleanPath);
           } else {
             result.files.push(cleanPath);
+          }
+        }
+
+        // For non-recursive mode, also explicitly check for directories
+        if (!recursive) {
+          const entries = await fileSystemApi.readdir(absolutePath);
+          for (const entry of entries) {
+            const entryPath = join(absolutePath, entry);
+            const stats = await fileSystemApi.stat(entryPath);
+            if (stats.isDirectory()) {
+              const relativeDirPath = join(relativePath, entry);
+              // Check if not already in the list and not gitignored
+              if (!result.directories.includes(relativeDirPath)) {
+                // Skip common ignored directories
+                const ignoredDirs = [
+                  "node_modules",
+                  ".git",
+                  "dist",
+                  "build",
+                  ".next",
+                  ".nuxt",
+                  "coverage",
+                ];
+                if (!ignoredDirs.includes(entry) && !entry.startsWith(".")) {
+                  result.directories.push(relativeDirPath);
+                }
+              }
+            }
           }
         }
 
@@ -329,32 +358,85 @@ export function createSearchForPatternTool(
           });
         }
 
-        // Search in files
+        // Search in files with performance optimizations
         const results: Record<string, string[]> = {};
         const regex = new RegExp(substringPattern, "gm");
 
-        for (const file of filesToSearch) {
-          const filePath = file.startsWith("/") ? file : join(rootPath, file);
-          const content = await fileSystemApi.readFile(filePath);
-          const lines = content.split("\n");
-          const matches: string[] = [];
+        // Process files in batches for better performance
+        const BATCH_SIZE = 10;
+        const MAX_FILE_SIZE = 1024 * 1024; // 1MB - skip very large files for performance
 
-          for (let i = 0; i < lines.length; i++) {
-            if (regex.test(lines[i])) {
-              const startLine = Math.max(0, i - contextLinesBefore);
-              const endLine = Math.min(lines.length - 1, i + contextLinesAfter);
+        for (let i = 0; i < filesToSearch.length; i += BATCH_SIZE) {
+          const batch = filesToSearch.slice(i, i + BATCH_SIZE);
 
-              const contextLines = [];
-              for (let j = startLine; j <= endLine; j++) {
-                contextLines.push(`${j + 1}: ${lines[j]}`);
+          // Process batch in parallel
+          const batchResults = await Promise.all(
+            batch.map(async (file) => {
+              try {
+                const filePath = file.startsWith("/")
+                  ? file
+                  : join(rootPath, file);
+
+                // Check file size first
+                const stats = await fileSystemApi.stat(filePath);
+                if (stats.size > MAX_FILE_SIZE) {
+                  return { file: relative(rootPath, filePath), matches: null };
+                }
+
+                const content = await fileSystemApi.readFile(filePath);
+                const lines = content.split("\n");
+                const matches: string[] = [];
+
+                // Reset regex lastIndex for each file
+                regex.lastIndex = 0;
+
+                for (let i = 0; i < lines.length; i++) {
+                  regex.lastIndex = 0; // Reset for each line
+                  if (regex.test(lines[i])) {
+                    const startLine = Math.max(0, i - contextLinesBefore);
+                    const endLine = Math.min(
+                      lines.length - 1,
+                      i + contextLinesAfter,
+                    );
+
+                    const contextLines = [];
+                    for (let j = startLine; j <= endLine; j++) {
+                      contextLines.push(`${j + 1}: ${lines[j]}`);
+                    }
+
+                    matches.push(contextLines.join("\n"));
+
+                    // Early exit if we have too many matches
+                    if (matches.length > 100) {
+                      matches.push("... (truncated, too many matches)");
+                      break;
+                    }
+                  }
+                }
+
+                return {
+                  file: relative(rootPath, filePath),
+                  matches: matches.length > 0 ? matches : null,
+                };
+              } catch (error) {
+                // Skip files that can't be read (binary files, etc.)
+                return { file: relative(rootPath, file), matches: null };
               }
+            }),
+          );
 
-              matches.push(contextLines.join("\n"));
+          // Add results
+          for (const result of batchResults) {
+            if (result.matches) {
+              results[result.file] = result.matches;
             }
           }
 
-          if (matches.length > 0) {
-            results[relative(rootPath, filePath)] = matches;
+          // Check if we have enough results
+          const currentSize = JSON.stringify(results).length;
+          if (currentSize > maxAnswerChars * 0.8) {
+            // Getting close to limit, stop searching
+            break;
           }
         }
 

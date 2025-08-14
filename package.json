@@ -55,9 +55,9 @@
     "zod": "^3.25.56"
   },
   "devDependencies": {
-    "@lsmcp/types": "workspace:*",
-    "@lsmcp/lsp-client": "workspace:*",
-    "@lsmcp/code-indexer": "workspace:*",
+    "@internal/types": "workspace:*",
+    "@internal/lsp-client": "workspace:*",
+    "@internal/code-indexer": "workspace:*",
     "@biomejs/biome": "^2.0.6",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@moonbit/moonbit-lsp": "^0.1.202506241",

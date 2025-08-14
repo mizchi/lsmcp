@@ -9,7 +9,7 @@ import {
   indexDeclarationFile,
   indexExternalLibraries,
 } from "./externalLibraryProvider.ts";
-import { createLSPClient } from "@lsmcp/lsp-client";
+import { createLSPClient } from "@internal/lsp-client";
 import { spawn } from "child_process";
 
 // Mock adapter for testing

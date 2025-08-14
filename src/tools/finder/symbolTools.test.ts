@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createGetSymbolsOverviewTool } from "./symbolToolsFactory.ts";
-import * as IndexerAdapter from "@lsmcp/code-indexer";
+import * as IndexerAdapter from "@internal/code-indexer";
 import { SymbolKind } from "vscode-languageserver-types";
 import { createFsFromVolume, Volume } from "memfs";
 import { MemFileSystemApi } from "../../infrastructure/MemFileSystemApi.ts";
-import type { FileSystemApi } from "@lsmcp/types";
+import type { FileSystemApi } from "@internal/types";
 
 // Mock only IndexerAdapter, not file system modules
-vi.mock("@lsmcp/code-indexer", () => ({
+vi.mock("@internal/code-indexer", () => ({
   getOrCreateIndex: vi.fn(),
   indexFiles: vi.fn(),
   querySymbols: vi.fn(),

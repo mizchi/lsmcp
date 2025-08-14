@@ -1,4 +1,4 @@
-import type { FileSystemApi } from "@lsmcp/types";
+import type { FileSystemApi } from "@internal/types";
 import type { IFs } from "memfs";
 import type { Stats } from "node:fs";
 import { dirname, resolve } from "node:path";

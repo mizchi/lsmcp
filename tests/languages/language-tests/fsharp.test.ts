@@ -3,8 +3,8 @@ import { join } from "path";
 import { spawn } from "child_process";
 import { fsharpAdapter } from "../../../src/presets/fsharp.ts";
 import { testLspConnection } from "../testHelpers.ts";
-import { createAndInitializeLSPClient } from "@lsmcp/lsp-client";
-import { createLSPSymbolProvider } from "@lsmcp/lsp-client";
+import { createAndInitializeLSPClient } from "@internal/lsp-client";
+import { createLSPSymbolProvider } from "@internal/lsp-client";
 import { readFile } from "fs/promises";
 import { resolveAdapterCommand } from "../../../src/presets/utils.ts";
 

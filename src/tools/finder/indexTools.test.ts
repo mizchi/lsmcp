@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import * as IndexerAdapter from "@lsmcp/code-indexer";
+import * as IndexerAdapter from "@internal/code-indexer";
 import { SymbolKind } from "vscode-languageserver-types";
 // Remove getLSPClient - no longer needed
-import { loadIndexConfig } from "@lsmcp/code-indexer";
-import { getAdapterDefaultPattern } from "@lsmcp/code-indexer";
+import { loadIndexConfig } from "@internal/code-indexer";
+import { getAdapterDefaultPattern } from "@internal/code-indexer";
 import { glob } from "gitaware-glob";
 import { searchSymbolFromIndexTool } from "./indexTools";
 
 // Mock the IndexerAdapter module
-vi.mock("@lsmcp/code-indexer", () => {
+vi.mock("@internal/code-indexer", () => {
   const KIND_MAP: Record<string, number> = {
     File: 1,
     Module: 2,
@@ -84,7 +84,7 @@ vi.mock("@lsmcp/code-indexer", () => {
 });
 
 // Mock other dependencies
-vi.mock("@lsmcp/lsp-client", () => ({
+vi.mock("@internal/lsp-client", () => ({
   getLSPClient: vi.fn(),
 }));
 

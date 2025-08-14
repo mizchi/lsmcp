@@ -1,10 +1,10 @@
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import { z } from "zod";
-import { commonSchemas } from "@lsmcp/types";
+import { commonSchemas } from "@internal/types";
 import { err, ok, type Result } from "neverthrow";
-import type { McpToolDef } from "@lsmcp/types";
-import { debug } from "@lsmcp/lsp-client";
-import { validateLineAndSymbol } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@internal/types";
+import { debug } from "@internal/lsp-client";
+import { validateLineAndSymbol } from "@internal/lsp-client";
 import { readFileSync } from "fs";
 import path from "path";
 import { pathToFileURL } from "url";
@@ -60,7 +60,7 @@ import type {
   LocationLink,
   DocumentSymbol,
   SymbolInformation,
-} from "@lsmcp/lsp-client";
+} from "@internal/lsp-client";
 
 /**
  * Find the symbol containing the given position in a document symbols tree

@@ -6,7 +6,7 @@ import { ChildProcess, spawn } from "child_process";
 import { join, dirname, resolve } from "path";
 import { existsSync } from "fs";
 import { fileURLToPath } from "url";
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(__dirname, "../..");
@@ -68,7 +68,7 @@ export async function setupLSPForTesting(
   });
 
   // Initialize LSP client
-  const { createLSPClient } = await import("@lsmcp/lsp-client");
+  const { createLSPClient } = await import("@internal/lsp-client");
   const lspClient = createLSPClient({
     process: lspProcess,
     rootPath: workingDir,

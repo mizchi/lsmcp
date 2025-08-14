@@ -1,12 +1,12 @@
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import { z } from "zod";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { minimatch } from "minimatch";
-import type { McpToolDef } from "@lsmcp/types";
-import { debug } from "@lsmcp/lsp-client";
+import type { McpToolDef } from "@internal/types";
+import { debug } from "@internal/lsp-client";
 import { pathToFileURL } from "url";
-import { Diagnostic } from "@lsmcp/types";
+import { Diagnostic } from "@internal/types";
 import { glob as gitawareGlob } from "gitaware-glob";
 import { glob as standardGlob } from "glob";
 import {

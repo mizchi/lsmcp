@@ -1,11 +1,11 @@
 import { z } from "zod";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 import type { SerenityEditResult } from "./regexEditTools.ts";
 import {
   getSymbolIndex,
   queryLegacySymbols,
   markFileModified,
-} from "@lsmcp/code-indexer";
+} from "@internal/code-indexer";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 

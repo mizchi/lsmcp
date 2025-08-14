@@ -9,7 +9,7 @@ import {
   FormattingOptions,
   integer,
   Diagnostic,
-} from "@lsmcp/types";
+} from "@internal/types";
 
 // Base types
 export interface TextDocumentIdentifier {
@@ -145,5 +145,5 @@ export interface RenameParams extends TextDocumentPositionParams {
 // Workspace edit params
 export interface ApplyWorkspaceEditParams {
   label?: string;
-  edit: import("@lsmcp/types").WorkspaceEdit;
+  edit: import("@internal/types").WorkspaceEdit;
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { goplsAdapter } from "../../src/presets/gopls.ts";
 import { spawn } from "child_process";
-import { createLSPClient } from "@lsmcp/lsp-client"; // from "lspClient.ts";
+import { createLSPClient } from "@internal/lsp-client"; // from "lspClient.ts";
 import path from "path";
 import fs from "fs/promises";
 import { fileURLToPath } from "url";

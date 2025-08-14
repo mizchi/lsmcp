@@ -1,10 +1,10 @@
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import { z } from "zod";
-import { DocumentSymbol, SymbolInformation, SymbolKind } from "@lsmcp/types";
-import { fileLocationSchema } from "@lsmcp/types";
-import type { McpToolDef } from "@lsmcp/types";
-import { loadFileContext } from "@lsmcp/lsp-client";
-import { withTemporaryDocument } from "@lsmcp/lsp-client";
+import { DocumentSymbol, SymbolInformation, SymbolKind } from "@internal/types";
+import { fileLocationSchema } from "@internal/types";
+import type { McpToolDef } from "@internal/types";
+import { loadFileContext } from "@internal/lsp-client";
+import { withTemporaryDocument } from "@internal/lsp-client";
 import { debugLogWithPrefix } from "../../utils/debugLog.ts";
 
 // Simple formatting functions

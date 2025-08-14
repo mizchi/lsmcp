@@ -3,7 +3,7 @@
  */
 
 import { existsSync } from "fs";
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import type { SymbolEntry } from "../symbolIndex.ts";
 import {
   type ExternalLibraryProvider,

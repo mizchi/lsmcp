@@ -9,7 +9,7 @@
 import { parseArgs } from "node:util";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { debug as debugLog } from "@lsmcp/lsp-client";
+import { debug as debugLog } from "@internal/lsp-client";
 import {
   ConfigLoader as LspConfigLoader,
   globalPresetRegistry,
@@ -174,14 +174,27 @@ async function mainWithConfigLoader() {
 
     // Check for .lsmcp/config.json
     const configPath = join(process.cwd(), ".lsmcp", "config.json");
-    if (
-      existsSync(configPath) &&
-      !values.preset &&
-      !values.config &&
-      !values.bin
-    ) {
+    const hasConfigFile = existsSync(configPath);
+    const hasExplicitConfig = values.preset || values.config || values.bin;
+
+    if (hasConfigFile && !hasExplicitConfig) {
       debugLog("[lsmcp] Loading config from .lsmcp/config.json");
       lspSources.configFile = configPath;
+    } else if (!hasConfigFile && !hasExplicitConfig) {
+      // Auto-detect environment
+      const { detectEnvironment, formatEnvironmentGuide } = await import(
+        "../utils/environmentDetector.ts"
+      );
+      const detected = detectEnvironment(process.cwd());
+
+      if (detected) {
+        errorLog(formatEnvironmentGuide(detected));
+        errorLog("");
+        errorLog("Or run with explicit preset:");
+        errorLog(`  lsmcp --preset ${detected.preset}`);
+        errorLog("");
+        process.exit(1);
+      }
     }
 
     if (values.preset) {

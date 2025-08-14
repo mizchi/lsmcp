@@ -1,11 +1,11 @@
-import type { LSPClient } from "@lsmcp/lsp-client";
-import type { McpToolDef } from "@lsmcp/types";
+import type { LSPClient } from "@internal/lsp-client";
+import type { McpToolDef } from "@internal/types";
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
 import { readFileSync } from "fs";
 import path from "path";
-import { ErrorContext, formatError } from "@lsmcp/lsp-client";
-import { validateLineAndSymbol } from "@lsmcp/lsp-client";
+import { ErrorContext, formatError } from "@internal/lsp-client";
+import { validateLineAndSymbol } from "@internal/lsp-client";
 import { pathToFileURL } from "url";
 
 // Helper functions

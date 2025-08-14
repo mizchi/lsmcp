@@ -9,9 +9,9 @@ export default defineConfig({
   },
   // Bundle workspace packages to avoid TypeScript enum issues at runtime
   noExternal: [
-    "@lsmcp/lsp-client",
-    "@lsmcp/code-indexer",
-    "@lsmcp/types",
+    "@internal/lsp-client",
+    "@internal/code-indexer",
+    "@internal/types",
     "vscode-languageserver-types",
     "vscode-languageserver-protocol",
   ],

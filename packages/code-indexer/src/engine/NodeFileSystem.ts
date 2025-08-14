@@ -5,7 +5,7 @@
 import * as fs from "fs/promises";
 import { existsSync } from "fs";
 import * as path from "path";
-import type { FileSystemApi } from "@lsmcp/types";
+import type { FileSystemApi } from "@internal/types";
 
 export class NodeFileSystem implements FileSystemApi {
   async readFile(path: string): Promise<string> {

@@ -45,7 +45,7 @@ export function getServerCharacteristics(
 }
 
 // FileSystem helpers
-import type { FileSystemApi } from "@lsmcp/types";
+import type { FileSystemApi } from "@internal/types";
 export type { FileSystemApi };
 
 export const nodeFileSystemApi: FileSystemApi = {

@@ -3,7 +3,7 @@
  */
 
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 import { z } from "zod";
 import { resolve } from "path";
 import {
@@ -12,8 +12,8 @@ import {
   getTypescriptDependencies,
   queryExternalLibrarySymbols,
   getSymbolKindName,
-} from "@lsmcp/code-indexer";
-import type { ExternalLibraryConfig } from "@lsmcp/code-indexer";
+} from "@internal/code-indexer";
+import type { ExternalLibraryConfig } from "@internal/code-indexer";
 
 /**
  * Tool: Index external libraries (node_modules)

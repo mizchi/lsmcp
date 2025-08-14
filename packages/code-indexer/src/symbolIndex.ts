@@ -15,14 +15,14 @@ import {
 import { pathToFileURL } from "url";
 import { watch, FSWatcher } from "fs";
 import { resolve, relative } from "path";
-// import { getLSPClient } from "@lsmcp/lsp-client"; // Removed - no longer using global client
-import type { LSPClient } from "@lsmcp/lsp-client";
+// import { getLSPClient } from "@internal/lsp-client"; // Removed - no longer using global client
+import type { LSPClient } from "@internal/lsp-client";
 import {
   cacheSymbolsFromIndex,
   loadCachedSymbols,
   getSymbolCacheManager,
 } from "./cache/symbolCacheIntegration.ts";
-import { withTemporaryDocument } from "@lsmcp/lsp-client";
+import { withTemporaryDocument } from "@internal/lsp-client";
 import { readFile } from "fs/promises";
 import {
   indexExternalLibraries,

@@ -16,7 +16,7 @@ import {
   SymbolIndex,
   NodeFileSystem,
   SQLiteCache,
-} from "@lsmcp/code-indexer";
+} from "@internal/code-indexer";
 import { glob } from "gitaware-glob";
 import {
   detectProjectType,
@@ -26,7 +26,7 @@ import {
   createLSPClient,
   createLSPSymbolProvider,
   type LSPClient,
-} from "@lsmcp/lsp-client";
+} from "@internal/lsp-client";
 import { spawn } from "child_process";
 import { fileURLToPath } from "url";
 

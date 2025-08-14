@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import type { McpToolDef, McpContext } from "@lsmcp/types";
+import type { McpToolDef, McpContext } from "@internal/types";
 import { debugLogWithPrefix } from "../../utils/debugLog.ts";
 import {
   clearIndex,
@@ -13,7 +13,7 @@ import {
   getIndexStats,
   updateIndexIncremental,
   getOrCreateIndex,
-} from "@lsmcp/code-indexer";
+} from "@internal/code-indexer";
 import { glob } from "gitaware-glob";
 import { relative } from "path";
 import { fileURLToPath } from "url";
@@ -21,10 +21,10 @@ import {
   SYMBOL_KIND_NAMES,
   getSymbolKindName,
   parseSymbolKind,
-} from "@lsmcp/code-indexer";
+} from "@internal/code-indexer";
 // Remove getLSPClient - no longer needed
-import { loadIndexConfig } from "@lsmcp/code-indexer";
-import { getAdapterDefaultPattern } from "@lsmcp/code-indexer";
+import { loadIndexConfig } from "@internal/code-indexer";
+import { getAdapterDefaultPattern } from "@internal/code-indexer";
 
 // Index management tools
 

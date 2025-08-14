@@ -1,4 +1,4 @@
-import type { Diagnostic } from "@lsmcp/types";
+import type { Diagnostic } from "@internal/types";
 import type { LSPClient } from "../protocol/types/index.ts";
 
 export interface DiagnosticWaitOptions {

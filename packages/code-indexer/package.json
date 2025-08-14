@@ -1,5 +1,5 @@
 {
-  "name": "@lsmcp/code-indexer",
+  "name": "@internal/code-indexer",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -12,7 +12,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@lsmcp/lsp-client": "workspace:*",
-    "@lsmcp/types": "workspace:*"
+    "@internal/lsp-client": "workspace:*",
+    "@internal/types": "workspace:*"
   }
 }

@@ -1,7 +1,7 @@
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import { z } from "zod";
-import { SymbolInformation, SymbolKind } from "@lsmcp/types";
-import type { McpToolDef } from "@lsmcp/types";
+import { SymbolInformation, SymbolKind } from "@internal/types";
+import type { McpToolDef } from "@internal/types";
 import { fileURLToPath } from "url";
 
 const schemaShape = {

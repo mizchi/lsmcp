@@ -21,7 +21,7 @@ import { EventEmitter } from "events";
 // Mock LSP client
 const mockGetDocumentSymbols = vi.fn();
 
-vi.mock("@lsmcp/lsp-client", () => {
+vi.mock("@internal/lsp-client", () => {
   const fn = vi.fn();
   return {
     getLSPClient: () => ({
@@ -52,7 +52,7 @@ vi.mock("fs/promises", () => ({
 }));
 
 // Setup withTemporaryDocument mock implementation after imports
-import * as lspClientModule from "@lsmcp/lsp-client";
+import * as lspClientModule from "@internal/lsp-client";
 const mockWithTemporaryDocument = vi.mocked(
   lspClientModule.withTemporaryDocument,
 );

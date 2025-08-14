@@ -3,8 +3,8 @@
  */
 
 import { createHash } from "crypto";
-import type { SymbolIndexState } from "@lsmcp/code-indexer";
-import { getSymbolIndex } from "@lsmcp/code-indexer";
+import type { SymbolIndexState } from "@internal/code-indexer";
+import { getSymbolIndex } from "@internal/code-indexer";
 import { MemoryDatabase } from "./memoryDatabase.ts";
 import type {
   ProjectOverview,

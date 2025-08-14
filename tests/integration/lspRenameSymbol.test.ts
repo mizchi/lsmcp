@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs/promises";
 import { randomBytes } from "crypto";
 import { createRenameSymbolTool } from "../../src/tools/lsp/rename.ts";
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import { ChildProcess, spawn } from "child_process";
 
 const FIXTURES_DIR = path.join(__dirname, "../fixtures/lsp-rename");
@@ -34,7 +34,7 @@ describe("lspRenameSymbol - multi-file rename", () => {
     });
 
     // Initialize LSP client
-    const { createLSPClient } = await import("@lsmcp/lsp-client");
+    const { createLSPClient } = await import("@internal/lsp-client");
     lspClient = createLSPClient({
       process: lspProcess,
       rootPath: tmpDir,

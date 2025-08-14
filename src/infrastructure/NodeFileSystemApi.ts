@@ -10,7 +10,7 @@ import {
 } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import type { FileSystemApi } from "@lsmcp/types";
+import type { FileSystemApi } from "@internal/types";
 
 export class NodeFileSystemApi implements FileSystemApi {
   async readFile(path: string): Promise<string> {

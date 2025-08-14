@@ -9,7 +9,7 @@ export * from "./finder/externalLibraryTools.ts";
 export * from "./finder/symbolResolverTools.ts";
 
 // Re-export all tools as a collection
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 import {
   replaceSymbolBodyTool,
   insertBeforeSymbolTool,

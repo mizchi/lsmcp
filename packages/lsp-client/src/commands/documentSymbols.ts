@@ -1,4 +1,4 @@
-import type { DocumentSymbol, SymbolInformation } from "@lsmcp/types";
+import type { DocumentSymbol, SymbolInformation } from "@internal/types";
 import type {
   DocumentSymbolResult,
   LSPCommand,

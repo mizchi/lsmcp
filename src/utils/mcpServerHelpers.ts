@@ -1,8 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z, ZodObject, type ZodType } from "zod";
-import type { McpToolDef, McpContext } from "@lsmcp/types";
-import type { FileSystemApi } from "@lsmcp/types";
+import type { McpToolDef, McpContext } from "@internal/types";
+import type { FileSystemApi } from "@internal/types";
 import { debugLogWithPrefix } from "./debugLog.ts";
 
 /**

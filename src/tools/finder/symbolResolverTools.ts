@@ -2,7 +2,7 @@
  * MCP tools for symbol resolution
  */
 
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 import { z } from "zod";
 import { resolve } from "path";
 import { readFile } from "fs/promises";
@@ -11,7 +11,7 @@ import {
   parseImports,
   resolveModulePath,
   getSymbolKindName,
-} from "@lsmcp/code-indexer";
+} from "@internal/code-indexer";
 
 /**
  * Tool: Resolve symbol from imports

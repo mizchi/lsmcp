@@ -2,8 +2,8 @@
  * Factory for creating LSP tools with injected client
  */
 
-import type { LSPClient } from "@lsmcp/lsp-client";
-import type { McpToolDef } from "@lsmcp/types";
+import type { LSPClient } from "@internal/lsp-client";
+import type { McpToolDef } from "@internal/types";
 
 // Import individual tool creators
 import { createHoverTool } from "./hover.ts";

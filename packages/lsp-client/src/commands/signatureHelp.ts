@@ -1,4 +1,4 @@
-import type { SignatureHelp } from "@lsmcp/types";
+import type { SignatureHelp } from "@internal/types";
 import type {
   LSPCommand,
   SignatureHelpResult,

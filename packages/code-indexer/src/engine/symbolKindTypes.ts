@@ -1,5 +1,5 @@
 /**
- * Re-export symbol kind utilities from @lsmcp/types
+ * Re-export symbol kind utilities from @internal/types
  */
 
 export {
@@ -10,4 +10,4 @@ export {
   getSymbolKindName,
   getSymbolKindsList,
   parseSymbolKind,
-} from "@lsmcp/types";
+} from "@internal/types";

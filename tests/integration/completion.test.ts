@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { spawn } from "child_process";
-import { createCompletionHandler } from "@lsmcp/lsp-client";
+import { createCompletionHandler } from "@internal/lsp-client";
 import { pathToFileURL } from "url";
 import { mkdir, rm, writeFile } from "fs/promises";
 import { join } from "path";
@@ -84,7 +84,7 @@ describe("Completion Integration Tests", () => {
         );
 
         // Create and initialize LSP client
-        const { createLSPClient } = await import("@lsmcp/lsp-client");
+        const { createLSPClient } = await import("@internal/lsp-client");
         const lspClient = createLSPClient({
           process: lspProcess,
           rootPath: process.cwd(),
@@ -231,7 +231,7 @@ describe("Completion Integration Tests", () => {
         });
 
         // Create and initialize LSP client
-        const { createLSPClient } = await import("@lsmcp/lsp-client");
+        const { createLSPClient } = await import("@internal/lsp-client");
         const lspClient = createLSPClient({
           process: lspProcess,
           rootPath: process.cwd(),

@@ -7,7 +7,7 @@ import { type ZodType } from "zod";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { LSMCPError } from "../domain/errors/index.ts";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 
 /**
  * Debug logging for MCP servers.

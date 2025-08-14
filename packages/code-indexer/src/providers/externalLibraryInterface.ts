@@ -2,7 +2,7 @@
  * Generic interface for external library providers across different languages
  */
 
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import type { SymbolEntry } from "../symbolIndex.ts";
 
 /**

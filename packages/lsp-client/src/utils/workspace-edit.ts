@@ -9,7 +9,7 @@ import type {
   ApplyWorkspaceEditResponse,
   TextEdit,
 } from "../protocol/types/index.ts";
-import { getErrorMessage } from "@lsmcp/types";
+import { getErrorMessage } from "@internal/types";
 import type { FileSystemApi } from "../utils/container-helpers.ts";
 import { nodeFileSystemApi } from "../utils/container-helpers.ts";
 import { applyTextEdits } from "../utils/textEdits.ts";

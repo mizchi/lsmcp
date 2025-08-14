@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { McpToolDef } from "@lsmcp/types";
-import { commonSchemas } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
+import { commonSchemas } from "@internal/types";
 import { relative } from "path";
 import { Position } from "vscode-languageserver-types";
 import { readFileSync } from "fs";
@@ -23,7 +23,7 @@ import {
   openDocument,
   stopLSPClient,
   waitForDocumentProcessed,
-} from "@lsmcp/lsp-client";
+} from "@internal/lsp-client";
 import { validateLineAndSymbol } from "../utils/validation.ts";
 
 const schema = z.object({

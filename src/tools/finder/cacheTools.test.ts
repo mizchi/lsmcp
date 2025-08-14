@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import * as cacheIntegration from "@lsmcp/code-indexer";
+import * as cacheIntegration from "@internal/code-indexer";
 import {
   clearCacheFromIndexTool,
   getCacheStatsFromIndexTool,
   searchCachedSymbolsFromIndexTool,
 } from "./cacheTools";
 
-vi.mock("@lsmcp/code-indexer");
+vi.mock("@internal/code-indexer");
 
 describe("cacheTools", () => {
   let mockCacheManager: any;

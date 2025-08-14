@@ -1,6 +1,9 @@
 /**
  * Common language file patterns shared across presets and adapter defaults
+ * @deprecated Use languageDefinitions.ts instead for centralized language configuration
  */
+
+import { LANGUAGE_DEFINITIONS } from "./languageDefinitions.ts";
 
 export interface LanguagePatterns {
   typescript: string[];
@@ -13,13 +16,13 @@ export interface LanguagePatterns {
 }
 
 export const LANGUAGE_PATTERNS: LanguagePatterns = {
-  typescript: ["**/*.ts", "**/*.tsx"],
-  javascript: ["**/*.js", "**/*.jsx", "**/*.mjs", "**/*.mts"],
-  python: ["**/*.py", "**/*.pyi"],
-  rust: ["**/*.rs"],
-  go: ["**/*.go"],
-  fsharp: ["**/*.fs", "**/*.fsx", "**/*.fsi"],
-  moonbit: ["**/*.mbt", "**/*.mbti"],
+  typescript: LANGUAGE_DEFINITIONS.typescript.patterns,
+  javascript: LANGUAGE_DEFINITIONS.javascript.patterns,
+  python: LANGUAGE_DEFINITIONS.python.patterns,
+  rust: LANGUAGE_DEFINITIONS.rust.patterns,
+  go: LANGUAGE_DEFINITIONS.go.patterns,
+  fsharp: LANGUAGE_DEFINITIONS.fsharp.patterns,
+  moonbit: LANGUAGE_DEFINITIONS.moonbit.patterns,
 };
 
 /**

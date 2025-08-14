@@ -1,4 +1,4 @@
-import type { CodeAction, Command } from "@lsmcp/types";
+import type { CodeAction, Command } from "@internal/types";
 import type {
   CodeActionParams,
   CodeActionResult,

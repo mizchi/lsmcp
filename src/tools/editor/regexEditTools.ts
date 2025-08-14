@@ -7,8 +7,8 @@ export interface SerenityEditResult {
 }
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { markFileModified } from "@lsmcp/code-indexer";
-import type { McpToolDef } from "@lsmcp/types";
+import { markFileModified } from "@internal/code-indexer";
+import type { McpToolDef } from "@internal/types";
 
 const replaceRegexSchema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),

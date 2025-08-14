@@ -1,10 +1,10 @@
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import { z } from "zod";
 import path from "path";
 import fs from "fs/promises";
 import { pathToFileURL } from "url";
-import { FormattingOptions, TextEdit } from "@lsmcp/types";
-import type { McpToolDef } from "@lsmcp/types";
+import { FormattingOptions, TextEdit } from "@internal/types";
+import type { McpToolDef } from "@internal/types";
 import { applyTextEdits } from "../../utils/applyTextEdits.ts";
 
 const schemaShape = {

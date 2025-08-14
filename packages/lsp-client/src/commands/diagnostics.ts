@@ -1,4 +1,4 @@
-import type { Diagnostic, DocumentDiagnosticReport } from "@lsmcp/types";
+import type { Diagnostic, DocumentDiagnosticReport } from "@internal/types";
 import type { LSPCommand } from "./types.ts";
 
 interface DocumentDiagnosticParams {

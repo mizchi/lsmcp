@@ -6,7 +6,7 @@ import { readFile } from "fs/promises";
 import { resolve, dirname, join } from "path";
 import { pathToFileURL } from "url";
 import type { SymbolEntry } from "../symbolIndex.ts";
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import { existsSync } from "fs";
 import { errorLog } from "../../../../src/utils/debugLog.ts";
 

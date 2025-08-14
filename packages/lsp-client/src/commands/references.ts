@@ -1,4 +1,4 @@
-import type { Location } from "@lsmcp/types";
+import type { Location } from "@internal/types";
 import type { LSPCommand, ReferenceParams, ReferencesResult } from "./types.ts";
 
 export function createReferencesCommand(): LSPCommand<

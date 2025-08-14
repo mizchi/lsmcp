@@ -1,11 +1,11 @@
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import { z } from "zod";
 import path from "path";
 import fs from "fs/promises";
 import { pathToFileURL } from "url";
-import { CodeAction, CodeActionKind, Command } from "@lsmcp/types";
-import type { McpToolDef } from "@lsmcp/types";
-import { resolveLineParameter as resolveLineHelper } from "@lsmcp/lsp-client";
+import { CodeAction, CodeActionKind, Command } from "@internal/types";
+import type { McpToolDef } from "@internal/types";
+import { resolveLineParameter as resolveLineHelper } from "@internal/lsp-client";
 import { withLSPDocument } from "./common.ts";
 
 const schemaShape = {

@@ -1,5 +1,5 @@
 {
-  "name": "@lsmcp/lsp-client",
+  "name": "@internal/lsp-client",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@lsmcp/types": "workspace:*",
+    "@internal/types": "workspace:*",
     "vscode-languageserver-protocol": "^3.17.5",
     "neverthrow": "^8.2.0",
     "zod": "^3.22.4"

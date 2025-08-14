@@ -14,11 +14,11 @@ export * from "./responses.ts";
 // Re-export notification types
 export * from "./notifications.ts";
 
-// Re-export client types from @lsmcp/types
+// Re-export client types from @internal/types
 export type {
   LSPClient,
   LSPClientConfig,
   LSPClientState,
   HoverContents,
   DocumentDiagnosticReport,
-} from "@lsmcp/types";
+} from "@internal/types";

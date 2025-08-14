@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { McpToolDef } from "@lsmcp/types";
+import type { McpToolDef } from "@internal/types";
 import { MemoryManager } from "../../features/memory/memoryManager.ts";
 
 const listMemoriesSchema = z.object({

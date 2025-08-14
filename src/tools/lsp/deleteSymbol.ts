@@ -1,4 +1,4 @@
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import { z } from "zod";
 import path from "path";
 import fs from "fs/promises";
@@ -9,9 +9,9 @@ import {
   Range,
   TextEdit,
   WorkspaceEdit,
-} from "@lsmcp/types";
-import type { McpToolDef } from "@lsmcp/types";
-import { resolveLineParameter } from "@lsmcp/lsp-client";
+} from "@internal/types";
+import type { McpToolDef } from "@internal/types";
+import { resolveLineParameter } from "@internal/lsp-client";
 
 const schemaShape = {
   root: z.string().describe("Root directory for resolving relative paths"),

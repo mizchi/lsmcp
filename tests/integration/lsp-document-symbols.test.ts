@@ -35,7 +35,7 @@ describe("lsp document symbols", { timeout: 30000 }, () => {
     });
 
     // Initialize LSP client
-    const { createLSPClient } = await import("@lsmcp/lsp-client");
+    const { createLSPClient } = await import("@internal/lsp-client");
     lspClient = createLSPClient({
       process: lspProcess,
       rootPath: __dirname,

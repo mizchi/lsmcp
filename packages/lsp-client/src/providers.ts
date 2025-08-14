@@ -3,7 +3,7 @@
  */
 
 import type { LSPClient } from "./protocol/types/index.ts";
-import type { DocumentSymbol } from "@lsmcp/types";
+import type { DocumentSymbol } from "@internal/types";
 import { fixFSharpSymbolPositions } from "./fsharp-position-fix.ts";
 
 /**

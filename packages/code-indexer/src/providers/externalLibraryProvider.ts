@@ -11,8 +11,8 @@ import { existsSync } from "fs";
 import type { DocumentSymbol } from "vscode-languageserver-types";
 import type { SymbolEntry, FileSymbols } from "../symbolIndex.ts";
 import { pathToFileURL } from "url";
-import type { LSPClient } from "@lsmcp/lsp-client";
-import { withTemporaryDocument } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
+import { withTemporaryDocument } from "@internal/lsp-client";
 
 export interface ExternalLibraryConfig {
   rootPath: string;

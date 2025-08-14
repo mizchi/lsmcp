@@ -1,4 +1,4 @@
-// Main entry point for @lsmcp/types package
+// Main entry point for @internal/types package
 
 // LSP types
 export * from "./lsp/index.ts";

@@ -2,7 +2,7 @@ import { DatabaseSync, type StatementSync } from "node:sqlite";
 import { join } from "node:path";
 import { mkdirSync, existsSync } from "node:fs";
 import type { SymbolEntry } from "../symbolIndex.ts";
-import { SYMBOL_CACHE_SCHEMA_VERSION } from "@lsmcp/types";
+import { SYMBOL_CACHE_SCHEMA_VERSION } from "@internal/types";
 import { debugLogWithPrefix } from "../../../../src/utils/debugLog.ts";
 
 // Define CachedSymbol type locally

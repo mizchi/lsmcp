@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
 import { createDefinitionsTool } from "../../src/tools/lsp/definitions.ts";
-import type { LSPClient } from "@lsmcp/lsp-client";
+import type { LSPClient } from "@internal/lsp-client";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
@@ -51,7 +51,7 @@ describe("LSP get_definitions with include_body tests", () => {
     });
 
     // Initialize LSP client
-    const { createLSPClient } = await import("@lsmcp/lsp-client");
+    const { createLSPClient } = await import("@internal/lsp-client");
     lspClient = createLSPClient({
       process: lspProcess,
       rootPath: tmpDir,

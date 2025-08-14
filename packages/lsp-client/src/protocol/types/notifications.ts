@@ -2,7 +2,7 @@
  * LSP Notification types
  */
 
-import { DocumentUri, Diagnostic } from "@lsmcp/types";
+import { DocumentUri, Diagnostic } from "@internal/types";
 
 // Diagnostic notifications
 export interface PublishDiagnosticsParams {

@@ -8,6 +8,7 @@ import { join } from "path";
 import type { LSMCPConfig, ExtendedLSMCPConfig, Preset } from "./schema.ts";
 import { validateConfig } from "./schema.ts";
 import { registerBuiltinAdapters } from "./presets.ts";
+import { PRESET_LANGUAGE_PATTERNS } from "./languageDefinitions.ts";
 
 /**
  * Default base configuration
@@ -44,18 +45,9 @@ const DEFAULT_BASE_CONFIG: LSMCPConfig = {
 };
 
 /**
- * Preset-specific file patterns (from src/adapters/)
+ * Preset-specific file patterns (from centralized language definitions)
  */
-const PRESET_FILE_PATTERNS: Record<string, string[]> = {
-  tsgo: ["**/*.ts", "**/*.tsx"],
-  typescript: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
-  deno: ["**/*.ts", "**/*.tsx"],
-  "rust-analyzer": ["**/*.rs"],
-  pyright: ["**/*.py", "**/*.pyi"],
-  gopls: ["**/*.go"],
-  fsharp: ["**/*.fs", "**/*.fsi", "**/*.fsx"],
-  moonbit: ["**/*.mbt", "**/*.mbti"],
-};
+const PRESET_FILE_PATTERNS: Record<string, string[]> = PRESET_LANGUAGE_PATTERNS;
 
 /**
  * Merge configurations with deep merging for nested objects

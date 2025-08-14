@@ -3,14 +3,14 @@ import { promises as fs } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { mkdirSync, rmSync } from "node:fs";
-import * as symbolIndex from "@lsmcp/code-indexer";
+import * as symbolIndex from "@internal/code-indexer";
 import {
   insertAfterSymbolTool,
   insertBeforeSymbolTool,
   replaceSymbolBodyTool,
 } from "./symbolEditTools";
 
-vi.mock("@lsmcp/code-indexer");
+vi.mock("@internal/code-indexer");
 
 describe("symbolEditTools", () => {
   let testDir: string;
