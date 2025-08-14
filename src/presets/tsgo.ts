@@ -11,11 +11,10 @@ import { LANGUAGE_PATTERNS } from "../config/languagePatterns.ts";
  */
 export const tsgoAdapter: Preset = {
   presetId: "tsgo",
-  bin: "tsgo",
-  args: ["--lsp", "--stdio"],
   binFindStrategy: {
     searchPaths: ["tsgo"],
     npxPackage: "@typescript/native-preview",
+    defaultArgs: ["--lsp", "--stdio"],
   },
   files: LANGUAGE_PATTERNS.typescript,
   disable: ["get_code_actions", "rename_symbol", "delete_symbol"],

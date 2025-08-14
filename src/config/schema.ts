@@ -93,6 +93,12 @@ export const binFindStrategySchema = z.object({
     .string()
     .optional()
     .describe("NPX package name to use as fallback if binary not found"),
+
+  /** Default arguments to pass to the binary */
+  defaultArgs: z
+    .array(z.string())
+    .optional()
+    .describe("Default arguments to pass to the LSP server"),
 });
 
 export type BinFindStrategy = z.infer<typeof binFindStrategySchema>;
@@ -102,8 +108,8 @@ export const lspClientConfigBaseSchema = z.object({
   /** Adapter ID */
   id: z.string().optional().describe("Adapter ID"),
 
-  /** LSP server binary command */
-  bin: z.string().describe("LSP server binary command"),
+  /** LSP server binary command (optional if binFindStrategy is provided) */
+  bin: z.string().optional().describe("LSP server binary command"),
 
   /** Command line arguments for the LSP server */
   args: z

@@ -104,7 +104,9 @@ func add(a, b int) int {
       );
 
       // Start gopls
-      lspProcess = spawn(goplsAdapter.bin, goplsAdapter.args!, {
+      const bin = goplsAdapter.bin || "gopls";
+      const args = goplsAdapter.args || [];
+      lspProcess = spawn(bin, args, {
         cwd: tmpDir,
         stdio: ["pipe", "pipe", "pipe"],
       });

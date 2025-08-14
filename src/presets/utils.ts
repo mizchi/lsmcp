@@ -31,7 +31,7 @@ export function adapterToLanguageConfig(
   let args = adapter.args || [];
 
   // If it's a known node_modules binary, try to resolve it
-  if (nodeModulesBinaries.includes(adapter.bin)) {
+  if (adapter.bin && nodeModulesBinaries.includes(adapter.bin)) {
     const resolved = getNodeModulesCommand(adapter.bin, args, projectRoot);
     bin = resolved.command;
     args = resolved.args;
@@ -63,7 +63,7 @@ export function resolveAdapterCommand(
     "moonbit-lsp",
   ];
 
-  if (nodeModulesBinaries.includes(adapter.bin)) {
+  if (adapter.bin && nodeModulesBinaries.includes(adapter.bin)) {
     const resolved = getNodeModulesCommand(
       adapter.bin,
       adapter.args || [],
@@ -79,8 +79,13 @@ export function resolveAdapterCommand(
     return resolved;
   }
 
-  return {
-    command: adapter.bin,
-    args: adapter.args || [],
-  };
+  if (adapter.bin) {
+    return {
+      command: adapter.bin,
+      args: adapter.args || [],
+    };
+  }
+
+  // No binary specified
+  throw new Error("No LSP server binary specified or found");
 }

@@ -25,6 +25,8 @@ export function findBinary(
     strategy,
   );
 
+  const defaultArgs = strategy.defaultArgs || [];
+
   // Try each search path in order
   for (const searchPath of strategy.searchPaths) {
     // 1. Check node_modules/.bin in current directory
@@ -34,7 +36,7 @@ export function findBinary(
         "BinFinder",
         `Found in local node_modules: ${localBin}`,
       );
-      return { command: localBin, args: [] };
+      return { command: localBin, args: defaultArgs };
     }
 
     // 2. Search parent directories for node_modules/.bin
@@ -47,7 +49,7 @@ export function findBinary(
           "BinFinder",
           `Found in parent node_modules: ${parentBin}`,
         );
-        return { command: parentBin, args: [] };
+        return { command: parentBin, args: defaultArgs };
       }
       currentDir = parentDir;
       parentDir = dirname(currentDir);
@@ -61,7 +63,7 @@ export function findBinary(
       }).trim();
       if (globalPath) {
         mcpDebugWithPrefix("BinFinder", `Found globally: ${globalPath}`);
-        return { command: globalPath, args: [] };
+        return { command: globalPath, args: defaultArgs };
       }
     } catch {
       // Not found globally, continue to next search path
@@ -76,7 +78,7 @@ export function findBinary(
     );
     return {
       command: "npx",
-      args: ["-y", strategy.npxPackage],
+      args: ["-y", strategy.npxPackage, ...defaultArgs],
     };
   }
 
@@ -93,14 +95,14 @@ export function findBinary(
  */
 export function resolveAdapterCommand(
   adapter: {
-    bin: string;
+    bin?: string;
     args?: string[];
     binFindStrategy?: BinFindStrategy;
   },
   projectRoot?: string,
 ): { command: string; args: string[] } {
   // If bin and args are explicitly set, use them directly
-  if (adapter.args && adapter.args.length > 0) {
+  if (adapter.bin && adapter.args && adapter.args.length > 0) {
     mcpDebugWithPrefix(
       "BinFinder",
       `Using explicit bin/args: ${adapter.bin} ${adapter.args.join(" ")}`,
@@ -119,10 +121,15 @@ export function resolveAdapterCommand(
     }
   }
 
-  // Default: use bin as-is
-  mcpDebugWithPrefix("BinFinder", `Using default bin: ${adapter.bin}`);
-  return {
-    command: adapter.bin,
-    args: adapter.args || [],
-  };
+  // Default: use bin as-is if available
+  if (adapter.bin) {
+    mcpDebugWithPrefix("BinFinder", `Using default bin: ${adapter.bin}`);
+    return {
+      command: adapter.bin,
+      args: adapter.args || [],
+    };
+  }
+
+  // No binary found
+  throw new Error("No LSP server binary specified or found");
 }

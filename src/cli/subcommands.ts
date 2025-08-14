@@ -11,6 +11,7 @@ import {
   ConfigLoader as MainConfigLoader,
   PresetRegistry,
 } from "../config/loader.ts";
+import { resolveAdapterCommand } from "../presets/utils.ts";
 import {
   getOrCreateIndex,
   SymbolIndex,
@@ -325,23 +326,29 @@ export async function indexCommand(
         `Starting ${adapterConfig.name || adapterConfig.presetId} for indexing...`,
       );
 
+      // Resolve the command using binFinder if needed
+      const { command, args } = resolveAdapterCommand(
+        adapterConfig,
+        projectRoot,
+      );
+
       // Check if command exists before spawning
       const { execSync } = await import("child_process");
       try {
-        execSync(`which ${adapterConfig.bin}`, { stdio: "ignore" });
+        execSync(`which ${command}`, { stdio: "ignore" });
       } catch {
-        throw new Error(`Command not found: ${adapterConfig.bin}`);
+        throw new Error(`Command not found: ${command}`);
       }
 
       // Spawn LSP process
-      const lspProcess = spawn(adapterConfig.bin, adapterConfig.args || [], {
+      const lspProcess = spawn(command, args, {
         stdio: ["pipe", "pipe", "pipe"],
         cwd: projectRoot,
       });
 
       // Handle spawn errors
-      lspProcess.on("error", (error) => {
-        errorLog(`Failed to start ${adapterConfig.bin}: ${error.message}`);
+      lspProcess.on("error", (error: Error) => {
+        errorLog(`Failed to start ${command}: ${error.message}`);
         if (error.message.includes("ENOENT")) {
           errorLog(`Make sure ${adapterConfig.bin} is installed and in PATH`);
           if (adapterConfig.presetId === "tsgo") {
