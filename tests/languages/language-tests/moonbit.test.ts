@@ -5,7 +5,7 @@ import { testLspConnection } from "../testHelpers.ts";
 
 describe("MoonBit Adapter", () => {
   it("should connect to MoonBit language server", async () => {
-    const projectRoot = join(import.meta.dirname, "../fixtures", "moonbit");
+    const projectRoot = join(import.meta.dirname, "../../fixtures", "moonbit");
     const checkFiles = ["main.mbt"];
     const result = await testLspConnection(
       moonbitAdapter,

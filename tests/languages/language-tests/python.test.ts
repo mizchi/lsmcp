@@ -4,7 +4,7 @@ import { pyrightAdapter } from "../../../src/presets/pyright.ts";
 import { testLspConnection } from "../testHelpers.ts";
 import { $ } from "zx";
 
-const projectRoot = join(import.meta.dirname, "../fixtures", "python");
+const projectRoot = join(import.meta.dirname, "../../fixtures", "python");
 
 // Shared initialization for Python environment
 async function initializePythonEnvironment() {

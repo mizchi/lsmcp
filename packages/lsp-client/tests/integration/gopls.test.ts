@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { goplsAdapter } from "../../src/presets/gopls.ts";
+import { goplsAdapter } from "../../../../src/presets/gopls.ts";
 import { spawn } from "child_process";
 import { createLSPClient } from "@internal/lsp-client"; // from "lspClient.ts";
 import path from "path";

@@ -313,10 +313,7 @@ export async function resolveSymbolFromImports(
 
     return null;
   } catch (error) {
-    errorLog(
-      `Failed to resolve symbol ${symbolName} from ${filePath}:`,
-      error,
-    );
+    errorLog(`Failed to resolve symbol ${symbolName} from ${filePath}:`, error);
     return null;
   }
 }

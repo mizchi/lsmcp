@@ -827,9 +827,7 @@ export async function indexExternalLibrariesForState(
  * Extract library name from file URI
  */
 function extractLibraryName(uri: string): string {
-  const match = uri.match(
-    /node_modules[\/\\](@[^/\\]+[\/\\][^/\\]+|[^/\\]+)/,
-  );
+  const match = uri.match(/node_modules[\/\\](@[^/\\]+[\/\\][^/\\]+|[^/\\]+)/);
   if (match) {
     return match[1];
   }

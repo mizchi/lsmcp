@@ -1,13 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
-import { createDocumentSymbolsTool } from "../../src/tools/lsp/documentSymbols.ts";
+import { createDocumentSymbolsTool } from "../../../../src/tools/lsp/documentSymbols.ts";
 import path from "path";
 import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.resolve(__dirname, "../..");
-const FIXTURES_DIR = path.join(__dirname, "fixtures");
+const projectRoot = path.resolve(__dirname, "../../../..");
+const FIXTURES_DIR = path.join(__dirname, "../../../../tests/fixtures");
 
 describe("lsp document symbols", { timeout: 30000 }, () => {
   let lspProcess: ChildProcess;

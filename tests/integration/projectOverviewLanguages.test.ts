@@ -93,11 +93,7 @@ describe("get_project_overview for all languages", () => {
     const testFn = testCase.skipInCI ? it.skip : it;
 
     testFn(`should get project overview for ${testCase.name}`, async () => {
-      const fixtureRoot = join(
-        __dirname,
-        "../languages/fixtures",
-        testCase.fixture,
-      );
+      const fixtureRoot = join(__dirname, "../fixtures", testCase.fixture);
 
       // Call get_project_overview tool
       const result = await mcpClient.callTool({

@@ -5,7 +5,11 @@ import { testLspConnection } from "../testHelpers.ts";
 
 describe("tsgo Adapter", () => {
   it("should connect to tsgo language server with simple file", async () => {
-    const projectRoot = join(import.meta.dirname, "../fixtures", "typescript");
+    const projectRoot = join(
+      import.meta.dirname,
+      "../../fixtures",
+      "typescript",
+    );
     const checkFiles = ["simple.ts"];
     const result = await testLspConnection(
       tsgoAdapter,
@@ -52,7 +56,11 @@ describe("tsgo Adapter", () => {
   }, 30000);
 
   it("should connect to tsgo language server with complex file", async () => {
-    const projectRoot = join(import.meta.dirname, "../fixtures", "typescript");
+    const projectRoot = join(
+      import.meta.dirname,
+      "../../fixtures",
+      "typescript",
+    );
     const checkFiles = ["index.ts"];
     const result = await testLspConnection(
       tsgoAdapter,

@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
-import { createHoverTool } from "../../src/tools/lsp/hover.ts";
-import { createReferencesTool } from "../../src/tools/lsp/references.ts";
-import { createDefinitionsTool } from "../../src/tools/lsp/definitions.ts";
-import { createDiagnosticsTool } from "../../src/tools/lsp/diagnostics.ts";
-import { createRenameSymbolTool } from "../../src/tools/lsp/rename.ts";
-import { createDocumentSymbolsTool } from "../../src/tools/lsp/documentSymbols.ts";
+import { createHoverTool } from "../../../../src/tools/lsp/hover.ts";
+import { createReferencesTool } from "../../../../src/tools/lsp/references.ts";
+import { createDefinitionsTool } from "../../../../src/tools/lsp/definitions.ts";
+import { createDiagnosticsTool } from "../../../../src/tools/lsp/diagnostics.ts";
+import { createRenameSymbolTool } from "../../../../src/tools/lsp/rename.ts";
+import { createDocumentSymbolsTool } from "../../../../src/tools/lsp/documentSymbols.ts";
 import type { LSPClient } from "@internal/lsp-client";
 import fs from "fs/promises";
 import path from "path";
@@ -14,8 +14,11 @@ import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.resolve(__dirname, "../..");
-const FIXTURES_DIR = path.join(__dirname, "fixtures/lsp-integration");
+const projectRoot = path.resolve(__dirname, "../../../..");
+const FIXTURES_DIR = path.join(
+  __dirname,
+  "../../../../tests/fixtures/lsp-integration",
+);
 
 describe("LSP integration tests", () => {
   let lspProcess: ChildProcess;

@@ -1,5 +1,5 @@
-import { resolveLineParameter } from "../utils/container-helpers.ts";
-import { ErrorContext, formatError } from "../utils/container-helpers.ts";
+import { resolveLineParameter } from "./container-helpers.ts";
+import { ErrorContext, formatError } from "./container-helpers.ts";
 
 /**
  * Resolve a line parameter to a line index, throwing on error

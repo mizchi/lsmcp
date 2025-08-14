@@ -5,7 +5,11 @@ import { testLspConnection } from "../testHelpers.ts";
 
 describe("TypeScript Adapter", () => {
   it("should connect to TypeScript language server", async () => {
-    const projectRoot = join(import.meta.dirname, "../fixtures", "typescript");
+    const projectRoot = join(
+      import.meta.dirname,
+      "../../fixtures",
+      "typescript",
+    );
     const checkFiles = ["index.ts"];
     const result = await testLspConnection(
       typescriptAdapter,

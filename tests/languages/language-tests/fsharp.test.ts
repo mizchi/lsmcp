@@ -10,7 +10,7 @@ import { resolveAdapterCommand } from "../../../src/presets/utils.ts";
 
 describe("F# Adapter", () => {
   it("should connect to F# language server and detect type errors", async () => {
-    const projectRoot = join(import.meta.dirname, "../fixtures", "fsharp");
+    const projectRoot = join(import.meta.dirname, "../../fixtures", "fsharp");
     const checkFiles = ["Program.fs"];
     const result = await testLspConnection(
       fsharpAdapter,
@@ -44,7 +44,7 @@ describe("F# Adapter", () => {
   }, 30000);
 
   it("should fix F# symbol positions that point to comments (Issue #33)", async () => {
-    const projectRoot = join(import.meta.dirname, "../fixtures", "fsharp");
+    const projectRoot = join(import.meta.dirname, "../../fixtures", "fsharp");
     const testFilePath = join(projectRoot, "CommentedTypes.fs");
 
     // Start F# LSP server using adapter configuration

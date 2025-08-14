@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
-import { createRenameSymbolTool } from "../../src/tools/lsp/rename.ts";
+import { createRenameSymbolTool } from "../../../../src/tools/lsp/rename.ts";
 import type { LSPClient } from "@internal/lsp-client";
 import fs from "fs/promises";
 import path from "path";
@@ -9,8 +9,11 @@ import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.resolve(__dirname, "../..");
-const FIXTURES_DIR = path.join(__dirname, "fixtures/lsp-rename");
+const projectRoot = path.resolve(__dirname, "../../../..");
+const FIXTURES_DIR = path.join(
+  __dirname,
+  "../../../../tests/fixtures/lsp-rename",
+);
 
 describe("lsp rename symbol", { timeout: 30000 }, () => {
   let lspProcess: ChildProcess;

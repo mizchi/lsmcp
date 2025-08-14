@@ -5,7 +5,7 @@ import { testLspConnection } from "../testHelpers.ts";
 
 describe("Rust Analyzer Adapter", () => {
   it("should connect to Rust Analyzer", async () => {
-    const projectRoot = join(import.meta.dirname, "../fixtures", "rust");
+    const projectRoot = join(import.meta.dirname, "../../fixtures", "rust");
     const checkFiles = ["src/main.rs"];
     const result = await testLspConnection(
       rustAnalyzerAdapter,

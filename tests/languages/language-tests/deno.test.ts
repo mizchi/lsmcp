@@ -5,7 +5,7 @@ import { testLspConnection } from "../testHelpers.ts";
 
 describe("Deno Adapter", () => {
   it("should connect to Deno language server", async () => {
-    const projectRoot = join(import.meta.dirname, "../fixtures", "deno");
+    const projectRoot = join(import.meta.dirname, "../../fixtures", "deno");
     const checkFiles = ["main.ts"];
     const result = await testLspConnection(
       denoAdapter,
@@ -18,7 +18,7 @@ describe("Deno Adapter", () => {
   });
 
   it("should detect type errors in Deno files", async () => {
-    const projectRoot = join(import.meta.dirname, "../fixtures", "deno");
+    const projectRoot = join(import.meta.dirname, "../../fixtures", "deno");
     const checkFiles = ["main.ts"];
     const result = await testLspConnection(
       denoAdapter,

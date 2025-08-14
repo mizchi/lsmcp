@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ChildProcess, spawn } from "child_process";
-import { createHoverTool } from "../../src/tools/lsp/hover.ts";
-import { createReferencesTool } from "../../src/tools/lsp/references.ts";
-import { createDefinitionsTool } from "../../src/tools/lsp/definitions.ts";
-import { createRenameSymbolTool } from "../../src/tools/lsp/rename.ts";
-import { createDocumentSymbolsTool } from "../../src/tools/lsp/documentSymbols.ts";
+import { createHoverTool } from "../../../../src/tools/lsp/hover.ts";
+import { createReferencesTool } from "../../../../src/tools/lsp/references.ts";
+import { createDefinitionsTool } from "../../../../src/tools/lsp/definitions.ts";
+import { createRenameSymbolTool } from "../../../../src/tools/lsp/rename.ts";
+import { createDocumentSymbolsTool } from "../../../../src/tools/lsp/documentSymbols.ts";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
@@ -12,8 +12,11 @@ import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.resolve(__dirname, "../..");
-const FIXTURES_DIR = path.join(__dirname, "fixtures/lsp-errors");
+const projectRoot = path.resolve(__dirname, "../../../..");
+const FIXTURES_DIR = path.join(
+  __dirname,
+  "../../../../tests/fixtures/lsp-errors",
+);
 
 describe.skip("LSP error handling tests", { timeout: 30000 }, () => {
   let lspProcess: ChildProcess;

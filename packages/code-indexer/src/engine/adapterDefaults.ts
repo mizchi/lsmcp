@@ -1,4 +1,7 @@
-import { LANGUAGE_PATTERNS, getTsJsPatterns } from "../../../../src/config/languagePatterns.ts";
+import {
+  LANGUAGE_PATTERNS,
+  getTsJsPatterns,
+} from "../../../../src/config/languagePatterns.ts";
 
 /**
  * Default index patterns for different language adapters

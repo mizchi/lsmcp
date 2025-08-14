@@ -143,7 +143,11 @@ export class SymbolIndex extends EventEmitter {
       "../config/configLoader.ts"
     );
     this.config = loadConfig(this.rootPath);
-    debugLogWithPrefix("SymbolIndex", "Loaded config:", this.config?.symbolFilter);
+    debugLogWithPrefix(
+      "SymbolIndex",
+      "Loaded config:",
+      this.config?.symbolFilter,
+    );
   }
 
   /**
@@ -452,7 +456,10 @@ export class SymbolIndex extends EventEmitter {
       };
     }
 
-    debugLogWithPrefix("SymbolIndex", `Getting modified files since ${lastHash}`);
+    debugLogWithPrefix(
+      "SymbolIndex",
+      `Getting modified files since ${lastHash}`,
+    );
     const modifiedFilesResult = await getModifiedFilesAsync(
       this.rootPath,
       lastHash,
@@ -472,7 +479,10 @@ export class SymbolIndex extends EventEmitter {
     }
 
     const modifiedFiles = modifiedFilesResult.value;
-    debugLogWithPrefix("SymbolIndex", `Found ${modifiedFiles.length} modified files`);
+    debugLogWithPrefix(
+      "SymbolIndex",
+      `Found ${modifiedFiles.length} modified files`,
+    );
 
     debugLogWithPrefix("SymbolIndex", "Getting untracked files");
     const untrackedFilesResult = await getUntrackedFilesAsync(this.rootPath);

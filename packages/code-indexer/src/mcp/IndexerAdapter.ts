@@ -10,7 +10,10 @@ import { createLSPSymbolProvider } from "@internal/lsp-client";
 import { fileURLToPath } from "url";
 import { readFile } from "fs/promises";
 import type { IndexedSymbol, SymbolQuery } from "../engine/types.ts";
-import { debugLogWithPrefix, errorLog } from "../../../../src/utils/debugLog.ts";
+import {
+  debugLogWithPrefix,
+  errorLog,
+} from "../../../../src/utils/debugLog.ts";
 
 /**
  * Dependencies for indexer facade.

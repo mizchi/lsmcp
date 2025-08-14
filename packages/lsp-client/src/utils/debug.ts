@@ -11,15 +11,14 @@ export function debug(...args: any[]): void {
 
 export function debugLog(message: string, data?: any): void {
   // Already handled by debugLogWithPrefix
-  debugLogWithPrefix(
-    "LSP",
-    message,
-    data ? JSON.stringify(data, null, 2) : "",
-  );
+  debugLogWithPrefix("LSP", message, data ? JSON.stringify(data, null, 2) : "");
 }
 
 // Re-export error handling utilities from main utils
-export { formatError, getErrorMessage } from "../../../../src/utils/errorHandler.ts";
+export {
+  formatError,
+  getErrorMessage,
+} from "../../../../src/utils/errorHandler.ts";
 export type { ErrorContext } from "../../../../src/utils/errorHandler.ts";
 
 export function isErrorWithCode(

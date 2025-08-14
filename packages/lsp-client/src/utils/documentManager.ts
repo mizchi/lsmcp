@@ -1,5 +1,5 @@
 import type { LSPClient } from "../protocol/types/index.ts";
-import { ErrorContext, formatError } from "../utils/container-helpers.ts";
+import { ErrorContext, formatError } from "./container-helpers.ts";
 
 /**
  * Execute an operation with a temporarily opened LSP document

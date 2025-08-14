@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createDeleteSymbolTool } from "../../src/tools/lsp/deleteSymbol.ts";
+import { createDeleteSymbolTool } from "../../../../src/tools/lsp/deleteSymbol.ts";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
@@ -8,11 +8,11 @@ import {
   setupLSPForTesting,
   teardownLSP,
   type LSPTestSetup,
-} from "../helpers/lsp-test-helpers.ts";
+} from "../../../../tests/helpers/lsp-test-helpers.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// const FIXTURES_DIR = path.join(__dirname, "fixtures/lsp-delete");
+// const FIXTURES_DIR = path.join(__dirname, "../../../../tests/fixtures/lsp-delete");
 
 describe("lsp delete symbol", { timeout: 30000 }, () => {
   let lspSetup: LSPTestSetup | null = null;

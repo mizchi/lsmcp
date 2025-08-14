@@ -2,11 +2,14 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import path from "path";
 import fs from "fs/promises";
 import { randomBytes } from "crypto";
-import { createRenameSymbolTool } from "../../src/tools/lsp/rename.ts";
+import { createRenameSymbolTool } from "../../../../src/tools/lsp/rename.ts";
 import type { LSPClient } from "@internal/lsp-client";
 import { ChildProcess, spawn } from "child_process";
 
-const FIXTURES_DIR = path.join(__dirname, "../fixtures/lsp-rename");
+const FIXTURES_DIR = path.join(
+  __dirname,
+  "../../../../tests/fixtures/lsp-rename",
+);
 
 describe("lspRenameSymbol - multi-file rename", () => {
   let lspProcess: ChildProcess;

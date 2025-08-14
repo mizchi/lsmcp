@@ -17,7 +17,7 @@ interface CallToolResult {
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const LSMCP_PATH = path.join(__dirname, "../../dist/lsmcp.js");
+const LSMCP_PATH = path.join(__dirname, "../../../../dist/lsmcp.js");
 
 describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
   let client: Client | undefined;

@@ -1,7 +1,7 @@
 import path from "path";
 import { pathToFileURL } from "url";
-import { ErrorContext, formatError } from "../utils/container-helpers.ts";
-import type { FileSystemApi } from "../utils/container-helpers.ts";
+import { ErrorContext, formatError } from "./container-helpers.ts";
+import type { FileSystemApi } from "./container-helpers.ts";
 
 /**
  * File context information for LSP operations

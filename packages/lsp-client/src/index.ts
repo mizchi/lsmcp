@@ -1,21 +1,21 @@
 /**
  * LSP Client Package - Public API
- * 
+ *
  * This module exports the minimal public API for LSP client functionality.
  */
 
 // ============================================================================
 // Core Client API
 // ============================================================================
-export { 
+export {
   createLSPClient,
   createAndInitializeLSPClient,
-  type LSPClient 
+  type LSPClient,
 } from "./core/client.ts";
 
-export type { 
+export type {
   LSPClientConfig,
-  LSPProcessState as LSPClientState 
+  LSPProcessState as LSPClientState,
 } from "./core/state.ts";
 
 // ============================================================================
@@ -68,22 +68,28 @@ export { createLSPSymbolProvider } from "./providers.ts";
 // Temporary exports for internal use (will be removed in future refactoring)
 // ============================================================================
 export { debug } from "./utils/debug.ts";
-export { CapabilityChecker, createToolCapabilityMap } from "./capabilities/CapabilityChecker.ts";
-export { withTemporaryDocument } from "./lsp-utils/documentManager.ts";
+export {
+  CapabilityChecker,
+  createToolCapabilityMap,
+} from "./capabilities/CapabilityChecker.ts";
+export { withTemporaryDocument } from "./utils/documentManager.ts";
 export { validateLineAndSymbol } from "./utils/validation.ts";
 export { resolveLineParameter } from "./utils/container-helpers.ts";
 export type { ErrorContext } from "./utils/container-helpers.ts";
 export { formatError } from "./utils/container-helpers.ts";
-export { loadFileContext } from "./lsp-utils/fileContext.ts";
+export { loadFileContext } from "./utils/fileContext.ts";
 export { withLSPOperation } from "./client/lspOperations.ts";
 export { createCompletionHandler } from "./commands/completion.ts";
 export { defaultLog as log, LogLevel } from "./utils/logger.ts";
-export { waitForDiagnosticsWithRetry, isLargeFile } from "./diagnostics/utils.ts";
-export { resolveLineIndexOrThrow } from "./lsp-utils/lineResolver.ts";
+export {
+  waitForDiagnosticsWithRetry,
+  isLargeFile,
+} from "./diagnostics/utils.ts";
+export { resolveLineIndexOrThrow } from "./utils/lineResolver.ts";
 export { createAdvancedCompletionHandler } from "./commands/completion.ts";
-export { 
+export {
   createTypescriptLSPClient,
   openDocument,
   stopLSPClient,
-  waitForDocumentProcessed
+  waitForDocumentProcessed,
 } from "./utils/typescript-helpers.ts";
