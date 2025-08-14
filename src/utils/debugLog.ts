@@ -1,12 +1,20 @@
 /**
  * Unified debug logging utility for the lsmcp project
  *
- * This provides a centralized way to handle debug output across the entire codebase.
- * Debug messages are only shown when LSMCP_DEBUG=1 environment variable is set.
+ * This file now serves as a compatibility layer that delegates to the MCP logger.
+ * Use MCP_DEBUG=1 or LSMCP_DEBUG=1 to enable debug logging for MCP server.
+ * Use LSP_DEBUG=1 to enable debug logging for LSP client (handled separately).
  *
  * IMPORTANT: For MCP servers, all debug output must go to stderr (console.error)
  * since stdout is used for MCP protocol communication.
  */
+
+import {
+  mcpDebug,
+  mcpDebugWithPrefix,
+  mcpError,
+  mcpConditionalDebug,
+} from "./mcp-logger.ts";
 
 /**
  * Debug logging function that respects LSMCP_DEBUG environment variable
@@ -18,9 +26,7 @@
  * debugLog("[SymbolIndex] Indexed files:", count);
  */
 export function debugLog(...args: unknown[]): void {
-  if (process.env.LSMCP_DEBUG === "1") {
-    console.error(...args);
-  }
+  mcpDebug(...args);
 }
 
 /**
@@ -34,9 +40,7 @@ export function debugLog(...args: unknown[]): void {
  * debugLogWithPrefix("LSP", "Server started for", language);
  */
 export function debugLogWithPrefix(prefix: string, ...args: unknown[]): void {
-  if (process.env.LSMCP_DEBUG === "1") {
-    console.error(`[${prefix}]`, ...args);
-  }
+  mcpDebugWithPrefix(prefix, ...args);
 }
 
 /**
@@ -50,7 +54,7 @@ export function debugLogWithPrefix(prefix: string, ...args: unknown[]): void {
  * errorLog("Critical configuration error:", errorDetails);
  */
 export function errorLog(...args: unknown[]): void {
-  console.error(...args);
+  mcpError(...args);
 }
 
 /**
@@ -63,9 +67,7 @@ export function errorLog(...args: unknown[]): void {
  * conditionalDebug(files.length > 100, "Large file set detected:", files.length);
  */
 export function conditionalDebug(condition: boolean, ...args: unknown[]): void {
-  if (condition && process.env.LSMCP_DEBUG === "1") {
-    console.error(...args);
-  }
+  mcpConditionalDebug(condition, ...args);
 }
 
 // Re-export for backward compatibility with existing debug utilities

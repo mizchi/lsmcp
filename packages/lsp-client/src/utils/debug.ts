@@ -1,17 +1,22 @@
 /**
  * Debug and logging utilities
+ *
+ * This file provides backward compatibility with existing code
+ * while using the new independent LSP logger
  */
 
-import { debugLogWithPrefix } from "../../../../src/utils/debugLog.ts";
+import { lspDebug, lspDebugWithPrefix } from "./lsp-logger.ts";
 
 export function debug(...args: any[]): void {
-  // Already handled by debugLogWithPrefix
-  debugLogWithPrefix("LSP", ...args);
+  lspDebug(...args);
 }
 
 export function debugLog(message: string, data?: any): void {
-  // Already handled by debugLogWithPrefix
-  debugLogWithPrefix("LSP", message, data ? JSON.stringify(data, null, 2) : "");
+  if (data) {
+    lspDebugWithPrefix("Debug", message, JSON.stringify(data, null, 2));
+  } else {
+    lspDebugWithPrefix("Debug", message);
+  }
 }
 
 // Re-export error handling utilities from main utils

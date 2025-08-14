@@ -235,6 +235,29 @@ pnpm test
 node --expose-gc dist/lsmcp.js
 ```
 
+### Debug Logging
+
+LSMCP has separate logging systems for MCP server and LSP client that can be controlled independently:
+
+#### MCP Server Logging
+Enable MCP server debug output with either environment variable:
+```bash
+MCP_DEBUG=1 lsmcp       # Enable MCP server debug logging
+LSMCP_DEBUG=1 lsmcp     # Alternative (backward compatible)
+```
+
+#### LSP Client Logging  
+Enable LSP client debug output separately:
+```bash
+LSP_DEBUG=1 lsmcp       # Enable LSP client debug logging
+```
+
+#### Combined Logging
+Enable both MCP and LSP debug output:
+```bash
+MCP_DEBUG=1 LSP_DEBUG=1 lsmcp
+```
+
 ## License
 
 MIT - See [LICENSE](LICENSE) file for details.
