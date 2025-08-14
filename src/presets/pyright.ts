@@ -14,7 +14,11 @@ export const pyrightAdapter: Preset = {
       // 2. Check global installation
       { type: "global", names: ["pyright-langserver"] },
       // 3. Check Python virtual environments
-      { type: "venv", names: ["pyright-langserver"], venvDirs: [".venv", "venv"] },
+      {
+        type: "venv",
+        names: ["pyright-langserver"],
+        venvDirs: [".venv", "venv"],
+      },
       // 5. Check node_modules (if installed via npm)
       { type: "node_modules", names: ["pyright-langserver"] },
       // 6. Fall back to npx

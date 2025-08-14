@@ -204,7 +204,10 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
             "search_symbol_from_index",
             `Using patterns from config.files: ${pattern}`,
           );
-        } else if (context?.config?.files && Array.isArray(context.config.files)) {
+        } else if (
+          context?.config?.files &&
+          Array.isArray(context.config.files)
+        ) {
           // Check if files are provided in context (from preset)
           pattern = (context.config.files as string[]).join(",");
           debugLogWithPrefix(

@@ -32,10 +32,12 @@ describe("binFindStrategy integration", () => {
     it("should have binFindStrategy defined", () => {
       expect(tsgoAdapter.binFindStrategy).toBeDefined();
       expect(tsgoAdapter.binFindStrategy?.strategies).toBeDefined();
-      expect(tsgoAdapter.binFindStrategy?.strategies?.length).toBeGreaterThan(0);
+      expect(tsgoAdapter.binFindStrategy?.strategies?.length).toBeGreaterThan(
+        0,
+      );
       // Check for node_modules strategy
       const nodeModulesStrategy = tsgoAdapter.binFindStrategy?.strategies?.find(
-        (s) => s.type === "node_modules"
+        (s) => s.type === "node_modules",
       );
       expect(nodeModulesStrategy).toBeDefined();
       if (nodeModulesStrategy && "names" in nodeModulesStrategy) {
@@ -43,7 +45,7 @@ describe("binFindStrategy integration", () => {
       }
       // Check for npx strategy
       const npxStrategy = tsgoAdapter.binFindStrategy?.strategies?.find(
-        (s) => s.type === "npx"
+        (s) => s.type === "npx",
       );
       expect(npxStrategy).toBeDefined();
       if (npxStrategy && "package" in npxStrategy) {
@@ -182,7 +184,10 @@ export { add };
       const customPreset = {
         binFindStrategy: {
           strategies: [
-            { type: "node_modules" as const, names: ["non-existent-lsp-server"] },
+            {
+              type: "node_modules" as const,
+              names: ["non-existent-lsp-server"],
+            },
             { type: "npx" as const, package: "@typescript/native-preview" },
           ],
           defaultArgs: ["--lsp", "--stdio"],
@@ -204,7 +209,10 @@ export { add };
       const customPreset = {
         binFindStrategy: {
           strategies: [
-            { type: "node_modules" as const, names: ["non-existent-lsp-server"] },
+            {
+              type: "node_modules" as const,
+              names: ["non-existent-lsp-server"],
+            },
           ],
           defaultArgs: ["--lsp"],
         },

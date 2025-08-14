@@ -67,7 +67,10 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
           "index_symbols",
           `Using patterns from config.files: ${actualPattern}`,
         );
-      } else if (context?.config?.files && Array.isArray(context.config.files)) {
+      } else if (
+        context?.config?.files &&
+        Array.isArray(context.config.files)
+      ) {
         // Check if files are provided in context (from preset)
         actualPattern = (context.config.files as string[]).join(",");
         debugLogWithPrefix(

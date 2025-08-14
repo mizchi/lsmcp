@@ -14,7 +14,11 @@ export const ruffAdapter: Preset = {
       // 2. Check global installation
       { type: "global", names: ["ruff", "ruff-lsp"] },
       // 3. Check Python virtual environments
-      { type: "venv", names: ["ruff", "ruff-lsp"], venvDirs: [".venv", "venv"] },
+      {
+        type: "venv",
+        names: ["ruff", "ruff-lsp"],
+        venvDirs: [".venv", "venv"],
+      },
     ],
     defaultArgs: ["server"],
   },

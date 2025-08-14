@@ -10,7 +10,7 @@ export function showHelp(): void {
 
 Usage:
   lsmcp -p <preset>                        Start MCP server with preset
-  lsmcp --files <pattern>                  Start MCP server with file patterns
+  lsmcp --files <pattern>                  Start MCP server with file patterns (comma-separated)
   lsmcp --bin <command> --files <pattern>  Start with custom LSP
   lsmcp init [-p <preset>]                 Initialize project
   lsmcp index                              Build symbol index
@@ -25,7 +25,7 @@ Options:
   -p, --preset <preset>     Language adapter to use (see list below)
   --config <path>           Load language configuration from JSON file
   --bin <command>           Custom LSP server command (requires --files)
-  --files <pattern>         File patterns to handle (e.g., "**/*.rs")
+  --files <pattern>         File patterns to handle (comma-separated, e.g., "**/*.ts,**/*.tsx")
   --initializationOptions <json>  JSON string for LSP initialization options
   --list                    List all supported languages and presets
   -h, --help               Show this help message
@@ -56,7 +56,7 @@ Examples:
   lsmcp init -p tsgo           Initialize with tsgo (recommended for TypeScript)
   lsmcp doctor                 Check environment and get setup commands
   lsmcp -p tsgo                Start tsgo TypeScript MCP server
-  lsmcp --bin "deno lsp" --files "**/*.ts"  Use Deno LSP for TypeScript files
+  lsmcp --bin "deno lsp" --files "**/*.ts,**/*.tsx"  Use Deno LSP for TypeScript/TSX
 `);
 }
 

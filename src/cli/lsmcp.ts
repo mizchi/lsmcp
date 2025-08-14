@@ -22,6 +22,7 @@ import { registerBuiltinAdapters } from "../config/presets.ts";
 import { showHelp, showListWithConfigLoader, showNoArgsHelp } from "./help.ts";
 import { errorLog } from "../utils/debugLog.ts";
 import { runLanguageServerWithConfig } from "../lspServerRunner.ts";
+import { parseFilePatterns } from "../utils/filePatternParser.ts";
 
 // Initialize configuration system
 const adapterRegistry = globalPresetRegistry;
@@ -201,7 +202,7 @@ async function mainWithConfigLoader() {
         errorLog("Options:");
         errorLog("  lsmcp --preset tsgo                    # Use a preset");
         errorLog(
-          '  lsmcp --files "**/*.ts,**/*.tsx"       # Specify file patterns',
+          '  lsmcp --files "**/*.ts,**/*.tsx"       # Specify file patterns (comma-separated)',
         );
         errorLog(
           '  lsmcp --bin "deno lsp" --files "**/*.ts"  # Custom LSP server',
@@ -266,7 +267,7 @@ async function mainWithConfigLoader() {
         presetId: "custom",
         bin: parts[0],
         args: parts.slice(1),
-        files: values.files.split(",").map((p) => p.trim()),
+        files: parseFilePatterns(values.files),
       };
       globalPresetRegistry.register(customPreset);
       lspSources.preset = "custom";
@@ -278,7 +279,7 @@ async function mainWithConfigLoader() {
       if (!lspSources.config) {
         lspSources.config = {};
       }
-      lspSources.config.files = values.files.split(",").map((p) => p.trim());
+      lspSources.config.files = parseFilePatterns(values.files);
     }
 
     if (values.initializationOptions) {

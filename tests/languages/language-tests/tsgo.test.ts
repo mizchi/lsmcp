@@ -2,14 +2,12 @@ import { describe, expect, it } from "vitest";
 import { join } from "path";
 import { tsgoAdapter } from "../../../src/presets/tsgo.ts";
 import { testLspConnection } from "../testHelpers.ts";
+import { testMcpConnection } from "../testMcpHelpers.ts";
 
 describe("tsgo Adapter", () => {
+  const projectRoot = join(import.meta.dirname, "../../fixtures", "typescript");
+
   it("should connect to tsgo language server with simple file", async () => {
-    const projectRoot = join(
-      import.meta.dirname,
-      "../../fixtures",
-      "typescript",
-    );
     const checkFiles = ["simple.ts"];
     const result = await testLspConnection(
       tsgoAdapter,
@@ -56,11 +54,6 @@ describe("tsgo Adapter", () => {
   }, 30000);
 
   it("should connect to tsgo language server with complex file", async () => {
-    const projectRoot = join(
-      import.meta.dirname,
-      "../../fixtures",
-      "typescript",
-    );
     const checkFiles = ["index.ts"];
     const result = await testLspConnection(
       tsgoAdapter,
@@ -106,4 +99,28 @@ describe("tsgo Adapter", () => {
       expect(diagnostics.length).toBeLessThanOrEqual(20);
     }
   }, 30000);
+
+  it("should provide MCP tools including get_project_overview, get_diagnostics, and get_definitions", async () => {
+    const result = await testMcpConnection(tsgoAdapter, projectRoot);
+
+    expect(result.connected).toBe(true);
+    expect(result.hasGetProjectOverview).toBe(true);
+    expect(result.hasGetDiagnostics).toBe(true);
+    expect(result.hasGetDefinitions).toBe(true);
+
+    if (result.projectOverview) {
+      // Verify project overview contains expected information
+      // The response is in Markdown format, not JSON
+      const overviewText = result.projectOverview[0].text;
+      expect(overviewText).toContain("Project Overview");
+      expect(overviewText).toContain("Statistics");
+      expect(overviewText).toContain("Key Components");
+    }
+
+    // Verify get_diagnostics works
+    expect(result.diagnosticsResult).toBeDefined();
+
+    // Verify get_definitions works (may not find the symbol, but tool should be callable)
+    // The result is optional since "main" might not exist
+  });
 });

@@ -134,11 +134,14 @@ export function findBinary(
           // Check if uv.lock exists in the project (indicates uv sync has been run)
           const uvLockPath = join(projectRoot, "uv.lock");
           const pyprojectPath = join(projectRoot, "pyproject.toml");
-          
+
           if (existsSync(uvLockPath) || existsSync(pyprojectPath)) {
             // Project uses uv, use uv run
-            mcpDebugWithPrefix("BinFinder", `Using uv run: ${item.command || item.tool}`);
-            
+            mcpDebugWithPrefix(
+              "BinFinder",
+              `Using uv run: ${item.command || item.tool}`,
+            );
+
             if (item.command) {
               // Use specific command from the tool
               return {
@@ -155,7 +158,7 @@ export function findBinary(
           } else {
             // No uv.lock, try uv tool run instead
             mcpDebugWithPrefix("BinFinder", `Using uv tool run: ${item.tool}`);
-            
+
             if (item.command) {
               // Use specific command from the tool
               return {

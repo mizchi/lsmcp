@@ -3,6 +3,7 @@ import { join } from "path";
 import { spawn } from "child_process";
 import { fsharpAdapter } from "../../../src/presets/fsharp.ts";
 import { testLspConnection } from "../testHelpers.ts";
+import { testMcpConnection } from "../testMcpHelpers.ts";
 import { createAndInitializeLSPClient } from "@internal/lsp-client";
 import { createLSPSymbolProvider } from "@internal/lsp-client";
 import { readFile } from "fs/promises";
@@ -156,4 +157,32 @@ describe("F# Adapter", () => {
       throw error;
     }
   }, 30000);
+
+  it("should provide MCP tools including get_project_overview, get_diagnostics, and get_definitions", async () => {
+    const projectRoot = join(import.meta.dirname, "../../fixtures", "fsharp");
+    const result = await testMcpConnection(fsharpAdapter, projectRoot);
+
+    if (!result.connected) {
+      console.warn("MCP connection failed, skipping test");
+      return;
+    }
+
+    expect(result.hasGetProjectOverview).toBe(true);
+    expect(result.hasGetDiagnostics).toBe(true);
+    expect(result.hasGetDefinitions).toBe(true);
+
+    if (result.projectOverview) {
+      // The response is in Markdown format, not JSON
+      const overviewText = result.projectOverview[0].text;
+      expect(overviewText).toContain("Project Overview");
+      expect(overviewText).toContain("Statistics");
+      expect(overviewText).toContain("Key Components");
+    }
+
+    // Verify get_diagnostics works
+    expect(result.diagnosticsResult).toBeDefined();
+
+    // Verify get_definitions works (may not find the symbol, but tool should be callable)
+    // The result is optional since "main" might not exist
+  });
 });

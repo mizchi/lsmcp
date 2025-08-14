@@ -246,7 +246,9 @@ describe("binFinder", () => {
     it("should throw error when no binary specified or found", () => {
       const adapter = {
         binFindStrategy: {
-          strategies: [{ type: "node_modules" as const, names: ["nonexistent"] }],
+          strategies: [
+            { type: "node_modules" as const, names: ["nonexistent"] },
+          ],
         },
       };
 
