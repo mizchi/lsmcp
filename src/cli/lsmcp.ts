@@ -32,6 +32,7 @@ registerBuiltinAdapters(adapterRegistry);
 
 // Import subcommands
 import { initCommand, indexCommand } from "./subcommands.ts";
+import { doctorCommand } from "./doctor.ts";
 import { detectProjectType } from "../utils/projectDetector.ts";
 
 // Parse command line arguments
@@ -52,6 +53,11 @@ const { values, positionals } = parseArgs({
       type: "string",
       description:
         'Custom LSP server command (e.g., "deno lsp", "rust-analyzer")',
+    },
+    files: {
+      type: "string",
+      description:
+        'File patterns for custom LSP (required with --bin, e.g., "**/*.rs")',
     },
     include: {
       type: "string",
@@ -103,6 +109,14 @@ async function main() {
 
   if (subcommand === "index") {
     await indexCommand(process.cwd(), false, lspConfigLoader, adapterRegistry);
+    process.exit(0);
+  }
+
+  if (subcommand === "doctor") {
+    await doctorCommand(process.cwd(), {
+      preset: values.preset,
+      json: values.list, // Reuse list flag for JSON output
+    });
     process.exit(0);
   }
 
@@ -177,10 +191,35 @@ async function mainWithConfigLoader() {
     const hasConfigFile = existsSync(configPath);
     const hasExplicitConfig = values.preset || values.config || values.bin;
 
+    // If no preset and no config file, --files is required
+    if (!values.preset && !values.config && !values.bin && !hasConfigFile) {
+      if (!values.files) {
+        errorLog(
+          "Error: Either --preset, --config, --bin, or --files is required",
+        );
+        errorLog("");
+        errorLog("Options:");
+        errorLog("  lsmcp --preset tsgo                    # Use a preset");
+        errorLog(
+          '  lsmcp --files "**/*.ts,**/*.tsx"       # Specify file patterns',
+        );
+        errorLog(
+          '  lsmcp --bin "deno lsp" --files "**/*.ts"  # Custom LSP server',
+        );
+        errorLog("");
+        errorLog("Available presets:");
+        const presets = globalPresetRegistry.list();
+        presets.forEach((p) => {
+          errorLog(`  - ${p.presetId}: ${p.name || p.presetId}`);
+        });
+        process.exit(1);
+      }
+    }
+
     if (hasConfigFile && !hasExplicitConfig) {
       debugLog("[lsmcp] Loading config from .lsmcp/config.json");
       lspSources.configFile = configPath;
-    } else if (!hasConfigFile && !hasExplicitConfig) {
+    } else if (!hasConfigFile && !hasExplicitConfig && !values.files) {
       // Auto-detect environment
       const { detectEnvironment, formatEnvironmentGuide } = await import(
         "../utils/environmentDetector.ts"
@@ -206,16 +245,40 @@ async function mainWithConfigLoader() {
     }
 
     if (values.bin) {
+      // When using --bin, --files is required
+      if (!values.files) {
+        errorLog("Error: --files is required when using --bin");
+        errorLog("");
+        errorLog("Example:");
+        errorLog('  lsmcp --bin "clangd" --files "**/*.{c,cpp,h,hpp}"');
+        errorLog('  lsmcp --bin "rust-analyzer" --files "**/*.rs"');
+        errorLog('  lsmcp --bin "gopls" --files "**/*.go"');
+        errorLog("");
+        errorLog(
+          "The --files pattern specifies which files the LSP server should handle.",
+        );
+        process.exit(1);
+      }
+
       // Create custom preset from bin string
       const parts = values.bin.split(" ");
       const customPreset: Preset = {
         presetId: "custom",
         bin: parts[0],
         args: parts.slice(1),
-        files: ["**/*"],
+        files: values.files.split(",").map((p) => p.trim()),
       };
       globalPresetRegistry.register(customPreset);
       lspSources.preset = "custom";
+    }
+
+    // Handle --files without preset or bin
+    if (values.files && !values.preset && !values.bin) {
+      // When --files is specified without preset/bin, use it directly
+      if (!lspSources.config) {
+        lspSources.config = {};
+      }
+      lspSources.config.files = values.files.split(",").map((p) => p.trim());
     }
 
     if (values.initializationOptions) {

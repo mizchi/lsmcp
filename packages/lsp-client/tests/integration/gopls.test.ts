@@ -11,12 +11,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe("gopls adapter", () => {
   it("should have correct configuration", () => {
-    expect(goplsAdapter.id).toBe("gopls");
-    expect(goplsAdapter.name).toBe("gopls");
-    expect(goplsAdapter.baseLanguage).toBe("go");
+    expect(goplsAdapter.presetId).toBe("gopls");
     expect(goplsAdapter.bin).toBe("gopls");
     expect(goplsAdapter.args).toEqual(["serve"]);
-    expect(goplsAdapter.description).toBe("Official Go language server");
+    expect(goplsAdapter.files).toEqual(["**/*.go", "go.mod", "go.sum"]);
   });
 
   it("should have proper initialization options", () => {

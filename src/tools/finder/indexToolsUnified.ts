@@ -59,21 +59,43 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
     const config = loadIndexConfig(rootPath);
 
     if (!actualPattern) {
-      if (config?.indexFiles && config.indexFiles.length > 0) {
+      // Priority: 1. files, 2. preset defaults, 3. error
+      if (config?.files && config.files.length > 0) {
         // Use patterns from config.json
-        actualPattern = config.indexFiles.join(",");
+        actualPattern = config.files.join(",");
         debugLogWithPrefix(
           "index_symbols",
-          `Using patterns from .lsmcp/config.json: ${actualPattern}`,
+          `Using patterns from config.files: ${actualPattern}`,
+        );
+      } else if (config?.preset) {
+        // Use preset-specific patterns
+        actualPattern = getAdapterDefaultPattern(config.preset);
+        if (!actualPattern) {
+          // Preset not found or has no default patterns
+          debugLogWithPrefix(
+            "index_symbols",
+            `Unknown preset '${config.preset}' or preset has no default patterns`,
+          );
+          return {
+            success: false,
+            message: `Unknown preset '${config.preset}' or preset has no default patterns. Please specify 'files' in your .lsmcp/config.json`,
+          };
+        }
+        debugLogWithPrefix(
+          "index_symbols",
+          `Using patterns from preset '${config.preset}': ${actualPattern}`,
         );
       } else {
-        // Try to detect adapter and use its defaults
-        // Try to use default patterns
-        actualPattern = getAdapterDefaultPattern("typescript");
+        // No preset or files configured
         debugLogWithPrefix(
           "index_symbols",
-          `Using default TypeScript patterns: ${actualPattern}`,
+          "No file patterns configured. Please specify 'files' or 'preset' in config.",
         );
+        return {
+          success: false,
+          message:
+            "No file patterns configured. Please specify 'files' or 'preset' in your .lsmcp/config.json",
+        };
       }
     }
 

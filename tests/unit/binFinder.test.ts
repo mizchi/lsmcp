@@ -26,7 +26,7 @@ describe("binFinder", () => {
   describe("findBinary", () => {
     it("should find binary in local node_modules/.bin", () => {
       const strategy: BinFindStrategy = {
-        searchPaths: ["tsgo"],
+        strategies: [{ type: "node_modules", names: ["tsgo"] }],
         defaultArgs: ["--lsp", "--stdio"],
       };
 
@@ -47,7 +47,9 @@ describe("binFinder", () => {
 
     it("should find binary in parent node_modules/.bin", () => {
       const strategy: BinFindStrategy = {
-        searchPaths: ["typescript-language-server"],
+        strategies: [
+          { type: "node_modules", names: ["typescript-language-server"] },
+        ],
         defaultArgs: ["--stdio"],
       };
 
@@ -69,7 +71,7 @@ describe("binFinder", () => {
 
     it("should find globally installed binary", () => {
       const strategy: BinFindStrategy = {
-        searchPaths: ["tsgo"],
+        strategies: [{ type: "global", names: ["tsgo"] }],
         defaultArgs: ["--lsp"],
       };
 
@@ -95,8 +97,10 @@ describe("binFinder", () => {
 
     it("should fallback to npx when binary not found", () => {
       const strategy: BinFindStrategy = {
-        searchPaths: ["tsgo"],
-        npxPackage: "@typescript/native-preview",
+        strategies: [
+          { type: "node_modules", names: ["tsgo"] },
+          { type: "npx", package: "@typescript/native-preview" },
+        ],
         defaultArgs: ["--lsp", "--stdio"],
       };
 
@@ -115,7 +119,7 @@ describe("binFinder", () => {
 
     it("should return null when no binary found and no npx fallback", () => {
       const strategy: BinFindStrategy = {
-        searchPaths: ["nonexistent"],
+        strategies: [{ type: "node_modules", names: ["nonexistent"] }],
         defaultArgs: [],
       };
 
@@ -131,7 +135,12 @@ describe("binFinder", () => {
 
     it("should try multiple search paths", () => {
       const strategy: BinFindStrategy = {
-        searchPaths: ["nonexistent1", "nonexistent2", "tsgo"],
+        strategies: [
+          {
+            type: "node_modules",
+            names: ["nonexistent1", "nonexistent2", "tsgo"],
+          },
+        ],
         defaultArgs: ["--stdio"],
       };
 
@@ -177,8 +186,10 @@ describe("binFinder", () => {
     it("should use binFindStrategy when bin not provided", () => {
       const adapter = {
         binFindStrategy: {
-          searchPaths: ["tsgo"],
-          npxPackage: "@typescript/native-preview",
+          strategies: [
+            { type: "node_modules", names: ["tsgo"] },
+            { type: "npx", package: "@typescript/native-preview" },
+          ],
           defaultArgs: ["--lsp", "--stdio"],
         },
       };
@@ -203,7 +214,7 @@ describe("binFinder", () => {
         bin: "/explicit/path",
         args: ["--explicit"],
         binFindStrategy: {
-          searchPaths: ["tsgo"],
+          strategies: [{ type: "node_modules", names: ["tsgo"] }],
           defaultArgs: ["--lsp"],
         },
       };
@@ -235,7 +246,7 @@ describe("binFinder", () => {
     it("should throw error when no binary specified or found", () => {
       const adapter = {
         binFindStrategy: {
-          searchPaths: ["nonexistent"],
+          strategies: [{ type: "node_modules", names: ["nonexistent"] }],
         },
       };
 
@@ -252,7 +263,7 @@ describe("binFinder", () => {
     it("should use default args from strategy when using binFindStrategy", () => {
       const adapter = {
         binFindStrategy: {
-          searchPaths: ["lsp-server"],
+          strategies: [{ type: "global", names: ["lsp-server"] }],
           defaultArgs: ["--arg1", "--arg2"],
         },
       };

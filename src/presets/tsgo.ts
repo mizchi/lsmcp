@@ -1,5 +1,4 @@
 import type { Preset } from "../config/schema.ts";
-import { LANGUAGE_PATTERNS } from "../config/languagePatterns.ts";
 
 /**
  * tsgo adapter - Fast TypeScript language server
@@ -12,11 +11,17 @@ import { LANGUAGE_PATTERNS } from "../config/languagePatterns.ts";
 export const tsgoAdapter: Preset = {
   presetId: "tsgo",
   binFindStrategy: {
-    searchPaths: ["tsgo"],
-    npxPackage: "@typescript/native-preview",
+    strategies: [
+      // 1. Check node_modules first (most common for JS/TS tools)
+      { type: "node_modules", names: ["tsgo"] },
+      // 2. Check global installation
+      { type: "global", names: ["tsgo"] },
+      // 3. Fall back to npx
+      { type: "npx", package: "@typescript/native-preview" },
+    ],
     defaultArgs: ["--lsp", "--stdio"],
   },
-  files: LANGUAGE_PATTERNS.typescript,
+  files: ["**/*.ts", "**/*.tsx", "**/*.d.ts"],
   disable: ["get_code_actions", "rename_symbol", "delete_symbol"],
   needsDiagnosticDeduplication: true,
 

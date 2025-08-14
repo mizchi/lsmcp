@@ -11,7 +11,10 @@ import { mcpDebugWithPrefix } from "./mcp-logger.ts";
 /**
  * Find a binary using the specified strategy
  *
- * @param strategy The binary find strategy
+ * Strategies are tried in the order specified in the configuration.
+ * Each strategy type has its own search logic.
+ *
+ * @param strategy The binary find strategy configuration
  * @param projectRoot The project root directory
  * @returns The resolved command and args, or null if not found
  */
@@ -27,62 +30,156 @@ export function findBinary(
 
   const defaultArgs = strategy.defaultArgs || [];
 
-  // Try each search path in order
-  for (const searchPath of strategy.searchPaths) {
-    // 1. Check node_modules/.bin in current directory
-    const localBin = join(projectRoot, "node_modules", ".bin", searchPath);
-    if (existsSync(localBin)) {
-      mcpDebugWithPrefix(
-        "BinFinder",
-        `Found in local node_modules: ${localBin}`,
-      );
-      return { command: localBin, args: defaultArgs };
-    }
+  // Try each strategy in order
+  for (const item of strategy.strategies) {
+    mcpDebugWithPrefix("BinFinder", `Trying strategy: ${item.type}`);
 
-    // 2. Search parent directories for node_modules/.bin
-    let currentDir = projectRoot;
-    let parentDir = dirname(currentDir);
-    while (parentDir !== currentDir) {
-      const parentBin = join(parentDir, "node_modules", ".bin", searchPath);
-      if (existsSync(parentBin)) {
-        mcpDebugWithPrefix(
-          "BinFinder",
-          `Found in parent node_modules: ${parentBin}`,
-        );
-        return { command: parentBin, args: defaultArgs };
-      }
-      currentDir = parentDir;
-      parentDir = dirname(currentDir);
-    }
+    switch (item.type) {
+      case "venv": {
+        // Search in Python virtual environments
+        const venvDirs = item.venvDirs || [".venv", "venv"];
+        for (const name of item.names) {
+          // Check current directory
+          for (const venvDir of venvDirs) {
+            const venvBin = join(projectRoot, venvDir, "bin", name);
+            if (existsSync(venvBin)) {
+              mcpDebugWithPrefix(
+                "BinFinder",
+                `Found in Python ${venvDir}: ${venvBin}`,
+              );
+              return { command: venvBin, args: defaultArgs };
+            }
+          }
 
-    // 3. Check if it's available globally
-    try {
-      const globalPath = execSync(`which ${searchPath}`, {
-        encoding: "utf-8",
-        stdio: ["pipe", "pipe", "ignore"], // Suppress stderr
-      }).trim();
-      if (globalPath) {
-        mcpDebugWithPrefix("BinFinder", `Found globally: ${globalPath}`);
-        return { command: globalPath, args: defaultArgs };
+          // Check parent directories
+          let currentDir = projectRoot;
+          let parentDir = dirname(currentDir);
+          while (parentDir !== currentDir) {
+            for (const venvDir of venvDirs) {
+              const parentVenvBin = join(parentDir, venvDir, "bin", name);
+              if (existsSync(parentVenvBin)) {
+                mcpDebugWithPrefix(
+                  "BinFinder",
+                  `Found in parent ${venvDir}: ${parentVenvBin}`,
+                );
+                return { command: parentVenvBin, args: defaultArgs };
+              }
+            }
+            currentDir = parentDir;
+            parentDir = dirname(currentDir);
+          }
+        }
+        break;
       }
-    } catch {
-      // Not found globally, continue to next search path
+
+      case "node_modules": {
+        // Search in node_modules/.bin
+        for (const name of item.names) {
+          // Check current directory
+          const localBin = join(projectRoot, "node_modules", ".bin", name);
+          if (existsSync(localBin)) {
+            mcpDebugWithPrefix(
+              "BinFinder",
+              `Found in local node_modules: ${localBin}`,
+            );
+            return { command: localBin, args: defaultArgs };
+          }
+
+          // Check parent directories
+          let currentDir = projectRoot;
+          let parentDir = dirname(currentDir);
+          while (parentDir !== currentDir) {
+            const parentBin = join(parentDir, "node_modules", ".bin", name);
+            if (existsSync(parentBin)) {
+              mcpDebugWithPrefix(
+                "BinFinder",
+                `Found in parent node_modules: ${parentBin}`,
+              );
+              return { command: parentBin, args: defaultArgs };
+            }
+            currentDir = parentDir;
+            parentDir = dirname(currentDir);
+          }
+        }
+        break;
+      }
+
+      case "global": {
+        // Search globally installed binaries
+        for (const name of item.names) {
+          try {
+            const globalPath = execSync(`which ${name}`, {
+              encoding: "utf-8",
+              stdio: ["pipe", "pipe", "ignore"], // Suppress stderr
+            }).trim();
+            if (globalPath) {
+              mcpDebugWithPrefix("BinFinder", `Found globally: ${globalPath}`);
+              return { command: globalPath, args: defaultArgs };
+            }
+          } catch {
+            // Not found globally, continue to next name
+          }
+        }
+        break;
+      }
+
+      case "uv": {
+        // Use UV tool run for Python packages
+        try {
+          execSync("which uv", {
+            encoding: "utf-8",
+            stdio: ["pipe", "pipe", "ignore"],
+          });
+
+          mcpDebugWithPrefix("BinFinder", `Using uv tool run: ${item.tool}`);
+
+          if (item.command) {
+            // Use specific command from the tool
+            return {
+              command: "uv",
+              args: [
+                "tool",
+                "run",
+                "--from",
+                item.tool,
+                item.command,
+                ...defaultArgs,
+              ],
+            };
+          } else {
+            // Use tool directly
+            return {
+              command: "uv",
+              args: ["tool", "run", item.tool, ...defaultArgs],
+            };
+          }
+        } catch {
+          mcpDebugWithPrefix("BinFinder", `uv not found, skipping uv strategy`);
+        }
+        break;
+      }
+
+      case "npx": {
+        // Use NPX to run package
+        mcpDebugWithPrefix("BinFinder", `Using npx: ${item.package}`);
+        return {
+          command: "npx",
+          args: ["-y", item.package, ...defaultArgs],
+        };
+      }
+
+      case "path": {
+        // Use direct path
+        if (existsSync(item.path)) {
+          mcpDebugWithPrefix("BinFinder", `Found at path: ${item.path}`);
+          return { command: item.path, args: defaultArgs };
+        }
+        break;
+      }
     }
   }
 
-  // 4. Fallback to npx if specified
-  if (strategy.npxPackage) {
-    mcpDebugWithPrefix(
-      "BinFinder",
-      `Falling back to npx: ${strategy.npxPackage}`,
-    );
-    return {
-      command: "npx",
-      args: ["-y", strategy.npxPackage, ...defaultArgs],
-    };
-  }
-
-  mcpDebugWithPrefix("BinFinder", `Binary not found with strategy`);
+  mcpDebugWithPrefix("BinFinder", `Binary not found with any strategy`);
   return null;
 }
 

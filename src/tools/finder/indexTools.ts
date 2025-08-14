@@ -197,19 +197,35 @@ export const searchSymbolFromIndexTool: McpToolDef<typeof searchSymbolSchema> =
         let pattern: string;
         const config = loadIndexConfig(rootPath);
 
-        if (config?.indexFiles && config.indexFiles.length > 0) {
-          pattern = config.indexFiles.join(",");
+        // Priority: 1. files, 2. preset defaults, 3. empty (no auto-indexing)
+        if (config?.files && config.files.length > 0) {
+          pattern = config.files.join(",");
           debugLogWithPrefix(
             "search_symbol_from_index",
-            `Using patterns from .lsmcp/config.json: ${pattern}`,
+            `Using patterns from config.files: ${pattern}`,
+          );
+        } else if (config?.preset) {
+          // Use preset-specific patterns
+          pattern = getAdapterDefaultPattern(config.preset);
+          if (!pattern) {
+            // Preset not found or has no default patterns
+            debugLogWithPrefix(
+              "search_symbol_from_index",
+              `Unknown preset '${config.preset}' or preset has no default patterns`,
+            );
+            return `Unknown preset '${config.preset}' or preset has no default patterns. Please specify 'files' in your .lsmcp/config.json`;
+          }
+          debugLogWithPrefix(
+            "search_symbol_from_index",
+            `Using patterns from preset '${config.preset}': ${pattern}`,
           );
         } else {
-          // Try to detect adapter and use its defaults
-          pattern = getAdapterDefaultPattern("typescript");
+          // No preset or files configured - don't auto-index
           debugLogWithPrefix(
             "search_symbol_from_index",
-            `Using default TypeScript patterns: ${pattern}`,
+            "No file patterns configured. Please specify 'files' or 'preset' in config.",
           );
+          return "No file patterns configured. Please specify 'files' or 'preset' in your .lsmcp/config.json";
         }
 
         // Determine concurrency

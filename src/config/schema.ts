@@ -81,18 +81,61 @@ export const serverCapabilitiesSchema = z.object({
 
 export type ServerCapabilities = z.infer<typeof serverCapabilitiesSchema>;
 
+// Individual binary find strategy types
+export const binFindStrategyItemSchema = z.discriminatedUnion("type", [
+  // Python virtual environment
+  z.object({
+    type: z.literal("venv"),
+    names: z.array(z.string()).describe("Binary names to search in venv/bin"),
+    venvDirs: z
+      .array(z.string())
+      .default([".venv", "venv"])
+      .describe("Virtual environment directory names"),
+  }),
+
+  // Node modules
+  z.object({
+    type: z.literal("node_modules"),
+    names: z
+      .array(z.string())
+      .describe("Binary names to search in node_modules/.bin"),
+  }),
+
+  // Global installation
+  z.object({
+    type: z.literal("global"),
+    names: z.array(z.string()).describe("Binary names to search globally"),
+  }),
+
+  // UV tool run
+  z.object({
+    type: z.literal("uv"),
+    tool: z.string().describe("UV tool name (e.g., 'pyright', 'ruff')"),
+    command: z
+      .string()
+      .optional()
+      .describe("Specific command to run from the tool"),
+  }),
+
+  // NPX fallback
+  z.object({
+    type: z.literal("npx"),
+    package: z.string().describe("NPX package name"),
+  }),
+
+  // Direct path
+  z.object({
+    type: z.literal("path"),
+    path: z.string().describe("Direct path to binary"),
+  }),
+]);
+
 // Binary find strategy schema
 export const binFindStrategySchema = z.object({
-  /** List of binary names to search for in order */
-  searchPaths: z
-    .array(z.string())
-    .describe("Binary names to search for in order of preference"),
-
-  /** NPX package to use as fallback */
-  npxPackage: z
-    .string()
-    .optional()
-    .describe("NPX package name to use as fallback if binary not found"),
+  /** Ordered list of strategies to try */
+  strategies: z
+    .array(binFindStrategyItemSchema)
+    .describe("Ordered list of strategies to find the binary"),
 
   /** Default arguments to pass to the binary */
   defaultArgs: z
@@ -359,7 +402,7 @@ export const DEFAULT_SYMBOL_FILTER = {
 
 // Default configuration
 export const DEFAULT_CONFIG: LSMCPConfig = {
-  files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  files: [], // No default files - must be specified by preset or config
   settings: {
     autoIndex: false,
     indexConcurrency: 5,
@@ -391,7 +434,7 @@ export function createConfigFromPreset(
   return {
     ...DEFAULT_CONFIG,
     preset,
-    files: indexPatterns || DEFAULT_CONFIG.files,
+    files: indexPatterns || [], // No default files - must be specified
     symbolFilter: DEFAULT_SYMBOL_FILTER,
   };
 }

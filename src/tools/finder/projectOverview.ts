@@ -148,10 +148,40 @@ async function ensureIndexExists(
     let pattern: string;
     const config = loadIndexConfig(rootPath);
 
-    if (config?.indexFiles && config.indexFiles.length > 0) {
-      pattern = config.indexFiles.join(",");
+    // Priority: 1. files, 2. preset defaults, 3. empty (no auto-indexing)
+    if (config?.files && config.files.length > 0) {
+      pattern = config.files.join(",");
+    } else if (config?.preset) {
+      // Use preset-specific patterns
+      pattern = getAdapterDefaultPattern(config.preset);
+      if (!pattern) {
+        // Preset not found or has no default patterns
+        return {
+          structure: `Unknown preset '${config.preset}' or preset has no default patterns. Please specify 'files' in config.`,
+          keyComponents: [],
+          statistics: {
+            totalFiles: 0,
+            totalSymbols: 0,
+            byKind: {},
+          },
+          dependencies: [],
+          directoryStructure: "",
+        };
+      }
     } else {
-      pattern = getAdapterDefaultPattern("typescript");
+      // No preset or files configured - don't auto-index
+      return {
+        structure:
+          "Project structure analysis failed. No file patterns configured.",
+        keyComponents: [],
+        statistics: {
+          totalFiles: 0,
+          totalSymbols: 0,
+          byKind: {},
+        },
+        dependencies: [],
+        directoryStructure: "",
+      };
     }
 
     const concurrency = config?.settings?.indexConcurrency || 5;

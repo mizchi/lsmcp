@@ -1,5 +1,4 @@
 import type { Preset } from "../config/schema.ts";
-import { LANGUAGE_PATTERNS } from "../config/languagePatterns.ts";
 
 /**
  * MoonBit language server adapter
@@ -12,7 +11,7 @@ export const moonbitAdapter: Preset = {
   presetId: "moonbit",
   bin: "moonbit-lsp",
   args: [],
-  files: LANGUAGE_PATTERNS.moonbit,
+  files: ["**/*.mbt", "**/*.mbti"],
   disable: [
     // "get_hover", // May be slow/timeout on some files
   ],

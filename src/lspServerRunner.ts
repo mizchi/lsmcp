@@ -29,13 +29,22 @@ export async function runLanguageServerWithConfig(
     )}`,
   );
 
+  // Debug binFindStrategy
+  if (config.binFindStrategy) {
+    debugLog(
+      `[lsmcp] binFindStrategy found: ${JSON.stringify(config.binFindStrategy)}`,
+    );
+  } else {
+    debugLog(`[lsmcp] No binFindStrategy in config`);
+  }
+
   try {
     const projectRoot = process.cwd();
 
-    // Check required fields
-    if (!config.bin) {
+    // Check required fields - bin OR binFindStrategy must be present
+    if (!config.bin && !config.binFindStrategy) {
       throw new Error(
-        `Missing 'bin' field in configuration. Please specify a language server command.`,
+        `Missing 'bin' field in configuration. Please specify a language server command or binFindStrategy.`,
       );
     }
 
@@ -47,6 +56,7 @@ export async function runLanguageServerWithConfig(
         bin: config.bin,
         args: config.args || [],
         files: config.files || [],
+        binFindStrategy: config.binFindStrategy,
       } as LspClientConfig,
       projectRoot,
     );

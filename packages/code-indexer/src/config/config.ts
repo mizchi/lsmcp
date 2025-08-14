@@ -15,7 +15,7 @@ export interface SymbolFilterConfig {
 
 export interface IndexConfig {
   version?: string;
-  indexFiles?: string[];
+  files?: string[];
   settings?: {
     autoIndex?: boolean;
     indexConcurrency?: number;

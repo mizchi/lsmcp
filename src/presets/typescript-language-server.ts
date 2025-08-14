@@ -1,18 +1,31 @@
 import type { Preset } from "../config/schema.ts";
-import { getTsJsPatterns } from "../config/languagePatterns.ts";
 
 /**
  * TypeScript Language Server adapter (default)
  */
 export const typescriptAdapter: Preset = {
   presetId: "typescript",
-  bin: "typescript-language-server",
-  args: ["--stdio"],
   binFindStrategy: {
-    searchPaths: ["typescript-language-server"],
-    npxPackage: "typescript-language-server",
+    strategies: [
+      // 1. Check node_modules first
+      { type: "node_modules", names: ["typescript-language-server"] },
+      // 2. Check global installation
+      { type: "global", names: ["typescript-language-server"] },
+      // 3. Fall back to npx
+      { type: "npx", package: "typescript-language-server" },
+    ],
+    defaultArgs: ["--stdio"],
   },
-  files: getTsJsPatterns(),
+  files: [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.d.ts",
+    "**/*.js",
+    "**/*.jsx",
+    "**/*.mjs",
+    "**/*.mts",
+    "**/*.cjs",
+  ],
   initializationOptions: {
     preferences: {
       includeCompletionsForModuleExports: true,

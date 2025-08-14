@@ -4,18 +4,17 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import { join } from "path";
+import { join, isAbsolute } from "path";
 import type { LSMCPConfig, ExtendedLSMCPConfig, Preset } from "./schema.ts";
 import { validateConfig } from "./schema.ts";
 import { registerBuiltinAdapters } from "./presets.ts";
-import { PRESET_LANGUAGE_PATTERNS } from "./languageDefinitions.ts";
 
 /**
  * Default base configuration
  */
 const DEFAULT_BASE_CONFIG: LSMCPConfig = {
-  preset: "tsgo",
-  files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  // No default preset - must be specified explicitly
+  files: [], // No default files - must be specified by preset or config
   settings: {
     autoIndex: false,
     indexConcurrency: 5,
@@ -43,11 +42,6 @@ const DEFAULT_BASE_CONFIG: LSMCPConfig = {
     memory: false,
   },
 };
-
-/**
- * Preset-specific file patterns (from centralized language definitions)
- */
-const PRESET_FILE_PATTERNS: Record<string, string[]> = PRESET_LANGUAGE_PATTERNS;
 
 /**
  * Merge configurations with deep merging for nested objects
@@ -263,7 +257,10 @@ export class ConfigLoader {
     filePath: string,
     options: LoadOptions,
   ): Promise<LoadResult> {
-    const absolutePath = join(this.rootPath, filePath);
+    // Check if filePath is already absolute
+    const absolutePath = isAbsolute(filePath)
+      ? filePath
+      : join(this.rootPath, filePath);
 
     if (!existsSync(absolutePath)) {
       throw new Error(`Configuration file not found: ${absolutePath}`);
@@ -317,10 +314,11 @@ export class ConfigLoader {
           }
         } else {
           // Fall back to built-in preset file patterns
-          if (PRESET_FILE_PATTERNS[parsed.preset]) {
+          const registeredPreset = globalPresetRegistry.get(parsed.preset);
+          if (registeredPreset && registeredPreset.files) {
             const presetConfig: Partial<LSMCPConfig> = {
               preset: parsed.preset,
-              files: PRESET_FILE_PATTERNS[parsed.preset],
+              files: registeredPreset.files,
             };
             merged = { ...presetConfig, ...parsed };
           }
@@ -382,6 +380,7 @@ export class ConfigLoader {
         name: preset.name || preset.presetId,
         bin: preset.bin,
         args: preset.args || [],
+        binFindStrategy: preset.binFindStrategy,
         baseLanguage: preset.baseLanguage,
         initializationOptions: preset.initializationOptions,
         serverCharacteristics: preset.serverCharacteristics,
@@ -400,26 +399,10 @@ export class ConfigLoader {
       };
     }
 
-    // Fall back to built-in preset file patterns
-    if (PRESET_FILE_PATTERNS[presetName]) {
-      const config: Partial<ExtendedLSMCPConfig> = {
-        preset: presetName,
-        files: PRESET_FILE_PATTERNS[presetName],
-      };
-      const merged = options.applyDefaults
-        ? this.mergeWithDefaults(config)
-        : ({ ...DEFAULT_BASE_CONFIG, ...config } as ExtendedLSMCPConfig);
-      // Don't validate preset configs to preserve all fields
-      return {
-        config: merged,
-        source: "preset",
-      };
-    }
-
-    const available = [
-      ...globalPresetRegistry.list().map((p) => p.presetId),
-      ...Object.keys(PRESET_FILE_PATTERNS),
-    ].join(", ");
+    const available = globalPresetRegistry
+      .list()
+      .map((p) => p.presetId)
+      .join(", ");
     throw new Error(
       `Unknown preset: ${presetName}. Available presets: ${available}`,
     );
@@ -475,6 +458,7 @@ export class ConfigLoader {
       "description",
       "bin",
       "args",
+      "binFindStrategy",
       "baseLanguage",
       "initializationOptions",
       "serverCharacteristics",
@@ -533,17 +517,18 @@ export class ConfigLoader {
    * Get the list of available presets
    */
   static getAvailablePresets(): string[] {
-    return Object.keys(PRESET_FILE_PATTERNS);
+    return globalPresetRegistry.list().map((p) => p.presetId);
   }
 
   /**
    * Get preset configuration
    */
   static getPreset(name: string): Partial<LSMCPConfig> | undefined {
-    if (PRESET_FILE_PATTERNS[name]) {
+    const preset = globalPresetRegistry.get(name);
+    if (preset && preset.files) {
       return {
         preset: name,
-        files: PRESET_FILE_PATTERNS[name],
+        files: preset.files,
       };
     }
     return undefined;

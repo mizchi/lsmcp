@@ -52,7 +52,8 @@ export function resolveAdapterCommand(
   projectRoot?: string,
 ): { command: string; args: string[] } {
   // Use the new binFinder if binFindStrategy is available
-  if (adapter.binFindStrategy && !adapter.args?.length) {
+  // Prefer binFindStrategy over explicit bin/args when both are present
+  if (adapter.binFindStrategy) {
     return resolveWithBinFinder(adapter, projectRoot);
   }
 

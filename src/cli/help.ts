@@ -9,29 +9,54 @@ export function showHelp(): void {
 🌍 LSMCP - Language Service MCP for Multi-Language Support
 
 Usage:
-  lsmcp -p <preset> [options]              Start MCP server
-  lsmcp --bin <command> [options]          Start with custom LSP
+  lsmcp -p <preset>                        Start MCP server with preset
+  lsmcp --files <pattern>                  Start MCP server with file patterns
+  lsmcp --bin <command> --files <pattern>  Start with custom LSP
   lsmcp init [-p <preset>]                 Initialize project
   lsmcp index                              Build symbol index
+  lsmcp doctor [-p <preset>]               Analyze environment & suggest setup
 
 Commands:
   init      Initialize lsmcp project configuration
   index     Build symbol index from config.json
+  doctor    Analyze environment and suggest MCP configurations
 
 Options:
-  -p, --preset <preset>     Language adapter to use (e.g., tsgo, deno, pyright)
+  -p, --preset <preset>     Language adapter to use (see list below)
   --config <path>           Load language configuration from JSON file
-  --bin <command>           Custom LSP server command (e.g., "deno lsp", "rust-analyzer")
+  --bin <command>           Custom LSP server command (requires --files)
+  --files <pattern>         File patterns to handle (e.g., "**/*.rs")
   --initializationOptions <json>  JSON string for LSP initialization options
   --list                    List all supported languages and presets
   -h, --help               Show this help message
 
+Note: Either --preset, --config, --bin, or --files is required
+
+Supported Presets:
+  tsgo              TypeScript (Fast native implementation) - Recommended
+  typescript        TypeScript/JavaScript (typescript-language-server)
+  pyright           Python (Microsoft Pyright)
+  ruff              Python (Ruff LSP)
+  rust-analyzer     Rust
+  gopls             Go
+  fsharp            F#
+  moonbit           MoonBit
+  deno              Deno (TypeScript/JavaScript)
+
+Custom LSP Server:
+  For languages not in the preset list, use --bin with --files:
+  
+  lsmcp --bin "clangd" --files "**/*.{c,cpp,h,hpp}"          # C/C++
+  lsmcp --bin "jdtls" --files "**/*.java"                    # Java
+  lsmcp --bin "lua-language-server" --files "**/*.lua"       # Lua
+  lsmcp --bin "solargraph" --files "**/*.rb"                 # Ruby
+  lsmcp --bin "haskell-language-server" --files "**/*.hs"    # Haskell
+
 Examples:
-  lsmcp init -p typescript     Initialize TypeScript project
-  lsmcp index                  Build symbol index
-  lsmcp -p typescript          Use TypeScript MCP server
-  lsmcp -p tsgo                Use tsgo TypeScript preset
-  lsmcp --bin "deno lsp"       Use custom LSP server
+  lsmcp init -p tsgo           Initialize with tsgo (recommended for TypeScript)
+  lsmcp doctor                 Check environment and get setup commands
+  lsmcp -p tsgo                Start tsgo TypeScript MCP server
+  lsmcp --bin "deno lsp" --files "**/*.ts"  Use Deno LSP for TypeScript files
 `);
 }
 

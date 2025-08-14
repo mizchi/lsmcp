@@ -1,12 +1,21 @@
+[project]
+name = "testproj"
+requires-python = ">=3.12"
+version = "0.0.1"
 [tool.pyright]
-include = ["**/*.py"]
 exclude = ["**/node_modules", "**/__pycache__"]
+include = ["**/*.py"]
+pythonPlatform = "Linux"
+pythonVersion = "3.12"
 reportMissingImports = true
 reportMissingTypeStubs = false
-pythonVersion = "3.8"
-pythonPlatform = "Linux"
 
 [tool.pyright.analysis]
 autoSearchPaths = true
-useLibraryCodeForTypes = true
 diagnosticMode = "workspace"
+useLibraryCodeForTypes = true
+
+[dependency-groups]
+dev = [
+  "pyright>=1.1.403",
+]

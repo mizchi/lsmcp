@@ -168,3 +168,5 @@ examples/fsharp-project/obj/
 # .lsmcp
 # lsmcp cache
 .lsmcp/cache
+
+examples/*/.lsmcp

@@ -1,7 +1,0 @@
-{
-  "$schema": "../lsmcp.schema.json",
-  "preset": "tsgo",
-  "experiments": {
-    "memory": true
-  }
-}

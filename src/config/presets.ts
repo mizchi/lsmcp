@@ -9,6 +9,7 @@ import { typescriptAdapter } from "../presets/typescript-language-server.ts";
 import { tsgoAdapter } from "../presets/tsgo.ts";
 import { denoAdapter } from "../presets/deno.ts";
 import { pyrightAdapter } from "../presets/pyright.ts";
+import { ruffAdapter } from "../presets/ruff.ts";
 import { rustAnalyzerAdapter } from "../presets/rust-analyzer.ts";
 import { fsharpAdapter } from "../presets/fsharp.ts";
 import { moonbitAdapter } from "../presets/moonbit.ts";
@@ -22,6 +23,7 @@ export function registerBuiltinAdapters(registry: PresetRegistry): void {
   registry.register(tsgoAdapter);
   registry.register(denoAdapter);
   registry.register(pyrightAdapter);
+  registry.register(ruffAdapter);
   registry.register(rustAnalyzerAdapter);
   registry.register(fsharpAdapter);
   registry.register(moonbitAdapter);

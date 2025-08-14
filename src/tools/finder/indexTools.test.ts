@@ -448,8 +448,10 @@ describe("searchSymbolFromIndexTool", () => {
         mockIndex as any,
       );
 
-      // Mock config loading (no config)
-      vi.mocked(loadIndexConfig).mockReturnValue(null as any);
+      // Mock config loading with preset specified
+      vi.mocked(loadIndexConfig).mockReturnValue({
+        preset: "typescript-language-server",
+      } as any);
 
       // Mock default pattern
       vi.mocked(getAdapterDefaultPattern).mockReturnValue("**/*.{ts,tsx}");
@@ -549,7 +551,7 @@ describe("searchSymbolFromIndexTool", () => {
 
       // Mock config with patterns
       vi.mocked(loadIndexConfig).mockReturnValue({
-        indexFiles: ["src/**/*.js", "lib/**/*.js"],
+        files: ["src/**/*.js", "lib/**/*.js"],
         settings: { indexConcurrency: 10 },
       } as any);
 

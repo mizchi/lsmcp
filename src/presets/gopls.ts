@@ -1,5 +1,4 @@
 import type { Preset } from "../config/schema.ts";
-import { LANGUAGE_PATTERNS } from "../config/languagePatterns.ts";
 
 /**
  * Gopls adapter for Go language support
@@ -9,7 +8,7 @@ export const goplsAdapter: Preset = {
   presetId: "gopls",
   bin: "gopls",
   args: ["serve"],
-  files: LANGUAGE_PATTERNS.go,
+  files: ["**/*.go", "go.mod", "go.sum"],
   initializationOptions: {
     // Enable all gopls features
     codelenses: {

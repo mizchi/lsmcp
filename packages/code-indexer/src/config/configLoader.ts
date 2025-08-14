@@ -16,7 +16,7 @@ export function loadIndexConfig(rootPath: string): IndexConfig {
 
   // Import default config
   const defaultConfig: IndexConfig = {
-    indexFiles: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+    files: [], // No default files - must be specified by preset or config
     settings: {
       indexConcurrency: 5,
       autoIndex: false,

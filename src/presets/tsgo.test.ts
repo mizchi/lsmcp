@@ -24,10 +24,20 @@ describe("tsgoAdapter", () => {
       expect(tsgoAdapter.bin).toBeUndefined();
       expect(tsgoAdapter.args).toBeUndefined();
       expect(tsgoAdapter.binFindStrategy).toBeDefined();
-      expect(tsgoAdapter.binFindStrategy?.searchPaths).toEqual(["tsgo"]);
-      expect(tsgoAdapter.binFindStrategy?.npxPackage).toBe(
-        "@typescript/native-preview",
-      );
+      expect(tsgoAdapter.binFindStrategy?.strategies).toBeDefined();
+      expect(tsgoAdapter.binFindStrategy?.strategies).toHaveLength(3);
+      expect(tsgoAdapter.binFindStrategy?.strategies[0]).toEqual({
+        type: "node_modules",
+        names: ["tsgo"],
+      });
+      expect(tsgoAdapter.binFindStrategy?.strategies[1]).toEqual({
+        type: "global",
+        names: ["tsgo"],
+      });
+      expect(tsgoAdapter.binFindStrategy?.strategies[2]).toEqual({
+        type: "npx",
+        package: "@typescript/native-preview",
+      });
       expect(tsgoAdapter.binFindStrategy?.defaultArgs).toEqual([
         "--lsp",
         "--stdio",
