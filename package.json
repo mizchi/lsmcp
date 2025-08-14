@@ -48,9 +48,6 @@
     "lsmcp.schema.json"
   ],
   "dependencies": {
-    "@lsmcp/types": "workspace:*",
-    "@lsmcp/lsp-client": "workspace:*",
-    "@lsmcp/code-indexer": "workspace:*",
     "gitaware-glob": "^0.2.0",
     "glob": "^10.4.5",
     "minimatch": "^9.0.5",
@@ -58,6 +55,9 @@
     "zod": "^3.25.56"
   },
   "devDependencies": {
+    "@lsmcp/types": "workspace:*",
+    "@lsmcp/lsp-client": "workspace:*",
+    "@lsmcp/code-indexer": "workspace:*",
     "@biomejs/biome": "^2.0.6",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@moonbit/moonbit-lsp": "^0.1.202506241",

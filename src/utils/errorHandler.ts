@@ -8,6 +8,13 @@ import {
 
 export type { ErrorContext };
 
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
 export function formatError(error: unknown, context?: ErrorContext): string {
   if (error instanceof LSMCPError) {
     return error.format();

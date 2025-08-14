@@ -5,9 +5,8 @@
 import type { McpToolDef } from "@lsmcp/types";
 import { z } from "zod";
 import { resolve } from "path";
-// Remove getLSPClient - no longer needed
+import { readFile } from "fs/promises";
 import {
-  resolveSymbolFromImports,
   getAvailableExternalSymbols,
   parseImports,
   resolveModulePath,
@@ -75,15 +74,14 @@ async function handleResolveSymbol(args: any) {
   const rootPath = resolve(parsed.root);
   const fullPath = resolve(rootPath, parsed.filePath);
 
-  // TODO: Need to pass client from context
-  const client = null;
-
-  const resolution = await resolveSymbolFromImports(
-    parsed.symbolName,
+  // Use getAvailableExternalSymbols instead of resolveSymbolFromImports
+  // This avoids the need for LSP client parameter which is not available in MCP context
+  // The trade-off is that we get placeholder symbol information rather than full LSP data
+  const availableSymbols = await getAvailableExternalSymbols(
     fullPath,
     rootPath,
-    client as any,
   );
+  const resolution = availableSymbols.get(parsed.symbolName);
 
   if (!resolution) {
     return JSON.stringify(
@@ -163,7 +161,6 @@ async function handleParseImports(args: any) {
   const rootPath = resolve(parsed.root);
   const fullPath = resolve(rootPath, parsed.filePath);
 
-  const { readFile } = await import("fs/promises");
   const sourceCode = await readFile(fullPath, "utf-8");
   const imports = parseImports(sourceCode);
 

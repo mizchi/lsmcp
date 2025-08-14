@@ -8,6 +8,7 @@ import type { SymbolEntry } from "../symbolIndex.ts";
 import { relative } from "path";
 import { statSync } from "fs";
 import { pathToFileURL } from "url";
+import { debugLogWithPrefix } from "../../../../src/utils/debugLog.ts";
 
 export class SQLiteCache implements SymbolCache {
   private manager: SymbolCacheManager;
@@ -18,7 +19,8 @@ export class SQLiteCache implements SymbolCache {
     this.needsReindexing = this.manager.wasSchemaUpdated();
 
     if (this.needsReindexing) {
-      console.log(
+      debugLogWithPrefix(
+        "SQLiteCache",
         `Schema updated to version ${this.manager.getSchemaVersion()}, full reindexing required`,
       );
     }

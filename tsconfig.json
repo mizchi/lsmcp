@@ -10,7 +10,9 @@
     "allowImportingTsExtensions": true,
     "paths": {
       "@lsmcp/code-indexer": ["./packages/code-indexer/src/index.ts"],
-      "@lsmcp/lsp-client": ["./packages/lsp-client/src/index.ts"]
+      "@lsmcp/lsp-client": ["./packages/lsp-client/src/index.ts"],
+      "@lsmcp/types": ["./packages/types/src/index.ts"],
+      "@lsmcp/utils": ["./src/utils/index.ts"]
     },
     "lib": ["esnext", "dom"],
     "types": ["vitest/importMeta"],

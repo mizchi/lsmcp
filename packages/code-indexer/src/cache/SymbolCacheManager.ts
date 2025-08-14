@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { mkdirSync, existsSync } from "node:fs";
 import type { SymbolEntry } from "../symbolIndex.ts";
 import { SYMBOL_CACHE_SCHEMA_VERSION } from "@lsmcp/types";
+import { debugLogWithPrefix } from "../../../../src/utils/debugLog.ts";
 
 // Define CachedSymbol type locally
 export interface CachedSymbol {
@@ -93,7 +94,8 @@ export class SymbolCacheManager {
 
     if (currentVersion < SYMBOL_CACHE_SCHEMA_VERSION) {
       // Need to update schema
-      console.log(
+      debugLogWithPrefix(
+        "SymbolCache",
         `Updating schema from version ${currentVersion} to ${SYMBOL_CACHE_SCHEMA_VERSION}`,
       );
       this.schemaUpdated = true;
