@@ -2,6 +2,7 @@
 name = "testproj"
 requires-python = ">=3.12"
 version = "0.0.1"
+
 [tool.pyright]
 exclude = ["**/node_modules", "**/__pycache__"]
 include = ["**/*.py"]

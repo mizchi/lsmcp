@@ -124,34 +124,58 @@ export function findBinary(
       }
 
       case "uv": {
-        // Use UV tool run for Python packages
+        // Use UV run for Python packages
         try {
           execSync("which uv", {
             encoding: "utf-8",
             stdio: ["pipe", "pipe", "ignore"],
           });
 
-          mcpDebugWithPrefix("BinFinder", `Using uv tool run: ${item.tool}`);
-
-          if (item.command) {
-            // Use specific command from the tool
-            return {
-              command: "uv",
-              args: [
-                "tool",
-                "run",
-                "--from",
-                item.tool,
-                item.command,
-                ...defaultArgs,
-              ],
-            };
+          // Check if uv.lock exists in the project (indicates uv sync has been run)
+          const uvLockPath = join(projectRoot, "uv.lock");
+          const pyprojectPath = join(projectRoot, "pyproject.toml");
+          
+          if (existsSync(uvLockPath) || existsSync(pyprojectPath)) {
+            // Project uses uv, use uv run
+            mcpDebugWithPrefix("BinFinder", `Using uv run: ${item.command || item.tool}`);
+            
+            if (item.command) {
+              // Use specific command from the tool
+              return {
+                command: "uv",
+                args: ["run", item.command, ...defaultArgs],
+              };
+            } else {
+              // Use tool directly
+              return {
+                command: "uv",
+                args: ["run", item.tool, ...defaultArgs],
+              };
+            }
           } else {
-            // Use tool directly
-            return {
-              command: "uv",
-              args: ["tool", "run", item.tool, ...defaultArgs],
-            };
+            // No uv.lock, try uv tool run instead
+            mcpDebugWithPrefix("BinFinder", `Using uv tool run: ${item.tool}`);
+            
+            if (item.command) {
+              // Use specific command from the tool
+              return {
+                command: "uv",
+                args: [
+                  "tool",
+                  "run",
+                  "--from",
+                  item.tool,
+                  item.command,
+                  ...defaultArgs,
+                ],
+              };
+            } else {
+              // Use tool directly
+              return {
+                command: "uv",
+                args: ["tool", "run", item.tool, ...defaultArgs],
+              };
+            }
           }
         } catch {
           mcpDebugWithPrefix("BinFinder", `uv not found, skipping uv strategy`);
