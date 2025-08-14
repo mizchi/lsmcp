@@ -1,185 +1,89 @@
 /**
  * LSP Client Package - Public API
+ * 
+ * This module exports the minimal public API for LSP client functionality.
  */
-
-import type { LSPClient } from "./protocol/types/index.ts";
 
 // ============================================================================
 // Core Client API
 // ============================================================================
-export { createLSPClient, type LSPClient } from "./core/client.ts";
-export type { LSPClientConfig, LSPClientState } from "./core/state.ts";
+export { 
+  createLSPClient,
+  createAndInitializeLSPClient,
+  type LSPClient 
+} from "./core/client.ts";
 
-// Factory function for creating and initializing clients
-export { createAndInitializeLSPClient } from "./core/client.ts";
-
-// ============================================================================
-// Protocol Types
-// ============================================================================
-export * from "./protocol/types/index.ts";
-
-// ============================================================================
-// Process Management
-// ============================================================================
-export { lspProcessPool, type PooledLSPClient } from "./process-pool.ts";
+export type { 
+  LSPClientConfig,
+  LSPProcessState as LSPClientState 
+} from "./core/state.ts";
 
 // ============================================================================
-// Document Management
+// Essential Protocol Types
 // ============================================================================
-export { DocumentManager } from "./managers/document-manager.ts";
-export { withTemporaryDocument } from "./lsp-utils/documentManager.ts";
+export type {
+  Position,
+  Range,
+  Location,
+  Diagnostic,
+  CompletionItem,
+  SymbolInformation,
+  DocumentSymbol,
+  WorkspaceEdit,
+  TextEdit,
+  TextDocumentIdentifier,
+  TextDocumentPositionParams,
+  MarkupContent,
+  SignatureHelp,
+  Hover,
+  CodeAction,
+  Command,
+  FormattingOptions,
+  ServerCapabilities,
+} from "./protocol/types/index.ts";
 
-// ============================================================================
-// Diagnostics
-// ============================================================================
-export { DiagnosticsManager } from "./managers/diagnostics.ts";
-export { waitForDiagnosticsWithRetry } from "./diagnostics/utils.ts";
-
-// ============================================================================
-// Workspace
-// ============================================================================
-export { applyWorkspaceEditManually } from "./utils/workspace-edit.ts";
-
-// ============================================================================
-// Context & Language Support
-// ============================================================================
+// Export enums and additional types from vscode-languageserver-protocol
 export {
-  createLSPClientContext,
-  getLanguageIdFromPath,
-  type LSPClientContext,
-} from "./client/context.ts";
+  DiagnosticSeverity,
+  CompletionItemKind,
+  SymbolKind,
+  MarkupKind,
+  CodeActionKind,
+  type SignatureInformation,
+  type ParameterInformation,
+  type LocationLink,
+} from "vscode-languageserver-protocol";
 
 // ============================================================================
-// Operations
+// Language Support
 // ============================================================================
-export {
-  withLSPOperation,
-  withBatchLSPOperation,
-  type LSPOperationOptions,
-  type BatchLSPOperationOptions,
-} from "./client/lspOperations.ts";
+export { getLanguageIdFromPath } from "./client/context.ts";
 
 // ============================================================================
-// Commands
-// ============================================================================
-export {
-  createCompletionHandler,
-  createAdvancedCompletionHandler,
-  type AdvancedCompletionHandlerOptions,
-} from "./commands/completion.ts";
-
-// ============================================================================
-// Adapters & Validation (for testing)
-// ============================================================================
-export { validateLspAdapter as validateAdapter } from "./utils/adapter-utils.ts";
-export { LSPValidator, type LSPValidationResult } from "./utils/validator.ts";
-
-// ============================================================================
-// Client Management
-// ============================================================================
-export { ClientManager, type ManagedClient } from "./client/client-manager.ts";
-
-// ============================================================================
-// TypeScript-specific helpers (for TypeScript tools)
-// ============================================================================
-export {
-  createTypescriptLSPClient,
-  openDocument,
-  stopLSPClient,
-  waitForDocumentProcessed,
-  type TypescriptClientInstance,
-} from "./utils/typescript-helpers.ts";
-
-// ============================================================================
-// Testing Utilities
-// ============================================================================
-export {
-  setupLSPForTest,
-  teardownLSPForTest,
-  getCurrentTestClient,
-} from "./testing/helpers.ts";
-
-// ============================================================================
-// Debug & Logging
-// ============================================================================
-export {
-  defaultLog,
-  LogLevel,
-  type LogEntry,
-  defaultGetSession as getSession,
-  defaultExportSession as exportSession,
-  defaultExportSessionText as exportSessionText,
-} from "./utils/logger.ts";
-
-// ============================================================================
-// Diagnostics Utils
-// ============================================================================
-export { isLargeFile } from "./diagnostics/utils.ts";
-
-// ============================================================================
-// Providers
+// Symbol Provider (for code-indexer integration)
 // ============================================================================
 export { createLSPSymbolProvider } from "./providers.ts";
 
 // ============================================================================
-// Capabilities
+// Temporary exports for internal use (will be removed in future refactoring)
 // ============================================================================
-export {
-  CapabilityChecker,
-  createToolCapabilityMap,
-  supportsDefinition,
-  supportsReferences,
-  supportsHover,
-  supportsCompletion,
-  supportsRename,
-  supportsFormatting,
-  supportsDiagnostics,
-  type ToolCapabilityRequirement,
-} from "./capabilities/CapabilityChecker.ts";
-
-// ============================================================================
-// Tool Creation Utilities (for MCP tools)
-// ============================================================================
-export { createLSPTool } from "./client/toolFactory.ts";
-
-// ============================================================================
-// File & Line Utilities (for MCP tools)
-// ============================================================================
-export { loadFileContext } from "./lsp-utils/fileContext.ts";
-export { resolveLineIndexOrThrow } from "./lsp-utils/lineResolver.ts";
-
-// ============================================================================
-// Utilities (for MCP tools)
-// ============================================================================
-export {
-  formatError,
-  resolveLineParameter,
-  debug,
-  getServerCharacteristics,
-} from "./utils/container-helpers.ts";
-export type { ErrorContext } from "./utils/container-helpers.ts";
+export { debug } from "./utils/debug.ts";
+export { CapabilityChecker, createToolCapabilityMap } from "./capabilities/CapabilityChecker.ts";
+export { withTemporaryDocument } from "./lsp-utils/documentManager.ts";
 export { validateLineAndSymbol } from "./utils/validation.ts";
-
-// ============================================================================
-// Testing Support (for tests)
-// ============================================================================
-export { createLSPClient as initialize } from "./core/client.ts";
-export async function shutdown(client: LSPClient): Promise<void> {
-  if (client && typeof client.stop === "function") {
-    await client.stop();
-  }
-}
-
-// Direct shutdown function - no global state
-export async function shutdownLSPClient(client: LSPClient): Promise<void> {
-  if (client) {
-    await shutdown(client);
-  }
-}
-
-// Direct initialization function - no global state
-export async function initializeLSPClient(client: LSPClient): Promise<void> {
-  if (client && typeof client.start === "function") {
-    await client.start();
-  }
-}
+export { resolveLineParameter } from "./utils/container-helpers.ts";
+export type { ErrorContext } from "./utils/container-helpers.ts";
+export { formatError } from "./utils/container-helpers.ts";
+export { loadFileContext } from "./lsp-utils/fileContext.ts";
+export { withLSPOperation } from "./client/lspOperations.ts";
+export { createCompletionHandler } from "./commands/completion.ts";
+export { defaultLog as log, LogLevel } from "./utils/logger.ts";
+export { waitForDiagnosticsWithRetry, isLargeFile } from "./diagnostics/utils.ts";
+export { resolveLineIndexOrThrow } from "./lsp-utils/lineResolver.ts";
+export { createAdvancedCompletionHandler } from "./commands/completion.ts";
+export { 
+  createTypescriptLSPClient,
+  openDocument,
+  stopLSPClient,
+  waitForDocumentProcessed
+} from "./utils/typescript-helpers.ts";

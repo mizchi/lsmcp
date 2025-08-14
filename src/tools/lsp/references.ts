@@ -4,8 +4,8 @@ import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
 import { readFileSync } from "fs";
 import path from "path";
-import { ErrorContext, formatError } from "@internal/lsp-client";
-import { validateLineAndSymbol } from "@internal/lsp-client";
+import type { ErrorContext } from "@internal/lsp-client";
+import { formatError, validateLineAndSymbol } from "@internal/lsp-client";
 import { pathToFileURL } from "url";
 
 // Helper functions

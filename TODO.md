@@ -27,3 +27,10 @@
 - [ ] Composed Lsp Client: これは既存の LspClient と全く API を実装するが、初期化時に LspClient を複数束ねて、統一的にあつかう。
   - createComposedLspClient(lspClients)
 - [ ] node:fs に直接アクセスしないようにして、FileSystemApi を経由するようにする
+
+---
+
+- [ ] 言語固有機能を選択的に読み込めるようにする
+  - [ ] typescript の外部パッケージのシンボル化機能
+  - [ ] typescript export 分析機能
+  - [ ] Rust

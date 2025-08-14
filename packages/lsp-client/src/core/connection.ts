@@ -13,11 +13,11 @@ import {
   isLSPNotification,
   isLSPRequest,
 } from "../protocol/types/index.ts";
-import type { LSPClientState } from "./state.ts";
+import type { LSPProcessState } from "./state.ts";
 import { debug } from "../utils/debug.ts";
 
 export class ConnectionHandler {
-  constructor(private state: LSPClientState) {}
+  constructor(private state: LSPProcessState) {}
 
   processBuffer(): void {
     while (this.state.buffer.length > 0) {

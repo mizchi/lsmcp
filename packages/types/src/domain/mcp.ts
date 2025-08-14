@@ -4,14 +4,13 @@
 
 import type { z, ZodType } from "zod";
 import type { FileSystemApi } from "./filesystem.ts";
-import type { LspClientAdapter } from "./adapters.ts";
 
 /**
  * MCP execution context passed to tools
  */
 export interface McpContext {
-  /** LSP client adapter instance (required) */
-  lspClient: LspClientAdapter;
+  /** LSP client instance (any type that implements LSP operations) */
+  lspClient: any; // Using 'any' to avoid circular dependency with LSPClient
   /** File system API (required) */
   fs: FileSystemApi;
   /** Configuration */

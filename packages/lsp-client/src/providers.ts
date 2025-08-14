@@ -4,7 +4,7 @@
 
 import type { LSPClient } from "./protocol/types/index.ts";
 import type { DocumentSymbol } from "@internal/types";
-import { fixFSharpSymbolPositions } from "./fsharp-position-fix.ts";
+import { fixFSharpSymbolPositions } from "./utils/fsharp-position-fix.ts";
 
 /**
  * Symbol provider interface required by code-indexer

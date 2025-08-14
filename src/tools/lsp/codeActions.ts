@@ -1,11 +1,11 @@
 import type { LSPClient } from "@internal/lsp-client";
+import { resolveLineParameter } from "@internal/lsp-client";
 import { z } from "zod";
 import path from "path";
 import fs from "fs/promises";
 import { pathToFileURL } from "url";
 import { CodeAction, CodeActionKind, Command } from "@internal/types";
 import type { McpToolDef } from "@internal/types";
-import { resolveLineParameter as resolveLineHelper } from "@internal/lsp-client";
 import { withLSPDocument } from "./common.ts";
 
 const schemaShape = {
@@ -116,12 +116,12 @@ async function handleGetCodeActions(
 
   // Resolve line parameters
   const lines = content.split("\n");
-  const startLineIndex = resolveLineHelper(lines, startLine);
+  const startLineIndex = resolveLineParameter(lines, startLine);
 
   // If endLine is not provided, use the same as startLine
   let endLineIndex = startLineIndex;
   if (endLine !== undefined) {
-    endLineIndex = resolveLineHelper(lines, endLine);
+    endLineIndex = resolveLineParameter(lines, endLine);
   }
 
   // Use common LSP document wrapper

@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
-import { createLSPTool, type LSPClient } from "@internal/lsp-client";
-import { withLSPOperation } from "@internal/lsp-client";
-import { getLanguageIdFromPath } from "@internal/lsp-client";
+import { withLSPOperation, getLanguageIdFromPath } from "@internal/lsp-client";
+import { createLSPTool } from "./toolFactory.ts";
+import type { LSPClient } from "@internal/lsp-client";
 import { resolveFileAndSymbol } from "./common.ts";
 
 const schema = z.object({

@@ -170,8 +170,6 @@ export type {
 } from "./domain/mcp.ts";
 
 export type {
-  // Adapter types (FileSystem has been unified to FileSystemApi)
-  LspClientAdapter,
-  LspClientProvider,
+  // Configuration types
   LspClientConfig,
 } from "./domain/adapters.ts";

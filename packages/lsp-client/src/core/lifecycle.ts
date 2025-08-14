@@ -7,14 +7,14 @@ import type {
   InitializeResult,
   ServerCapabilities,
 } from "../protocol/types/index.ts";
-import type { LSPClientState, LSPClientConfig } from "./state.ts";
+import type { LSPProcessState, LSPClientConfig } from "./state.ts";
 import type { ConnectionHandler } from "./connection.ts";
 import { debug, formatError } from "../utils/debug.ts";
 import { getServerCharacteristics } from "../utils/helpers.ts";
 
 export class LifecycleManager {
   constructor(
-    private state: LSPClientState,
+    private state: LSPProcessState,
     private connection: ConnectionHandler,
     private config: LSPClientConfig,
   ) {}

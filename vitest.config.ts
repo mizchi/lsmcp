@@ -47,6 +47,8 @@ export default defineConfig({
             "src/tools/lsp/diagnostics.ts",
             "src/tools/lsp/hover.ts",
             "src/tools/lsp/references.ts",
+            // Exclude moved tool files
+            "packages/lsp-client/src/tools/**/*.ts",
           ],
         },
       },

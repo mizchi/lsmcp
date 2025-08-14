@@ -114,12 +114,3 @@ export function createLSPTool<TSchema extends ZodType, TSuccess>(
     },
   });
 }
-
-/**
- * Creates a collection of LSP tools for a given language
- */
-export function createLSPTools(_languageId: string) {
-  // This function would typically create and return all LSP tools for a language
-  // For now, we'll return an empty object as a placeholder
-  return {};
-}

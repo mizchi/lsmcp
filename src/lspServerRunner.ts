@@ -93,9 +93,8 @@ export async function runLanguageServerWithConfig(
     const fileSystemApi = new NodeFileSystemApi();
 
     // Create MCP context
-    // LSPClient implements LspClientAdapter interface
     const mcpContext: McpContext = {
-      lspClient: lspClient as any, // LSPClient implements LspClientAdapter
+      lspClient: lspClient, // Direct LSPClient instance
       fs: fileSystemApi,
       config: { ...config },
       languageId: config.preset || config.id || "custom",
@@ -280,9 +279,8 @@ export async function runLanguageServer(
     const fileSystemApi = new NodeFileSystemApi();
 
     // Create MCP context
-    // LSPClient implements LspClientAdapter interface
     const mcpContext: McpContext = {
-      lspClient: lspClient as any, // LSPClient implements LspClientAdapter
+      lspClient: lspClient, // Direct LSPClient instance
       fs: fileSystemApi,
       config: { ...preset },
     };
@@ -399,9 +397,8 @@ export async function runCustomLspServer(
     const fileSystemApi = new NodeFileSystemApi();
 
     // Create MCP context
-    // LSPClient implements LspClientAdapter interface
     const mcpContext: McpContext = {
-      lspClient: lspClient as any, // LSPClient implements LspClientAdapter
+      lspClient: lspClient, // Direct LSPClient instance
       fs: fileSystemApi,
       config: {},
     };

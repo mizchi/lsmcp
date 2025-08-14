@@ -3,8 +3,7 @@ import { z } from "zod";
 import { DocumentSymbol, SymbolInformation, SymbolKind } from "@internal/types";
 import { fileLocationSchema } from "@internal/types";
 import type { McpToolDef } from "@internal/types";
-import { loadFileContext } from "@internal/lsp-client";
-import { withTemporaryDocument } from "@internal/lsp-client";
+import { loadFileContext, withTemporaryDocument } from "@internal/lsp-client";
 import { debugLogWithPrefix } from "../../utils/debugLog.ts";
 
 // Simple formatting functions

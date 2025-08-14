@@ -12,7 +12,7 @@ import type {
 import type { IFileSystem } from "../interfaces.ts";
 import { nodeFileSystemApi } from "../utils/filesystem.ts";
 
-export interface LSPClientState {
+export interface LSPProcessState {
   process: ChildProcess | null;
   messageId: number;
   responseHandlers: Map<
@@ -45,7 +45,7 @@ export interface LSPClientConfig {
   initializationOptions?: Record<string, unknown>;
 }
 
-export function createInitialState(config: LSPClientConfig): LSPClientState {
+export function createInitialState(config: LSPClientConfig): LSPProcessState {
   return {
     process: config.process,
     messageId: 0,

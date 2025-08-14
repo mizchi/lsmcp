@@ -9,7 +9,7 @@
 import { parseArgs } from "node:util";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { debug as debugLog } from "@internal/lsp-client";
+import { debug as debugLog } from "../utils/mcpHelpers.ts";
 import {
   ConfigLoader as LspConfigLoader,
   globalPresetRegistry,

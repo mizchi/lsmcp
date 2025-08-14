@@ -1,11 +1,14 @@
 import type { LSPClient } from "@internal/lsp-client";
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
-import { createLSPTool } from "@internal/lsp-client";
+import {
+  getLanguageIdFromPath,
+  log,
+  LogLevel,
+  waitForDiagnosticsWithRetry,
+} from "@internal/lsp-client";
+import { createLSPTool } from "./toolFactory.ts";
 import { DiagnosticResultBuilder } from "@internal/types";
-import { getLanguageIdFromPath } from "@internal/lsp-client";
-import { defaultLog as log, LogLevel } from "@internal/lsp-client";
-import { waitForDiagnosticsWithRetry } from "@internal/lsp-client";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),

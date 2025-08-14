@@ -3,10 +3,12 @@ import { z } from "zod";
 import { CompletionItem, CompletionItemKind } from "@internal/types";
 import { commonSchemas } from "@internal/types";
 import type { McpToolDef } from "@internal/types";
-import { loadFileContext } from "@internal/lsp-client";
-import { withTemporaryDocument } from "@internal/lsp-client";
-import { resolveLineIndexOrThrow } from "@internal/lsp-client";
-import { createAdvancedCompletionHandler } from "@internal/lsp-client";
+import {
+  loadFileContext,
+  withTemporaryDocument,
+  resolveLineIndexOrThrow,
+  createAdvancedCompletionHandler,
+} from "@internal/lsp-client";
 
 const schema = z.object({
   root: commonSchemas.root,
