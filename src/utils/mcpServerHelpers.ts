@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z, ZodObject, type ZodType } from "zod";
+import { createCompatibleTransport } from "./compatibleTransport.ts";
 import type { McpToolDef, McpContext } from "@internal/types";
 import type { FileSystemApi } from "@internal/types";
 import { debugLogWithPrefix } from "./debugLog.ts";
@@ -124,7 +124,8 @@ export function registerTools(
  * Start the server with stdio transport
  */
 export async function startServer(state: McpServerState): Promise<void> {
-  const transport = new StdioServerTransport();
+  // Use compatible transport that handles protocol version format differences
+  const transport = createCompatibleTransport();
   await state.server.connect(transport);
 }
 
