@@ -80,7 +80,7 @@ jobs:
 
       - name: Initialize Rust project
         run: |
-          cd tests/languages/fixtures/rust
+          cd tests/fixtures/rust
           cargo check || true
 
       - name: Run Rust language tests
@@ -161,7 +161,7 @@ jobs:
 
       - name: Initialize Python project
         run: |
-          cd tests/languages/fixtures/python
+          cd tests/fixtures/python
           source ~/.cargo/env
           uv sync
 

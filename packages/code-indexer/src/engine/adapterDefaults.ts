@@ -18,12 +18,12 @@ registerBuiltinAdapters(globalPresetRegistry);
  */
 export function getAdapterDefaultPattern(adapterId: string): string {
   const preset = globalPresetRegistry.get(adapterId);
-  
+
   // Return empty string if adapter not found - caller should handle this
   if (!preset || !preset.files) {
     return "";
   }
-  
+
   return preset.files.join(",");
 }
 
@@ -39,13 +39,15 @@ export function getAdapterDefaultConcurrency(_adapterId: string): number {
 /**
  * Get adapter defaults dynamically from preset registry
  */
-export function getAdapterDefaults(adapterId: string): AdapterIndexDefaults | undefined {
+export function getAdapterDefaults(
+  adapterId: string,
+): AdapterIndexDefaults | undefined {
   const preset = globalPresetRegistry.get(adapterId);
-  
+
   if (!preset || !preset.files) {
     return undefined;
   }
-  
+
   return {
     patterns: preset.files,
     concurrency: 5, // Default concurrency

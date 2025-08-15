@@ -1,7 +1,12 @@
 import { defineConfig } from "vitest/config";
 import path from "node:path";
 
-const GLOBAL_IGNORED_FILES = ["tmp/**", "node_modules/**", "dist/**", "**/node_modules/**"];
+const GLOBAL_IGNORED_FILES = [
+  "tmp/**",
+  "node_modules/**",
+  "dist/**",
+  "**/node_modules/**",
+];
 
 export default defineConfig({
   resolve: {
@@ -9,11 +14,17 @@ export default defineConfig({
       // Runtime alias for the new package entry
       {
         find: "@internal/code-indexer",
-        replacement: path.resolve(__dirname, "packages/code-indexer/src/index.ts"),
+        replacement: path.resolve(
+          __dirname,
+          "packages/code-indexer/src/index.ts",
+        ),
       },
       {
         find: "@internal/lsp-client",
-        replacement: path.resolve(__dirname, "packages/lsp-client/src/index.ts"),
+        replacement: path.resolve(
+          __dirname,
+          "packages/lsp-client/src/index.ts",
+        ),
       },
       {
         find: "@internal/types",
@@ -39,7 +50,11 @@ export default defineConfig({
         test: {
           name: "unit",
           includeSource: ["src/**/*.ts", "packages/**/*.ts"],
-          include: ["src/**/*.test.ts", "packages/**/*.test.ts", "tests/unit/**/*.test.ts"],
+          include: [
+            "src/**/*.test.ts",
+            "packages/**/*.test.ts",
+            "tests/unit/**/*.test.ts",
+          ],
           exclude: [
             ...GLOBAL_IGNORED_FILES,
             // These files contain LSP integration tests that should not run as unit tests

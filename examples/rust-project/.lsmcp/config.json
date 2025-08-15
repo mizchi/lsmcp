@@ -1,8 +1,6 @@
 {
   "version": "1.0",
-  "indexFiles": [
-    "**/*.rs"
-  ],
+  "indexFiles": ["**/*.rs"],
   "settings": {
     "autoIndex": false,
     "indexConcurrency": 5,
@@ -10,11 +8,7 @@
     "enableWatchers": true,
     "memoryLimit": 1024
   },
-  "ignorePatterns": [
-    "**/node_modules/**",
-    "**/dist/**",
-    "**/.git/**"
-  ],
+  "ignorePatterns": ["**/node_modules/**", "**/dist/**", "**/.git/**"],
   "adapter": {
     "id": "rust-analyzer",
     "name": "rust-analyzer",

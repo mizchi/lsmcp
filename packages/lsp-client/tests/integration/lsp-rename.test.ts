@@ -59,7 +59,6 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     lspRenameSymbolTool = createRenameSymbolTool(lspClient);
   }, 30000);
 
-
   afterAll(async () => {
     // Cleanup
     if (tmpDir) {

@@ -421,7 +421,13 @@ describe("TypeScript MCP with custom LSP via lsmcp", { timeout: 30000 }, () => {
   async function createMCPClient(lspCommand: string): Promise<Client> {
     const transport = new StdioClientTransport({
       command: "node",
-      args: [LSMCP_PATH, "--bin", lspCommand, "--files", "**/*.{ts,tsx,js,jsx}"],
+      args: [
+        LSMCP_PATH,
+        "--bin",
+        lspCommand,
+        "--files",
+        "**/*.{ts,tsx,js,jsx}",
+      ],
       env: {
         ...process.env,
       } as Record<string, string>,

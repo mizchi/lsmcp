@@ -14,14 +14,18 @@ import { mkdtemp, rm, writeFile } from "fs/promises";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-describe.skipIf(!existsSync("/home/linuxbrew/.linuxbrew/bin/pyright") && !existsSync("/usr/bin/pyright") && !existsSync("/usr/local/bin/pyright"))("Pyright Language Server Integration", () => {
+describe.skipIf(
+  !existsSync("/home/linuxbrew/.linuxbrew/bin/pyright") &&
+    !existsSync("/usr/bin/pyright") &&
+    !existsSync("/usr/local/bin/pyright"),
+)("Pyright Language Server Integration", () => {
   let client: Client;
   let tmpDir: string;
 
   beforeAll(async () => {
     // Create a temporary directory for test files
     tmpDir = await mkdtemp(join(tmpdir(), "pyright-test-"));
-    
+
     // Create test Python files with intentional errors
     await writeFile(
       join(tmpDir, "test_errors.py"),
@@ -42,7 +46,7 @@ wrong_type: int = "this is a string"
 
 # Missing import
 import nonexistent_module
-`
+`,
     );
 
     await writeFile(
@@ -53,7 +57,7 @@ def greet(name: str) -> str:
 
 message = greet("World")
 print(message)
-`
+`,
     );
 
     // Create pyproject.toml for Pyright configuration
@@ -69,12 +73,12 @@ reportMissingImports = true
 reportUndefinedVariable = true
 reportGeneralTypeIssues = true
 pythonVersion = "3.9"
-`
+`,
     );
 
     // Use the built LSMCP server
     const lsmcpPath = join(__dirname, "../../../../dist/lsmcp.js");
-    
+
     // Create MCP client directly without spawning a separate process
     const transport = new StdioClientTransport({
       command: "node",
@@ -93,7 +97,7 @@ pythonVersion = "3.9"
       },
       {
         capabilities: {},
-      }
+      },
     );
 
     await client.connect(transport);
@@ -116,29 +120,28 @@ pythonVersion = "3.9"
       const result = await client.callTool({
         name: "get_diagnostics",
         arguments: {
-            root: tmpDir,
-            filePath: "test_errors.py",
-            forceRefresh: true,
-            timeout: 10000,
-          },
-        }
-      );
+          root: tmpDir,
+          filePath: "test_errors.py",
+          forceRefresh: true,
+          timeout: 10000,
+        },
+      });
 
       expect(result).toBeDefined();
       expect(typeof (result as any).content[0].text).toBe("string");
-      
+
       const diagnosticsText = (result as any).content[0].text;
-      
+
       // Should detect type error for wrong argument type
       expect(diagnosticsText).toContain("Argument of type");
       expect(diagnosticsText).toContain('"2"');
-      
+
       // Should detect undefined variable
       expect(diagnosticsText).toContain("undefined_variable");
-      
+
       // Should detect type annotation mismatch
       expect(diagnosticsText).toContain("wrong_type");
-      
+
       // Should detect missing import
       expect(diagnosticsText).toContain("nonexistent_module");
     }, 15000);
@@ -147,19 +150,18 @@ pythonVersion = "3.9"
       const result = await client.callTool({
         name: "get_diagnostics",
         arguments: {
-            root: tmpDir,
-            filePath: "test_clean.py",
-            forceRefresh: true,
-            timeout: 10000,
-          },
-        }
-      );
+          root: tmpDir,
+          filePath: "test_clean.py",
+          forceRefresh: true,
+          timeout: 10000,
+        },
+      });
 
       expect(result).toBeDefined();
       expect(typeof (result as any).content[0].text).toBe("string");
-      
+
       const diagnosticsText = (result as any).content[0].text;
-      
+
       // Should report no errors
       expect(diagnosticsText).toContain("0 error");
       expect(diagnosticsText).toContain("0 warning");
@@ -169,21 +171,20 @@ pythonVersion = "3.9"
       const result = await client.callTool({
         name: "get_all_diagnostics",
         arguments: {
-            root: tmpDir,
-            pattern: "**/*.py",
-            severityFilter: "all",
-          },
-        }
-      );
+          root: tmpDir,
+          pattern: "**/*.py",
+          severityFilter: "all",
+        },
+      });
 
       expect(result).toBeDefined();
       expect(typeof (result as any).content[0].text).toBe("string");
-      
+
       const diagnosticsText = (result as any).content[0].text;
-      
+
       // Should include diagnostics from test_errors.py
       expect(diagnosticsText).toContain("test_errors.py");
-      
+
       // Should show summary of errors
       expect(diagnosticsText).toMatch(/\d+ diagnostic\(s\) found/);
     }, 20000);
@@ -194,19 +195,18 @@ pythonVersion = "3.9"
       const result = await client.callTool({
         name: "get_hover",
         arguments: {
-            root: tmpDir,
-            filePath: "test_clean.py",
-            line: 2,
-            target: "greet",
-          },
-        }
-      );
+          root: tmpDir,
+          filePath: "test_clean.py",
+          line: 2,
+          target: "greet",
+        },
+      });
 
       expect(result).toBeDefined();
       expect(typeof (result as any).content[0].text).toBe("string");
-      
+
       const hoverText = (result as any).content[0].text;
-      
+
       // Should show function signature
       expect(hoverText).toContain("def greet");
       expect(hoverText).toContain("str");
@@ -218,19 +218,18 @@ pythonVersion = "3.9"
       const result = await client.callTool({
         name: "get_definitions",
         arguments: {
-            root: tmpDir,
-            filePath: "test_clean.py",
-            line: 5,
-            symbolName: "greet",
-          },
-        }
-      );
+          root: tmpDir,
+          filePath: "test_clean.py",
+          line: 5,
+          symbolName: "greet",
+        },
+      });
 
       expect(result).toBeDefined();
       expect(typeof (result as any).content[0].text).toBe("string");
-      
+
       const definitionText = (result as any).content[0].text;
-      
+
       // Should find the function definition
       expect(definitionText).toContain("def greet");
       expect(definitionText).toContain("test_clean.py");
@@ -242,21 +241,20 @@ pythonVersion = "3.9"
       const result = await client.callTool({
         name: "get_document_symbols",
         arguments: {
-            root: tmpDir,
-            filePath: "test_errors.py",
-          },
-        }
-      );
+          root: tmpDir,
+          filePath: "test_errors.py",
+        },
+      });
 
       expect(result).toBeDefined();
       expect(typeof (result as any).content[0].text).toBe("string");
-      
+
       const symbolsText = (result as any).content[0].text;
-      
+
       // Should list function symbols
       expect(symbolsText).toContain("add_numbers");
       expect(symbolsText).toContain("Function");
-      
+
       // Should list variable symbols
       expect(symbolsText).toContain("result");
       expect(symbolsText).toContain("wrong_type");
@@ -273,25 +271,24 @@ pythonVersion = "3.9"
 def test_function():
     pass
 
-test_`
+test_`,
       );
 
       const result = await client.callTool({
         name: "get_completion",
         arguments: {
-            root: tmpDir,
-            filePath: "test_completion.py",
-            line: 6,
-            target: "test_",
-          },
-        }
-      );
+          root: tmpDir,
+          filePath: "test_completion.py",
+          line: 6,
+          target: "test_",
+        },
+      });
 
       expect(result).toBeDefined();
       expect(typeof (result as any).content[0].text).toBe("string");
-      
+
       const completionText = (result as any).content[0].text;
-      
+
       // Should suggest test_function
       expect(completionText).toContain("test_function");
     });

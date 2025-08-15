@@ -76,11 +76,7 @@
           "items": {
             "type": "string"
           },
-          "default": [
-            "**/node_modules/**",
-            "**/dist/**",
-            "**/.git/**"
-          ],
+          "default": ["**/node_modules/**", "**/dist/**", "**/.git/**"],
           "description": "Additional ignore patterns for indexing",
           "markdownDescription": "Additional ignore patterns for indexing"
         },
@@ -214,22 +210,14 @@
     },
     {
       "preset": "pyright",
-      "indexFiles": [
-        "**/*.py",
-        "**/*.pyi"
-      ]
+      "indexFiles": ["**/*.py", "**/*.pyi"]
     },
     {
       "lsp": {
         "bin": "deno",
-        "args": [
-          "lsp"
-        ]
+        "args": ["lsp"]
       },
-      "indexFiles": [
-        "**/*.ts",
-        "**/*.tsx"
-      ]
+      "indexFiles": ["**/*.ts", "**/*.tsx"]
     },
     {
       "preset": "tsgo",
@@ -238,10 +226,7 @@
         "indexConcurrency": 10
       },
       "symbolFilter": {
-        "excludeKinds": [
-          "Variable",
-          "Constant"
-        ],
+        "excludeKinds": ["Variable", "Constant"],
         "includeOnlyTopLevel": true
       }
     }
