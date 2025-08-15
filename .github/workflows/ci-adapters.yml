@@ -212,6 +212,61 @@ jobs:
           CI: true
           TEST_MOONBIT: true
 
+  # Haskell language test
+  haskell-language:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Setup Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: "9.4"
+          enable-stack: false
+          cabal-version: "3.10"
+
+      - name: Cache Haskell dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cabal/packages
+            ~/.cabal/store
+            ~/.ghcup
+          key: ${{ runner.os }}-haskell-${{ hashFiles('tests/fixtures/haskell/**') }}
+          restore-keys: |
+            ${{ runner.os }}-haskell-
+
+      - name: Install HLS
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh -s -- -y
+          source ~/.ghcup/env
+          ghcup install hls latest || echo "HLS installation failed"
+          haskell-language-server-wrapper --version || echo "HLS not available"
+
+      - name: Install Node.js dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run Haskell language tests
+        run: |
+          source ~/.ghcup/env
+          pnpm vitest run tests/languages/language-tests/haskell.test.ts
+        env:
+          CI: true
+          TEST_HASKELL: true
+
   # OCaml language test
   ocaml-language:
     runs-on: ubuntu-22.04  # Use Ubuntu 22.04 which has darcs package

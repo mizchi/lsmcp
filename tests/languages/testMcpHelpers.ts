@@ -116,7 +116,9 @@ export async function testMcpConnection(
                   ? "main.mbt"
                   : adapter.baseLanguage === "ocaml"
                     ? "main.ml"
-                    : "index.ts"; // Default for TypeScript/JavaScript
+                    : adapter.baseLanguage === "haskell"
+                      ? "Main.hs"
+                      : "index.ts"; // Default for TypeScript/JavaScript
 
         const result = await client.callTool({
           name: "get_diagnostics",
