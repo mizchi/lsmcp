@@ -55,6 +55,6 @@ jobs:
         run: pnpm build
         
       - name: Run Haskell tests
-        run: pnpm test tests/languages/language-tests/haskell.test.ts
-        env:
-          PATH: ${{ env.PATH }}:$HOME/.ghcup/bin
+        run: |
+          export PATH="$HOME/.ghcup/bin:$PATH"
+          pnpm test tests/languages/language-tests/haskell.test.ts
