@@ -308,10 +308,9 @@ jobs:
           ocamllsp --version
 
       - name: Verify OCaml LSP
-        if: steps.cache-opam.outputs.cache-hit == 'true'
         run: |
           eval $(opam env)
-          ocamllsp --version || echo "OCaml LSP not available"
+          ocamllsp --version || (echo "OCaml LSP not found, installing..." && opam install -y ocaml-lsp-server)
 
       - name: Install Node.js dependencies
         run: pnpm install --frozen-lockfile
