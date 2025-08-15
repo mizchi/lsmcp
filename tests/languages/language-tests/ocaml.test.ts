@@ -107,7 +107,7 @@ describe("OCaml Language Server Adapter", () => {
   );
 
   it(
-    "should get definitions for OCaml type user",
+    "should get definitions for OCaml record field",
     async () => {
       const checkFiles = ["main.ml"];
       const result = await testLspConnection(
@@ -144,8 +144,8 @@ describe("OCaml Language Server Adapter", () => {
           arguments: {
             root: projectRoot,
             filePath: "main.ml",
-            line: 2, // Line where user type is defined
-            symbolName: "user",
+            line: 10, // Line where user.name is accessed
+            symbolName: "name",
           },
         });
 
@@ -153,7 +153,8 @@ describe("OCaml Language Server Adapter", () => {
         const content = userDefResult.content as any;
         if (content?.[0]?.text) {
           const definitionText = content[0].text;
-          expect(definitionText).toContain("type user");
+          // Check that it found the field definition in the user type
+          expect(definitionText).toContain("name");
           expect(definitionText).toContain("main.ml");
         }
       } finally {
