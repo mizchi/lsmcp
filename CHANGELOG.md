@@ -1,3 +1,42 @@
+# [0.10.0-rc.3](https://github.com/mizchi/lsmcp/compare/v0.10.0-rc.2...v0.10.0-rc.3) (2025-08-15)
+
+
+### Bug Fixes
+
+* add OCaml support to MCP test helpers ([6675d52](https://github.com/mizchi/lsmcp/commit/6675d5287bf2caa5178fe79e1fccafc93e91fbe9))
+* add OCaml test fixture config to resolve index.ts error ([24bf273](https://github.com/mizchi/lsmcp/commit/24bf273fd031aa6c291383c21d3995dc9111265e))
+* add proper timeouts to Python language tests for CI ([59d0065](https://github.com/mizchi/lsmcp/commit/59d0065981d0324aa52909a9abd709a378d90f60))
+* add protocol version compatibility for numeric values ([825d0ad](https://github.com/mizchi/lsmcp/commit/825d0ad1e219364d5c06aa11daf48b457021930d))
+* correct PATH environment variable in Haskell CI workflow ([dbbd135](https://github.com/mizchi/lsmcp/commit/dbbd135517b4e77fe7ad5abe4b2fa68ffb175f0d))
+* correct test fixture paths in CI workflows ([9929c63](https://github.com/mizchi/lsmcp/commit/9929c6393852f6a14146c9121f5e61cbc3dfaa06))
+* enable auto-indexing for preset file patterns in search_symbol_from_index ([a3f433a](https://github.com/mizchi/lsmcp/commit/a3f433af6e2ee4b83ff5bd8f2f1619ffcf74a984))
+* ensure OCaml LSP is always available after cache restore ([c9f7c7c](https://github.com/mizchi/lsmcp/commit/c9f7c7c75c3018f1c1c965f96f63ec7a66d5b23c))
+* improve UV strategy to use 'uv run' for projects with uv.lock ([9cb3d2e](https://github.com/mizchi/lsmcp/commit/9cb3d2e5b2cb6aa67da325a727228fd4c0d705ff))
+* resolve OCaml CI setup issues ([b89d361](https://github.com/mizchi/lsmcp/commit/b89d3612b55e9f241c093fc6bca0a10344d3a39f))
+* resolve type errors for binFindStrategy and config system ([3013900](https://github.com/mizchi/lsmcp/commit/3013900eeb3deadfc4b8bf79aa37d4885f29ea78))
+* update OCaml test to check record field definition instead of type ([d501517](https://github.com/mizchi/lsmcp/commit/d5015174b5a73d6761adb039c74c412cf21b4e6f))
+* update OCaml test to use correct line number for type definition ([880f8a1](https://github.com/mizchi/lsmcp/commit/880f8a103b9c444268bcd29fcc5bb42200b9d6bb))
+* use correct vitest project for Haskell tests ([585f19b](https://github.com/mizchi/lsmcp/commit/585f19bfe995f0a7e1e89b13b9130fe4b8a89eca))
+* use Node.js 22 in Haskell CI workflow ([6ff99db](https://github.com/mizchi/lsmcp/commit/6ff99db8f2a864e802c582011984950611014e3b))
+
+
+### Features
+
+* add binFindStrategy for flexible LSP server binary discovery ([6a5c9e2](https://github.com/mizchi/lsmcp/commit/6a5c9e2e55a6b629eaba0a9547a3c96e519bd458))
+* add brace expansion support for CLI --files option and enhance language tests ([db48333](https://github.com/mizchi/lsmcp/commit/db48333eaf0074a713e24d010ca267af4f329f9c))
+* add doctor command and improve configuration system ([953c133](https://github.com/mizchi/lsmcp/commit/953c1330aa253a67204b56eac7d76efe6781f421))
+* add Haskell Language Server support with ghcup setup ([8405be3](https://github.com/mizchi/lsmcp/commit/8405be328d151b8d56df7f9847cf781fd1342b21))
+* add Haskell language tests to CI ([135e089](https://github.com/mizchi/lsmcp/commit/135e0895dc18c3be30330ebc365577fe245c6282))
+* complete TODO list implementation and improvements ([67af086](https://github.com/mizchi/lsmcp/commit/67af08675ff70a25e64428bb37b852186620c8ad))
+* support binFindStrategy without explicit bin/args ([363f846](https://github.com/mizchi/lsmcp/commit/363f8463892d0e4f8d745a1c0c513119f548af2b))
+
+
+### Performance Improvements
+
+* add opam caching to speed up OCaml CI ([0745e93](https://github.com/mizchi/lsmcp/commit/0745e93ed60c121a05b209abd9dea27968bffae3))
+
+
+
 # [0.10.0-rc.2](https://github.com/mizchi/lsmcp/compare/v0.10.0-rc.1...v0.10.0-rc.2) (2025-08-14)
 
 
