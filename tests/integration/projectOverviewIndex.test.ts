@@ -345,14 +345,21 @@ export function newFunction() {
 
   describe("search_symbol_from_index", () => {
     beforeAll(async () => {
-      // Ensure index is created
-      await mcpClient.callTool({
+      // Ensure index is created with explicit tsx pattern
+      const result = await mcpClient.callTool({
         name: "index_symbols",
         arguments: {
           root: tempDir,
           pattern: "**/*.{ts,tsx}",
         },
       });
+
+      console.log(
+        "Index creation result:",
+        Array.isArray(result.content) && result.content[0]?.text
+          ? result.content[0].text
+          : JSON.stringify(result.content),
+      );
     });
 
     it("should search for classes with exact match", async () => {
@@ -416,6 +423,33 @@ export function newFunction() {
     });
 
     it("should search for all interfaces", async () => {
+      // First check what get_project_overview sees
+      const overviewResult = await mcpClient.callTool({
+        name: "get_project_overview",
+        arguments: {
+          root: tempDir,
+        },
+      });
+
+      const overviewContent =
+        Array.isArray(overviewResult.content) && overviewResult.content[0]?.text
+          ? overviewResult.content[0].text
+          : JSON.stringify(overviewResult.content);
+
+      console.log(
+        "Overview interfaces section:",
+        overviewContent
+          .split("\n")
+          .filter(
+            (line: string) =>
+              line.includes("Interface") ||
+              line.includes("ButtonProps") ||
+              line.includes("Config"),
+          )
+          .join("\n"),
+      );
+
+      // Now search with search_symbol_from_index
       const result = await mcpClient.callTool({
         name: "search_symbol_from_index",
         arguments: {
@@ -430,11 +464,15 @@ export function newFunction() {
           ? result.content[0].text
           : JSON.stringify(result.content);
 
-      // Should find at least Config interface
-      // Note: ButtonProps is in a .tsx file which may not be indexed by default
+      console.log("Search result:", content);
+
+      // Should find both Config and ButtonProps interfaces
+      // Note: ButtonProps may not be found by search_symbol_from_index
+      // if TSX files are not included in the search
       expect(content).toContain("Config");
 
-      // Count all interfaces - should find at least 1 (Config)
+      // We expect at least 1 interface (Config), ButtonProps is optional
+      // as it depends on TSX file indexing behavior
       const lines = content
         .split("\n")
         .filter((line: string) => line.includes("Interface"));
