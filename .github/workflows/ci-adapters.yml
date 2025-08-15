@@ -228,14 +228,33 @@ jobs:
           node-version: 22
           cache: "pnpm"
 
+      - name: Cache opam
+        uses: actions/cache@v4
+        id: cache-opam
+        with:
+          path: ~/.opam
+          key: ${{ runner.os }}-opam-5.1-${{ hashFiles('tests/fixtures/ocaml/**') }}
+          restore-keys: |
+            ${{ runner.os }}-opam-5.1-
+            ${{ runner.os }}-opam-
+
       - name: Setup OCaml
-        uses: ocaml/setup-ocaml@v2
+        uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: "5.1"
+          cache-prefix: "v2"
+          dune-cache: true
 
       - name: Install OCaml LSP
+        if: steps.cache-opam.outputs.cache-hit != 'true'
         run: |
-          opam install -y ocaml-lsp-server || echo "Warning: Failed to install ocaml-lsp-server"
+          opam install -y ocaml-lsp-server
+          eval $(opam env)
+          ocamllsp --version
+
+      - name: Verify OCaml LSP
+        if: steps.cache-opam.outputs.cache-hit == 'true'
+        run: |
           eval $(opam env)
           ocamllsp --version || echo "OCaml LSP not available"
 
