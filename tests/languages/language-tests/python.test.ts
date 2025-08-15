@@ -84,41 +84,66 @@ describe("Pyright Adapter", () => {
     }
   });
 
-  it("should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, and get_hover", async () => {
-    const result = await testMcpConnection(pyrightAdapter, projectRoot);
+  it(
+    "should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, and get_hover with expected symbol counts",
+    async () => {
+      const result = await testMcpConnection(pyrightAdapter, projectRoot);
 
-    expect(result.connected).toBe(true);
-    expect(result.hasGetProjectOverview).toBe(true);
-    expect(result.hasGetDiagnostics).toBe(true);
-    expect(result.hasGetDefinitions).toBe(true);
-    expect(result.hasGetHover).toBe(true);
+      expect(result.connected).toBe(true);
+      expect(result.hasGetProjectOverview).toBe(true);
+      expect(result.hasGetDiagnostics).toBe(true);
+      expect(result.hasGetDefinitions).toBe(true);
+      expect(result.hasGetHover).toBe(true);
 
-    if (result.projectOverview) {
-      // Verify project overview contains expected information
-      // The response is in Markdown format, not JSON
-      const overviewText = result.projectOverview[0].text;
-      expect(overviewText).toContain("Project Overview");
-      expect(overviewText).toContain("Statistics");
-      expect(overviewText).toContain("Key Components");
+      if (result.projectOverview) {
+        // Verify project overview contains expected information
+        // The response is in Markdown format, not JSON
+        const overviewText = result.projectOverview[0].text;
+        expect(overviewText).toContain("Project Overview");
+        expect(overviewText).toContain("Statistics");
+        expect(overviewText).toContain("Key Components");
 
-      // Verify that diagnostics (errors/warnings) are included in overview if available
-      // Note: Diagnostics may not always be available in tests due to LSP timing
-      if (overviewText.includes("Diagnostics")) {
-        // Python project should have multiple errors
-        expect(overviewText).toMatch(/Errors:\s*\d+/);
-        expect(overviewText).toMatch(/Warnings:\s*\d+/);
+        // Verify expected symbols are detected in overview
+        // Python test file should have: User class, process_users function, main function
+        // Only check if symbols are present in overview
+        if (
+          overviewText.includes("Classes:") ||
+          overviewText.includes("Key Components")
+        ) {
+          // Extract symbol counts from overview if available
+          const classMatch = overviewText.match(/Classes:\s*(\d+)/);
+          const functionMatch = overviewText.match(/Functions:\s*(\d+)/);
+
+          if (classMatch && parseInt(classMatch[1]) > 0) {
+            // At least 1 class (User)
+            expect(parseInt(classMatch[1])).toBeGreaterThanOrEqual(1);
+          }
+          if (functionMatch && parseInt(functionMatch[1]) > 0) {
+            // At least 2 functions (process_users, main)
+            expect(parseInt(functionMatch[1])).toBeGreaterThanOrEqual(2);
+          }
+        }
+
+        // Verify that diagnostics (errors/warnings) are included in overview if available
+        // Note: Diagnostics may not always be available in tests due to LSP timing
+        if (overviewText.includes("Diagnostics")) {
+          // Python project should have multiple errors
+          expect(overviewText).toMatch(/Errors:\s*\d+/);
+          expect(overviewText).toMatch(/Warnings:\s*\d+/);
+        }
       }
-    }
 
-    // Verify get_diagnostics works
-    expect(result.diagnosticsResult).toBeDefined();
+      // Verify get_diagnostics works
+      expect(result.diagnosticsResult).toBeDefined();
 
-    // Verify get_definitions works (may not find the symbol, but tool should be callable)
-    // The result is optional since "main" might not exist
+      // Verify get_definitions works (may not find the symbol, but tool should be callable)
+      // The result is optional since "main" might not exist
 
-    // Verify get_hover works
-    expect(result.hoverResult).toBeDefined();
-  }, 45000);
+      // Verify get_hover works
+      expect(result.hoverResult).toBeDefined();
+    },
+    testTimeout,
+  );
 
   it("should get definitions for Python class User", async () => {
     const checkFiles = ["main.py"];

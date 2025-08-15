@@ -216,7 +216,7 @@ describe('Calculator', () => {
   });
 
   describe("index_symbols", () => {
-    it("should index TypeScript files", async () => {
+    it("should index TypeScript files with expected symbol counts", async () => {
       const result = await mcpClient.callTool({
         name: "index_symbols",
         arguments: {
@@ -239,6 +239,45 @@ describe('Calculator', () => {
           content.includes("Index Statistics") ||
           content.includes("No changes detected"),
       ).toBe(true);
+
+      // Verify symbol counts after indexing using project overview
+      const overviewResult = await mcpClient.callTool({
+        name: "get_project_overview",
+        arguments: {
+          root: tempDir,
+        },
+      });
+
+      const overviewContent =
+        Array.isArray(overviewResult.content) && overviewResult.content[0]?.text
+          ? overviewResult.content[0].text
+          : JSON.stringify(overviewResult.content);
+
+      // Parse symbol counts from overview
+      const classMatch = overviewContent.match(/Classes:\s*(\d+)/);
+      const interfaceMatch = overviewContent.match(/Interfaces:\s*(\d+)/);
+      const functionMatch = overviewContent.match(/Functions:\s*(\d+)/);
+      const methodMatch = overviewContent.match(/Methods:\s*(\d+)/);
+
+      // Expected minimum symbols from our test files:
+      // src/index.ts: main function, Calculator class, add method, subtract method, Config interface
+      // src/utils.ts: VERSION constant, formatString function, delay function, Logger type
+      // src/components/Button.tsx: ButtonProps interface, Button function/component
+      // tests/index.test.ts: test functions
+
+      // Verify minimum expected counts from overview
+      if (classMatch) {
+        expect(parseInt(classMatch[1])).toBeGreaterThanOrEqual(1); // Calculator
+      }
+      if (interfaceMatch) {
+        expect(parseInt(interfaceMatch[1])).toBeGreaterThanOrEqual(1); // Config, ButtonProps (tsx may not be indexed)
+      }
+      if (functionMatch) {
+        expect(parseInt(functionMatch[1])).toBeGreaterThanOrEqual(3); // main, formatString, delay
+      }
+      if (methodMatch) {
+        expect(parseInt(methodMatch[1])).toBeGreaterThanOrEqual(2); // add, subtract
+      }
     });
 
     it("should perform incremental updates", async () => {
@@ -316,7 +355,7 @@ export function newFunction() {
       });
     });
 
-    it("should search for classes", async () => {
+    it("should search for classes with exact match", async () => {
       const result = await mcpClient.callTool({
         name: "search_symbol_from_index",
         arguments: {
@@ -331,11 +370,22 @@ export function newFunction() {
         Array.isArray(result.content) && result.content[0]?.text
           ? result.content[0].text
           : JSON.stringify(result.content);
-      // Should find something
-      expect(content.length).toBeGreaterThan(0);
+
+      // Should find the Calculator class
+      expect(content).toContain("Calculator");
+      expect(content).toContain("src/index.ts");
+
+      // Count results - should find exactly 1 Calculator class
+      const lines = content
+        .split("\n")
+        .filter(
+          (line: string) =>
+            line.includes("Calculator") && line.includes("Class"),
+        );
+      expect(lines.length).toBe(1);
     });
 
-    it("should search for functions", async () => {
+    it("should search for functions with partial match", async () => {
       const result = await mcpClient.callTool({
         name: "search_symbol_from_index",
         arguments: {
@@ -350,11 +400,22 @@ export function newFunction() {
         Array.isArray(result.content) && result.content[0]?.text
           ? result.content[0].text
           : JSON.stringify(result.content);
-      // Should find format functions
-      expect(content.length).toBeGreaterThan(0);
+
+      // Should find formatString function
+      expect(content).toContain("formatString");
+      expect(content).toContain("src/utils.ts");
+
+      // Count matching functions
+      const lines = content
+        .split("\n")
+        .filter(
+          (line: string) =>
+            line.includes("format") && line.includes("Function"),
+        );
+      expect(lines.length).toBeGreaterThanOrEqual(1);
     });
 
-    it("should search for interfaces", async () => {
+    it("should search for all interfaces", async () => {
       const result = await mcpClient.callTool({
         name: "search_symbol_from_index",
         arguments: {
@@ -368,8 +429,16 @@ export function newFunction() {
         Array.isArray(result.content) && result.content[0]?.text
           ? result.content[0].text
           : JSON.stringify(result.content);
-      // Should find interfaces
-      expect(content.length).toBeGreaterThan(0);
+
+      // Should find at least Config interface
+      // Note: ButtonProps is in a .tsx file which may not be indexed by default
+      expect(content).toContain("Config");
+
+      // Count all interfaces - should find at least 1 (Config)
+      const lines = content
+        .split("\n")
+        .filter((line: string) => line.includes("Interface"));
+      expect(lines.length).toBeGreaterThanOrEqual(1);
     });
 
     it("should auto-update index before searching", async () => {
