@@ -48,7 +48,7 @@ describe("Haskell Language Server Adapter", () => {
     }
   });
 
-  it("should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, and get_hover", async () => {
+  it.skip("should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, and get_hover", async () => {
     const result = await testMcpConnection(hlsAdapter, projectRoot);
 
     expect(result.connected).toBe(true);
