@@ -143,11 +143,14 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install uv and Python Language Server
+      - name: Install uv and Python Language Servers
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           source ~/.cargo/env
+          # Install both Pyright and python-lsp-server
+          uv tool install pyright
           uv tool install python-lsp-server[all]
+          pyright --version
           pylsp --version
 
       - name: Install Node.js dependencies
@@ -208,3 +211,44 @@ jobs:
         env:
           CI: true
           TEST_MOONBIT: true
+
+  # OCaml language test
+  ocaml-language:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Setup OCaml
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: "5.1"
+
+      - name: Install OCaml LSP
+        run: |
+          opam install -y ocaml-lsp-server
+          eval $(opam env)
+          ocamllsp --version
+
+      - name: Install Node.js dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run OCaml language tests
+        run: |
+          eval $(opam env)
+          pnpm vitest run tests/languages/language-tests/ocaml.test.ts
+        env:
+          CI: true
+          TEST_OCAML: true

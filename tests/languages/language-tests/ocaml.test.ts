@@ -9,6 +9,10 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 const projectRoot = join(import.meta.dirname, "../../fixtures", "ocaml");
 
 describe("OCaml Language Server Adapter", () => {
+  // CI environment needs more time for initialization
+  const isCI = process.env.CI === "true";
+  const testTimeout = isCI ? 60000 : 30000;
+
   it("should connect to OCaml LSP", async () => {
     const checkFiles = ["main.ml"];
     const result = await testLspConnection(
@@ -56,129 +60,141 @@ describe("OCaml Language Server Adapter", () => {
     }
   });
 
-  it.skip("should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, and get_hover", async () => {
-    const result = await testMcpConnection(ocamlAdapter, projectRoot);
+  it(
+    "should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, and get_hover",
+    async () => {
+      const result = await testMcpConnection(ocamlAdapter, projectRoot);
 
-    expect(result.connected).toBe(true);
-    expect(result.hasGetProjectOverview).toBe(true);
-    expect(result.hasGetDiagnostics).toBe(true);
-    expect(result.hasGetDefinitions).toBe(true);
-    expect(result.hasGetHover).toBe(true);
+      expect(result.connected).toBe(true);
+      expect(result.hasGetProjectOverview).toBe(true);
+      expect(result.hasGetDiagnostics).toBe(true);
+      expect(result.hasGetDefinitions).toBe(true);
+      expect(result.hasGetHover).toBe(true);
 
-    if (result.projectOverview) {
-      const overviewText = result.projectOverview[0].text;
-      expect(overviewText).toContain("Project Overview");
-      expect(overviewText).toContain("Statistics");
-      expect(overviewText).toContain("Key Components");
-    }
+      if (result.projectOverview) {
+        const overviewText = result.projectOverview[0].text;
+        expect(overviewText).toContain("Project Overview");
+        expect(overviewText).toContain("Statistics");
+        expect(overviewText).toContain("Key Components");
+      }
 
-    expect(result.diagnosticsResult).toBeDefined();
-    expect(result.hoverResult).toBeDefined();
-  }, 30000);
+      expect(result.diagnosticsResult).toBeDefined();
+      expect(result.hoverResult).toBeDefined();
+    },
+    testTimeout,
+  );
 
-  it.skip("should get definitions for OCaml type user", async () => {
-    const checkFiles = ["main.ml"];
-    const result = await testLspConnection(
-      ocamlAdapter,
-      projectRoot,
-      checkFiles,
-    );
+  it(
+    "should get definitions for OCaml type user",
+    async () => {
+      const checkFiles = ["main.ml"];
+      const result = await testLspConnection(
+        ocamlAdapter,
+        projectRoot,
+        checkFiles,
+      );
 
-    if (!result.connected) {
-      console.warn("OCaml LSP not available, skipping definitions test");
-      return;
-    }
+      if (!result.connected) {
+        console.warn("OCaml LSP not available, skipping definitions test");
+        return;
+      }
 
-    const mcpResult = await testMcpConnection(ocamlAdapter, projectRoot);
-    expect(mcpResult.connected).toBe(true);
-    expect(mcpResult.hasGetDefinitions).toBe(true);
+      const mcpResult = await testMcpConnection(ocamlAdapter, projectRoot);
+      expect(mcpResult.connected).toBe(true);
+      expect(mcpResult.hasGetDefinitions).toBe(true);
 
-    const client = new Client(
-      { name: "test-client", version: "1.0.0" },
-      { capabilities: {} },
-    );
+      const client = new Client(
+        { name: "test-client", version: "1.0.0" },
+        { capabilities: {} },
+      );
 
-    const transport = new StdioClientTransport({
-      command: "node",
-      args: [join(process.cwd(), "dist", "lsmcp.js"), "-p", "ocaml"],
-      env: { ...process.env, MCP_DEBUG: "true" },
-    });
-
-    await client.connect(transport);
-
-    try {
-      const userDefResult = await client.callTool({
-        name: "get_definitions",
-        arguments: {
-          root: projectRoot,
-          filePath: "main.ml",
-          line: 24, // Line where user type is used
-          symbolName: "user",
-        },
+      const transport = new StdioClientTransport({
+        command: "node",
+        args: [join(process.cwd(), "dist", "lsmcp.js"), "-p", "ocaml"],
+        env: { ...process.env, MCP_DEBUG: "true" },
       });
 
-      expect(userDefResult.content).toBeDefined();
-      const content = userDefResult.content as any;
-      if (content?.[0]?.text) {
-        const definitionText = content[0].text;
-        expect(definitionText).toContain("type user");
-        expect(definitionText).toContain("main.ml");
+      await client.connect(transport);
+
+      try {
+        const userDefResult = await client.callTool({
+          name: "get_definitions",
+          arguments: {
+            root: projectRoot,
+            filePath: "main.ml",
+            line: 24, // Line where user type is used
+            symbolName: "user",
+          },
+        });
+
+        expect(userDefResult.content).toBeDefined();
+        const content = userDefResult.content as any;
+        if (content?.[0]?.text) {
+          const definitionText = content[0].text;
+          expect(definitionText).toContain("type user");
+          expect(definitionText).toContain("main.ml");
+        }
+      } finally {
+        await client.close();
       }
-    } finally {
-      await client.close();
-    }
-  }, 30000);
+    },
+    testTimeout,
+  );
 
-  it.skip("should get hover information for OCaml function process_users", async () => {
-    const checkFiles = ["main.ml"];
-    const result = await testLspConnection(
-      ocamlAdapter,
-      projectRoot,
-      checkFiles,
-    );
+  it(
+    "should get hover information for OCaml function process_users",
+    async () => {
+      const checkFiles = ["main.ml"];
+      const result = await testLspConnection(
+        ocamlAdapter,
+        projectRoot,
+        checkFiles,
+      );
 
-    if (!result.connected) {
-      console.warn("OCaml LSP not available, skipping hover test");
-      return;
-    }
+      if (!result.connected) {
+        console.warn("OCaml LSP not available, skipping hover test");
+        return;
+      }
 
-    const mcpResult = await testMcpConnection(ocamlAdapter, projectRoot);
-    expect(mcpResult.connected).toBe(true);
-    expect(mcpResult.hasGetHover).toBe(true);
+      const mcpResult = await testMcpConnection(ocamlAdapter, projectRoot);
+      expect(mcpResult.connected).toBe(true);
+      expect(mcpResult.hasGetHover).toBe(true);
 
-    const client = new Client(
-      { name: "test-client", version: "1.0.0" },
-      { capabilities: {} },
-    );
+      const client = new Client(
+        { name: "test-client", version: "1.0.0" },
+        { capabilities: {} },
+      );
 
-    const transport = new StdioClientTransport({
-      command: "node",
-      args: [join(process.cwd(), "dist", "lsmcp.js"), "-p", "ocaml"],
-      env: { ...process.env, MCP_DEBUG: "true" },
-    });
-
-    await client.connect(transport);
-
-    try {
-      const hoverResult = await client.callTool({
-        name: "get_hover",
-        arguments: {
-          root: projectRoot,
-          filePath: "main.ml",
-          line: 29, // Line where process_users is called
-          target: "process_users",
-        },
+      const transport = new StdioClientTransport({
+        command: "node",
+        args: [join(process.cwd(), "dist", "lsmcp.js"), "-p", "ocaml"],
+        env: { ...process.env, MCP_DEBUG: "true" },
       });
 
-      expect(hoverResult.content).toBeDefined();
-      const hoverContent = hoverResult.content as any;
-      if (hoverContent?.[0]?.text) {
-        const hoverText = hoverContent[0].text;
-        expect(hoverText).toContain("process_users");
-        expect(hoverText).toContain("user list");
+      await client.connect(transport);
+
+      try {
+        const hoverResult = await client.callTool({
+          name: "get_hover",
+          arguments: {
+            root: projectRoot,
+            filePath: "main.ml",
+            line: 29, // Line where process_users is called
+            target: "process_users",
+          },
+        });
+
+        expect(hoverResult.content).toBeDefined();
+        const hoverContent = hoverResult.content as any;
+        if (hoverContent?.[0]?.text) {
+          const hoverText = hoverContent[0].text;
+          expect(hoverText).toContain("process_users");
+          expect(hoverText).toContain("user list");
+        }
+      } finally {
+        await client.close();
       }
-    } finally {
-      await client.close();
-    }
-  }, 30000);
+    },
+    testTimeout,
+  );
 });

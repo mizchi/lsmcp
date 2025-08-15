@@ -16,9 +16,13 @@ async function initializePythonEnvironment() {
 }
 
 describe("Pyright Adapter", () => {
+  // CI environment needs more time for initialization
+  const isCI = process.env.CI === "true";
+  const testTimeout = isCI ? 60000 : 30000;
+
   beforeAll(async () => {
     await initializePythonEnvironment();
-  }, 30000); // 30s timeout for initialization
+  }, testTimeout);
 
   it("should connect to Pyright language server", async () => {
     const checkFiles = ["main.py"];
