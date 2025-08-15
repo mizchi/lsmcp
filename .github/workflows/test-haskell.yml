@@ -1,0 +1,60 @@
+name: Test Haskell Support
+
+on:
+  push:
+    paths:
+      - 'src/presets/hls.ts'
+      - 'tests/languages/language-tests/haskell.test.ts'
+      - 'tests/fixtures/haskell/**'
+      - '.github/workflows/test-haskell.yml'
+  pull_request:
+    paths:
+      - 'src/presets/hls.ts'
+      - 'tests/languages/language-tests/haskell.test.ts'
+      - 'tests/fixtures/haskell/**'
+      - '.github/workflows/test-haskell.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Setup Haskell with ghcup
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_MINIMAL=1 sh
+          echo "$HOME/.ghcup/bin" >> $GITHUB_PATH
+          
+      - name: Install GHC and HLS
+        run: |
+          source "$HOME/.ghcup/env"
+          ghcup install ghc recommended --set
+          ghcup install hls latest --set
+          
+      - name: Verify installations
+        run: |
+          source "$HOME/.ghcup/env"
+          ghc --version
+          haskell-language-server-wrapper --version
+          
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Build project
+        run: pnpm build
+        
+      - name: Run Haskell tests
+        run: pnpm test tests/languages/language-tests/haskell.test.ts
+        env:
+          PATH: ${{ env.PATH }}:$HOME/.ghcup/bin

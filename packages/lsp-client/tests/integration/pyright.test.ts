@@ -5,19 +5,17 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { spawn } from "child_process";
-import { existsSync, promises as fs } from "fs";
+import { existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { tmpdir } from "os";
-import { mkdtemp, rm, writeFile, mkdir } from "fs/promises";
+import { mkdtemp, rm, writeFile } from "fs/promises";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-describe("Pyright Language Server Integration", () => {
+describe.skipIf(!existsSync("/home/linuxbrew/.linuxbrew/bin/pyright") && !existsSync("/usr/bin/pyright") && !existsSync("/usr/local/bin/pyright"))("Pyright Language Server Integration", () => {
   let client: Client;
-  let lspProcess: ReturnType<typeof spawn>;
   let tmpDir: string;
 
   beforeAll(async () => {
@@ -61,7 +59,11 @@ print(message)
     // Create pyproject.toml for Pyright configuration
     await writeFile(
       join(tmpDir, "pyproject.toml"),
-      `[tool.pyright]
+      `[project]
+name = "pyright-test"
+version = "0.1.0"
+
+[tool.pyright]
 include = ["*.py"]
 reportMissingImports = true
 reportUndefinedVariable = true
@@ -70,26 +72,10 @@ pythonVersion = "3.9"
 `
     );
 
-    // Start the LSMCP server with Pyright preset
-    const lsmcpPath = join(__dirname, "../../../../src/cli/lsmcp.ts");
+    // Use the built LSMCP server
+    const lsmcpPath = join(__dirname, "../../../../dist/lsmcp.js");
     
-    lspProcess = spawn(
-      "node",
-      [lsmcpPath, "--preset", "pyright"],
-      {
-        cwd: tmpDir,
-        env: {
-          ...process.env,
-          DEBUG: "lsmcp:*",
-        },
-        stdio: ["pipe", "pipe", "pipe"],
-      }
-    );
-
-    // Wait for server to be ready
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    // Create MCP client
+    // Create MCP client directly without spawning a separate process
     const transport = new StdioClientTransport({
       command: "node",
       args: [lsmcpPath, "--preset", "pyright"],
@@ -97,7 +83,7 @@ pythonVersion = "3.9"
         ...process.env,
         DEBUG: "lsmcp:*",
       },
-      workingDirectory: tmpDir,
+      cwd: tmpDir,
     });
 
     client = new Client(
@@ -117,9 +103,6 @@ pythonVersion = "3.9"
     if (client) {
       await client.close();
     }
-    if (lspProcess && !lspProcess.killed) {
-      lspProcess.kill();
-    }
     // Clean up temp directory
     try {
       await rm(tmpDir, { recursive: true, force: true });
@@ -130,23 +113,21 @@ pythonVersion = "3.9"
 
   describe("Diagnostics", () => {
     it("should detect type errors in Python code", async () => {
-      const result = await client.request(
-        {
-          method: "mcp__lsmcp__get_diagnostics",
-          params: {
+      const result = await client.callTool({
+        name: "get_diagnostics",
+        arguments: {
             root: tmpDir,
             filePath: "test_errors.py",
             forceRefresh: true,
             timeout: 10000,
           },
-        },
-        {}
+        }
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.content[0].text).toBe("string");
+      expect(typeof (result as any).content[0].text).toBe("string");
       
-      const diagnosticsText = result.content[0].text;
+      const diagnosticsText = (result as any).content[0].text;
       
       // Should detect type error for wrong argument type
       expect(diagnosticsText).toContain("Argument of type");
@@ -163,23 +144,21 @@ pythonVersion = "3.9"
     }, 15000);
 
     it("should report no errors for clean Python code", async () => {
-      const result = await client.request(
-        {
-          method: "mcp__lsmcp__get_diagnostics",
-          params: {
+      const result = await client.callTool({
+        name: "get_diagnostics",
+        arguments: {
             root: tmpDir,
             filePath: "test_clean.py",
             forceRefresh: true,
             timeout: 10000,
           },
-        },
-        {}
+        }
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.content[0].text).toBe("string");
+      expect(typeof (result as any).content[0].text).toBe("string");
       
-      const diagnosticsText = result.content[0].text;
+      const diagnosticsText = (result as any).content[0].text;
       
       // Should report no errors
       expect(diagnosticsText).toContain("0 error");
@@ -187,22 +166,20 @@ pythonVersion = "3.9"
     }, 15000);
 
     it("should get all diagnostics for project", async () => {
-      const result = await client.request(
-        {
-          method: "mcp__lsmcp__get_all_diagnostics",
-          params: {
+      const result = await client.callTool({
+        name: "get_all_diagnostics",
+        arguments: {
             root: tmpDir,
             pattern: "**/*.py",
             severityFilter: "all",
           },
-        },
-        {}
+        }
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.content[0].text).toBe("string");
+      expect(typeof (result as any).content[0].text).toBe("string");
       
-      const diagnosticsText = result.content[0].text;
+      const diagnosticsText = (result as any).content[0].text;
       
       // Should include diagnostics from test_errors.py
       expect(diagnosticsText).toContain("test_errors.py");
@@ -214,23 +191,21 @@ pythonVersion = "3.9"
 
   describe("Hover Information", () => {
     it("should provide hover information for Python symbols", async () => {
-      const result = await client.request(
-        {
-          method: "mcp__lsmcp__get_hover",
-          params: {
+      const result = await client.callTool({
+        name: "get_hover",
+        arguments: {
             root: tmpDir,
             filePath: "test_clean.py",
             line: 2,
             target: "greet",
           },
-        },
-        {}
+        }
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.content[0].text).toBe("string");
+      expect(typeof (result as any).content[0].text).toBe("string");
       
-      const hoverText = result.content[0].text;
+      const hoverText = (result as any).content[0].text;
       
       // Should show function signature
       expect(hoverText).toContain("def greet");
@@ -240,23 +215,21 @@ pythonVersion = "3.9"
 
   describe("Definitions", () => {
     it("should find function definitions", async () => {
-      const result = await client.request(
-        {
-          method: "mcp__lsmcp__get_definitions",
-          params: {
+      const result = await client.callTool({
+        name: "get_definitions",
+        arguments: {
             root: tmpDir,
             filePath: "test_clean.py",
             line: 5,
             symbolName: "greet",
           },
-        },
-        {}
+        }
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.content[0].text).toBe("string");
+      expect(typeof (result as any).content[0].text).toBe("string");
       
-      const definitionText = result.content[0].text;
+      const definitionText = (result as any).content[0].text;
       
       // Should find the function definition
       expect(definitionText).toContain("def greet");
@@ -266,21 +239,19 @@ pythonVersion = "3.9"
 
   describe("Document Symbols", () => {
     it("should list all symbols in a Python file", async () => {
-      const result = await client.request(
-        {
-          method: "mcp__lsmcp__get_document_symbols",
-          params: {
+      const result = await client.callTool({
+        name: "get_document_symbols",
+        arguments: {
             root: tmpDir,
             filePath: "test_errors.py",
           },
-        },
-        {}
+        }
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.content[0].text).toBe("string");
+      expect(typeof (result as any).content[0].text).toBe("string");
       
-      const symbolsText = result.content[0].text;
+      const symbolsText = (result as any).content[0].text;
       
       // Should list function symbols
       expect(symbolsText).toContain("add_numbers");
@@ -305,23 +276,21 @@ def test_function():
 test_`
       );
 
-      const result = await client.request(
-        {
-          method: "mcp__lsmcp__get_completion",
-          params: {
+      const result = await client.callTool({
+        name: "get_completion",
+        arguments: {
             root: tmpDir,
             filePath: "test_completion.py",
             line: 6,
             target: "test_",
           },
-        },
-        {}
+        }
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.content[0].text).toBe("string");
+      expect(typeof (result as any).content[0].text).toBe("string");
       
-      const completionText = result.content[0].text;
+      const completionText = (result as any).content[0].text;
       
       // Should suggest test_function
       expect(completionText).toContain("test_function");

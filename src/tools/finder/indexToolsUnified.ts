@@ -87,10 +87,7 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
             "index_symbols",
             `Unknown preset '${presetId}' or preset has no default patterns`,
           );
-          return {
-            success: false,
-            message: `Unknown preset '${presetId}' or preset has no default patterns. Please specify 'files' in your .lsmcp/config.json`,
-          };
+          return `Unknown preset '${presetId}' or preset has no default patterns. Please specify 'files' in your .lsmcp/config.json`;
         }
         debugLogWithPrefix(
           "index_symbols",
@@ -102,11 +99,7 @@ export const indexSymbolsTool: McpToolDef<typeof indexSymbolsSchema> = {
           "index_symbols",
           "No file patterns configured. Please specify 'files' or 'preset' in config.",
         );
-        return {
-          success: false,
-          message:
-            "No file patterns configured. Please specify 'files' or 'preset' in your .lsmcp/config.json",
-        };
+        return "No file patterns configured. Please specify 'files' or 'preset' in your .lsmcp/config.json";
       }
     }
 

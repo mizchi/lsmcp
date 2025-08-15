@@ -15,9 +15,11 @@ export async function testMcpConnection(
   hasGetProjectOverview: boolean;
   hasGetDiagnostics: boolean;
   hasGetDefinitions: boolean;
+  hasGetHover: boolean;
   projectOverview?: any;
   diagnosticsResult?: any;
   definitionsResult?: any;
+  hoverResult?: any;
   error?: string;
 }> {
   // let mcpProcess: ChildProcess | null = null;
@@ -79,6 +81,7 @@ export async function testMcpConnection(
     const hasGetDefinitions = tools.some(
       (tool) => tool.name === "get_definitions",
     );
+    const hasGetHover = tools.some((tool) => tool.name === "get_hover");
 
     let projectOverview;
     if (hasGetProjectOverview) {
@@ -158,6 +161,37 @@ export async function testMcpConnection(
       }
     }
 
+    let hoverResult;
+    if (hasGetHover) {
+      try {
+        // Call get_hover tool - try to get hover info for a common symbol
+        const testFile =
+          adapter.baseLanguage === "python"
+            ? "main.py"
+            : adapter.baseLanguage === "rust"
+              ? "src/main.rs"
+              : adapter.baseLanguage === "fsharp"
+                ? "Program.fs"
+                : adapter.baseLanguage === "moonbit"
+                  ? "main.mbt"
+                  : "index.ts";
+
+        const result = await client.callTool({
+          name: "get_hover",
+          arguments: {
+            root: projectPath,
+            filePath: testFile,
+            line: 1,
+            character: 0,
+          },
+        });
+
+        hoverResult = result.content;
+      } catch (e) {
+        console.log(`Could not get hover: ${e}`);
+      }
+    }
+
     // Clean up
     await client.close();
 
@@ -166,9 +200,11 @@ export async function testMcpConnection(
       hasGetProjectOverview,
       hasGetDiagnostics,
       hasGetDefinitions,
+      hasGetHover,
       projectOverview,
       diagnosticsResult,
       definitionsResult,
+      hoverResult,
     };
   } catch (error: any) {
     // Cleanup on error
@@ -183,6 +219,7 @@ export async function testMcpConnection(
       hasGetProjectOverview: false,
       hasGetDiagnostics: false,
       hasGetDefinitions: false,
+      hasGetHover: false,
       error: error.message || String(error),
     };
   }

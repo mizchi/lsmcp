@@ -448,10 +448,8 @@ describe("searchSymbolFromIndexTool", () => {
         mockIndex as any,
       );
 
-      // Mock config loading with preset specified
-      vi.mocked(loadIndexConfig).mockReturnValue({
-        preset: "typescript-language-server",
-      } as any);
+      // Mock config loading - return null to force using context
+      vi.mocked(loadIndexConfig).mockReturnValue(null as any);
 
       // Mock default pattern
       vi.mocked(getAdapterDefaultPattern).mockReturnValue("**/*.{ts,tsx}");
@@ -479,16 +477,28 @@ describe("searchSymbolFromIndexTool", () => {
         },
       ]);
 
-      const result = await searchSymbolFromIndexTool.execute({
-        kind: "Class",
-        root: "/test",
-      } as any);
+      const result = await searchSymbolFromIndexTool.execute(
+        {
+          kind: "Class",
+          root: "/test",
+        } as any,
+        // Pass context with preset config
+        {
+          config: {
+            preset: "typescript-language-server",
+          },
+        } as any,
+      );
 
       // Verify index creation flow
       // LSP client check no longer needed
       expect(IndexerAdapter.getOrCreateIndex).toHaveBeenCalledWith(
         "/test",
-        undefined,
+        expect.objectContaining({
+          config: {
+            preset: "typescript-language-server",
+          },
+        }),
       );
       expect(glob).toHaveBeenCalledWith("**/*.{ts,tsx}", {
         cwd: "/test",

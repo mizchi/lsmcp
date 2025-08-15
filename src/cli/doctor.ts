@@ -320,10 +320,7 @@ export async function doctorCommand(
     let installed = false;
     let command: string | undefined;
     try {
-      const resolved = resolveAdapterCommand(
-        adapter as AdapterConfig,
-        projectRoot,
-      );
+      const resolved = resolveAdapterCommand(adapter, projectRoot);
       command = resolved.command;
       installed = true; // If resolveAdapterCommand succeeds, the command is available
     } catch (error) {

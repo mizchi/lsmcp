@@ -35,9 +35,14 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
       );
     }
 
+    // Create temporary directory first
+    const hash = randomBytes(8).toString("hex");
+    tmpDir = path.join(__dirname, `tmp-lsp-rename-${hash}`);
+    await fs.mkdir(tmpDir, { recursive: true });
+
     // Start TypeScript language server
     lspProcess = spawn(tsLspPath, ["--stdio"], {
-      cwd: __dirname,
+      cwd: tmpDir,
       stdio: ["pipe", "pipe", "pipe"],
     });
 
@@ -45,7 +50,7 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     const { createLSPClient } = await import("@internal/lsp-client");
     lspClient = createLSPClient({
       process: lspProcess,
-      rootPath: __dirname,
+      rootPath: tmpDir,
       languageId: "typescript",
     });
     await lspClient.start();
@@ -54,12 +59,6 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     lspRenameSymbolTool = createRenameSymbolTool(lspClient);
   }, 30000);
 
-  beforeAll(async () => {
-    // Create temporary directory with random hash
-    const hash = randomBytes(8).toString("hex");
-    tmpDir = path.join(__dirname, `tmp-lsp-rename-${hash}`);
-    await fs.mkdir(tmpDir, { recursive: true });
-  }, 30000);
 
   afterAll(async () => {
     // Cleanup
@@ -85,13 +84,13 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
       filePath: "simple-variable.ts",
       line: 1, // const foo = 1;
       target: "foo",
-      newName: "myVar",
+      newName: "bar",
     });
 
     // Verify result
     expect(result).toContain("Successfully renamed symbol");
     expect(result).toContain("simple-variable.ts");
-    expect(result).toContain('"foo" → "myVar"');
+    expect(result).toContain('"foo" → "bar"');
 
     // Verify file content
     const actualContent = await fs.readFile(testFile, "utf-8");
@@ -111,15 +110,15 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
       filePath: "function.ts",
-      line: 1, // function processData(data: string): string {
-      target: "processData",
-      newName: "handleData",
+      line: 1, // function foo(x: number): number {
+      target: "foo",
+      newName: "bar",
     });
 
     // Verify result
     expect(result).toContain("Successfully renamed symbol");
     expect(result).toContain("function.ts");
-    expect(result).toContain('"processData" → "handleData"');
+    expect(result).toContain('"foo" → "bar"');
 
     // Verify file content
     const actualContent = await fs.readFile(testFile, "utf-8");
@@ -139,15 +138,15 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
       filePath: "class.ts",
-      line: 1, // class User {
-      target: "User",
-      newName: "Person",
+      line: 1, // class Foo {
+      target: "Foo",
+      newName: "Bar",
     });
 
     // Verify result
     expect(result).toContain("Successfully renamed symbol");
     expect(result).toContain("class.ts");
-    expect(result).toContain('"User" → "Person"');
+    expect(result).toContain('"Foo" → "Bar"');
 
     // Verify file content
     const actualContent = await fs.readFile(testFile, "utf-8");
@@ -168,13 +167,13 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
       root: tmpDir,
       filePath: "simple-variable-no-line.ts",
       target: "foo",
-      newName: "myVar",
+      newName: "bar",
     });
 
     // Verify result
     expect(result).toContain("Successfully renamed symbol");
     expect(result).toContain("simple-variable-no-line.ts");
-    expect(result).toContain('"foo" → "myVar"');
+    expect(result).toContain('"foo" → "bar"');
 
     // Verify file content
     const actualContent = await fs.readFile(testFile, "utf-8");
@@ -211,14 +210,14 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
       filePath: "cross-file-export.input.ts",
-      line: 1, // export function sharedFunction
-      target: "sharedFunction",
+      line: 2, // export function processData
+      target: "processData",
       newName: "transformData",
     });
 
     // Verify result
     expect(result).toContain("Successfully renamed symbol");
-    expect(result).toContain('"sharedFunction" → "transformData"');
+    expect(result).toContain('"processData" → "transformData"');
 
     // Check that export file was updated
     expect(result).toContain("cross-file-export.input.ts");
@@ -249,15 +248,15 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
       filePath: "type-alias.ts",
-      line: 1, // type UserType = {
-      target: "UserType",
-      newName: "UserData",
+      line: 2, // type UserData = {
+      target: "UserData",
+      newName: "PersonData",
     });
 
     // Verify result
     expect(result).toContain("Successfully renamed symbol");
     expect(result).toContain("type-alias.ts");
-    expect(result).toContain('"UserType" → "UserData"');
+    expect(result).toContain('"UserData" → "PersonData"');
 
     // Verify file content
     const actualContent = await fs.readFile(testFile, "utf-8");

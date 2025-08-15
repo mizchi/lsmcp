@@ -420,7 +420,8 @@ describe("ConfigLoader with Preset Language Features", () => {
       expect(result.warnings).toContain(
         "No configuration found, using defaults",
       );
-      expect(result.config.preset).toBe("tsgo");
+      // Default config has no preset
+      expect(result.config.preset).toBeUndefined();
     });
   });
 });

@@ -154,7 +154,7 @@ async function getProjectFiles(
 /**
  * Gets diagnostics for all files in the project
  */
-async function getAllDiagnosticsWithLSP(
+export async function getAllDiagnosticsWithLSP(
   request: GetAllDiagnosticsRequest,
   client: LSPClient,
 ): Promise<GetAllDiagnosticsSuccess> {

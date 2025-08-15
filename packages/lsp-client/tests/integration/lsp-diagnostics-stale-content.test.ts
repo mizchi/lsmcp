@@ -39,6 +39,25 @@ describe("LSP Diagnostics - Stale Content Issue #8", () => {
     );
 
     await client.connect(transport);
+    
+    // Warm up the LSP server with a simple file
+    const warmupFile = path.join(tmpDir, "warmup.ts");
+    await fs.writeFile(warmupFile, "const x: string = 'hello';");
+    
+    // Try to get diagnostics to ensure LSP is ready
+    await client.callTool({
+      name: "get_diagnostics",
+      arguments: {
+        root: tmpDir,
+        filePath: "warmup.ts",
+      },
+    });
+    
+    // Clean up warmup file
+    await fs.unlink(warmupFile);
+    
+    // Wait a bit for LSP to stabilize
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }, 30000);
 
   afterAll(async () => {
@@ -63,18 +82,43 @@ function foo(): string {
 `,
     );
 
-    // Wait for file to be written
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Wait for file to be written and LSP to recognize it
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    const result = (await client.callTool({
-      name: "get_diagnostics",
-      arguments: {
-        root: tmpDir,
-        filePath: testFile,
-      },
-    })) as any;
+    // Retry mechanism for flaky LSP recognition
+    let attempts = 0;
+    let result: any;
+    let hasErrors = false;
+    
+    while (attempts < 5 && !hasErrors) {
+      result = (await client.callTool({
+        name: "get_diagnostics",
+        arguments: {
+          root: tmpDir,
+          filePath: testFile,
+          forceRefresh: true,  // Force refresh to ensure latest diagnostics
+        },
+      })) as any;
+      
+      const text = result.content[0].text;
+      // Check for actual error count, not just the word "error"
+      hasErrors = /\d+ error/.test(text) && !text.includes("0 errors");
+      
+      if (!hasErrors && attempts < 4) {
+        console.log(`Attempt ${attempts + 1}: No errors detected yet, retrying...`);
+        // Wait progressively longer between retries
+        await new Promise((resolve) => setTimeout(resolve, 1500 + (attempts * 500)));
+      }
+      attempts++;
+    }
 
     const text = result.content[0].text;
+    
+    // If still no errors after retries, provide helpful debug info
+    if (!hasErrors) {
+      console.log(`Failed to detect errors after ${attempts} attempts. Last result: ${text}`);
+    }
+    
     // LSP may report errors differently, so check for presence of errors
     expect(text).toMatch(/[2-3] errors?/);
     const lowerText = text.toLowerCase();

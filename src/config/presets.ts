@@ -14,6 +14,8 @@ import { rustAnalyzerAdapter } from "../presets/rust-analyzer.ts";
 import { fsharpAdapter } from "../presets/fsharp.ts";
 import { moonbitAdapter } from "../presets/moonbit.ts";
 import { goplsAdapter } from "../presets/gopls.ts";
+import { hlsAdapter } from "../presets/hls.ts";
+import { ocamlAdapter } from "../presets/ocaml.ts";
 
 /**
  * Register all built-in adapters to the registry
@@ -28,4 +30,6 @@ export function registerBuiltinAdapters(registry: PresetRegistry): void {
   registry.register(fsharpAdapter);
   registry.register(moonbitAdapter);
   registry.register(goplsAdapter);
+  registry.register(hlsAdapter);
+  registry.register(ocamlAdapter);
 }

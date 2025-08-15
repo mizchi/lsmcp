@@ -135,6 +135,8 @@ describe('Calculator', () => {
         join(projectRoot, "dist/lsmcp.js"),
         "--bin",
         `${tsLspPath} --stdio`,
+        "--files",
+        "**/*.{ts,tsx}",
       ],
       env: process.env as Record<string, string>,
       cwd: tempDir,

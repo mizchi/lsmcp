@@ -30,7 +30,7 @@ export function getAdapterDefaultPattern(adapterId: string): string {
 /**
  * Get default concurrency for an adapter
  */
-export function getAdapterDefaultConcurrency(adapterId: string): number {
+export function getAdapterDefaultConcurrency(_adapterId: string): number {
   // Default concurrency for all adapters
   // Could be extended to read from preset if we add concurrency settings there
   return 5;

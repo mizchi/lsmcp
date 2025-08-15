@@ -148,40 +148,31 @@ async function ensureIndexExists(
     let pattern: string;
     const config = loadIndexConfig(rootPath);
 
-    // Priority: 1. files, 2. preset defaults, 3. empty (no auto-indexing)
+    // Priority: 1. files from config, 2. preset from context, 3. empty (no auto-indexing)
     if (config?.files && config.files.length > 0) {
       pattern = config.files.join(",");
-    } else if (config?.preset) {
-      // Use preset-specific patterns
-      pattern = getAdapterDefaultPattern(config.preset);
-      if (!pattern) {
-        // Preset not found or has no default patterns
-        return {
-          structure: `Unknown preset '${config.preset}' or preset has no default patterns. Please specify 'files' in config.`,
-          keyComponents: [],
-          statistics: {
-            totalFiles: 0,
-            totalSymbols: 0,
-            byKind: {},
-          },
-          dependencies: [],
-          directoryStructure: "",
-        };
-      }
     } else {
-      // No preset or files configured - don't auto-index
-      return {
-        structure:
-          "Project structure analysis failed. No file patterns configured.",
-        keyComponents: [],
-        statistics: {
-          totalFiles: 0,
-          totalSymbols: 0,
-          byKind: {},
-        },
-        dependencies: [],
-        directoryStructure: "",
-      };
+      // Try preset from context
+      const presetId = context?.languageId;
+      if (presetId) {
+        // Use preset-specific patterns
+        pattern = getAdapterDefaultPattern(presetId);
+        if (!pattern) {
+          // Preset not found or has no default patterns
+          debugLogWithPrefix(
+            "get_project_overview",
+            `Unknown preset '${presetId}' or preset has no default patterns. Please specify 'files' in config.`,
+          );
+          return;
+        }
+      } else {
+        // No preset or files configured - don't auto-index
+        debugLogWithPrefix(
+          "get_project_overview",
+          "No file patterns configured. Skipping auto-indexing.",
+        );
+        return;
+      }
     }
 
     const concurrency = config?.settings?.indexConcurrency || 5;
@@ -249,6 +240,11 @@ export const getProjectOverviewTool: McpToolDef<
     // Get statistics
     const stats = getIndexStats(rootPath);
 
+    // Get diagnostics (disabled temporarily due to performance issues in tests)
+    let errorCount = 0;
+    let warningCount = 0;
+    // TODO: Re-enable diagnostics after optimizing performance
+
     // Get all symbols for analysis
     const allSymbols = querySymbols(rootPath, {});
 
@@ -294,6 +290,13 @@ export const getProjectOverviewTool: McpToolDef<
       output += `  - Variables: ${variables.length}\n`;
       output += `  - Constants: ${constants.length}\n`;
       if (enums.length > 0) output += `  - Enums: ${enums.length}\n`;
+    }
+
+    // Diagnostics section
+    if (errorCount > 0 || warningCount > 0) {
+      output += "\n**Diagnostics:**\n";
+      output += `  - Errors: ${errorCount}\n`;
+      output += `  - Warnings: ${warningCount}\n`;
     }
     output += "\n";
 

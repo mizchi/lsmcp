@@ -135,6 +135,8 @@ lsmcp includes built-in presets for popular language servers:
 - **`fsharp`** - F# (fsautocomplete)
 - **`deno`** - Deno TypeScript/JavaScript
 - **`gopls`** - Go (Official Go language server)
+- **`hls`** - Haskell Language Server (requires ghcup setup, see [docs/HASKELL_SETUP.md](docs/HASKELL_SETUP.md))
+- **`ocaml`** - OCaml Language Server
 
 ### Configuration
 

@@ -67,14 +67,21 @@ describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
     // Use typescript-language-server directly from node_modules to avoid npx overhead
     const tsLangServerPath = path.join(
       __dirname,
-      "../../node_modules/.bin/typescript-language-server",
+      "../../../../node_modules/.bin/typescript-language-server",
     );
     transport = new StdioClientTransport({
       command: "node",
-      args: [LSMCP_PATH, "--bin", `${tsLangServerPath} --stdio`],
+      args: [
+        LSMCP_PATH,
+        "--bin",
+        `${tsLangServerPath} --stdio`,
+        "--files",
+        "**/*.{ts,tsx}",
+      ],
       env: {
         ...process.env,
       } as Record<string, string>,
+      cwd: tmpDir,
     });
 
     // Create and connect client
@@ -418,6 +425,7 @@ describe("TypeScript MCP with custom LSP via lsmcp", { timeout: 30000 }, () => {
       env: {
         ...process.env,
       } as Record<string, string>,
+      cwd: tmpDir,
     });
 
     const client = new Client({
@@ -435,7 +443,7 @@ describe("TypeScript MCP with custom LSP via lsmcp", { timeout: 30000 }, () => {
     // Use typescript-language-server directly from node_modules to avoid npx overhead
     const tsLangServerPath = path.join(
       __dirname,
-      "../../node_modules/.bin/typescript-language-server",
+      "../../../../node_modules/.bin/typescript-language-server",
     );
     const client = await createMCPClient(`${tsLangServerPath} --stdio`);
 

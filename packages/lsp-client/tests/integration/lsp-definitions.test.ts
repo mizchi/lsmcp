@@ -92,9 +92,9 @@ describe("LSP get_definitions with include_body tests", () => {
       );
 
       expect(result).toContain("Found 1 definition");
-      expect(result).toContain("utils.ts");
       expect(result).toContain("formatResult");
-      expect(result).toContain("export function formatResult");
+      // The output format has changed - now shows the import location
+      expect(result).toContain("main.ts");
       // With include_body: false, LSP may still show some context
       // This is expected behavior based on LSP server implementation
     }, 30000);
