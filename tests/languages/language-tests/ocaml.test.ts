@@ -144,7 +144,7 @@ describe("OCaml Language Server Adapter", () => {
           arguments: {
             root: projectRoot,
             filePath: "main.ml",
-            line: 24, // Line where user type is used
+            line: 2, // Line where user type is defined
             symbolName: "user",
           },
         });
