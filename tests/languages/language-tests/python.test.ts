@@ -24,65 +24,73 @@ describe("Pyright Adapter", () => {
     await initializePythonEnvironment();
   }, testTimeout);
 
-  it("should connect to Pyright language server", async () => {
-    const checkFiles = ["main.py"];
-    const result = await testLspConnection(
-      pyrightAdapter,
-      projectRoot,
-      checkFiles,
-    );
-    // Pyright might take longer to initialize or might fail in CI environment
-    expect(result.connected).toBeDefined();
-    if (result.connected) {
+  it(
+    "should connect to Pyright language server",
+    async () => {
+      const checkFiles = ["main.py"];
+      const result = await testLspConnection(
+        pyrightAdapter,
+        projectRoot,
+        checkFiles,
+      );
+      // Pyright might take longer to initialize or might fail in CI environment
+      expect(result.connected).toBeDefined();
+      if (result.connected) {
+        expect(result.diagnostics).toBeDefined();
+      } else {
+        expect(result.error).toBeDefined();
+      }
+    },
+    testTimeout,
+  );
+
+  it(
+    "should detect type errors in Python files",
+    async () => {
+      const checkFiles = ["main.py"];
+      const result = await testLspConnection(
+        pyrightAdapter,
+        projectRoot,
+        checkFiles,
+      );
+
+      if (!result.connected) {
+        console.warn("Pyright not available, skipping diagnostics test");
+        return;
+      }
+
       expect(result.diagnostics).toBeDefined();
-    } else {
-      expect(result.error).toBeDefined();
-    }
-  });
+      const mainDiagnostics = (result.diagnostics as any)?.["main.py"];
+      expect(mainDiagnostics).toBeDefined();
 
-  it("should detect type errors in Python files", async () => {
-    const checkFiles = ["main.py"];
-    const result = await testLspConnection(
-      pyrightAdapter,
-      projectRoot,
-      checkFiles,
-    );
+      if (mainDiagnostics && mainDiagnostics.length > 0) {
+        // Check that we have at least 2 type errors (lines 34 and 37)
+        expect(mainDiagnostics.length).toBeGreaterThanOrEqual(2);
 
-    if (!result.connected) {
-      console.warn("Pyright not available, skipping diagnostics test");
-      return;
-    }
+        // Check for the type error on line 34 (invalid_user)
+        const line34Error = mainDiagnostics.find(
+          (d: any) => d.range.start.line === 33, // 0-indexed
+        );
+        expect(line34Error).toBeDefined();
+        if (line34Error) {
+          expect(line34Error.severity).toBe(1); // Error severity
+          expect(line34Error.message).toContain("str");
+          expect(line34Error.message).toContain("int");
+        }
 
-    expect(result.diagnostics).toBeDefined();
-    const mainDiagnostics = (result.diagnostics as any)?.["main.py"];
-    expect(mainDiagnostics).toBeDefined();
-
-    if (mainDiagnostics && mainDiagnostics.length > 0) {
-      // Check that we have at least 2 type errors (lines 34 and 37)
-      expect(mainDiagnostics.length).toBeGreaterThanOrEqual(2);
-
-      // Check for the type error on line 34 (invalid_user)
-      const line34Error = mainDiagnostics.find(
-        (d: any) => d.range.start.line === 33, // 0-indexed
-      );
-      expect(line34Error).toBeDefined();
-      if (line34Error) {
-        expect(line34Error.severity).toBe(1); // Error severity
-        expect(line34Error.message).toContain("str");
-        expect(line34Error.message).toContain("int");
+        // Check for the type error on line 37 (result type mismatch)
+        const line37Error = mainDiagnostics.find(
+          (d: any) => d.range.start.line === 36, // 0-indexed
+        );
+        expect(line37Error).toBeDefined();
+        if (line37Error) {
+          expect(line37Error.severity).toBe(1); // Error severity
+          expect(line37Error.message).toMatch(/dict|Dict|int/i);
+        }
       }
-
-      // Check for the type error on line 37 (result type mismatch)
-      const line37Error = mainDiagnostics.find(
-        (d: any) => d.range.start.line === 36, // 0-indexed
-      );
-      expect(line37Error).toBeDefined();
-      if (line37Error) {
-        expect(line37Error.severity).toBe(1); // Error severity
-        expect(line37Error.message).toMatch(/dict|Dict|int/i);
-      }
-    }
-  });
+    },
+    testTimeout,
+  );
 
   it(
     "should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, and get_hover with expected symbol counts",
@@ -145,118 +153,126 @@ describe("Pyright Adapter", () => {
     testTimeout,
   );
 
-  it("should get definitions for Python class User", async () => {
-    const checkFiles = ["main.py"];
-    const result = await testLspConnection(
-      pyrightAdapter,
-      projectRoot,
-      checkFiles,
-    );
+  it(
+    "should get definitions for Python class User",
+    async () => {
+      const checkFiles = ["main.py"];
+      const result = await testLspConnection(
+        pyrightAdapter,
+        projectRoot,
+        checkFiles,
+      );
 
-    if (!result.connected) {
-      console.warn("Pyright not available, skipping definitions test");
-      return;
-    }
+      if (!result.connected) {
+        console.warn("Pyright not available, skipping definitions test");
+        return;
+      }
 
-    // Test with MCP connection for get_definitions
-    const mcpResult = await testMcpConnection(pyrightAdapter, projectRoot);
-    expect(mcpResult.connected).toBe(true);
-    expect(mcpResult.hasGetDefinitions).toBe(true);
+      // Test with MCP connection for get_definitions
+      const mcpResult = await testMcpConnection(pyrightAdapter, projectRoot);
+      expect(mcpResult.connected).toBe(true);
+      expect(mcpResult.hasGetDefinitions).toBe(true);
 
-    // Test get_definitions for User class
-    const client = new Client(
-      { name: "test-client", version: "1.0.0" },
-      { capabilities: {} },
-    );
+      // Test get_definitions for User class
+      const client = new Client(
+        { name: "test-client", version: "1.0.0" },
+        { capabilities: {} },
+      );
 
-    const transport = new StdioClientTransport({
-      command: "node",
-      args: [join(process.cwd(), "dist", "lsmcp.js"), "-p", "pyright"],
-      env: { ...process.env, MCP_DEBUG: "true" },
-    });
-
-    await client.connect(transport);
-
-    try {
-      // Find definition of User class at line 25 (where it's used)
-      const userDefResult = await client.callTool({
-        name: "get_definitions",
-        arguments: {
-          root: projectRoot,
-          filePath: "main.py",
-          line: 25, // Line where User is instantiated
-          symbolName: "User",
-        },
+      const transport = new StdioClientTransport({
+        command: "node",
+        args: [join(process.cwd(), "dist", "lsmcp.js"), "-p", "pyright"],
+        env: { ...process.env, MCP_DEBUG: "true" },
       });
 
-      expect(userDefResult.content).toBeDefined();
-      const content = userDefResult.content as any;
-      if (content?.[0]?.text) {
-        const definitionText = content[0].text;
-        // Should find the class definition at line 4
-        expect(definitionText).toContain("class User");
-        expect(definitionText).toContain("main.py:4");
+      await client.connect(transport);
+
+      try {
+        // Find definition of User class at line 25 (where it's used)
+        const userDefResult = await client.callTool({
+          name: "get_definitions",
+          arguments: {
+            root: projectRoot,
+            filePath: "main.py",
+            line: 25, // Line where User is instantiated
+            symbolName: "User",
+          },
+        });
+
+        expect(userDefResult.content).toBeDefined();
+        const content = userDefResult.content as any;
+        if (content?.[0]?.text) {
+          const definitionText = content[0].text;
+          // Should find the class definition at line 4
+          expect(definitionText).toContain("class User");
+          expect(definitionText).toContain("main.py:4");
+        }
+      } finally {
+        await client.close();
       }
-    } finally {
-      await client.close();
-    }
-  }, 30000);
+    },
+    testTimeout,
+  );
 
-  it("should get hover information for Python function process_users", async () => {
-    const checkFiles = ["main.py"];
-    const result = await testLspConnection(
-      pyrightAdapter,
-      projectRoot,
-      checkFiles,
-    );
+  it(
+    "should get hover information for Python function process_users",
+    async () => {
+      const checkFiles = ["main.py"];
+      const result = await testLspConnection(
+        pyrightAdapter,
+        projectRoot,
+        checkFiles,
+      );
 
-    if (!result.connected) {
-      console.warn("Pyright not available, skipping hover test");
-      return;
-    }
+      if (!result.connected) {
+        console.warn("Pyright not available, skipping hover test");
+        return;
+      }
 
-    // Test with MCP connection for get_hover
-    const mcpResult = await testMcpConnection(pyrightAdapter, projectRoot);
-    expect(mcpResult.connected).toBe(true);
-    expect(mcpResult.hasGetHover).toBe(true);
+      // Test with MCP connection for get_hover
+      const mcpResult = await testMcpConnection(pyrightAdapter, projectRoot);
+      expect(mcpResult.connected).toBe(true);
+      expect(mcpResult.hasGetHover).toBe(true);
 
-    // Test get_hover for process_users function
-    const client = new Client(
-      { name: "test-client", version: "1.0.0" },
-      { capabilities: {} },
-    );
+      // Test get_hover for process_users function
+      const client = new Client(
+        { name: "test-client", version: "1.0.0" },
+        { capabilities: {} },
+      );
 
-    const transport = new StdioClientTransport({
-      command: "node",
-      args: [join(process.cwd(), "dist", "lsmcp.js"), "-p", "pyright"],
-      env: { ...process.env, MCP_DEBUG: "true" },
-    });
-
-    await client.connect(transport);
-
-    try {
-      // Get hover info for process_users function at line 30 (where it's called)
-      const hoverResult = await client.callTool({
-        name: "get_hover",
-        arguments: {
-          root: projectRoot,
-          filePath: "main.py",
-          line: 30, // Line where process_users is called
-          target: "process_users",
-        },
+      const transport = new StdioClientTransport({
+        command: "node",
+        args: [join(process.cwd(), "dist", "lsmcp.js"), "-p", "pyright"],
+        env: { ...process.env, MCP_DEBUG: "true" },
       });
 
-      expect(hoverResult.content).toBeDefined();
-      const hoverContent = hoverResult.content as any;
-      if (hoverContent?.[0]?.text) {
-        const hoverText = hoverContent[0].text;
-        // Should contain type signature
-        expect(hoverText).toContain("process_users");
-        expect(hoverText).toMatch(/List\[User\]|list\[User\]/);
-        expect(hoverText).toMatch(/Dict\[str, int\]|dict\[str, int\]/);
+      await client.connect(transport);
+
+      try {
+        // Get hover info for process_users function at line 30 (where it's called)
+        const hoverResult = await client.callTool({
+          name: "get_hover",
+          arguments: {
+            root: projectRoot,
+            filePath: "main.py",
+            line: 30, // Line where process_users is called
+            target: "process_users",
+          },
+        });
+
+        expect(hoverResult.content).toBeDefined();
+        const hoverContent = hoverResult.content as any;
+        if (hoverContent?.[0]?.text) {
+          const hoverText = hoverContent[0].text;
+          // Should contain type signature
+          expect(hoverText).toContain("process_users");
+          expect(hoverText).toMatch(/List\[User\]|list\[User\]/);
+          expect(hoverText).toMatch(/Dict\[str, int\]|dict\[str, int\]/);
+        }
+      } finally {
+        await client.close();
       }
-    } finally {
-      await client.close();
-    }
-  }, 30000);
+    },
+    testTimeout,
+  );
 });
