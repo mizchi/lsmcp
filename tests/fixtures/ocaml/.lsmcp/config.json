@@ -1,0 +1,4 @@
+{
+  "files": ["**/*.ml", "**/*.mli"],
+  "excludePatterns": ["_build/**", "_opam/**"]
+}
