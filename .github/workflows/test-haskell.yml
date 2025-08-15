@@ -58,3 +58,5 @@ jobs:
         run: |
           export PATH="$HOME/.ghcup/bin:$PATH"
           pnpm vitest run --project=languages tests/languages/language-tests/haskell.test.ts
+        env:
+          CI: true
