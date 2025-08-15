@@ -57,4 +57,4 @@ jobs:
       - name: Run Haskell tests
         run: |
           export PATH="$HOME/.ghcup/bin:$PATH"
-          pnpm test tests/languages/language-tests/haskell.test.ts
+          pnpm vitest run --project=languages tests/languages/language-tests/haskell.test.ts
