@@ -114,7 +114,9 @@ export async function testMcpConnection(
                 ? "Program.fs"
                 : adapter.baseLanguage === "moonbit"
                   ? "main.mbt"
-                  : "index.ts"; // Default for TypeScript/JavaScript
+                  : adapter.baseLanguage === "ocaml"
+                    ? "main.ml"
+                    : "index.ts"; // Default for TypeScript/JavaScript
 
         const result = await client.callTool({
           name: "get_diagnostics",
@@ -143,7 +145,9 @@ export async function testMcpConnection(
                 ? "Program.fs"
                 : adapter.baseLanguage === "moonbit"
                   ? "main.mbt"
-                  : "index.ts";
+                  : adapter.baseLanguage === "ocaml"
+                    ? "main.ml"
+                    : "index.ts";
 
         const result = await client.callTool({
           name: "get_definitions",
@@ -174,7 +178,9 @@ export async function testMcpConnection(
                 ? "Program.fs"
                 : adapter.baseLanguage === "moonbit"
                   ? "main.mbt"
-                  : "index.ts";
+                  : adapter.baseLanguage === "ocaml"
+                    ? "main.ml"
+                    : "index.ts";
 
         const result = await client.callTool({
           name: "get_hover",
