@@ -18,6 +18,7 @@ import { createGetSymbolDetailsTool } from "./tools/highlevel/indexTools.ts";
 import { resolveAdapterCommand } from "./presets/utils.ts";
 import { PresetRegistry, type ExtendedLSMCPConfig } from "./config/loader.ts";
 import type { LspClientConfig } from "./config/schema.ts";
+import { promptHandlers } from "./mcp/prompts/promptHandlers.ts";
 
 export async function runLanguageServerWithConfig(
   config: ExtendedLSMCPConfig,
@@ -118,6 +119,10 @@ export async function runLanguageServerWithConfig(
     const server = createMcpServerManager({
       name: `lsmcp (${config.name})`,
       version: "0.1.0",
+      capabilities: {
+        tools: true,
+        prompts: true,
+      },
     });
 
     // Set context in server
@@ -165,6 +170,9 @@ export async function runLanguageServerWithConfig(
 
     // Register tools with the server
     server.registerTools(allTools);
+
+    // Register prompts with the server
+    server.registerPrompts(promptHandlers);
 
     // Start the server
     await server.start();
@@ -307,6 +315,10 @@ export async function runLanguageServer(
     const server = createMcpServerManager({
       name: `lsmcp (${language})`,
       version: "0.1.0",
+      capabilities: {
+        tools: true,
+        prompts: true,
+      },
     });
 
     // Set context in server
@@ -340,6 +352,9 @@ export async function runLanguageServer(
       ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];
     server.registerTools(allTools);
+
+    // Register prompts with the server
+    server.registerPrompts(promptHandlers);
 
     // Start the server
     await server.start();
@@ -425,6 +440,10 @@ export async function runCustomLspServer(
     const server = createMcpServerManager({
       name: `lsmcp (custom)`,
       version: "0.1.0",
+      capabilities: {
+        tools: true,
+        prompts: true,
+      },
     });
 
     // Set context in server
@@ -449,6 +468,9 @@ export async function runCustomLspServer(
       ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];
     server.registerTools(allTools);
+
+    // Register prompts with the server
+    server.registerPrompts(promptHandlers);
 
     // Start the server
     await server.start();
