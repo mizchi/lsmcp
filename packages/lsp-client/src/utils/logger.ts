@@ -4,7 +4,7 @@ import { join } from "path";
 import { debugLog } from "../utils/debug.ts";
 import { LogLevel, type LogEntry, type DebugSession } from "@internal/types";
 
-export { LogLevel, type LogEntry } from "@internal/types";
+export { LogLevel } from "@internal/types";
 
 // Use DebugSession directly from @internal/types
 

@@ -1,0 +1,51 @@
+tsconfig tsconfig.json
+Project has 170 files. Found 9 entrypoint files
+export src/utils/projectDetector.ts:10:0    'DetectedProject'
+export packages/lsp-client/src/utils/logger.ts:6:19    'LogEntry'
+export src/utils/binFinder.ts:20:0    'findBinary'
+export src/utils/nodeModulesUtils.ts:13:0    'getNodeModulesBin'
+export src/utils/errorHandler.ts:109:0   'debugLog'
+export src/utils/mcpHelpers.ts:36:9    'debugLog'
+export src/utils/mcpHelpers.ts:39:9    'McpServer'
+export src/utils/mcpHelpers.ts:40:9    'StdioServerTransport'
+export src/utils/mcpHelpers.ts:41:0    'export * from './mcpServerHelpers.ts';'
+export src/utils/mcpHelpers.ts:46:0    'ToolResult'
+export src/utils/mcpHelpers.ts:57:0    'toMcpToolHandler'
+export src/utils/mcpHelpers.ts:107:0   'createTool'
+export src/utils/mcpHelpers.ts:116:0   'McpConfig'
+export src/utils/mcpHelpers.ts:127:0   'ClaudeSettings'
+export src/utils/mcpHelpers.ts:137:0   'readJsonFile'
+export src/utils/mcpHelpers.ts:153:0   'writeJsonFile'
+export src/utils/mcpHelpers.ts:164:0   'mergeArrays'
+export src/utils/mcpHelpers.ts:181:0   'generatePermissions'
+export src/utils/compatibleTransport.ts:11:0    'createProtocolVersionTransform'
+export src/utils/mcp-logger.ts:13:0    'isMcpDebugEnabled'
+export src/utils/mcp-logger.ts:73:0    'mcpWarn'
+export src/utils/mcp-logger.ts:104:0   'mcpPerformance'
+export src/utils/mcp-logger.ts:119:0   'mcpData'
+export src/utils/mcp-logger.ts:136:0   'mcpTool'
+export src/utils/mcp-logger.ts:151:9   'debugLog'
+export src/utils/mcp-logger.ts:152:9   'debugLogWithPrefix'
+export src/utils/mcp-logger.ts:153:9   'errorLog'
+export src/utils/mcp-logger.ts:154:9   'conditionalDebug'
+export src/utils/mcp-logger.ts:157:9   'debug'
+export src/constants/performance.ts:7:0     'DEFAULT_CONCURRENCY'
+export src/constants/performance.ts:12:0    'MAX_CONCURRENCY'
+export src/constants/performance.ts:17:0    'DEFAULT_BATCH_SIZE'
+export src/constants/performance.ts:22:0    'CACHE_TTL'
+export src/constants/performance.ts:27:0    'MAX_FILE_SIZE'
+export src/constants/performance.ts:32:0    'FILE_WATCHER_DEBOUNCE'
+export src/constants/performance.ts:37:0    'MAX_RESPONSE_SIZE'
+export src/constants/performance.ts:42:0    'LSP_TIMEOUT'
+export src/constants/performance.ts:61:0    'INDEX_OPTIMIZATION'
+file   src/infrastructure/MemFileSystemApi.ts
+file   src/tools/finder/cacheTools.ts
+file   src/utils/filePatternParser.test.ts
+file   src/utils/index.ts
+file   src/utils/memoryMonitor.ts
+file   packages/code-indexer/src/externalLibraryFilter.test.ts
+file   packages/code-indexer/src/engine/SymbolIndex.test.ts
+file   packages/code-indexer/src/providers/pythonExternalLibraryProvider.ts
+file   packages/code-indexer/src/providers/registerProviders.ts
+file   packages/types/src/domain/indexer.ts
+✖ delete 10 files, remove 38 exports

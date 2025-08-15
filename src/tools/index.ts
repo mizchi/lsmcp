@@ -38,7 +38,6 @@ import {
   getTypescriptDependenciesToolDef,
   searchExternalLibrarySymbolsToolDef,
 } from "./finder/externalLibraryTools.ts";
-import { getAdvancedMemoryToolsIfEnabled } from "./memory/advancedMemoryTools.ts";
 import {
   resolveSymbolToolDef,
   getAvailableExternalSymbolsToolDef,
@@ -110,16 +109,16 @@ export function getSerenityTools(config?: {
   // Future: Add other language-specific tools based on config
 
   // Add advanced memory tools if enabled (support both old and new config)
-  const memoryEnabled = config?.experiments?.memory || config?.memoryAdvanced;
-  if (memoryEnabled) {
-    const advancedMemoryTools = getAdvancedMemoryToolsIfEnabled({
-      ...config,
-      memoryAdvanced: memoryEnabled,
-    });
-    for (const tool of advancedMemoryTools) {
-      (tools as any)[tool.name] = tool;
-    }
-  }
+  // const memoryEnabled = config?.experiments?.memory || config?.memoryAdvanced;
+  // if (memoryEnabled) {
+  //   const advancedMemoryTools = getAdvancedMemoryToolsIfEnabled({
+  //     ...config,
+  //     memoryAdvanced: memoryEnabled,
+  //   });
+  //   for (const tool of advancedMemoryTools) {
+  //     (tools as any)[tool.name] = tool;
+  //   }
+  // }
 
   return tools;
 }

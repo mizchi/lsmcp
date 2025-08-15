@@ -138,41 +138,6 @@ export async function parseGoMod(rootPath: string): Promise<GoModule | null> {
 }
 
 /**
- * Parse go.sum to get exact versions and checksums
- */
-export async function parseGoSum(
-  rootPath: string,
-): Promise<Map<string, string>> {
-  const goSumPath = join(rootPath, "go.sum");
-  const versions = new Map<string, string>();
-
-  if (!existsSync(goSumPath)) {
-    return versions;
-  }
-
-  try {
-    const content = await readFile(goSumPath, "utf-8");
-    const lines = content.split("\n");
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed) continue;
-
-      // Format: module version hash
-      const parts = trimmed.split(" ");
-      if (parts.length >= 2) {
-        versions.set(parts[0], parts[1]);
-      }
-    }
-
-    return versions;
-  } catch (error) {
-    errorLog("Failed to parse go.sum:", error);
-    return versions;
-  }
-}
-
-/**
  * Get Go module cache path
  * Go modules are cached in $GOPATH/pkg/mod or ~/go/pkg/mod
  */

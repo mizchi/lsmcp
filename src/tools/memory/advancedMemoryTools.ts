@@ -770,130 +770,22 @@ Requires experiments.memory: true in .lsmcp/config.json`,
 };
 
 /**
- * Undeprecate a report
- */
-export const undeprecateReportToolDef: McpToolDef<any> = {
-  name: "undeprecate_report",
-  description: `Remove deprecated status from a report.
-Requires experiments.memory: true in .lsmcp/config.json`,
-  schema: z.object({
-    root: z.string().describe("Root directory of the project"),
-    reportId: z.string().describe("ID of the report to undeprecate"),
-  }),
-  execute: async (args) => {
-    const rootPath = resolve(args.root);
-
-    if (!isMemoryAdvancedEnabled(rootPath)) {
-      throw new Error(
-        "Advanced memory features are not enabled. Set memory_advanced: true in .lsmcp/config.json",
-      );
-    }
-
-    const manager = new ReportManager(rootPath);
-
-    try {
-      await manager.undeprecateReport(args.reportId);
-
-      return JSON.stringify({
-        success: true,
-        reportId: args.reportId,
-        message: "Deprecated status removed from report",
-      });
-    } finally {
-      manager.close();
-    }
-  },
-};
-
-/**
- * Get deprecated reports
- */
-export const getDeprecatedReportsToolDef: McpToolDef<any> = {
-  name: "get_deprecated_reports",
-  description: `Get a list of deprecated reports.
-Requires experiments.memory: true in .lsmcp/config.json`,
-  schema: z.object({
-    root: z.string().describe("Root directory of the project"),
-    limit: z
-      .number()
-      .min(1)
-      .max(100)
-      .optional()
-      .describe("Maximum number of reports to return (default: 50)"),
-  }),
-  execute: async (args) => {
-    const rootPath = resolve(args.root);
-
-    if (!isMemoryAdvancedEnabled(rootPath)) {
-      throw new Error(
-        "Advanced memory features are not enabled. Set memory_advanced: true in .lsmcp/config.json",
-      );
-    }
-
-    const manager = new ReportManager(rootPath);
-
-    try {
-      const reports = await manager.getDeprecatedReports(args.limit || 50);
-
-      const summaries = reports.map((report) => ({
-        id: report.id,
-        title: report.title,
-        summary: report.summary,
-        branch: report.branch,
-        commitHash: report.commitHash.substring(0, 8),
-        timestamp: report.timestamp,
-        deprecatedAt: report.deprecatedAt,
-        deprecatedReason: report.deprecatedReason || "No reason provided",
-      }));
-
-      return JSON.stringify(
-        {
-          count: summaries.length,
-          reports: summaries,
-        },
-        null,
-        2,
-      );
-    } finally {
-      manager.close();
-    }
-  },
-};
-
-/**
  * Get all advanced memory tools
  */
-export function getAdvancedMemoryTools(): McpToolDef<any>[] {
-  return [
-    generateReportToolDef,
-    getLatestReportToolDef,
-    getReportHistoryToolDef,
-    getAllReportsToolDef,
-    getReportDetailsToolDef,
-    searchReportsByKeywordToolDef,
-    updateAIAnalysisToolDef,
-    getReportByCommitToolDef,
-    getMemoryStatsToolDef,
-    searchReportsByDateToolDef,
-    deprecateReportToolDef,
-    undeprecateReportToolDef,
-    getDeprecatedReportsToolDef,
-  ];
-}
 
 /**
  * Get advanced memory tools if enabled
  */
-export function getAdvancedMemoryToolsIfEnabled(config?: {
-  memoryAdvanced?: boolean;
-  experiments?: {
-    memory?: boolean;
-  };
-}): McpToolDef<any>[] {
-  // Support both old memoryAdvanced and new experiments.memory
-  const memoryEnabled = config?.experiments?.memory || config?.memoryAdvanced;
-  if (memoryEnabled) {
-    return getAdvancedMemoryTools();
-  }
-  return [];
-}
+// export function getAdvancedMemoryToolsIfEnabled(config?: {
+//   memoryAdvanced?: boolean;
+//   experiments?: {
+//     memory?: boolean;
+//   };
+// }): McpToolDef<any>[] {
+//   // Support both old memoryAdvanced and new experiments.memory
+//   const memoryEnabled = config?.experiments?.memory || config?.memoryAdvanced;
+//   if (memoryEnabled) {
+//     return getAdvancedMemoryTools();
+//   }
+//   return [];
+// }

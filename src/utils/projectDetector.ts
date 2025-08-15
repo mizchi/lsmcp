@@ -8,7 +8,7 @@ import { join } from "path";
 import { debug } from "./mcpHelpers.ts";
 import { LSMCPError, ErrorCode } from "../domain/errors/index.ts";
 
-export interface DetectedProject {
+interface DetectedProject {
   preset: string;
   reason: string;
 }

@@ -26,16 +26,6 @@ export interface LSPNotification {
 
 export type LSPMessage = LSPRequest | LSPResponse | LSPNotification;
 
-// Type guards
-export function isLSPRequest(message: any): message is LSPRequest {
-  return (
-    message &&
-    message.jsonrpc === "2.0" &&
-    message.id !== undefined &&
-    message.method !== undefined
-  );
-}
-
 export function isLSPResponse(message: any): message is LSPResponse {
   return (
     message &&

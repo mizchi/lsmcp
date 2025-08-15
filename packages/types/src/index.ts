@@ -137,14 +137,6 @@ export type {
 } from "./domain/project.ts";
 
 export type {
-  // Indexer
-  SymbolIndex,
-  IndexStats,
-  IndexingResult,
-  IndexConfiguration,
-} from "./domain/indexer.ts";
-
-export type {
   // Tools
   ToolDefinition,
   MCPServer,

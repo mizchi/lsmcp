@@ -5,7 +5,6 @@
 
 import { type ZodType } from "zod";
 import * as fs from "node:fs";
-import * as path from "node:path";
 import { LSMCPError } from "../domain/errors/index.ts";
 import type { McpToolDef } from "@internal/types";
 
@@ -31,20 +30,15 @@ export function debug(...args: unknown[]): void {
   }
 }
 
-/**
- * @deprecated Use debugLog from debugLog.ts instead
- */
-export { debugLog } from "./debugLog.ts";
-
 // Re-export commonly used types
-export { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-export { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-export * from "./mcpServerHelpers.ts";
+// export { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+// export { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+// export * from "./mcpServerHelpers.ts";
 
 /**
  * Tool result format for MCP
  */
-export interface ToolResult {
+interface ToolResult {
   content: Array<{
     type: "text";
     text: string;
@@ -55,7 +49,7 @@ export interface ToolResult {
 /**
  * Convert a string-returning handler to MCP response format with error handling
  */
-export function toMcpToolHandler<T>(
+function toMcpToolHandler<T>(
   handler: (args: T) => Promise<string>,
 ): (args: T) => Promise<ToolResult> {
   return async (args: T) => {
@@ -105,37 +99,14 @@ export function toMcpToolHandler<T>(
 /**
  * Create a simple tool definition
  */
-export function createTool<S extends ZodType>(
-  tool: McpToolDef<S>,
-): McpToolDef<S> {
+function createTool<S extends ZodType>(tool: McpToolDef<S>): McpToolDef<S> {
   return tool;
-}
-
-/**
- * Configuration file helpers
- */
-export interface McpConfig {
-  mcpServers?: Record<
-    string,
-    {
-      command: string;
-      args: string[];
-      env?: Record<string, string>;
-    }
-  >;
-}
-
-export interface ClaudeSettings {
-  permissions?: {
-    allow?: string[];
-    deny?: string[];
-  };
 }
 
 /**
  * Read JSON file safely
  */
-export function readJsonFile(filePath: string): unknown {
+function readJsonFile(filePath: string): unknown {
   if (!fs.existsSync(filePath)) {
     return null;
   }
@@ -149,20 +120,9 @@ export function readJsonFile(filePath: string): unknown {
 }
 
 /**
- * Write JSON file
- */
-export function writeJsonFile(filePath: string, data: unknown): void {
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
-
-/**
  * Merge arrays without duplicates
  */
-export function mergeArrays<T>(
+function mergeArrays<T>(
   existing: T[] | undefined,
   additions: T[] | undefined,
 ): T[] {
@@ -179,7 +139,7 @@ export function mergeArrays<T>(
  * @param tools Array of tool definitions
  * @returns Array of permission strings in the format "mcp__<serverName>__<toolName>"
  */
-export function generatePermissions(
+function generatePermissions(
   serverName: string,
   tools: McpToolDef<ZodType>[],
 ): string[] {

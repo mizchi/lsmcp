@@ -11,7 +11,7 @@
 /**
  * Check if MCP debug logging is enabled
  */
-export function isMcpDebugEnabled(): boolean {
+function isMcpDebugEnabled(): boolean {
   return (
     process.env.MCP_DEBUG === "1" ||
     process.env.MCP_DEBUG === "true" ||
@@ -64,18 +64,6 @@ export function mcpError(...args: unknown[]): void {
 }
 
 /**
- * MCP server warning logging - always shows warnings regardless of debug setting
- *
- * @param args Arguments to log
- *
- * @example
- * mcpWarn("Tool execution took longer than expected:", duration);
- */
-export function mcpWarn(...args: unknown[]): void {
-  console.error("[MCP:WARN]", ...args);
-}
-
-/**
  * Conditional MCP debug logging
  *
  * @param condition Boolean condition
@@ -93,66 +81,11 @@ export function mcpConditionalDebug(
   }
 }
 
-/**
- * MCP performance logging - logs timing information
- *
- * @param operation Operation name
- * @param duration Duration in milliseconds
- *
- * @example
- * mcpPerformance("tool_execution", 500);
- */
-export function mcpPerformance(operation: string, duration: number): void {
-  if (isMcpDebugEnabled()) {
-    console.error(`[MCP:PERF] ${operation} took ${duration}ms`);
-  }
-}
-
-/**
- * MCP data logging - logs data structures with pretty printing
- *
- * @param label Label for the data
- * @param data Data to log
- *
- * @example
- * mcpData("Tool parameters", params);
- */
-export function mcpData(label: string, data: unknown): void {
-  if (isMcpDebugEnabled()) {
-    console.error(`[MCP:DATA] ${label}:`, JSON.stringify(data, null, 2));
-  }
-}
-
-/**
- * MCP tool logging - specific logging for tool execution
- *
- * @param toolName Name of the tool
- * @param phase Phase of execution ("start", "end", "error")
- * @param details Additional details
- *
- * @example
- * mcpTool("get_symbols", "start", { file: "test.ts" });
- * mcpTool("get_symbols", "end", { symbols: 10, duration: 100 });
- */
-export function mcpTool(
-  toolName: string,
-  phase: "start" | "end" | "error",
-  details?: unknown,
-): void {
-  if (isMcpDebugEnabled()) {
-    const prefix = phase === "error" ? "[MCP:TOOL:ERROR]" : "[MCP:TOOL]";
-    console.error(
-      `${prefix} ${toolName} - ${phase}`,
-      details ? JSON.stringify(details, null, 2) : "",
-    );
-  }
-}
-
 // Backward compatibility with existing debugLog
-export { mcpDebug as debugLog };
-export { mcpDebugWithPrefix as debugLogWithPrefix };
-export { mcpError as errorLog };
-export { mcpConditionalDebug as conditionalDebug };
+// export { mcpDebug as debugLog };
+// export { mcpDebugWithPrefix as debugLogWithPrefix };
+// export { mcpError as errorLog };
+// export { mcpConditionalDebug as conditionalDebug };
 
 // Re-export as default debug for backward compatibility
-export { mcpDebug as debug };
+// export { mcpDebug as debug };
