@@ -1,8 +1,3 @@
 {
-  "mcpServers": {
-    "lsmcp-dev": {
-      "command": "node",
-      "args": ["dist/lsmcp.js", "-p", "tsgo"]
-    }
-  }
+  "mcpServers": {}
 }

@@ -244,9 +244,17 @@ export const getProjectOverviewTool: McpToolDef<
     let errorCount = 0;
     let warningCount = 0;
     // TODO: Re-enable diagnostics after optimizing performance
+    // Note: Diagnostics are currently disabled and will always show 0
 
     // Get all symbols for analysis
     const allSymbols = querySymbols(rootPath, {});
+
+    // Check if Variables/Constants are filtered out by configuration
+    const config = loadIndexConfig(rootPath);
+    const isVariableFiltered =
+      config?.symbolFilter?.excludeKinds?.includes("Variable");
+    const isConstantFiltered =
+      config?.symbolFilter?.excludeKinds?.includes("Constant");
 
     // Get symbols by kind
     const functions = querySymbols(rootPath, { kind: SymbolKind.Function });
@@ -256,6 +264,7 @@ export const getProjectOverviewTool: McpToolDef<
     const enums = querySymbols(rootPath, { kind: SymbolKind.Enum });
     const constants = querySymbols(rootPath, { kind: SymbolKind.Constant });
     const variables = querySymbols(rootPath, { kind: SymbolKind.Variable });
+    const properties = querySymbols(rootPath, { kind: SymbolKind.Property });
 
     // Get directory structure with file counts
     const directories = getDirectoryStructure(rootPath, allSymbols);
@@ -277,7 +286,7 @@ export const getProjectOverviewTool: McpToolDef<
     output += "### Statistics:\n";
     output += `- **Files:** ${stats.totalFiles}\n`;
     output += `- **Symbols:** ${stats.totalSymbols}\n`;
-    output += `- **Index size:** ${stats.totalFiles > 0 ? Math.round(stats.indexingTime / 1000) : 0}s\n`;
+    output += `- **Indexing time:** ${stats.totalFiles > 0 ? Math.round(stats.indexingTime / 1000) : 0}s\n`;
     output += `- **Last updated:** ${stats.lastUpdated.toISOString()}\n`;
 
     // Detailed symbol breakdown if available
@@ -287,8 +296,22 @@ export const getProjectOverviewTool: McpToolDef<
       output += `  - Interfaces: ${interfaces.length}\n`;
       output += `  - Functions: ${functions.length}\n`;
       output += `  - Methods: ${methods.length}\n`;
-      output += `  - Variables: ${variables.length}\n`;
-      output += `  - Constants: ${constants.length}\n`;
+      // Properties often include class fields and object properties
+      if (properties.length > 0) {
+        output += `  - Properties: ${properties.length}\n`;
+      }
+      // Note: TypeScript LSP doesn't typically return Variable/Constant kinds
+      // for module-level declarations, so these counts may be 0
+      if (variables.length > 0 || constants.length > 0) {
+        output += `  - Variables: ${variables.length}\n`;
+        output += `  - Constants: ${constants.length}\n`;
+      } else if (isVariableFiltered || isConstantFiltered) {
+        // Indicate if these kinds are filtered out by configuration
+        const filtered = [];
+        if (isVariableFiltered) filtered.push("Variables");
+        if (isConstantFiltered) filtered.push("Constants");
+        output += `  - *${filtered.join("/")} excluded by config*\n`;
+      }
       if (enums.length > 0) output += `  - Enums: ${enums.length}\n`;
     }
 
@@ -300,9 +323,9 @@ export const getProjectOverviewTool: McpToolDef<
     }
     output += "\n";
 
-    // Directory structure with file counts
+    // Directory structure with file counts (showing up to depth 3)
     if (directories.size > 0) {
-      output += "### Structure:\n```\n";
+      output += "### Structure (top 3 levels):\n```\n";
       for (const [dir, fileCount] of directories) {
         const depth = dir.split("/").length - 1;
         const indent = "  ".repeat(depth);
@@ -327,7 +350,7 @@ export const getProjectOverviewTool: McpToolDef<
 
       // Show exported/top-level functions first
       if (exportedFunctions.length > 0) {
-        output += `\nExported Functions (${exportedFunctions.length}):\n`;
+        output += `\nExported Functions (showing first 10 of ${exportedFunctions.length}):\n`;
         exportedFunctions.slice(0, 10).forEach((f) => {
           const filePath = f.location
             ? path.basename(fileURLToPath(f.location.uri))
@@ -350,7 +373,7 @@ export const getProjectOverviewTool: McpToolDef<
           methodsByClass.get(container)!.push(m);
         });
 
-        output += `\nClass Methods:\n`;
+        output += `\nClass Methods (showing first 5 classes):\n`;
         let shown = 0;
         for (const [className, methods] of methodsByClass) {
           if (shown >= 5) break; // Limit number of classes shown
@@ -373,7 +396,7 @@ export const getProjectOverviewTool: McpToolDef<
     // Classes (with member counts)
     if (classes.length > 0) {
       const limit = 10;
-      output += `**Classes** (${classes.length}):\n`;
+      output += `**Classes** (showing first 10 of ${classes.length}):\n`;
       classes.slice(0, limit).forEach((c) => {
         const classMethods = methods.filter((m) => m.containerName === c.name);
         const filePath = c.location
@@ -390,7 +413,7 @@ export const getProjectOverviewTool: McpToolDef<
     // Interfaces
     if (interfaces.length > 0) {
       const limit = 8;
-      output += `**Interfaces** (${interfaces.length}):\n`;
+      output += `**Interfaces** (showing first 8 of ${interfaces.length}):\n`;
       interfaces.slice(0, limit).forEach((i) => {
         const filePath = i.location
           ? path.basename(fileURLToPath(i.location.uri))
@@ -405,7 +428,7 @@ export const getProjectOverviewTool: McpToolDef<
 
     // Enums
     if (enums.length > 0) {
-      output += `**Enums** (${enums.length}):\n`;
+      output += `**Enums** (showing all ${enums.length}):\n`;
       enums.slice(0, 5).forEach((e) => {
         output += `  • ${e.name}\n`;
       });

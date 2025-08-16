@@ -27,6 +27,8 @@
   "exclude": [
     "tests/fixtures/**/*",
     "tests/languages/fixtures/**/*",
-    "tests/integration/tmp-lsp-errors-*/**/*"
+    "tests/integration/tmp-lsp-errors-*/**/*",
+    "tests/integration/tmp-variables-*/**/*",
+    "packages/lsp-client/tests/integration/tmp-lsp-rename-*/**/*"
   ]
 }

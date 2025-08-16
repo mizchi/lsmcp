@@ -23,6 +23,7 @@ async function main() {
     restrictSearchToCodeFiles: true,
     contextLinesBefore: 0,
     contextLinesAfter: 0,
+    maxAnswerChars: 200000,
   });
   const originalTime = performance.now() - originalStart;
   const originalMatches = Object.keys(JSON.parse(originalResult)).length;
@@ -39,6 +40,7 @@ async function main() {
     restrictSearchToCodeFiles: true,
     contextLinesBefore: 0,
     contextLinesAfter: 0,
+    maxAnswerChars: 200000,
   });
   const fastTime = performance.now() - fastStart;
   const fastMatches = Object.keys(JSON.parse(fastResult)).length;

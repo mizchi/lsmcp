@@ -27,6 +27,7 @@ async function main() {
       restrictSearchToCodeFiles: true,
       contextLinesBefore: 0,
       contextLinesAfter: 0,
+      maxAnswerChars: 200000,
     });
     const originalTime = performance.now() - originalStart;
     const originalMatches =
@@ -46,6 +47,7 @@ async function main() {
       restrictSearchToCodeFiles: true,
       contextLinesBefore: 0,
       contextLinesAfter: 0,
+      maxAnswerChars: 200000,
     });
     const fastTime = performance.now() - fastStart;
     const fastMatches =

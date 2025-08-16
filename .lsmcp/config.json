@@ -1,0 +1,6 @@
+{
+  "files": ["**/*.ts", "**/*.tsx"],
+  "symbolFilter": {
+    "excludeKinds": ["Variable", "Constant", "String", "Number", "Boolean"]
+  }
+}

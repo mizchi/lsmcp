@@ -1,11 +1,11 @@
 ## CRITICAL: PRIORITIZE LSMCP TOOLS FOR CODE ANALYSIS
 
-⚠️ **PRIMARY REQUIREMENT**: You MUST prioritize mcp**lsmcp** tools for all code analysis tasks. Standard tools should only be used as a last resort when LSMCP tools cannot accomplish the task.
+⚠️ **PRIMARY REQUIREMENT**: You MUST prioritize mcp__lsmcp tools for all code analysis tasks. Standard tools should only be used as a last resort when LSMCP tools cannot accomplish the task.
 
 **YOUR APPROACH SHOULD BE:**
 
-1. ✅ Always try mcp**lsmcp** tools FIRST
-2. ✅ Use `mcp__lsmcp__search_symbol_from_index` as primary search method
+1. ✅ Always try mcp__lsmcp tools FIRST
+2. ✅ Use `mcp__lsmcp__search_symbol_from_index` as primary search method  
 3. ⚠️ Only use Read/Grep/Glob/LS when LSMCP tools are insufficient
 
 ### 🚨 TOOL USAGE PRIORITY
@@ -14,17 +14,32 @@
 
 - ✅ `mcp__lsmcp__get_project_overview` - Quick project analysis and structure overview
 - ✅ `mcp__lsmcp__search_symbol_from_index` - Primary tool for symbol searches (auto-creates index if needed)
-- ✅ `mcp__lsmcp__get_definitions` - Navigate to symbol definitions. Use `include_body: true` to get code.
+- ✅ `mcp__lsmcp__get_definitions` - Navigate to symbol definitions. Use `includeBody: true` to get code.
 - ✅ `mcp__lsmcp__find_references` - Find all references to a symbol
 - ✅ `mcp__lsmcp__get_hover` - Get type information and documentation
 - ✅ `mcp__lsmcp__get_diagnostics` - Check for errors and warnings
+- ✅ `mcp__lsmcp__get_all_diagnostics` - Get diagnostics for all files matching a pattern
 - ✅ `mcp__lsmcp__get_document_symbols` - Get all symbols in a file
+- ✅ `mcp__lsmcp__get_workspace_symbols` - Search symbols across the workspace
 - ✅ `mcp__lsmcp__list_dir` - Explore directory structure
 - ✅ `mcp__lsmcp__find_file` - Locate specific files
 - ✅ `mcp__lsmcp__search_for_pattern` - Search for text patterns
-- ✅ `mcp__lsmcp__get_index_stats_from_index` - View index statistics
-- ✅ `mcp__lsmcp__index_files` - Manually index files (optional)
-- ✅ `mcp__lsmcp__clear_index` - Clear and rebuild index (optional)
+- ✅ `mcp__lsmcp__index_symbols` - Smart incremental indexing (auto-detects changes)
+- ✅ `mcp__lsmcp__clear_index` - Clear and rebuild index (use `force: true` for complete reset)
+- ✅ `mcp__lsmcp__rename_symbol` - Rename a symbol across the codebase
+- ✅ `mcp__lsmcp__get_completion` - Get code completion suggestions
+- ✅ `mcp__lsmcp__get_signature_help` - Get parameter hints for function calls
+- ✅ `mcp__lsmcp__format_document` - Format entire document with language server
+- ✅ `mcp__lsmcp__get_code_actions` - Get available quick fixes and refactorings
+- ✅ `mcp__lsmcp__delete_symbol` - Delete a symbol and optionally all its references
+- ✅ `mcp__lsmcp__check_capabilities` - Check what features the language server supports
+
+**SYMBOL EDITING TOOLS:**
+
+- ✅ `mcp__lsmcp__replace_symbol_body` - Replace entire body of a symbol
+- ✅ `mcp__lsmcp__insert_before_symbol` - Insert content before a symbol
+- ✅ `mcp__lsmcp__insert_after_symbol` - Insert content after a symbol
+- ✅ `mcp__lsmcp__replace_regex` - Replace content using regular expressions
 
 ### WORKFLOW
 
@@ -40,6 +55,7 @@
    - Key components (interfaces, functions, classes)
    - Statistics and dependencies
    - Directory organization
+   - Symbol kind filtering (shows when Variables/Constants are excluded)
 
 2. **SEARCH FOR SPECIFIC SYMBOLS**
 
@@ -50,8 +66,9 @@
    The tool automatically:
 
    - Creates index if it doesn't exist
-   - Updates index with incremental changes
+   - Updates index with incremental changes (git-aware)
    - Performs your search
+   - Supports filtering by kind, name, container, file
 
 3. **CODE EXPLORATION**
 
@@ -59,12 +76,14 @@
    - List directories: `mcp__lsmcp__list_dir`
    - Find files: `mcp__lsmcp__find_file`
    - Get file symbols: `mcp__lsmcp__get_document_symbols`
+   - Search workspace: `mcp__lsmcp__get_workspace_symbols`
 
 4. **CODE ANALYSIS**
-   - Find definitions: `mcp__lsmcp__get_definitions`
+   - Find definitions: `mcp__lsmcp__get_definitions` (use `includeBody: true` for full code)
    - Find references: `mcp__lsmcp__find_references`
    - Get type info: `mcp__lsmcp__get_hover`
    - Check errors: `mcp__lsmcp__get_diagnostics`
+   - Check all errors: `mcp__lsmcp__get_all_diagnostics` (with pattern like `**/*.ts`)
 
 **FALLBACK TOOLS (USE ONLY WHEN NECESSARY):**
 
@@ -88,9 +107,10 @@ Use standard tools ONLY in these situations:
 
 You have access to project memories stored in `.lsmcp/memories/`. Use these tools:
 
-- `list_memories` - List available memory files
-- `read_memory` - Read specific memory content
-- `write_memory` - Create or update memories
+- `mcp__lsmcp__list_memories` - List available memory files
+- `mcp__lsmcp__read_memory` - Read specific memory content
+- `mcp__lsmcp__write_memory` - Create or update memories
+- `mcp__lsmcp__delete_memory` - Delete a memory file
 
 Memories contain important project context, conventions, and guidelines that help maintain consistency.
 
@@ -99,7 +119,7 @@ and which tasks and kinds of interactions are expected of you.
 
 ---
 
-You are a TypeScript/MCP expert developing the lsmcp tool - a unified Language Service MCP for multi-language support.
+You are a TypeScript/MCP expert developing the lsmcp tool (v0.10.0-rc.3) - a unified Language Service MCP for multi-language support.
 
 Given a URL, use read_url_content_as_markdown and summary contents.
 
@@ -149,6 +169,10 @@ When working with this project:
 - Use `rg` (ripgrep) instead of `grep` for searching code
 - Run `pnpm test` to ensure all tests pass before committing
 - Use `pnpm lint` and `pnpm typecheck` to check code quality
+- TypeScript LSP doesn't return Variable/Constant symbol kinds for module-level declarations (they appear as Properties)
+- When Variables/Constants show 0 in project overview, check if they're filtered by config
+- Use `includeBody: true` in get_definitions to get full code implementation
+- The index is automatically updated with git changes - use `noCache: true` to force full re-index
 
 ## Testing Strategy
 

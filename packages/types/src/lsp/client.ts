@@ -335,6 +335,11 @@ export interface LSPClientConfig {
   fileSystemApi?: FileSystemApi; // Optional FileSystem API instance
 }
 
+/**
+ * @deprecated LSPClient is deprecated and will be removed in a future version.
+ * TODO: Migrate to the new LSP client API architecture.
+ * This type is kept for backward compatibility during the transition period.
+ */
 export type LSPClient = {
   languageId: string;
   fileSystemApi: FileSystemApi;

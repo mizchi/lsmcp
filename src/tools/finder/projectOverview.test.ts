@@ -221,17 +221,17 @@ describe("getProjectOverviewTool", () => {
 
     // Should contain statistics
     expect(result).toContain("### Statistics:");
-    expect(result).toContain("**Files:** 10");
-    expect(result).toContain("**Symbols:** 50");
+    expect(result).toContain("- **Files:** 10");
+    expect(result).toContain("- **Symbols:** 50");
 
     // Should contain key symbols
     expect(result).toContain("### Key Components:");
-    expect(result).toContain("**Classes** (3):");
+    expect(result).toContain("**Classes** (showing first");
     expect(result).toContain("• UserController");
     expect(result).toContain("• AuthService");
     expect(result).toContain("• DatabaseConnection");
 
-    expect(result).toContain("**Interfaces** (2):");
+    expect(result).toContain("**Interfaces** (showing first");
     expect(result).toContain("• IUser");
     expect(result).toContain("• IAuthToken");
 
@@ -266,8 +266,8 @@ describe("getProjectOverviewTool", () => {
 
     expect(result).toContain("Project Overview");
     expect(result).toContain("### Statistics:");
-    expect(result).toContain("**Files:** 5");
-    expect(result).toContain("**Symbols:** 20");
+    expect(result).toContain("- **Files:** 5");
+    expect(result).toContain("- **Symbols:** 20");
     expect(result).not.toContain("package.json");
   });
 
@@ -314,8 +314,8 @@ describe("getProjectOverviewTool", () => {
       mockRoot,
       undefined,
     );
-    expect(result).toContain("**Files:** 3");
-    expect(result).toContain("**Symbols:** 15");
+    expect(result).toContain("- **Files:** 3");
+    expect(result).toContain("- **Symbols:** 15");
   });
 
   it("should limit output for large projects", async () => {
@@ -355,7 +355,7 @@ describe("getProjectOverviewTool", () => {
     const result = await getProjectOverviewTool.execute({ root: mockRoot });
 
     // Should limit classes to top 10
-    expect(result).toContain("**Classes** (50):");
+    expect(result).toContain("**Classes** (showing first 10 of 50):");
     expect(result).toContain("• Class0");
     expect(result).toContain("• Class9");
     expect(result).not.toContain("• Class10");
@@ -462,8 +462,60 @@ describe("getProjectOverviewTool", () => {
 
     const result = await getProjectOverviewTool.execute({ root: mockRoot });
 
-    expect(result).toContain("### Structure:");
+    expect(result).toContain("### Structure (top 3 levels):");
     expect(result).toContain("src/");
     expect(result).toContain("tests/");
+  });
+
+  it("should indicate when Variables/Constants are excluded by config", async () => {
+    const mockRoot = "/test/project";
+
+    vi.mocked(fs.readFile).mockRejectedValue(new Error("ENOENT"));
+
+    vi.mocked(IndexerAdapter.getIndexStats).mockReturnValue({
+      totalFiles: 10,
+      totalSymbols: 30,
+      indexingTime: 1000,
+      lastUpdated: new Date(),
+    });
+
+    // Mock config with Variables/Constants excluded
+    vi.mocked(IndexerAdapter.loadIndexConfig).mockReturnValue({
+      files: ["**/*.ts"],
+      symbolFilter: {
+        excludeKinds: ["Variable", "Constant"],
+      },
+    } as any);
+
+    // Return no variables or constants
+    vi.mocked(IndexerAdapter.querySymbols).mockImplementation((_, query) => {
+      if (
+        query.kind === SymbolKind.Variable ||
+        query.kind === SymbolKind.Constant
+      ) {
+        return [];
+      }
+      if (query.kind === SymbolKind.Class) {
+        return [
+          {
+            name: "TestClass",
+            kind: SymbolKind.Class,
+            location: {
+              uri: "file:///test/file.ts",
+              range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 0 },
+              },
+            },
+          },
+        ];
+      }
+      return [];
+    });
+
+    const result = await getProjectOverviewTool.execute({ root: mockRoot });
+
+    // Should indicate that Variables/Constants are excluded
+    expect(result).toContain("*Variables/Constants excluded by config*");
   });
 });

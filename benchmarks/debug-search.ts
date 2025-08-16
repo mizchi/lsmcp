@@ -19,9 +19,10 @@ async function main() {
 
   for await (const file of gitawareGlob(globPattern, {
     cwd: rootPath,
-    ignore: ["**/node_modules/**", "**/.git/**"],
+    gitignore: true,
+    onlyFiles: true,
   })) {
-    files.push(file);
+    files.push(file as string);
   }
   const globTime = performance.now() - globStart;
   console.log(`   Glob time: ${globTime.toFixed(2)}ms`);
@@ -57,7 +58,8 @@ async function main() {
 
   for await (const file of gitawareGlob("**/*.ts", {
     cwd: rootPath,
-    ignore: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
+    gitignore: true,
+    onlyFiles: true,
   })) {
     tsFileCount++;
   }
