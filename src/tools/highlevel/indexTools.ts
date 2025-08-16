@@ -47,7 +47,7 @@ const searchSymbolSchema = z.object({
   kind: z
     .any()
     .describe(
-      `Symbol kind(s) to filter by. Accepts: string (e.g., 'Class'), array (e.g., ['Class', 'Interface']), number (e.g., 5), or JSON string (e.g., '["Class", "Interface"]'). Case-insensitive. Valid kinds: ${SYMBOL_KIND_NAMES.join(", ")}. If not specified, searches all symbol kinds.`,
+      `Symbol kind(s) to filter by. Accepts: string (e.g., 'Class'), array (e.g., ['Class', 'Interface']), or JSON string (e.g., '["Class", "Interface"]'). Case-insensitive. Valid kinds: ${SYMBOL_KIND_NAMES.join(", ")}. If not specified, searches all symbol kinds.`,
     )
     .optional(),
   file: z
@@ -279,7 +279,6 @@ ${SYMBOL_KIND_NAMES.join(", ")}
 Examples:
   • Single kind: "Class" or "class" or "CLASS"
   • Multiple kinds: ["Class", "Interface", "Function"]
-  • Numeric kinds: 5 (for Class) or [5, 11, 12] (for Class, Interface, Function)
   • JSON string: "[\"Class\", \"Interface\"]"
   • Empty/undefined: Search all symbol kinds`;
       }

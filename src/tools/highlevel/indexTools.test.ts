@@ -398,44 +398,32 @@ describe("searchSymbolsTool", () => {
       expect(IndexerAdapter.querySymbols).not.toHaveBeenCalled();
     });
 
-    it("should handle numeric kind (now supported)", async () => {
-      vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([]);
-
+    it("should return error for numeric kind", async () => {
       const result = await searchSymbolsTool.execute({
-        kind: 5, // Class = 5
+        kind: 5, // Numbers not supported anymore
         root: "/test",
         includeChildren: true,
         includeExternal: false,
         onlyExternal: false,
       });
 
-      expect(result).toBe("No symbols found matching the query.");
-      expect(IndexerAdapter.querySymbols).toHaveBeenCalledWith(
-        "/test",
-        expect.objectContaining({
-          kind: 5,
-        }),
-      );
+      expect(result).toContain("Error:");
+      expect(result).toContain("Invalid kind type: number");
+      expect(IndexerAdapter.querySymbols).not.toHaveBeenCalled();
     });
 
-    it("should handle mixed string and number array (now supported)", async () => {
-      vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([]);
-
+    it("should return error for mixed string and number array", async () => {
       const result = await searchSymbolsTool.execute({
-        kind: ["Class", 11], // Class = 5, Interface = 11
+        kind: ["Class", 11], // Mixed types not supported
         root: "/test",
         includeChildren: true,
         includeExternal: false,
         onlyExternal: false,
       });
 
-      expect(result).toBe("No symbols found matching the query.");
-      expect(IndexerAdapter.querySymbols).toHaveBeenCalledWith(
-        "/test",
-        expect.objectContaining({
-          kind: [5, 11], // Converted to numbers
-        }),
-      );
+      expect(result).toContain("Error:");
+      expect(result).toContain("Invalid kind type: number");
+      expect(IndexerAdapter.querySymbols).not.toHaveBeenCalled();
     });
 
     it("should auto-create index when empty", async () => {
