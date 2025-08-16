@@ -22,10 +22,14 @@ const replaceSymbolBodySchema = z.object({
     .describe("New symbol body. Begin directly with the symbol definition"),
 });
 
+/**
+ * @deprecated Use replace_range tool instead for more flexible editing
+ */
 export const replaceSymbolBodyTool: McpToolDef<typeof replaceSymbolBodySchema> =
   {
     name: "replace_symbol_body",
-    description: "Replace the entire body of a symbol",
+    description:
+      "[DEPRECATED - Use replace_range instead] Replace the entire body of a symbol",
     schema: replaceSymbolBodySchema,
     execute: async ({ root, namePath, relativePath, body }) => {
       try {
@@ -119,11 +123,15 @@ const insertBeforeSymbolSchema = z.object({
   body: z.string().describe("Content to insert before the symbol"),
 });
 
+/**
+ * @deprecated Use replace_range tool instead for more flexible editing
+ */
 export const insertBeforeSymbolTool: McpToolDef<
   typeof insertBeforeSymbolSchema
 > = {
   name: "insert_before_symbol",
-  description: "Insert content before a symbol definition",
+  description:
+    "[DEPRECATED - Use replace_range instead] Insert content before a symbol definition",
   schema: insertBeforeSymbolSchema,
   execute: async ({ root, namePath, relativePath, body }) => {
     try {
@@ -198,10 +206,14 @@ const insertAfterSymbolSchema = z.object({
   body: z.string().describe("Content to insert after the symbol"),
 });
 
+/**
+ * @deprecated Use replace_range tool instead for more flexible editing
+ */
 export const insertAfterSymbolTool: McpToolDef<typeof insertAfterSymbolSchema> =
   {
     name: "insert_after_symbol",
-    description: "Insert content after a symbol definition",
+    description:
+      "[DEPRECATED - Use replace_range instead] Insert content after a symbol definition",
     schema: insertAfterSymbolSchema,
     execute: async ({ root, namePath, relativePath, body }) => {
       try {

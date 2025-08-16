@@ -78,7 +78,7 @@ describe("Configurable Language Features", () => {
 
       // Count total tools
       const toolCount = Object.keys(tools).length;
-      const coreToolCount = 12; // Number of core tools (querySymbols removed)
+      const coreToolCount = 13; // Number of core tools (added replaceRange)
       const typescriptToolCount = 6; // Number of TypeScript-specific tools
 
       expect(toolCount).toBe(coreToolCount + typescriptToolCount);

@@ -1,5 +1,6 @@
 export * from "./editor/symbolEditTools.ts";
 export * from "./editor/regexEditTools.ts";
+export * from "./editor/rangeEditTools.ts";
 export * from "./memory/memoryTools.ts";
 // Internal tools - not exported
 export * from "./highlevel/fileSystemTools.ts";
@@ -16,6 +17,7 @@ import {
   insertAfterSymbolTool,
 } from "./editor/symbolEditTools.ts";
 import { replaceRegexTool } from "./editor/regexEditTools.ts";
+import { replaceRangeTool } from "./editor/rangeEditTools.ts";
 import {
   listMemoriesTool,
   readMemoryTool,
@@ -43,10 +45,15 @@ import {
 
 // Core tools that are always available
 const coreTools = {
-  // Symbol editing tools
+  // Range editing tool (recommended)
+  replaceRange: replaceRangeTool,
+
+  // Symbol editing tools (deprecated - use replaceRange instead)
   replaceSymbolBody: replaceSymbolBodyTool,
   insertBeforeSymbol: insertBeforeSymbolTool,
   insertAfterSymbol: insertAfterSymbolTool,
+
+  // Regex editing tool
   replaceRegex: replaceRegexTool,
 
   // Memory tools
