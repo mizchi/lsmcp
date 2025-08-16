@@ -169,4 +169,4 @@ examples/fsharp-project/obj/
 # lsmcp cache
 .lsmcp/cache
 
-examples/*/.lsmcp
+examples/*/.lsmcpgitaware-glob-src/
