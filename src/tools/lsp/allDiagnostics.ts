@@ -154,7 +154,7 @@ async function getProjectFiles(
 /**
  * Gets diagnostics for all files in the project
  */
-export async function getAllDiagnosticsWithLSP(
+export async function getAllDiagnostics(
   request: GetAllDiagnosticsRequest,
   client: LSPClient,
 ): Promise<GetAllDiagnosticsSuccess> {
@@ -312,12 +312,12 @@ export function createAllDiagnosticsTool(
   client: LSPClient,
 ): McpToolDef<typeof schema> {
   return {
-    name: "get_all_diagnostics",
+    name: "lsp_get_all_diagnostics",
     description:
-      "Get diagnostics (errors, warnings) for all files in the project. Requires a glob pattern to specify which files to check (e.g., '**/*.ts', '**/*.{js,jsx}', 'src/**/*.py')",
+      "Get diagnostics (errors, warnings) for all files matching a pattern using LSP. Requires a glob pattern (e.g., '**/*.ts', 'src/**/*.py').",
     schema,
     execute: async (args: z.infer<typeof schema>) => {
-      const result = await getAllDiagnosticsWithLSP(args, client);
+      const result = await getAllDiagnostics(args, client);
 
       const messages = [result.message];
 
@@ -374,6 +374,3 @@ export function createAllDiagnosticsTool(
     },
   };
 }
-
-// Legacy export - will be removed
-export const lspGetAllDiagnosticsTool = null as any;

@@ -117,15 +117,8 @@ interface MyInterface {
   });
 
   it("should index Variables correctly", async () => {
-    // First, index the file
-    const indexResult = await mcpClient.callTool({
-      name: "index_symbols",
-      arguments: {
-        pattern: "**/*.ts",
-      },
-    });
-
-    console.log("Index result:", indexResult.content);
+    // Index is created automatically when searching
+    console.log("Index will be created automatically");
 
     // Search for all symbols
     const searchResult = await mcpClient.callTool({
@@ -145,13 +138,7 @@ interface MyInterface {
   });
 
   it("should index Constants correctly", async () => {
-    // First, index the file
-    await mcpClient.callTool({
-      name: "index_symbols",
-      arguments: {
-        pattern: "**/*.ts",
-      },
-    });
+    // Index is created automatically when searching
 
     // Search for all symbols
     const searchResult = await mcpClient.callTool({
@@ -175,7 +162,7 @@ interface MyInterface {
   it("should show symbol types in document symbols", async () => {
     // Get document symbols
     const docSymbolsResult = await mcpClient.callTool({
-      name: "get_document_symbols",
+      name: "lsp_get_document_symbols",
       arguments: {
         filePath: "variables-test.ts",
       },
@@ -198,11 +185,21 @@ interface MyInterface {
   });
 
   it("should get workspace symbols with proper kinds", async () => {
+    // First, open the file to initialize the TypeScript project
+    await mcpClient.callTool({
+      name: "lsp_get_diagnostics",
+      arguments: {
+        root: tempDir,
+        relativePath: "variables-test.ts",
+      },
+    });
+
     // Get workspace symbols
     const workspaceResult = await mcpClient.callTool({
-      name: "get_workspace_symbols",
+      name: "lsp_get_workspace_symbols",
       arguments: {
         query: "",
+        root: tempDir,
       },
     });
 

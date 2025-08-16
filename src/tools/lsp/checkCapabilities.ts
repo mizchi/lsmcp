@@ -144,15 +144,12 @@ export function createCheckCapabilitiesTool(
   client: LSPClient,
 ): McpToolDef<typeof schema> {
   return {
-    name: "check_capabilities",
+    name: "lsp_check_capabilities",
     description:
-      "Check the capabilities of the current language server. Shows which features are supported.",
+      "Check the capabilities of the current LSP server. Shows which features are supported.",
     schema,
     execute: async () => {
       return handleCheckCapabilities(client);
     },
   };
 }
-
-// Legacy export - will be removed
-export const lspCheckCapabilitiesTool = null as any;

@@ -225,9 +225,9 @@ export function createDeleteSymbolTool(
   client: LSPClient,
 ): McpToolDef<typeof schema> {
   return {
-    name: "delete_symbol",
+    name: "lsp_delete_symbol",
     description:
-      "Delete a symbol (variable, function, class, etc.) and optionally all its references using LSP",
+      "Delete a symbol and optionally all its references using LSP. Requires exact line:column position of the symbol.",
     schema,
     execute: async (args) => {
       const result = await handleDeleteSymbol(args, client);
@@ -235,6 +235,3 @@ export function createDeleteSymbolTool(
     },
   };
 }
-
-// Legacy export - will be removed
-export const lspDeleteSymbolTool = null as any;

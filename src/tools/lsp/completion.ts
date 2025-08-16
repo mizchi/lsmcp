@@ -207,15 +207,12 @@ export function createCompletionTool(
   client: LSPClient,
 ): McpToolDef<typeof schema> {
   return {
-    name: "get_completion",
+    name: "lsp_get_completion",
     description:
-      "Get code completion suggestions at a specific position in a file using LSP",
+      "Get code completion suggestions at a specific position using LSP. Requires exact line:column coordinates.",
     schema,
     execute: async (args) => {
       return handleGetCompletion(args, client);
     },
   };
 }
-
-// Legacy export - will be removed
-export const lspGetCompletionTool = null as any;

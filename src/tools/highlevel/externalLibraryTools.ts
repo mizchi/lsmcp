@@ -280,18 +280,6 @@ export async function handleSearchExternalLibrarySymbols(args: any) {
 }
 
 /**
- * Get all external library tools
- * @deprecated Use getExternalLibraryToolsWithConfig instead
- */
-export function getExternalLibraryTools(): Tool[] {
-  return [
-    indexExternalLibrariesTool,
-    getTypescriptDependenciesTool,
-    searchExternalLibrarySymbolsTool,
-  ];
-}
-
-/**
  * Get external library tools based on configuration
  */
 export function getExternalLibraryToolsWithConfig(config?: {

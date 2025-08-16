@@ -122,14 +122,7 @@ export function anotherFunction() {
   }, 10000);
 
   it("should return correct symbol position ignoring JSDoc comments", async () => {
-    // Index the TypeScript file
-    await mcpClient.callTool({
-      name: "index_symbols",
-      arguments: {
-        root: tempDir,
-        pattern: "**/*.ts",
-      },
-    });
+    // Index is created automatically when needed
 
     // Search for the function
     const searchResult = await mcpClient.callTool({
@@ -166,14 +159,7 @@ export function anotherFunction() {
   }, 30000);
 
   it("should return correct position for interface definitions with comments", async () => {
-    // Index the TypeScript file
-    await mcpClient.callTool({
-      name: "index_symbols",
-      arguments: {
-        root: tempDir,
-        pattern: "**/*.ts",
-      },
-    });
+    // Index is created automatically when needed
 
     // Search for the interface
     const searchResult = await mcpClient.callTool({
@@ -196,14 +182,7 @@ export function anotherFunction() {
   }, 30000);
 
   it("should return correct position for class methods with comments", async () => {
-    // Index the TypeScript file
-    await mcpClient.callTool({
-      name: "index_symbols",
-      arguments: {
-        root: tempDir,
-        pattern: "**/*.ts",
-      },
-    });
+    // Index is created automatically when needed
 
     // Search for the method
     const searchResult = await mcpClient.callTool({
@@ -226,14 +205,7 @@ export function anotherFunction() {
   }, 30000);
 
   it("should handle single-line comments correctly", async () => {
-    // Index the TypeScript file
-    await mcpClient.callTool({
-      name: "index_symbols",
-      arguments: {
-        root: tempDir,
-        pattern: "**/*.ts",
-      },
-    });
+    // Index is created automatically when needed
 
     // Search for the function declared after multi-line comment
     const searchResult = await mcpClient.callTool({

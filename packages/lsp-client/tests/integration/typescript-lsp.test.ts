@@ -116,15 +116,15 @@ describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
     const toolNames = response.tools.map((t) => t.name);
 
     // Check for LSP tools
-    expect(toolNames).toContain("get_hover");
-    expect(toolNames).toContain("find_references");
-    expect(toolNames).toContain("get_definitions");
-    expect(toolNames).toContain("get_diagnostics");
-    expect(toolNames).toContain("rename_symbol");
-    expect(toolNames).toContain("get_document_symbols");
-    expect(toolNames).toContain("get_completion");
-    expect(toolNames).toContain("get_signature_help");
-    expect(toolNames).toContain("format_document");
+    expect(toolNames).toContain("lsp_get_hover");
+    expect(toolNames).toContain("lsp_find_references");
+    expect(toolNames).toContain("lsp_get_definitions");
+    expect(toolNames).toContain("lsp_get_diagnostics");
+    expect(toolNames).toContain("lsp_rename_symbol");
+    expect(toolNames).toContain("lsp_get_document_symbols");
+    expect(toolNames).toContain("lsp_get_completion");
+    expect(toolNames).toContain("lsp_get_signature_help");
+    expect(toolNames).toContain("lsp_format_document");
   });
 
   it("should get hover information for TypeScript code", async () => {
@@ -148,7 +148,7 @@ console.log(person.name);
 
     // Get hover information for 'person'
     const result = await client.callTool({
-      name: "get_hover",
+      name: "lsp_get_hover",
       arguments: {
         root: tmpDir,
         relativePath: "test.ts",
@@ -180,7 +180,7 @@ console.log(message.);
 
     // Get completions after 'message.'
     const result = await client.callTool({
-      name: "get_completion",
+      name: "lsp_get_completion",
       arguments: {
         root: tmpDir,
         relativePath: "completion.ts",
@@ -218,7 +218,7 @@ greet("Alice", );
 
     // Get signature help inside greet call
     const result = await client.callTool({
-      name: "get_signature_help",
+      name: "lsp_get_signature_help",
       arguments: {
         root: tmpDir,
         relativePath: "signature.ts",
@@ -253,7 +253,7 @@ console.log("Hello"  )  ;
 
     // Format the document
     const result = await client.callTool({
-      name: "format_document",
+      name: "lsp_format_document",
       arguments: {
         root: tmpDir,
         relativePath: "format.ts",
@@ -296,7 +296,7 @@ const total = calculateSum(10, 20);
 
     // Rename 'calculateSum' to 'addNumbers'
     const result = await client.callTool({
-      name: "rename_symbol",
+      name: "lsp_rename_symbol",
       arguments: {
         root: tmpDir,
         relativePath: "math.ts",
@@ -354,7 +354,7 @@ instance.myProperty = "value"; // Error: private property
 
     // Get code actions for the error line
     const result = await client.callTool({
-      name: "get_code_actions",
+      name: "lsp_get_code_actions",
       arguments: {
         root: tmpDir,
         relativePath: "codeaction.ts",
@@ -463,7 +463,7 @@ console.log(greeting);
 
       // Test hover
       const result = await client.callTool({
-        name: "get_hover",
+        name: "lsp_get_hover",
         arguments: {
           root: tmpDir,
           relativePath: "test.ts",
@@ -514,7 +514,7 @@ console.log(content);
 
       // Test diagnostics
       const result = await client.callTool({
-        name: "get_diagnostics",
+        name: "lsp_get_diagnostics",
         arguments: {
           root: tmpDir,
           relativePath: "deno_test.ts",

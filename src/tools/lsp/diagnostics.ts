@@ -49,7 +49,7 @@ interface GetDiagnosticsSuccess {
 /**
  * Enhanced diagnostics with better error handling and debugging
  */
-async function getDiagnosticsWithLSPV2(
+export async function getDiagnosticsWithLSPV2(
   request: GetDiagnosticsRequest,
   lspClient?: LSPClient,
 ): Promise<Result<GetDiagnosticsSuccess, string>> {
@@ -156,9 +156,9 @@ async function getDiagnosticsWithLSPV2(
  */
 export function createDiagnosticsTool(client: LSPClient) {
   return createLSPTool({
-    name: "get_diagnostics",
+    name: "lsp_get_diagnostics",
     description:
-      "Get diagnostics (errors, warnings) for a file using enhanced LSP with debugging",
+      "Get diagnostics (errors, warnings) for a specific file using LSP. Provides detailed error and warning information.",
     schema,
     language: "lsp",
     handler: (request) => getDiagnosticsWithLSPV2(request, client),
@@ -187,40 +187,4 @@ export function createDiagnosticsTool(client: LSPClient) {
   });
 }
 
-// Legacy export - will be removed
-export const lspGetDiagnosticsTool = null as any;
-
 // Skip these tests - they require LSP server and should be run as integration tests
-if (false && import.meta.vitest) {
-  const { describe, it, expect, beforeAll, afterAll } = import.meta.vitest!;
-  const { setupLSPForTest, teardownLSPForTest } = await import(
-    "../../../tests/languages/testHelpers.ts"
-  );
-  const { default: path } = await import("path");
-
-  describe("lspGetDiagnosticsTool", { timeout: 10000 }, () => {
-    const root = path.resolve(import.meta.dirname, "../../../..");
-
-    beforeAll(async () => {
-      await setupLSPForTest(root);
-    }, 30000);
-
-    afterAll(async () => {
-      await teardownLSPForTest();
-    }, 30000);
-
-    it("should have correct tool definition", () => {
-      expect(lspGetDiagnosticsTool.name).toBe("get_diagnostics");
-      expect(lspGetDiagnosticsTool.description).toContain("diagnostics");
-    });
-
-    it("should handle non-existent file error", async () => {
-      await expect(
-        lspGetDiagnosticsTool.execute({
-          root,
-          filePath: "non-existent-file-12345.ts",
-        }),
-      ).rejects.toThrow(/ENOENT: no such file or directory/);
-    });
-  });
-}

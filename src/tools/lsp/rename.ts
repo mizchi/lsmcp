@@ -445,9 +445,9 @@ export function createRenameSymbolTool(
   client: LSPClient,
 ): McpToolDef<typeof schema> {
   return {
-    name: "rename_symbol",
+    name: "lsp_rename_symbol",
     description:
-      "Rename a symbol across the codebase using Language Server Protocol",
+      "Rename a symbol across the codebase using LSP. Requires exact position or text target in the specified line.",
     schema,
     execute: async (args) => {
       const result = await handleRenameSymbol(args, client);

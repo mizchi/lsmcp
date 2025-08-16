@@ -118,7 +118,7 @@ pythonVersion = "3.9"
   describe("Diagnostics", () => {
     it("should detect type errors in Python code", async () => {
       const result = await client.callTool({
-        name: "get_diagnostics",
+        name: "lsp_get_diagnostics",
         arguments: {
           root: tmpDir,
           relativePath: "test_errors.py",
@@ -148,7 +148,7 @@ pythonVersion = "3.9"
 
     it("should report no errors for clean Python code", async () => {
       const result = await client.callTool({
-        name: "get_diagnostics",
+        name: "lsp_get_diagnostics",
         arguments: {
           root: tmpDir,
           relativePath: "test_clean.py",
@@ -169,7 +169,7 @@ pythonVersion = "3.9"
 
     it("should get all diagnostics for project", async () => {
       const result = await client.callTool({
-        name: "get_all_diagnostics",
+        name: "lsp_get_all_diagnostics",
         arguments: {
           root: tmpDir,
           pattern: "**/*.py",
@@ -193,7 +193,7 @@ pythonVersion = "3.9"
   describe("Hover Information", () => {
     it("should provide hover information for Python symbols", async () => {
       const result = await client.callTool({
-        name: "get_hover",
+        name: "lsp_get_hover",
         arguments: {
           root: tmpDir,
           relativePath: "test_clean.py",
@@ -216,7 +216,7 @@ pythonVersion = "3.9"
   describe("Definitions", () => {
     it("should find function definitions", async () => {
       const result = await client.callTool({
-        name: "get_definitions",
+        name: "lsp_get_definitions",
         arguments: {
           root: tmpDir,
           relativePath: "test_clean.py",
@@ -239,7 +239,7 @@ pythonVersion = "3.9"
   describe("Document Symbols", () => {
     it("should list all symbols in a Python file", async () => {
       const result = await client.callTool({
-        name: "get_document_symbols",
+        name: "lsp_get_document_symbols",
         arguments: {
           root: tmpDir,
           relativePath: "test_errors.py",
@@ -275,7 +275,7 @@ test_`,
       );
 
       const result = await client.callTool({
-        name: "get_completion",
+        name: "lsp_get_completion",
         arguments: {
           root: tmpDir,
           relativePath: "test_completion.py",

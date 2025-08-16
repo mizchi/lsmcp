@@ -3,7 +3,7 @@ import type { McpToolDef } from "@internal/types";
 import type { SerenityEditResult } from "./regexEditTools.ts";
 import {
   getSymbolIndex,
-  queryLegacySymbols,
+  querySymbolsFromIndex as querySymbols,
   markFileModified,
 } from "@internal/code-indexer";
 import { readFile, writeFile } from "node:fs/promises";
@@ -33,7 +33,7 @@ export const replaceSymbolBodyTool: McpToolDef<typeof replaceSymbolBodySchema> =
         const absolutePath = resolve(root, relativePath);
 
         // Find the symbol using the index
-        const symbols = queryLegacySymbols(index, {
+        const symbols = querySymbols(index, {
           name: namePath.split("/").pop(),
           file: relativePath,
         });
@@ -131,7 +131,7 @@ export const insertBeforeSymbolTool: McpToolDef<
       const absolutePath = resolve(root, relativePath);
 
       // Find the symbol
-      const symbols = queryLegacySymbols(index, {
+      const symbols = querySymbols(index, {
         name: namePath.split("/").pop(),
         file: relativePath,
       });
@@ -209,7 +209,7 @@ export const insertAfterSymbolTool: McpToolDef<typeof insertAfterSymbolSchema> =
         const absolutePath = resolve(root, relativePath);
 
         // Find the symbol
-        const symbols = queryLegacySymbols(index, {
+        const symbols = querySymbols(index, {
           name: namePath.split("/").pop(),
           file: relativePath,
         });

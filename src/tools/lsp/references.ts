@@ -184,8 +184,9 @@ export function createReferencesTool(
   client: LSPClient,
 ): McpToolDef<typeof schema> {
   return {
-    name: "find_references",
-    description: "Find all references to symbol across the codebase using LSP",
+    name: "lsp_find_references",
+    description:
+      "Find all references to a symbol at a specific position using LSP. Requires exact line:column coordinates.",
     schema,
     execute: async (args: z.infer<typeof schema>) => {
       const result = await findReferencesWithLSP(args, client);
@@ -211,130 +212,4 @@ export function createReferencesTool(
   };
 }
 
-// Legacy export - will be removed
-export const lspFindReferencesTool = null as any;
-
 // Skip these tests - they require LSP server and should be run as integration tests
-if (false && import.meta.vitest) {
-  const { describe, it, expect, beforeAll, afterAll } = import.meta.vitest!;
-  const { default: path } = await import("path");
-  const { setupLSPForTest, teardownLSPForTest } = await import(
-    "../../../tests/languages/testHelpers.ts"
-  );
-
-  describe("lspFindReferencesTool", () => {
-    const root = path.resolve(__dirname, "../../../..");
-
-    beforeAll(async () => {
-      await setupLSPForTest(root);
-    }, 30000);
-
-    afterAll(async () => {
-      await teardownLSPForTest();
-    }, 30000);
-
-    it("should have correct tool definition", () => {
-      expect(lspFindReferencesTool.name).toBe("find_references");
-      expect(lspFindReferencesTool.description).toContain("references");
-      expect(lspFindReferencesTool.schema.shape).toBeDefined();
-      expect(lspFindReferencesTool.schema.shape.root).toBeDefined();
-      expect(lspFindReferencesTool.schema.shape.relativePath).toBeDefined();
-      expect(lspFindReferencesTool.schema.shape.line).toBeDefined();
-      expect(lspFindReferencesTool.schema.shape.symbolName).toBeDefined();
-    });
-
-    it("should find references to a type", async () => {
-      const result = await lspFindReferencesTool.execute({
-        root,
-        relativePath: "examples/typescript/types.ts",
-        line: 1,
-        symbolName: "Value",
-      });
-
-      expect(result).toContain("Found");
-      expect(result).toContain("reference");
-    });
-
-    it("should find references to a function", async () => {
-      const result = await lspFindReferencesTool.execute({
-        root,
-        relativePath: "examples/typescript/types.ts",
-        line: 10,
-        symbolName: "getValue",
-      });
-
-      expect(result).toContain("Found");
-      expect(result).toContain("getValue");
-    });
-
-    it("should handle string line matching", async () => {
-      const result = await lspFindReferencesTool.execute({
-        root,
-        relativePath: "examples/typescript/types.ts",
-        line: "ValueWithOptional",
-        symbolName: "ValueWithOptional",
-      });
-
-      expect(result).toContain("ValueWithOptional");
-    });
-
-    it("should handle symbol not found on line", async () => {
-      await expect(
-        lspFindReferencesTool.execute({
-          root,
-          relativePath: "examples/typescript/types.ts",
-          line: 1,
-          symbolName: "nonexistent",
-        }),
-      ).rejects.toThrow('Symbol "nonexistent" not found');
-    });
-
-    it("should handle line not found", async () => {
-      await expect(
-        lspFindReferencesTool.execute({
-          root,
-          relativePath: "examples/typescript/types.ts",
-          line: "nonexistent line",
-          symbolName: "Value",
-        }),
-      ).rejects.toThrow("Line containing");
-    });
-
-    it("should handle file not found", async () => {
-      await expect(
-        lspFindReferencesTool.execute({
-          root,
-          relativePath: "nonexistent.ts",
-          line: 1,
-          symbolName: "test",
-        }),
-      ).rejects.toThrow();
-    });
-
-    it("should include preview context in results", async () => {
-      const result = await lspFindReferencesTool.execute({
-        root,
-        relativePath: "examples/typescript/types.ts",
-        line: 11,
-        symbolName: "v",
-      });
-
-      // Should include preview lines with colon separator
-      expect(result).toContain(":");
-    });
-
-    it("should find references in the same file", async () => {
-      // The Value type is defined and used in types.ts
-      const result = await lspFindReferencesTool.execute({
-        root,
-        relativePath: "examples/typescript/types.ts",
-        line: 1,
-        symbolName: "Value",
-      });
-
-      expect(result).toContain("Found");
-      // Should find references to Value type
-      expect(result).toContain("types.ts");
-    });
-  });
-}

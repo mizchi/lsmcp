@@ -3,8 +3,8 @@ import { performance } from "node:perf_hooks";
 import { join } from "node:path";
 import { readFile, writeFile, mkdir, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { createSearchForPatternTool } from "../src/tools/finder/fileSystemToolsFactory.ts";
-import { createFastSearchForPatternTool } from "../src/tools/finder/fastSearchForPatternTool.ts";
+import { createSearchForPatternTool } from "../src/tools/highlevel/fileSystemToolsFactory.ts";
+import { createFastSearchForPatternTool } from "../src/tools/highlevel/fastSearchForPatternTool.ts";
 
 // Benchmark configurations
 const WARMUP_RUNS = 2;

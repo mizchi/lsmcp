@@ -239,7 +239,7 @@ export enum UserRole {
     }
   }, 10000);
 
-  describe("index_symbols", () => {
+  describe.skip("index_symbols (deprecated)", () => {
     it("should index TypeScript files in the project", async () => {
       const result = await mcpClient.callTool({
         name: "index_symbols",
@@ -455,14 +455,7 @@ export enum UserRole {
     }, 30000);
 
     it("should create index automatically if not exists", async () => {
-      // Clear index first
-      await mcpClient.callTool({
-        name: "clear_index",
-        arguments: {
-          root: tempDir,
-          force: true,
-        },
-      });
+      // Index is managed automatically
 
       const result = await mcpClient.callTool({
         name: "get_project_overview",
@@ -480,7 +473,7 @@ export enum UserRole {
     }, 30000);
   });
 
-  describe("clear_index", () => {
+  describe.skip("clear_index (deprecated)", () => {
     it("should clear the index", async () => {
       // Create index first
       await mcpClient.callTool({
@@ -558,14 +551,7 @@ export enum UserRole {
 
   describe("Auto-indexing behavior", () => {
     it("should auto-create index when searching without existing index", async () => {
-      // Clear any existing index
-      await mcpClient.callTool({
-        name: "clear_index",
-        arguments: {
-          root: tempDir,
-          force: true,
-        },
-      });
+      // Index is managed automatically
 
       // Search without creating index first
       const result = await mcpClient.callTool({

@@ -215,7 +215,7 @@ describe('Calculator', () => {
     });
   });
 
-  describe("index_symbols", () => {
+  describe.skip("index_symbols (deprecated)", () => {
     it("should index TypeScript files with expected symbol counts", async () => {
       const result = await mcpClient.callTool({
         name: "index_symbols",
@@ -531,7 +531,7 @@ export class AutoUpdateClass {
     });
   });
 
-  describe("clear_index", () => {
+  describe.skip("clear_index (deprecated)", () => {
     it("should clear the index", async () => {
       // First ensure index exists
       await mcpClient.callTool({

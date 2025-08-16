@@ -213,15 +213,12 @@ export function createCodeActionsTool(
   client: LSPClient,
 ): McpToolDef<typeof schema> {
   return {
-    name: "get_code_actions",
+    name: "lsp_get_code_actions",
     description:
-      "Get available code actions (quick fixes, refactorings, etc.) for a range in a file using LSP",
+      "Get available code actions (quick fixes, refactorings) for a specific range using LSP. Requires line range specification.",
     schema,
     execute: async (args) => {
       return handleGetCodeActions(args, client);
     },
   };
 }
-
-// Legacy export - will be removed
-export const lspGetCodeActionsTool = null as any;

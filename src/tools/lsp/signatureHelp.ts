@@ -182,15 +182,12 @@ export function createSignatureHelpTool(
   client: LSPClient,
 ): McpToolDef<typeof schema> {
   return {
-    name: "get_signature_help",
+    name: "lsp_get_signature_help",
     description:
-      "Get signature help (parameter hints) for function calls at a specific position using LSP",
+      "Get signature help (parameter hints) for function calls using LSP. Requires exact line:column position within a function call.",
     schema,
     execute: async (args) => {
       return handleGetSignatureHelp(args, client);
     },
   };
 }
-
-// Legacy export - will be removed
-export const lspGetSignatureHelpTool = null as any;

@@ -79,6 +79,14 @@ const { values, positionals } = parseArgs({
       type: "boolean",
       description: "List supported languages and presets",
     },
+    "list-tools": {
+      type: "boolean",
+      description: "List available MCP tools for the current configuration",
+    },
+    disable: {
+      type: "string",
+      description: "Comma-separated list of tools to disable",
+    },
     "auto-index": {
       type: "boolean",
       description: "Automatically build symbol index after init",
@@ -180,6 +188,12 @@ async function mainWithConfigLoader() {
   // List languages if requested
   if (values.list) {
     showListWithConfigLoader(adapterRegistry);
+    process.exit(0);
+  }
+
+  // List tools if requested
+  if (values["list-tools"]) {
+    await listTools(values.preset, values.disable);
     process.exit(0);
   }
 
@@ -342,6 +356,204 @@ async function mainWithConfigLoader() {
       `Configuration error: ${
         error instanceof Error ? error.message : String(error)
       }`,
+    );
+    process.exit(1);
+  }
+}
+
+/**
+ * List available MCP tools based on configuration
+ */
+async function listTools(presetName?: string, disableList?: string) {
+  console.log("\n🛠️  Available MCP Tools\n");
+
+  // Parse disable list
+  const disabledTools = disableList
+    ? disableList.split(",").map((t) => t.trim())
+    : [];
+
+  try {
+    // If no preset specified, try to load from config file
+    let config: any = null;
+
+    if (!presetName) {
+      // Check for .lsmcp/config.json
+      const configPath = join(process.cwd(), ".lsmcp", "config.json");
+      if (existsSync(configPath)) {
+        const result = await lspConfigLoader.load({ configFile: configPath });
+        config = result.config;
+        console.log(`Loading tools from: ${configPath}\n`);
+      } else {
+        // No preset and no config - show all tools
+        console.log("No preset specified. Showing all available tools.\n");
+        console.log(
+          "To see preset-specific tools, use: lsmcp --list-tools -p <preset>\n",
+        );
+      }
+    } else {
+      // Load preset configuration
+      const result = await lspConfigLoader.load({ preset: presetName });
+      config = result.config;
+      console.log(`Preset: ${presetName}\n`);
+    }
+
+    // Import tool lists
+    const { getAllAvailableTools } = await import("../tools/getAllTools.ts");
+    const { filterUnsupportedTools } = await import("../utils/toolFilters.ts");
+
+    // Get all available tools
+    const allTools = await getAllAvailableTools(config);
+
+    // Apply filtering based on preset's disable list and user's disable list
+    let filteredTools = allTools;
+
+    // Apply preset's disable list
+    if (config?.disable && config.disable.length > 0) {
+      filteredTools = filterUnsupportedTools(filteredTools, config.disable);
+      console.log(`Preset disabled tools: ${config.disable.join(", ")}\n`);
+    }
+
+    // Apply user's disable list
+    if (disabledTools.length > 0) {
+      filteredTools = filterUnsupportedTools(filteredTools, disabledTools);
+      console.log(`User disabled tools: ${disabledTools.join(", ")}\n`);
+    }
+
+    // If preset has capabilities, filter by them
+    if (presetName && config) {
+      // Try to get capabilities for the preset
+      try {
+        const { getCapabilitiesForPreset } = await import(
+          "../utils/capabilityChecker.ts"
+        );
+        const capabilities = await getCapabilitiesForPreset(config);
+
+        if (capabilities) {
+          const { filterToolsByCapabilities } = await import(
+            "../utils/toolFilters.ts"
+          );
+          const beforeCount = filteredTools.length;
+          filteredTools = filterToolsByCapabilities(
+            filteredTools,
+            capabilities,
+          );
+          const removedCount = beforeCount - filteredTools.length;
+
+          if (removedCount > 0) {
+            console.log(
+              `Filtered ${removedCount} tools based on LSP capabilities\n`,
+            );
+          }
+        }
+      } catch (error) {
+        // Capabilities check failed - continue without filtering
+        debugLog(`Failed to get capabilities: ${error}`);
+      }
+    }
+
+    // Group tools by category
+    const categories: Record<string, typeof filteredTools> = {
+      "Project Analysis": [],
+      "Symbol Search": [],
+      "Code Navigation": [],
+      "Code Editing": [],
+      Diagnostics: [],
+      "Code Completion": [],
+      "Memory System": [],
+      "File System": [],
+      Other: [],
+    };
+
+    // Categorize tools
+    for (const tool of filteredTools) {
+      const name = tool.name;
+
+      if (
+        name.includes("project_overview") ||
+        name === "lsp_check_capabilities"
+      ) {
+        categories["Project Analysis"].push(tool);
+      } else if (
+        name === "find_symbols" ||
+        name.includes("search_symbol") ||
+        name.includes("get_symbols") ||
+        name.includes("query_symbols") ||
+        name.includes("find_file")
+      ) {
+        categories["Symbol Search"].push(tool);
+      } else if (
+        name.includes("lsp_find_references") ||
+        name.includes("lsp_get_definitions") ||
+        name.includes("lsp_get_hover")
+      ) {
+        categories["Code Navigation"].push(tool);
+      } else if (
+        name.includes("lsp_rename") ||
+        name.includes("lsp_delete") ||
+        name.includes("replace") ||
+        name.includes("insert") ||
+        name.includes("lsp_format")
+      ) {
+        categories["Code Editing"].push(tool);
+      } else if (
+        name === "get_diagnostics" ||
+        name.includes("lsp_get_diagnostics") ||
+        name.includes("lsp_get_all_diagnostics")
+      ) {
+        categories["Diagnostics"].push(tool);
+      } else if (
+        name.includes("lsp_get_completion") ||
+        name.includes("lsp_get_signature")
+      ) {
+        categories["Code Completion"].push(tool);
+      } else if (
+        name.includes("lsp_get_document_symbols") ||
+        name.includes("lsp_get_workspace_symbols") ||
+        name.includes("lsp_get_code_actions")
+      ) {
+        categories["Code Navigation"].push(tool);
+      } else if (name.includes("memory") || name.includes("onboarding")) {
+        categories["Memory System"].push(tool);
+      } else if (
+        name.includes("list_dir") ||
+        name.includes("search_for_pattern")
+      ) {
+        categories["File System"].push(tool);
+      } else {
+        categories["Other"].push(tool);
+      }
+    }
+
+    // Display tools by category
+    let totalTools = 0;
+    for (const [category, tools] of Object.entries(categories)) {
+      if (tools.length === 0) continue;
+
+      console.log(`${category}:`);
+      for (const tool of tools) {
+        const description = tool.description
+          ? tool.description.split("\n")[0].substring(0, 70) +
+            (tool.description.length > 70 ? "..." : "")
+          : "";
+        console.log(`  • ${tool.name}`);
+        if (description) {
+          console.log(`    ${description}`);
+        }
+      }
+      console.log();
+      totalTools += tools.length;
+    }
+
+    console.log(`Total: ${totalTools} tools available`);
+
+    // Show disabled tools count
+    const disabledCount = allTools.length - filteredTools.length;
+    if (disabledCount > 0) {
+      console.log(`(${disabledCount} tools disabled or filtered)\n`);
+    }
+  } catch (error) {
+    errorLog(
+      `Error listing tools: ${error instanceof Error ? error.message : String(error)}`,
     );
     process.exit(1);
   }

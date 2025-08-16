@@ -164,17 +164,13 @@ export function createWorkspaceSymbolsTool(
   client: LSPClient,
 ): McpToolDef<typeof schema> {
   return {
-    name: "get_workspace_symbols",
+    name: "lsp_get_workspace_symbols",
     description:
-      "Search for symbols (classes, functions, variables, etc.) across the entire workspace using LSP. " +
-      "Note: This feature may not be supported by all language servers. " +
-      "TypeScript/JavaScript support is temporarily disabled.",
+      "Search for symbols across the entire workspace using LSP. " +
+      "Note: Feature availability depends on language server support.",
     schema,
     execute: async (args) => {
       return handleGetWorkspaceSymbols(args, client);
     },
   };
 }
-
-// Legacy export - will be removed
-export const lspGetWorkspaceSymbolsTool = null as any;

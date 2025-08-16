@@ -2,11 +2,11 @@ export * from "./editor/symbolEditTools.ts";
 export * from "./editor/regexEditTools.ts";
 export * from "./memory/memoryTools.ts";
 // Internal tools - not exported
-export * from "./finder/fileSystemTools.ts";
-export * from "./finder/symbolTools.ts";
-export * from "./finder/indexTools.ts";
-export * from "./finder/externalLibraryTools.ts";
-export * from "./finder/symbolResolverTools.ts";
+export * from "./highlevel/fileSystemTools.ts";
+export * from "./highlevel/symbolTools.ts";
+export * from "./highlevel/indexTools.ts";
+export * from "./highlevel/externalLibraryTools.ts";
+export * from "./highlevel/symbolResolverTools.ts";
 
 // Re-export all tools as a collection
 import type { McpToolDef } from "@internal/types";
@@ -27,22 +27,22 @@ import {
   listDirTool,
   findFileTool,
   searchForPatternTool,
-} from "./finder/fileSystemTools.ts";
+} from "./highlevel/fileSystemTools.ts";
 import {
   getSymbolsOverviewTool,
   querySymbolsTool,
-} from "./finder/symbolTools.ts";
-import { indexFilesTool } from "./finder/indexTools.ts";
+} from "./highlevel/symbolTools.ts";
+// indexFilesTool removed - using internal indexing functions
 import {
   indexExternalLibrariesToolDef,
   getTypescriptDependenciesToolDef,
   searchExternalLibrarySymbolsToolDef,
-} from "./finder/externalLibraryTools.ts";
+} from "./highlevel/externalLibraryTools.ts";
 import {
   resolveSymbolToolDef,
   getAvailableExternalSymbolsToolDef,
   parseImportsToolDef,
-} from "./finder/symbolResolverTools.ts";
+} from "./highlevel/symbolResolverTools.ts";
 
 // Core tools that are always available
 const coreTools = {
@@ -67,8 +67,7 @@ const coreTools = {
   getSymbolsOverview: getSymbolsOverviewTool,
   querySymbols: querySymbolsTool,
 
-  // Index tools
-  indexFiles: indexFilesTool,
+  // Index tools removed - indexing is now automatic
 };
 
 // Language-specific tools
@@ -122,25 +121,6 @@ export function getSerenityTools(config?: {
 
   return tools;
 }
-
-// Legacy exports for backward compatibility
-export const serenityTools = {
-  ...coreTools,
-  // External library tools - included for backward compatibility
-  // but should be enabled via config in new code
-  indexExternalLibraries: indexExternalLibrariesToolDef,
-  getTypescriptDependencies: getTypescriptDependenciesToolDef,
-  searchExternalLibrarySymbols: searchExternalLibrarySymbolsToolDef,
-
-  // Symbol resolver tools
-  resolveSymbol: resolveSymbolToolDef,
-  getAvailableExternalSymbols: getAvailableExternalSymbolsToolDef,
-  parseImports: parseImportsToolDef,
-};
-
-// Export as a list for easy registration
-export const serenityToolsList: McpToolDef<any>[] =
-  Object.values(serenityTools);
 
 /**
  * Get Serenity tools list based on configuration

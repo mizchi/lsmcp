@@ -193,15 +193,12 @@ export function createDocumentSymbolsTool(
   client: LSPClient,
 ): McpToolDef<typeof schema> {
   return {
-    name: "get_document_symbols",
+    name: "lsp_get_document_symbols",
     description:
-      "Get all symbols (functions, classes, variables, etc.) in a document using LSP",
+      "Get all symbols in a document using LSP. Returns structured symbol hierarchy for the entire file.",
     schema,
     execute: async (args) => {
       return handleGetDocumentSymbols(args, client);
     },
   };
 }
-
-// Legacy export - will be removed
-export const lspGetDocumentSymbolsTool = null as any;

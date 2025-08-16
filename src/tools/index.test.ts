@@ -78,7 +78,7 @@ describe("Configurable Language Features", () => {
 
       // Count total tools
       const toolCount = Object.keys(tools).length;
-      const coreToolCount = 14; // Number of core tools
+      const coreToolCount = 13; // Number of core tools (reduced after consolidation)
       const typescriptToolCount = 6; // Number of TypeScript-specific tools
 
       expect(toolCount).toBe(coreToolCount + typescriptToolCount);
@@ -129,33 +129,6 @@ describe("Configurable Language Features", () => {
 
       // TypeScript adds 6 tools
       expect(typescriptEnabledTools.length).toBe(noConfigTools.length + 6);
-    });
-  });
-
-  describe("Backward Compatibility", () => {
-    it("should maintain legacy serenityTools export", async () => {
-      // Dynamic import to test the export
-      const { serenityTools } = await import("./index.ts");
-
-      // Legacy export should include all tools for backward compatibility
-      expect(serenityTools.indexExternalLibraries).toBeDefined();
-      expect(serenityTools.getTypescriptDependencies).toBeDefined();
-      expect(serenityTools.searchExternalLibrarySymbols).toBeDefined();
-      expect(serenityTools.resolveSymbol).toBeDefined();
-      expect(serenityTools.getAvailableExternalSymbols).toBeDefined();
-      expect(serenityTools.parseImports).toBeDefined();
-    });
-
-    it("should maintain legacy serenityToolsList export", async () => {
-      const { serenityToolsList } = await import("./index.ts");
-
-      // Should be an array
-      expect(Array.isArray(serenityToolsList)).toBe(true);
-
-      // Should include TypeScript tools for backward compatibility
-      const toolNames = serenityToolsList.map((t) => t.name);
-      expect(toolNames).toContain("index_external_libraries");
-      expect(toolNames).toContain("search_external_library_symbols");
     });
   });
 });

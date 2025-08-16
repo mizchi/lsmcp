@@ -50,7 +50,7 @@ describe("LSP Diagnostics - Stale Content Issue #8", () => {
 
     // Try to get diagnostics to ensure LSP is ready
     await client.callTool({
-      name: "get_diagnostics",
+      name: "lsp_get_diagnostics",
       arguments: {
         root: tmpDir,
         relativePath: "warmup.ts",
@@ -96,7 +96,7 @@ function foo(): string {
 
     while (attempts < 5 && !hasErrors) {
       result = (await client.callTool({
-        name: "get_diagnostics",
+        name: "lsp_get_diagnostics",
         arguments: {
           root: tmpDir,
           relativePath: testFile,
@@ -147,7 +147,7 @@ function foo(): string {
 
     // First check - should have error
     let result = (await client.callTool({
-      name: "get_diagnostics",
+      name: "lsp_get_diagnostics",
       arguments: {
         root: tmpDir,
         relativePath: testFile,
@@ -169,7 +169,7 @@ function foo(): string {
 
     // Second check - should have no errors
     result = (await client.callTool({
-      name: "get_diagnostics",
+      name: "lsp_get_diagnostics",
       arguments: {
         root: tmpDir,
         relativePath: testFile,
@@ -202,7 +202,7 @@ function foo(): string {
       await new Promise((resolve) => setTimeout(resolve, 200));
 
       const result = (await client.callTool({
-        name: "get_diagnostics",
+        name: "lsp_get_diagnostics",
         arguments: {
           root: tmpDir,
           relativePath: testFile,
@@ -241,7 +241,7 @@ function foo(): string {
     const results = (await Promise.all(
       files.map((file) =>
         client.callTool({
-          name: "get_diagnostics",
+          name: "lsp_get_diagnostics",
           arguments: {
             root: tmpDir,
             relativePath: file.name,
@@ -280,7 +280,7 @@ function foo(): string {
 
     // Check TypeScript file - should have error
     const tsResult = (await client.callTool({
-      name: "get_diagnostics",
+      name: "lsp_get_diagnostics",
       arguments: {
         root: tmpDir,
         relativePath: tsFile,
@@ -291,7 +291,7 @@ function foo(): string {
 
     // Check JavaScript file - should have no errors
     const jsResult = (await client.callTool({
-      name: "get_diagnostics",
+      name: "lsp_get_diagnostics",
       arguments: {
         root: tmpDir,
         relativePath: jsFile,

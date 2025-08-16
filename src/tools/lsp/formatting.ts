@@ -174,15 +174,12 @@ export function createFormatDocumentTool(
   client: LSPClient,
 ): McpToolDef<typeof schema> {
   return {
-    name: "format_document",
+    name: "lsp_format_document",
     description:
-      "Format an entire document using the language server's formatting provider",
+      "Format an entire document using LSP's formatting provider. Applies language-specific formatting rules.",
     schema,
     execute: async (args) => {
       return handleFormatDocument(args, client);
     },
   };
 }
-
-// Legacy export - will be removed
-export const lspFormatDocumentTool = null as any;

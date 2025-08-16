@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { performance } from "node:perf_hooks";
-import { createSearchForPatternTool } from "../../../src/tools/finder/fileSystemToolsFactory.ts";
+import { createSearchForPatternTool } from "../../../src/tools/highlevel/fileSystemToolsFactory.ts";
 
 describe("search_for_pattern performance", () => {
   it("should complete search within reasonable time", async () => {

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { performance } from "node:perf_hooks";
-import { createSearchForPatternTool } from "../src/tools/finder/fileSystemToolsFactory.ts";
-import { createFastSearchForPatternTool } from "../src/tools/finder/fastSearchForPatternTool.ts";
+import { createSearchForPatternTool } from "../src/tools/highlevel/fileSystemToolsFactory.ts";
+import { createFastSearchForPatternTool } from "../src/tools/highlevel/fastSearchForPatternTool.ts";
 
 async function main() {
   console.log("🚀 Fast Search Pattern Benchmark\n");

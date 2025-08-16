@@ -63,18 +63,18 @@ export { loadIndexConfig } from "./config/configLoader.ts";
 export { markFileModified } from "./utils/autoIndex.ts";
 
 /**
- * Legacy indexer facade (stateful; used by some tools and reports)
+ * Indexer facade (stateful; used by some tools and reports)
  */
 export {
   getSymbolIndex,
   clearSymbolIndex,
-  querySymbols as queryLegacySymbols,
+  querySymbols as querySymbolsFromIndex,
   queryExternalLibrarySymbols,
   getTypescriptDependencies,
 } from "./symbolIndex.ts";
 export type { SymbolIndexState, SymbolEntry } from "./symbolIndex.ts";
 
-// External library indexing (legacy/stateful and provider-level)
+// External library indexing (stateful and provider-level)
 export { indexExternalLibrariesForState } from "./symbolIndex.ts";
 export { indexExternalLibraries } from "./providers/externalLibraryProvider.ts";
 
