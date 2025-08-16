@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { join, relative } from "node:path";
+import { join } from "node:path";
 import { glob as gitawareGlob, type FileSystemInterface } from "gitaware-glob";
 import type { FileSystemApi } from "@internal/types";
 import { nodeFileSystemApi } from "../../infrastructure/NodeFileSystemApi.ts";
@@ -112,99 +112,6 @@ export function createListDirTool(
         }
 
         return output;
-      } catch (error) {
-        return JSON.stringify({
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
-    },
-  };
-}
-
-const findFileSchema = z.object({
-  fileMask: z
-    .string()
-    .describe(
-      "The filename or file mask (using the wildcards * or ?) to search for.",
-    ),
-  relativePath: z
-    .string()
-    .describe(
-      'The relative path to the directory to search in; pass "." to scan the project root.',
-    ),
-});
-
-export function createFindFileTool(
-  fileSystemApi: FileSystemApi = nodeFileSystemApi,
-): McpToolDef<typeof findFileSchema> {
-  return {
-    name: "find_file",
-    description:
-      "Finds non-gitignored files matching the given file mask within the given relative path. Returns a JSON object with the list of matching files.",
-    schema: findFileSchema,
-    execute: async ({ fileMask, relativePath }) => {
-      try {
-        const rootPath = process.cwd();
-        const searchPath = join(rootPath, relativePath);
-
-        if (!(await fileSystemApi.exists(searchPath))) {
-          return JSON.stringify({
-            error: `Directory not found: ${relativePath}`,
-          });
-        }
-
-        const stats = await fileSystemApi.stat(searchPath);
-        if (!stats.isDirectory()) {
-          return JSON.stringify({
-            error: `Path is not a directory: ${relativePath}`,
-          });
-        }
-
-        // Convert file mask to a gitaware-glob pattern
-        const globPattern = fileMask.includes("/")
-          ? join(relativePath, fileMask)
-          : join(relativePath, "**", fileMask);
-
-        // Handle different FileSystemApi implementations
-        const globOptions: {
-          cwd: string;
-          ignore: string[];
-          fs?: FileSystemInterface;
-        } = {
-          cwd: rootPath,
-          ignore: [
-            "**/node_modules/**",
-            "**/.git/**",
-            "**/dist/**",
-            "**/build/**",
-            "**/.next/**",
-            "**/.nuxt/**",
-            "**/coverage/**",
-            "**/.nyc_output/**",
-            "**/.cache/**",
-            "**/tmp/**",
-            "**/temp/**",
-            "**/.DS_Store",
-            "**/*.log",
-          ],
-        };
-
-        // If not using nodeFileSystemApi, provide fs option for gitaware-glob
-        if (fileSystemApi !== nodeFileSystemApi) {
-          // Create a compatible fs interface for gitaware-glob
-          globOptions.fs = fileSystemApi as unknown as FileSystemInterface;
-        }
-
-        const matches = [];
-        for await (const file of gitawareGlob(globPattern, globOptions)) {
-          matches.push(file);
-        }
-
-        const result = {
-          files: matches.map((file) => relative(relativePath, file)),
-        };
-
-        return JSON.stringify(result, null, 2);
       } catch (error) {
         return JSON.stringify({
           error: error instanceof Error ? error.message : String(error),

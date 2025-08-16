@@ -20,7 +20,6 @@
   - [ ] Consider reducing code as much as possible within the range where tests pass
 
 - [x] fix: directories: [] not displayed when list_dir is not recursive
-- [x] search_for_pattern is slow. Reconsider implementation approach - Optimized with parallel processing and early exits
 
 ---
 

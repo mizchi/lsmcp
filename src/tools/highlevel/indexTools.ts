@@ -337,11 +337,11 @@ export const searchSymbolsTool: McpToolDef<typeof searchSymbolSchema> = {
         output += `   Details: ${symbol.detail}\n`;
       }
 
-      // Add LSP tool guidance for this result
-      output += `\n   Use these LSP tools for further operations:\n`;
-      output += `   • View definition: lsp_get_definitions --root "${rootPath}" --relativePath "${relativePath}" --line ${line} --column ${column - 1}\n`;
-      output += `   • Find references: lsp_find_references --root "${rootPath}" --relativePath "${relativePath}" --line ${line} --symbolName "${symbol.name}"\n`;
-      output += `   • Get type info: lsp_get_hover --root "${rootPath}" --relativePath "${relativePath}" --line ${line} --character ${column - 1}\n`;
+      // Add tool guidance with get_symbol_details as primary recommendation
+      output += `\n   Use get_symbol_details for comprehensive information:\n`;
+      output += `   • mcp__lsmcp__get_symbol_details --root "${rootPath}" --relativePath "${relativePath}" --line ${line} --symbol "${symbol.name}"\n`;
+      output += `\n   Or use specific LSP tools for targeted operations:\n`;
+      output += `   • View definition: lsp_get_definitions --root "${rootPath}" --relativePath "${relativePath}" --line ${line} --symbolName "${symbol.name}" --includeBody true\n`;
       output += `   • Rename symbol: lsp_rename_symbol --root "${rootPath}" --relativePath "${relativePath}" --line ${line} --textTarget "${symbol.name}" --newName "NEW_NAME"\n`;
       output += `\n`;
     }

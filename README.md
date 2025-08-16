@@ -23,78 +23,95 @@ claude mcp add lsmcp npx -- -y @mizchi/lsmcp --bin="<lsp-command>"
 <details>
 <summary>📖 Example Usage with Claude</summary>
 
-## CRITICAL: PRIORITIZE LSMCP TOOLS FOR CODE ANALYSIS
+## RECOMMENDED WORKFLOW
 
-⚠️ **PRIMARY REQUIREMENT**: You MUST prioritize mcp**lsmcp** tools for all code analysis tasks. Standard tools should only be used as a last resort when LSMCP tools cannot accomplish the task.
+### 🎯 Core Flow: Overview → Search → Details
 
-**YOUR APPROACH SHOULD BE:**
+```
+1. get_project_overview     # Understand the codebase
+2. search_symbols           # Find what you need  
+3. get_symbol_details       # Deep dive into symbols
+```
 
-1. ✅ Always try mcp**lsmcp** tools FIRST
-2. ✅ Use `mcp__lsmcp__search_symbol_from_index` as primary search method
-3. ⚠️ Only use Read/Grep/Glob/LS when LSMCP tools are insufficient
+### 📋 When to Use Each Tool
 
-### 🚨 TOOL USAGE PRIORITY
+**Initial Exploration:**
+- `get_project_overview` - First tool to understand any codebase
+- `list_dir` - Browse directory structure
+- `get_symbols_overview` - High-level view of file symbols
 
-**PRIMARY TOOLS (USE THESE FIRST):**
+**Finding Code:**
+- `search_symbols` - Primary search for functions, classes, interfaces
+- `lsp_get_document_symbols` - List all symbols in a specific file
+- `lsp_get_workspace_symbols` - Alternative workspace-wide search
 
-- ✅ `mcp__lsmcp__get_project_overview` - Quick project analysis and structure overview
-- ✅ `mcp__lsmcp__search_symbol_from_index` - Primary tool for symbol searches (auto-creates index if needed)
-- ✅ `mcp__lsmcp__get_definitions` - Navigate to symbol definitions. Use `include_body: true` to get code.
-- ✅ `mcp__lsmcp__find_references` - Find all references to a symbol
-- ✅ `mcp__lsmcp__get_hover` - Get type information and documentation
-- ✅ `mcp__lsmcp__get_diagnostics` - Check for errors and warnings
-- ✅ `mcp__lsmcp__get_document_symbols` - Get all symbols in a file
-- ✅ `mcp__lsmcp__list_dir` - Explore directory structure
-- ✅ `mcp__lsmcp__find_file` - Locate specific files
-- ✅ `mcp__lsmcp__search_for_pattern` - Search for text patterns
-- ✅ `mcp__lsmcp__get_index_stats_from_index` - View index statistics
-- ✅ `mcp__lsmcp__index_files` - Manually index files (optional)
-- ✅ `mcp__lsmcp__clear_index` - Clear and rebuild index (optional)
+**Understanding Code:**
+- `get_symbol_details` - Complete information in one call (recommended)
+- `lsp_get_definitions` - Jump to definition (use `includeBody: true` for full code)
+- `lsp_find_references` - Find all usages
+- `lsp_get_hover` - Quick type information
 
-### WORKFLOW
+**Code Quality:**
+- `lsp_get_diagnostics` - Check for errors
+- `lsp_get_code_actions` - Get available fixes
 
-1. **START WITH PROJECT OVERVIEW**
+**Code Modification:**
+- `lsp_rename_symbol` - Safe renaming across codebase
+- `lsp_format_document` - Format code
+- `replace_range` / `replace_regex` - Text replacements
 
-   ```
-   mcp__lsmcp__get_project_overview
-   ```
+### Example Workflows
 
-   Get a quick understanding of:
+**1. EXPLORING A NEW CODEBASE**
+```
+1. mcp__lsmcp__get_project_overview
+   → Understand structure, main components, statistics
+2. mcp__lsmcp__search_symbols --kind "class"
+   → Find all classes in the project
+3. mcp__lsmcp__get_symbol_details --symbol "MainClass"
+   → Deep dive into specific class implementation
+```
 
-   - Project structure and type
-   - Key components (interfaces, functions, classes)
-   - Statistics and dependencies
-   - Directory organization
+**2. INVESTIGATING A BUG**
+```
+1. mcp__lsmcp__search_symbols --name "problematicFunction"
+   → Locate the function
+2. mcp__lsmcp__get_symbol_details --symbol "problematicFunction"
+   → Understand its type, implementation, and usage
+3. mcp__lsmcp__lsp_find_references --symbolName "problematicFunction"
+   → See all places it's called
+4. mcp__lsmcp__lsp_get_diagnostics --relativePath "path/to/file.ts"
+   → Check for errors
+```
 
-2. **SEARCH FOR SPECIFIC SYMBOLS**
+**3. REFACTORING CODE**
+```
+1. mcp__lsmcp__search_symbols --name "oldMethodName"
+   → Find the method to refactor
+2. mcp__lsmcp__get_symbol_details --symbol "oldMethodName"
+   → Understand current implementation and usage
+3. mcp__lsmcp__lsp_rename_symbol --symbolName "oldMethodName" --newName "newMethodName"
+   → Safely rename across codebase
+4. mcp__lsmcp__lsp_format_document --relativePath "path/to/file.ts"
+   → Clean up formatting
+```
 
-   ```
-   mcp__lsmcp__search_symbol_from_index
-   ```
-
-   The tool automatically:
-
-   - Creates index if it doesn't exist
-   - Updates index with incremental changes
-   - Performs your search
-
-3. **CODE EXPLORATION**
-
-   - Search symbols: `mcp__lsmcp__search_symbol_from_index`
-   - List directories: `mcp__lsmcp__list_dir`
-   - Find files: `mcp__lsmcp__find_file`
-   - Get file symbols: `mcp__lsmcp__get_document_symbols`
-
-4. **CODE ANALYSIS**
-   - Find definitions: `mcp__lsmcp__get_definitions`
-   - Find references: `mcp__lsmcp__find_references`
-   - Get type info: `mcp__lsmcp__get_hover`
-   - Check errors: `mcp__lsmcp__get_diagnostics`
+**4. ADDING NEW FEATURES**
+```
+1. mcp__lsmcp__get_project_overview
+   → Understand existing architecture
+2. mcp__lsmcp__search_symbols --kind "interface"
+   → Find relevant interfaces to implement
+3. mcp__lsmcp__get_symbol_details --symbol "IUserService"
+   → Understand interface requirements
+4. mcp__lsmcp__lsp_get_completion --line 50
+   → Get suggestions while writing new code
+```
 
 **FALLBACK TOOLS (USE ONLY WHEN NECESSARY):**
 
 - ⚠️ `Read` - Only when you need to see non-code files or LSMCP tools fail
-- ⚠️ `Grep` - Only for quick searches when LSMCP search is insufficient
+- ⚠️ `Grep` - For text pattern searches in files
 - ⚠️ `Glob` - Only when LSMCP file finding doesn't work
 - ⚠️ `LS` - Only for basic directory listing when LSMCP fails
 - ⚠️ `Bash` commands - Only for non-code operations or troubleshooting
@@ -113,14 +130,12 @@ Use standard tools ONLY in these situations:
 
 You have access to project memories stored in `.lsmcp/memories/`. Use these tools:
 
-- `list_memories` - List available memory files
-- `read_memory` - Read specific memory content
-- `write_memory` - Create or update memories
+- `mcp__lsmcp__list_memories` - List available memory files
+- `mcp__lsmcp__read_memory` - Read specific memory content
+- `mcp__lsmcp__write_memory` - Create or update memories
+- `mcp__lsmcp__delete_memory` - Delete a memory file
 
 Memories contain important project context, conventions, and guidelines that help maintain consistency.
-
-The context and modes of operation are described below. From them you can infer how to interact with your user
-and which tasks and kinds of interactions are expected of you.
 
 </details>
 
@@ -163,38 +178,44 @@ Note: Tool names listed below are the raw MCP tool names (snake_case, e.g. get_h
 
 ### Core LSP Tools
 
-- **get_hover** - Get type information and documentation for symbols
-- **find_references** - Find all references to a symbol across the codebase
-- **get_definitions** - Navigate to symbol definitions with optional code body
-- **get_diagnostics** - Check for errors and warnings in files
-- **get_all_diagnostics** - Get diagnostics for entire project
-- **get_document_symbols** - List all symbols in a file
-- **get_workspace_symbols** - Search symbols across the entire workspace
-- **get_completion** - Get code completion suggestions
-- **get_signature_help** - Get parameter hints for function calls
-- **format_document** - Format entire documents using language server
-- **check_capabilities** - Check supported LSP features
+- **lsp_get_hover** - Get type information and documentation for symbols
+- **lsp_find_references** - Find all references to a symbol across the codebase
+- **lsp_get_definitions** - Navigate to symbol definitions with optional code body
+- **lsp_get_diagnostics** - Check for errors and warnings in files
+- **lsp_get_all_diagnostics** - Get diagnostics for entire project
+- **lsp_get_document_symbols** - List all symbols in a file
+- **lsp_get_workspace_symbols** - Search symbols across the entire workspace
+- **lsp_get_completion** - Get code completion suggestions
+- **lsp_get_signature_help** - Get parameter hints for function calls
+- **lsp_format_document** - Format entire documents using language server
+- **lsp_rename_symbol** - Rename symbols across the codebase
+- **lsp_get_code_actions** - Get available quick fixes and refactorings
+- **lsp_delete_symbol** - Delete a symbol and optionally all its references
+- **lsp_check_capabilities** - Check supported LSP features
 
-### Symbol Index Tools
+### High-Level Tools
 
-- **index_symbols** - Smart incremental indexing with auto-updates
-- **search_symbol_from_index** - Fast symbol search using pre-built index
-- **get_index_stats_from_index** - View index statistics and performance
-- **clear_index** - Clear and rebuild symbol index
 - **get_project_overview** - Quick project structure and component analysis
+- **search_symbols** - Fast symbol search using pre-built index (auto-creates index if needed)
+- **get_symbol_details** - Get comprehensive details about a symbol (hover, definition, references)
+
+### External Library Tools
+
+- **index_external_libraries** - Index TypeScript declaration files from node_modules
+- **get_typescript_dependencies** - List available TypeScript dependencies
+- **search_external_library_symbols** - Search symbols in indexed external libraries
+- **resolve_symbol** - Resolve symbols to their definitions in external libraries
+- **get_available_external_symbols** - Get symbols available from imported libraries
+- **parse_imports** - Parse and analyze import statements
 
 ### Code Editing Tools
 
-- **replace_symbol_body** - Replace entire symbol implementations
-- **insert_before_symbol** - Insert code before symbols
-- **insert_after_symbol** - Insert code after symbols
+- **replace_range** - Replace specific text ranges in files
 - **replace_regex** - Advanced regex-based replacements
 
 ### File System Tools
 
 - **list_dir** - List directories with gitignore support
-- **find_file** - Find files by pattern
-- **search_for_pattern** - Search text patterns in codebase
 - **get_symbols_overview** - High-level symbol overview by file
 
 ### Memory Management

@@ -19,7 +19,7 @@ import {
   deleteMemoryTool,
 } from "./memory/memoryTools.ts";
 // Internal tools - not exported as MCP tools
-import { listDirTool, findFileTool } from "./highlevel/fileSystemTools.ts";
+import { listDirTool } from "./highlevel/fileSystemTools.ts";
 import { getSymbolsOverviewTool } from "./highlevel/symbolTools.ts";
 // indexFilesTool removed - using internal indexing functions
 import {
@@ -47,7 +47,6 @@ const coreTools = {
 
   // File system tools
   listDir: listDirTool,
-  findFile: findFileTool,
 
   // Symbol overview tools
   getSymbolsOverview: getSymbolsOverviewTool,

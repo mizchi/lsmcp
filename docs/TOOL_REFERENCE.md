@@ -4,7 +4,7 @@ This document enumerates all MCP tools provided by lsmcp, grouped by module boun
 
 Naming conventions
 
-- Actual tool names are snake_case ToolDef.name values (for example, get_hover, search_symbol_from_index).
+- Actual tool names are snake_case ToolDef.name values (for example, lsp_get_hover, search_symbols).
 - Some MCP clients (for example, Claude) display tools as mcp**lsmcp**get_hover. That is the client’s server-qualified name. When referring to tool names in documentation or configuration, use the raw tool name without any prefix (for example, get_hover).
 - Source references in this document link to the implementation files.
   - LSP tools: [`src/lsp/tools/`](src/lsp/tools)
@@ -115,7 +115,7 @@ Source: aggregator [`src/mcp/tools/index.ts`](src/mcp/tools/index.ts)
     - Args: root, relativePath, regex, repl, allowMultipleOccurrences?
     - Source: [`src/mcp/tools/regexEditTools.ts`](src/mcp/tools/regexEditTools.ts)
 - File system helpers
-  - list_dir, find_file, search_for_pattern
+  - list_dir
   - Source: [`src/mcp/tools/fileSystemTools.ts`](src/mcp/tools/fileSystemTools.ts)
 - Memory management
   - list_memories, read_memory, write_memory, delete_memory

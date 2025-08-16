@@ -14,7 +14,6 @@ describe("Configurable Language Features", () => {
       expect(tools.writeMemory).toBeDefined();
       expect(tools.deleteMemory).toBeDefined();
       expect(tools.listDir).toBeDefined();
-      expect(tools.findFile).toBeDefined();
       expect(tools.getSymbolsOverview).toBeDefined();
       // querySymbols removed - functionality now in search_symbols tool
 
@@ -75,7 +74,7 @@ describe("Configurable Language Features", () => {
 
       // Count total tools
       const toolCount = Object.keys(tools).length;
-      const coreToolCount = 9; // Number of core tools (removed searchForPattern and 3 symbol tools, added replaceRange)
+      const coreToolCount = 8; // Number of core tools (removed findFile, searchForPattern and 3 symbol tools, added replaceRange)
       const typescriptToolCount = 6; // Number of TypeScript-specific tools
 
       expect(toolCount).toBe(coreToolCount + typescriptToolCount);
