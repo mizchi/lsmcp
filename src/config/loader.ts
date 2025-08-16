@@ -285,6 +285,7 @@ export class ConfigLoader {
             name: preset.name || preset.presetId,
             bin: preset.bin,
             args: preset.args || [],
+            binFindStrategy: preset.binFindStrategy,
             baseLanguage: preset.baseLanguage,
             initializationOptions: preset.initializationOptions,
             serverCharacteristics: preset.serverCharacteristics,
@@ -298,6 +299,12 @@ export class ConfigLoader {
           // Merge preset config first, then user config on top
           // Use spread to preserve all extended fields
           merged = { ...presetConfig, ...parsed };
+
+          // If user explicitly set bin in config, remove binFindStrategy from preset
+          // This ensures user's bin takes precedence over preset's binFindStrategy
+          if (parsed.bin) {
+            merged.binFindStrategy = undefined;
+          }
 
           // Special handling for languageFeatures - preserve preset's if not overridden
           if (presetConfig.languageFeatures) {
@@ -341,6 +348,7 @@ export class ConfigLoader {
             description: merged.description,
             bin: merged.bin,
             args: merged.args,
+            binFindStrategy: merged.binFindStrategy,
             baseLanguage: merged.baseLanguage,
             initializationOptions: merged.initializationOptions,
             serverCharacteristics: merged.serverCharacteristics,

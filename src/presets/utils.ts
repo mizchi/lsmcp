@@ -51,8 +51,21 @@ export function resolveAdapterCommand(
   adapter: LspClientConfig,
   projectRoot?: string,
 ): { command: string; args: string[] } {
+  // If bin is explicitly set and no binFindStrategy exists, use bin directly
+  // This happens when user provides explicit bin config without a preset,
+  // or when the config loader has removed binFindStrategy due to user override
+  if (adapter.bin && !adapter.binFindStrategy) {
+    debugLogWithPrefix(
+      "lsmcp",
+      `Using explicit bin configuration: ${adapter.bin}`,
+    );
+    return {
+      command: adapter.bin,
+      args: adapter.args || [],
+    };
+  }
+
   // Use the new binFinder if binFindStrategy is available
-  // Prefer binFindStrategy over explicit bin/args when both are present
   if (adapter.binFindStrategy) {
     return resolveWithBinFinder(adapter, projectRoot);
   }
