@@ -30,17 +30,7 @@ import { getAdapterDefaultPattern } from "@internal/code-indexer";
 // Symbol query tools
 
 // Accept string names for symbol kinds (case-insensitive)
-// Custom schema that accepts case-insensitive kind names
-const symbolKindSchema = z.string().transform((val) => {
-  // Normalize to proper case (e.g., "class" -> "Class", "INTERFACE" -> "Interface")
-  const normalized = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
-  // Check if it's a valid kind
-  if (!SYMBOL_KIND_NAMES.includes(normalized as any)) {
-    throw new Error(`Invalid symbol kind: ${val}`);
-  }
-  return normalized;
-});
-
+// Also accept numbers, arrays, and JSON-encoded arrays
 const searchSymbolSchema = z.object({
   query: z
     .string()
@@ -55,9 +45,9 @@ const searchSymbolSchema = z.object({
     )
     .optional(),
   kind: z
-    .union([symbolKindSchema, z.array(symbolKindSchema)])
+    .any()
     .describe(
-      `Symbol kind(s) to filter by. Case-insensitive strings (e.g., 'Class', 'class', 'CLASS'). Valid kinds: ${SYMBOL_KIND_NAMES.join(", ")}`,
+      `Symbol kind(s) to filter by. Accepts: string (e.g., 'Class'), array (e.g., ['Class', 'Interface']), number (e.g., 5), or JSON string (e.g., '["Class", "Interface"]'). Case-insensitive. Valid kinds: ${SYMBOL_KIND_NAMES.join(", ")}. If not specified, searches all symbol kinds.`,
     )
     .optional(),
   file: z
@@ -269,7 +259,8 @@ export const searchSymbolsTool: McpToolDef<typeof searchSymbolSchema> = {
     };
 
     // Use the parseSymbolKind function to handle case-insensitive strings
-    if (kind) {
+    // If kind is not specified, search all symbol kinds
+    if (kind !== undefined && kind !== null && kind !== "") {
       try {
         const parsedKinds = parseSymbolKind(kind);
         searchQuery.kind =
@@ -280,25 +271,20 @@ export const searchSymbolsTool: McpToolDef<typeof searchSymbolSchema> = {
         // Provide helpful error message
         const errorMessage =
           error instanceof Error ? error.message : String(error);
-        return (
-          `Error parsing symbol kind: ${errorMessage}
+        return `Error: ${errorMessage}
 
-` +
-          `Valid values (case-insensitive): ${SYMBOL_KIND_NAMES.join(", ")}
+Valid symbol kinds (case-insensitive):
+${SYMBOL_KIND_NAMES.join(", ")}
 
-` +
-          `Examples:
-` +
-          `  - { "kind": "Class" }
-` +
-          `  - { "kind": "class" }  // Case-insensitive
-` +
-          `  - { "kind": ["Class", "Interface", "Function"] }
-` +
-          `  - { "kind": ["CLASS", "interface", "FUNCTION"] }  // Mixed case works`
-        );
+Examples:
+  • Single kind: "Class" or "class" or "CLASS"
+  • Multiple kinds: ["Class", "Interface", "Function"]
+  • Numeric kinds: 5 (for Class) or [5, 11, 12] (for Class, Interface, Function)
+  • JSON string: "[\"Class\", \"Interface\"]"
+  • Empty/undefined: Search all symbol kinds`;
       }
     }
+    // If kind is not specified, don't set it in searchQuery to search all kinds
 
     // Execute query
     const results = querySymbols(rootPath, searchQuery);

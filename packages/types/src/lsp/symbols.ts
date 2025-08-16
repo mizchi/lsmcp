@@ -136,15 +136,42 @@ export function getSymbolKindName(
  * Accepts string values with case-insensitive matching (e.g., "Class", "class", "CLASS")
  */
 export function parseSymbolKind(
-  input: string | string[] | undefined,
+  input: string | string[] | number | number[] | undefined,
 ): SymbolKind[] | undefined {
   if (input === undefined || input === null) return undefined;
 
+  // Handle JSON-encoded arrays
+  if (typeof input === "string") {
+    // Try to parse as JSON array first
+    if (input.startsWith("[") && input.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(input);
+        if (Array.isArray(parsed)) {
+          input = parsed;
+        }
+      } catch {
+        // Not valid JSON, treat as single string
+      }
+    }
+  }
+
+  // Convert to array if not already
   const kinds = Array.isArray(input) ? input : [input];
 
   return kinds.map((k) => {
+    // Handle numeric symbol kinds
+    if (typeof k === "number") {
+      // Validate that the number is a valid SymbolKind
+      if (Object.values(SymbolKind).includes(k as any)) {
+        return k as SymbolKind;
+      }
+      throw new Error(
+        `Invalid symbol kind number: ${k}. Valid range is 1-26.`,
+      );
+    }
+
     if (typeof k !== "string") {
-      throw new Error(`Invalid kind type: ${typeof k}. Expected string.`);
+      throw new Error(`Invalid kind type: ${typeof k}. Expected string or number.`);
     }
 
     // Case-insensitive matching - find exact match regardless of case

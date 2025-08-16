@@ -398,28 +398,44 @@ describe("searchSymbolsTool", () => {
       expect(IndexerAdapter.querySymbols).not.toHaveBeenCalled();
     });
 
-    it("should return error for numeric kind", async () => {
+    it("should handle numeric kind (now supported)", async () => {
+      vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([]);
+
       const result = await searchSymbolsTool.execute({
-        // @ts-expect-error - Testing invalid type
-        kind: 5,
+        kind: 5, // Class = 5
         root: "/test",
+        includeChildren: true,
+        includeExternal: false,
+        onlyExternal: false,
       });
 
-      expect(result).toContain("Error parsing symbol kind");
-      expect(result).toContain("Invalid kind type: number");
-      expect(IndexerAdapter.querySymbols).not.toHaveBeenCalled();
+      expect(result).toBe("No symbols found matching the query.");
+      expect(IndexerAdapter.querySymbols).toHaveBeenCalledWith(
+        "/test",
+        expect.objectContaining({
+          kind: 5,
+        }),
+      );
     });
 
-    it("should return error for mixed string and number array", async () => {
+    it("should handle mixed string and number array (now supported)", async () => {
+      vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([]);
+
       const result = await searchSymbolsTool.execute({
-        // @ts-expect-error - Testing invalid type
-        kind: ["Class", 11],
+        kind: ["Class", 11], // Class = 5, Interface = 11
         root: "/test",
+        includeChildren: true,
+        includeExternal: false,
+        onlyExternal: false,
       });
 
-      expect(result).toContain("Error parsing symbol kind");
-      expect(result).toContain("Invalid kind type: number");
-      expect(IndexerAdapter.querySymbols).not.toHaveBeenCalled();
+      expect(result).toBe("No symbols found matching the query.");
+      expect(IndexerAdapter.querySymbols).toHaveBeenCalledWith(
+        "/test",
+        expect.objectContaining({
+          kind: [5, 11], // Converted to numbers
+        }),
+      );
     });
 
     it("should auto-create index when empty", async () => {
