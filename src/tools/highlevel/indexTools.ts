@@ -360,9 +360,13 @@ export const searchSymbolsTool: McpToolDef<typeof searchSymbolSchema> = {
 // updateIndexIncrementalTool removed - functionality is now internal to search and overview tools
 
 import { getProjectOverviewTool } from "./projectOverview.ts";
+import { createGetSymbolDetailsTool } from "./getSymbolDetails.ts";
 
 // Export index tools - only user-facing tools
 export const indexTools = [
   getProjectOverviewTool, // Quick project overview with statistics
   searchSymbolsTool, // Unified symbol search tool (combines search_symbol_from_index, find_symbols, query_symbols)
 ];
+
+// Export function to create symbol details tool with LSP client
+export { createGetSymbolDetailsTool };

@@ -494,7 +494,7 @@ async function listTools(presetName?: string, disableList?: string) {
         name === "query_symbols"
       ) {
         categories["Symbol Search & Indexing"].push(tool);
-      } else if (name === "list_dir" || name === "search_for_pattern") {
+      } else if (name === "list_dir") {
         categories["File System"].push(tool);
       } else if (
         name === "replace_range" ||

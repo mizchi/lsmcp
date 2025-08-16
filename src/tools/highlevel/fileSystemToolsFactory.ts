@@ -4,7 +4,6 @@ import { glob as gitawareGlob, type FileSystemInterface } from "gitaware-glob";
 import type { FileSystemApi } from "@internal/types";
 import { nodeFileSystemApi } from "../../infrastructure/NodeFileSystemApi.ts";
 import type { McpToolDef } from "@internal/types";
-import { createFastSearchForPatternTool } from "./fastSearchForPatternTool.ts";
 
 const listDirSchema = z.object({
   relativePath: z
@@ -213,55 +212,4 @@ export function createFindFileTool(
       }
     },
   };
-}
-
-const searchForPatternSchema = z.object({
-  substringPattern: z
-    .string()
-    .describe("Regular expression for a substring pattern to search for."),
-  relativePath: z
-    .string()
-    .default("")
-    .describe(
-      "Only subpaths of this path (relative to the repo root) will be analyzed. If a path to a single\nfile is passed, only that will be searched. The path must exist, otherwise a `FileNotFoundError` is raised.",
-    ),
-  restrictSearchToCodeFiles: z
-    .boolean()
-    .default(false)
-    .describe(
-      "Whether to restrict the search to only those files where\nanalyzed code symbols can be found. Otherwise, will search all non-ignored files.\nSet this to True if your search is only meant to discover code that can be manipulated with symbolic tools.\nFor example, for finding classes or methods from a name pattern.\nSetting to False is a better choice if you also want to search in non-code files, like in html or yaml files,\nwhich is why it is the default.",
-    ),
-  pathsIncludeGlob: z
-    .string()
-    .optional()
-    .describe(
-      'Optional glob pattern specifying files to include in the search.\nMatches against relative file paths from the project root (e.g., "*.py", "src/**/*.ts").\nOnly matches files, not directories.',
-    ),
-  pathsExcludeGlob: z
-    .string()
-    .optional()
-    .describe(
-      'Optional glob pattern specifying files to exclude from the search.\nMatches against relative file paths from the project root (e.g., "*test*", "**/*_generated.py").\nTakes precedence over paths_include_glob. Only matches files, not directories.',
-    ),
-  contextLinesBefore: z
-    .number()
-    .default(0)
-    .describe("Number of lines of context to include before each match."),
-  contextLinesAfter: z
-    .number()
-    .default(0)
-    .describe("Number of lines of context to include after each match."),
-  maxAnswerChars: z
-    .number()
-    .default(200000)
-    .describe(
-      "If the output is longer than this number of characters,\nno content will be returned. Don't adjust unless there is really no other way to get the content\nrequired for the task. Instead, if the output is too long, you should\nmake a stricter query.",
-    ),
-});
-
-export function createSearchForPatternTool(
-  fileSystemApi: FileSystemApi = nodeFileSystemApi,
-): McpToolDef<typeof searchForPatternSchema> {
-  // Use the fast implementation
-  return createFastSearchForPatternTool(fileSystemApi);
 }

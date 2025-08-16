@@ -23,7 +23,6 @@
 - ✅ `mcp__lsmcp__get_workspace_symbols` - Search symbols across the workspace
 - ✅ `mcp__lsmcp__list_dir` - Explore directory structure
 - ✅ `mcp__lsmcp__find_file` - Locate specific files
-- ✅ `mcp__lsmcp__search_for_pattern` - Search for text patterns
 - ✅ `mcp__lsmcp__index_symbols` - Smart incremental indexing (auto-detects changes)
 - ✅ `mcp__lsmcp__clear_index` - Clear and rebuild index (use `force: true` for complete reset)
 - ✅ `mcp__lsmcp__rename_symbol` - Rename a symbol across the codebase
@@ -88,7 +87,7 @@
 **FALLBACK TOOLS (USE ONLY WHEN NECESSARY):**
 
 - ⚠️ `Read` - Only when you need to see non-code files or LSMCP tools fail
-- ⚠️ `Grep` - Only for quick searches when LSMCP search is insufficient
+- ⚠️ `Grep` - For text pattern searches in files (replaces removed search_for_pattern tool)
 - ⚠️ `Glob` - Only when LSMCP file finding doesn't work
 - ⚠️ `LS` - Only for basic directory listing when LSMCP fails
 - ⚠️ `Bash` commands - Only for non-code operations or troubleshooting

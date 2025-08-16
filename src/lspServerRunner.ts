@@ -14,6 +14,7 @@ import {
 } from "./tools/filterTools.ts";
 import { highLevelTools, onboardingToolsList } from "./tools/toolLists.ts";
 import { getSerenityToolsList } from "./tools/index.ts";
+import { createGetSymbolDetailsTool } from "./tools/highlevel/indexTools.ts";
 import { resolveAdapterCommand } from "./presets/utils.ts";
 import { PresetRegistry, type ExtendedLSMCPConfig } from "./config/loader.ts";
 import type { LspClientConfig } from "./config/schema.ts";
@@ -151,9 +152,13 @@ export async function runLanguageServerWithConfig(
         : undefined,
     );
 
+    // Create get_symbol_details tool with LSP client
+    const symbolDetailsTool = createGetSymbolDetailsTool(lspClient);
+
     const allTools: McpToolDef<any>[] = [
       ...filteredLspTools,
       ...highLevelTools, // Analysis tools are always available
+      symbolDetailsTool, // High-level tool for comprehensive symbol details
       ...serenityTools, // Serenity tools for symbol editing and memory (config-based)
       ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];

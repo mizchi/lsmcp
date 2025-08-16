@@ -464,22 +464,6 @@ export const DEFAULT_USER = createUser("Default", "default@example.com");
       expect(content).toContain("test.ts");
       expect(content).toContain("helper.ts");
     });
-
-    it("should search for pattern", async () => {
-      const result = await mcpClient.callTool({
-        name: "search_for_pattern",
-        arguments: {
-          substringPattern: "export class",
-          restrictSearchToCodeFiles: true,
-        },
-      });
-
-      const typedResult = result as ToolResult;
-      const content = typedResult.content[0]?.text || "";
-
-      expect(content).toContain("test.ts");
-      expect(content).toContain("export class UserService");
-    });
   });
 
   describe("Memory System", () => {
@@ -599,6 +583,47 @@ export const DEFAULT_USER = createUser("Default", "default@example.com");
   });
 
   // Index management is now automatic - no direct access to index_symbols or clear_index
+
+  describe("Symbol Details Tool", () => {
+    it("should get comprehensive symbol details", async () => {
+      const result = await mcpClient.callTool({
+        name: "get_symbol_details",
+        arguments: {
+          root: tempDir,
+          relativePath: "test.ts",
+          line: 3,
+          symbol: "User",
+        },
+      });
+
+      const typedResult = result as ToolResult;
+      const content = typedResult.content[0]?.text || "";
+
+      // Should include basic sections
+      expect(content).toContain("Symbol Details: User");
+      expect(content).toContain("Location:");
+      // The tool may not return all sections if LSP doesn't provide them
+      expect(content).toContain("Next Steps");
+    });
+
+    it("should handle symbol not found", async () => {
+      const result = await mcpClient.callTool({
+        name: "get_symbol_details",
+        arguments: {
+          root: tempDir,
+          relativePath: "test.ts",
+          line: 10,
+          symbol: "NonExistentSymbol",
+        },
+      });
+
+      const typedResult = result as ToolResult;
+      const content = typedResult.content[0]?.text || "";
+
+      // Check for error message
+      expect(content).toContain("NonExistentSymbol");
+    });
+  });
 
   describe("Integration Between High and Low Level APIs", () => {
     it("should use search_symbols first, then use LSP tools for details", async () => {
