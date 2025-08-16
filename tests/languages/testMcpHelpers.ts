@@ -16,10 +16,14 @@ export async function testMcpConnection(
   hasGetDiagnostics: boolean;
   hasGetDefinitions: boolean;
   hasGetHover: boolean;
+  hasSearchSymbols: boolean;
+  hasGetSymbolDetails: boolean;
   projectOverview?: any;
   diagnosticsResult?: any;
   definitionsResult?: any;
   hoverResult?: any;
+  searchSymbolsResult?: any;
+  symbolDetailsResult?: any;
   error?: string;
 }> {
   // let mcpProcess: ChildProcess | null = null;
@@ -76,12 +80,18 @@ export async function testMcpConnection(
       (tool) => tool.name === "get_project_overview",
     );
     const hasGetDiagnostics = tools.some(
-      (tool) => tool.name === "get_diagnostics",
+      (tool) => tool.name === "lsp_get_diagnostics",
     );
     const hasGetDefinitions = tools.some(
-      (tool) => tool.name === "get_definitions",
+      (tool) => tool.name === "lsp_get_definitions",
     );
-    const hasGetHover = tools.some((tool) => tool.name === "get_hover");
+    const hasGetHover = tools.some((tool) => tool.name === "lsp_get_hover");
+    const hasSearchSymbols = tools.some(
+      (tool) => tool.name === "search_symbols",
+    );
+    const hasGetSymbolDetails = tools.some(
+      (tool) => tool.name === "get_symbol_details",
+    );
 
     let projectOverview;
     if (hasGetProjectOverview) {
@@ -121,10 +131,10 @@ export async function testMcpConnection(
                       : "index.ts"; // Default for TypeScript/JavaScript
 
         const result = await client.callTool({
-          name: "get_diagnostics",
+          name: "lsp_get_diagnostics",
           arguments: {
             root: projectPath,
-            filePath: testFile,
+            relativePath: testFile,
           },
         });
 
@@ -152,10 +162,10 @@ export async function testMcpConnection(
                     : "index.ts";
 
         const result = await client.callTool({
-          name: "get_definitions",
+          name: "lsp_get_definitions",
           arguments: {
             root: projectPath,
-            filePath: testFile,
+            relativePath: testFile,
             line: 1,
             symbolName: "main", // Common symbol name
           },
@@ -185,10 +195,10 @@ export async function testMcpConnection(
                     : "index.ts";
 
         const result = await client.callTool({
-          name: "get_hover",
+          name: "lsp_get_hover",
           arguments: {
             root: projectPath,
-            filePath: testFile,
+            relativePath: testFile,
             line: 1,
             character: 0,
           },
@@ -197,6 +207,80 @@ export async function testMcpConnection(
         hoverResult = result.content;
       } catch (e) {
         console.log(`Could not get hover: ${e}`);
+      }
+    }
+
+    let searchSymbolsResult;
+    if (hasSearchSymbols) {
+      try {
+        // Call search_symbols tool - search for common symbol patterns
+        const result = await client.callTool({
+          name: "search_symbols",
+          arguments: {
+            root: projectPath,
+            query: "", // Empty query to get all symbols
+          },
+        });
+
+        searchSymbolsResult = result.content;
+      } catch (e) {
+        console.log(`Could not search symbols: ${e}`);
+      }
+    }
+
+    let symbolDetailsResult;
+    if (hasGetSymbolDetails) {
+      try {
+        // First, try to find a symbol using search_symbols
+        // Use different query based on language
+        const symbolQuery =
+          adapter.baseLanguage === "typescript" ||
+          adapter.baseLanguage === "javascript"
+            ? "User" // TypeScript/JavaScript has User interface
+            : "main"; // Other languages typically have main function
+
+        const searchResult = await client.callTool({
+          name: "search_symbols",
+          arguments: {
+            root: projectPath,
+            query: symbolQuery,
+          },
+        });
+
+        // Parse the search result to find a symbol
+        if (
+          searchResult.content &&
+          Array.isArray(searchResult.content) &&
+          searchResult.content.length > 0
+        ) {
+          const symbolsText = (searchResult.content[0] as any).text;
+          // Extract first symbol information from the formatted output
+          const lines = symbolsText.split("\n");
+          for (const line of lines) {
+            // Look for lines that contain file paths and line numbers
+            const match = line.match(/^(.+?):(\d+):/);
+            if (match) {
+              const [, relativePath, lineStr] = match;
+              const lineNumber = parseInt(lineStr);
+
+              // Try to get symbol details
+              const detailsResult = await client.callTool({
+                name: "get_symbol_details",
+                arguments: {
+                  root: projectPath,
+                  relativePath: relativePath.trim(),
+                  line: lineNumber,
+                  symbol: symbolQuery, // Use the symbol we searched for
+                },
+              });
+
+              symbolDetailsResult = detailsResult.content;
+              break; // Just test the first found symbol
+            }
+          }
+        }
+      } catch (e) {
+        console.log(`Could not get symbol details: ${e}`);
       }
     }
 
@@ -209,10 +293,14 @@ export async function testMcpConnection(
       hasGetDiagnostics,
       hasGetDefinitions,
       hasGetHover,
+      hasSearchSymbols,
+      hasGetSymbolDetails,
       projectOverview,
       diagnosticsResult,
       definitionsResult,
       hoverResult,
+      searchSymbolsResult,
+      symbolDetailsResult,
     };
   } catch (error: any) {
     // Cleanup on error
@@ -228,6 +316,8 @@ export async function testMcpConnection(
       hasGetDiagnostics: false,
       hasGetDefinitions: false,
       hasGetHover: false,
+      hasSearchSymbols: false,
+      hasGetSymbolDetails: false,
       error: error.message || String(error),
     };
   }

@@ -22,7 +22,7 @@ describe("Rust Analyzer Adapter", () => {
     `);
   }, 30000); // Rust analyzer can be slow to initialize
 
-  it("should provide MCP tools including get_project_overview, get_diagnostics, and get_definitions", async () => {
+  it("should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, search_symbols, and get_symbol_details", async () => {
     const result = await testMcpConnection(rustAnalyzerAdapter, projectRoot);
 
     if (!result.connected) {
@@ -33,6 +33,8 @@ describe("Rust Analyzer Adapter", () => {
     expect(result.hasGetProjectOverview).toBe(true);
     expect(result.hasGetDiagnostics).toBe(true);
     expect(result.hasGetDefinitions).toBe(true);
+    expect(result.hasSearchSymbols).toBe(true);
+    expect(result.hasGetSymbolDetails).toBe(true);
 
     if (result.projectOverview) {
       // Verify project overview contains expected information
@@ -48,5 +50,17 @@ describe("Rust Analyzer Adapter", () => {
 
     // Verify get_definitions works (may not find the symbol, but tool should be callable)
     // The result is optional since "main" might not exist
+
+    // Verify search_symbols works
+    if (result.searchSymbolsResult) {
+      expect(result.searchSymbolsResult).toBeDefined();
+      expect(result.searchSymbolsResult.length).toBeGreaterThan(0);
+    }
+
+    // Verify get_symbol_details works
+    if (result.symbolDetailsResult) {
+      expect(result.symbolDetailsResult).toBeDefined();
+      expect(result.symbolDetailsResult.length).toBeGreaterThan(0);
+    }
   });
 });
