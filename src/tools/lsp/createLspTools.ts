@@ -17,7 +17,6 @@ import { createSignatureHelpTool } from "./signatureHelp.ts";
 import { createFormatDocumentTool } from "./formatting.ts";
 import { createWorkspaceSymbolsTool } from "./workspaceSymbols.ts";
 import { createCodeActionsTool } from "./codeActions.ts";
-import { createAllDiagnosticsTool } from "./allDiagnostics.ts";
 import { createCheckCapabilitiesTool } from "./checkCapabilities.ts";
 import { createDeleteSymbolTool } from "./deleteSymbol.ts";
 
@@ -37,7 +36,6 @@ export function createLSPTools(client: LSPClient): McpToolDef<any>[] {
     createFormatDocumentTool(client),
     createWorkspaceSymbolsTool(client),
     createCodeActionsTool(client),
-    createAllDiagnosticsTool(client),
     createCheckCapabilitiesTool(client),
     createDeleteSymbolTool(client),
   ];

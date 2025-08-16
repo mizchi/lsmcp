@@ -5,42 +5,11 @@
 import { z } from "zod";
 import type { McpToolDef } from "@internal/types";
 import { platform } from "node:os";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import {
   symbolIndexOnboardingPrompt,
   symbolSearchGuidancePrompt,
   compressionAnalysisPrompt,
 } from "./onboardingPrompts.ts";
-
-const checkIndexOnboardingSchema = z.object({
-  root: z.string().describe("Root directory of the project"),
-});
-
-export const checkIndexOnboardingTool: McpToolDef<
-  typeof checkIndexOnboardingSchema
-> = {
-  name: "check_index_onboarding",
-  description:
-    "Check if symbol index onboarding has been performed for this project",
-  schema: checkIndexOnboardingSchema,
-  execute: async ({ root }) => {
-    // Check if .lsmcp/memories directory exists
-    const memoriesPath = join(root, ".lsmcp", "memories");
-    const indexMemoryPath = join(memoriesPath, "symbol_index_info.md");
-
-    const hasOnboarding =
-      existsSync(memoriesPath) && existsSync(indexMemoryPath);
-
-    return JSON.stringify({
-      onboardingPerformed: hasOnboarding,
-      memoriesPath,
-      message: hasOnboarding
-        ? "Symbol index onboarding completed. Index information available."
-        : "Symbol index onboarding not performed. Run index_onboarding tool.",
-    });
-  },
-};
 
 const indexOnboardingSchema = z.object({
   root: z.string().describe("Root directory of the project"),
@@ -84,7 +53,6 @@ export const getCompressionGuidanceTool: McpToolDef<
 
 // Export all onboarding tools
 export const indexOnboardingTools = [
-  checkIndexOnboardingTool,
   indexOnboardingTool,
   getSymbolSearchGuidanceTool,
   getCompressionGuidanceTool,

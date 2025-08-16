@@ -451,83 +451,94 @@ async function listTools(presetName?: string, disableList?: string) {
       }
     }
 
-    // Group tools by category
-    const categories: Record<string, typeof filteredTools> = {
-      "Project Analysis": [],
-      "Symbol Search": [],
-      "Code Navigation": [],
-      "Code Editing": [],
-      Diagnostics: [],
-      "Code Completion": [],
-      "Memory System": [],
-      "File System": [],
-      Other: [],
-    };
+    // Group tools by category with ordered display
+    const categoryOrder = [
+      // High-level tools first
+      "Project Overview",
+      "Memory System",
+      "Symbol Search & Indexing",
+      "File System",
+      "Code Editing",
+      // LSP tools second
+      "LSP: Code Navigation",
+      "LSP: Diagnostics",
+      "LSP: Code Actions",
+      "LSP: Code Intelligence",
+      "LSP: Capabilities",
+      // Other
+      "Other",
+    ];
 
-    // Categorize tools
+    const categories: Record<string, typeof filteredTools> = {};
+    for (const cat of categoryOrder) {
+      categories[cat] = [];
+    }
+
+    // Categorize tools - high-level tools first, then LSP tools
     for (const tool of filteredTools) {
       const name = tool.name;
 
-      if (
-        name.includes("project_overview") ||
-        name === "lsp_check_capabilities"
-      ) {
-        categories["Project Analysis"].push(tool);
+      // High-level tools
+      if (name.includes("project_overview")) {
+        categories["Project Overview"].push(tool);
+      } else if (name.includes("memory") || name === "index_onboarding") {
+        categories["Memory System"].push(tool);
       } else if (
-        name === "find_symbols" ||
+        name === "search_symbols" ||
+        name.includes("index_symbols") ||
+        name.includes("clear_index") ||
         name.includes("search_symbol") ||
-        name.includes("get_symbols") ||
-        name.includes("query_symbols") ||
-        name.includes("find_file")
+        name.includes("get_symbols_overview") ||
+        name.includes("find_file") ||
+        name === "index_files" ||
+        name === "query_symbols"
       ) {
-        categories["Symbol Search"].push(tool);
+        categories["Symbol Search & Indexing"].push(tool);
+      } else if (name === "list_dir" || name === "search_for_pattern") {
+        categories["File System"].push(tool);
       } else if (
+        name === "replace_range" ||
+        name === "replace_regex" ||
+        (name.includes("replace") && !name.includes("lsp")) ||
+        (name.includes("insert") && !name.includes("lsp"))
+      ) {
+        categories["Code Editing"].push(tool);
+      }
+      // LSP tools
+      else if (
         name.includes("lsp_find_references") ||
         name.includes("lsp_get_definitions") ||
-        name.includes("lsp_get_hover")
+        name.includes("lsp_get_hover") ||
+        name.includes("lsp_get_document_symbols") ||
+        name.includes("lsp_get_workspace_symbols")
       ) {
-        categories["Code Navigation"].push(tool);
+        categories["LSP: Code Navigation"].push(tool);
+      } else if (name.includes("lsp_get_diagnostics")) {
+        categories["LSP: Diagnostics"].push(tool);
       } else if (
         name.includes("lsp_rename") ||
         name.includes("lsp_delete") ||
-        name.includes("replace") ||
-        name.includes("insert") ||
-        name.includes("lsp_format")
+        name.includes("lsp_format") ||
+        name.includes("lsp_get_code_actions")
       ) {
-        categories["Code Editing"].push(tool);
-      } else if (
-        name === "get_diagnostics" ||
-        name.includes("lsp_get_diagnostics") ||
-        name.includes("lsp_get_all_diagnostics")
-      ) {
-        categories["Diagnostics"].push(tool);
+        categories["LSP: Code Actions"].push(tool);
       } else if (
         name.includes("lsp_get_completion") ||
         name.includes("lsp_get_signature")
       ) {
-        categories["Code Completion"].push(tool);
-      } else if (
-        name.includes("lsp_get_document_symbols") ||
-        name.includes("lsp_get_workspace_symbols") ||
-        name.includes("lsp_get_code_actions")
-      ) {
-        categories["Code Navigation"].push(tool);
-      } else if (name.includes("memory") || name.includes("onboarding")) {
-        categories["Memory System"].push(tool);
-      } else if (
-        name.includes("list_dir") ||
-        name.includes("search_for_pattern")
-      ) {
-        categories["File System"].push(tool);
+        categories["LSP: Code Intelligence"].push(tool);
+      } else if (name === "lsp_check_capabilities") {
+        categories["LSP: Capabilities"].push(tool);
       } else {
         categories["Other"].push(tool);
       }
     }
 
-    // Display tools by category
+    // Display tools by category in the defined order
     let totalTools = 0;
-    for (const [category, tools] of Object.entries(categories)) {
-      if (tools.length === 0) continue;
+    for (const category of categoryOrder) {
+      const tools = categories[category];
+      if (!tools || tools.length === 0) continue;
 
       console.log(`${category}:`);
       for (const tool of tools) {

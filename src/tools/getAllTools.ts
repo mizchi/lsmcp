@@ -5,7 +5,6 @@
 import type { McpToolDef } from "@internal/types";
 import type { LSPClient } from "@internal/lsp-client";
 import { createLSPTools } from "./lsp/createLspTools.ts";
-import { createGetDiagnosticsTool } from "./highlevel/getDiagnostics.ts";
 import {
   highLevelTools,
   serenityToolsList,
@@ -26,9 +25,6 @@ export async function getAllAvailableTools(
 
   // Create client if not provided
   const lspClient = client || ({} as any);
-
-  // Add high-level LSP-based tools
-  tools.push(createGetDiagnosticsTool(lspClient));
 
   // Add low-level LSP tools (subject to capability filtering)
   const lspTools = createLSPTools(lspClient);

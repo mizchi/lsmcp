@@ -3,10 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { rmSync, mkdirSync, writeFileSync } from "node:fs";
+import { rmSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import {
-  checkIndexOnboardingTool,
   indexOnboardingTool,
   getSymbolSearchGuidanceTool,
   getCompressionGuidanceTool,
@@ -23,29 +22,6 @@ describe("Onboarding Tools", () => {
   afterEach(() => {
     // Clean up test directory
     rmSync(testRoot, { recursive: true, force: true });
-  });
-
-  describe("checkIndexOnboardingTool", () => {
-    it("should return false when onboarding not performed", async () => {
-      const result = await checkIndexOnboardingTool.execute({ root: testRoot });
-      const parsed = JSON.parse(result);
-
-      expect(parsed.onboardingPerformed).toBe(false);
-      expect(parsed.message).toContain("not performed");
-    });
-
-    it("should return true when onboarding is performed", async () => {
-      // Create onboarding directories and files
-      const memoriesPath = join(testRoot, ".lsmcp", "memories");
-      mkdirSync(memoriesPath, { recursive: true });
-      writeFileSync(join(memoriesPath, "symbol_index_info.md"), "# Index Info");
-
-      const result = await checkIndexOnboardingTool.execute({ root: testRoot });
-      const parsed = JSON.parse(result);
-
-      expect(parsed.onboardingPerformed).toBe(true);
-      expect(parsed.message).toContain("completed");
-    });
   });
 
   describe("indexOnboardingTool", () => {

@@ -18,6 +18,7 @@ import { SymbolKind } from "vscode-languageserver-types";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { fileURLToPath } from "url";
+import { getProjectDiagnostics } from "./getDiagnostics.ts";
 
 const getProjectOverviewSchema = z.object({
   root: z.string().describe("Root directory for the project").optional(),
@@ -240,11 +241,28 @@ export const getProjectOverviewTool: McpToolDef<
     // Get statistics
     const stats = getIndexStats(rootPath);
 
-    // Get diagnostics (disabled temporarily due to performance issues in tests)
+    // Get diagnostics using internal function
     let errorCount = 0;
     let warningCount = 0;
-    // TODO: Re-enable diagnostics after optimizing performance
-    // Note: Diagnostics are currently disabled and will always show 0
+
+    // Only get diagnostics if LSP client is available
+    if (context?.lspClient) {
+      try {
+        const diagnostics = await getProjectDiagnostics(
+          { root: rootPath },
+          context.lspClient,
+          context,
+        );
+        errorCount = diagnostics.errorCount;
+        warningCount = diagnostics.warningCount;
+      } catch (error) {
+        // Silently ignore diagnostic errors
+        debugLogWithPrefix(
+          "get_project_overview",
+          `Failed to get diagnostics: ${error}`,
+        );
+      }
+    }
 
     // Get all symbols for analysis
     const allSymbols = querySymbols(rootPath, {});
@@ -320,6 +338,24 @@ export const getProjectOverviewTool: McpToolDef<
       output += "\n**Diagnostics:**\n";
       output += `  - Errors: ${errorCount}\n`;
       output += `  - Warnings: ${warningCount}\n`;
+    }
+
+    // Index status and guidance
+    if (stats.totalFiles === 0) {
+      output += "\n⚠️ **No symbol index found**\n";
+      output +=
+        "The project has not been indexed yet. To enable fast symbol search:\n";
+      output += "1. Run `index_symbols` tool to create the initial index\n";
+      output +=
+        "2. The index will be automatically updated when files change\n";
+      output +=
+        "\nAlternatively, `search_symbols` will auto-create the index on first use.\n";
+    } else if (stats.totalSymbols === 0) {
+      output += "\n⚠️ **Index exists but no symbols found**\n";
+      output += "This might mean:\n";
+      output += "- The file patterns don't match any source files\n";
+      output += "- The LSP server doesn't support symbol indexing\n";
+      output += "- Try running `index_symbols` with different file patterns\n";
     }
     output += "\n";
 
@@ -459,9 +495,17 @@ export const getProjectOverviewTool: McpToolDef<
 
     // Suggestions
     output += "### Next Steps:\n";
-    output += "1. Use `search_symbol_from_index` to find specific symbols\n";
-    output += "2. Use `get_document_symbols` to explore specific files\n";
-    output += "3. Use `find_references` to trace symbol usage\n";
+    if (stats.totalFiles === 0) {
+      output += "1. Run `index_symbols` to build the symbol index\n";
+      output +=
+        "2. Use `search_symbols` to find specific symbols (will auto-index)\n";
+      output += "3. Use `lsp_get_document_symbols` to explore specific files\n";
+    } else {
+      output += "1. Use `search_symbols` to find specific symbols\n";
+      output += "2. Use `lsp_get_document_symbols` to explore specific files\n";
+      output += "3. Use `lsp_find_references` to trace symbol usage\n";
+      output += "4. Use `lsp_get_definitions` to navigate to definitions\n";
+    }
 
     return output;
   },

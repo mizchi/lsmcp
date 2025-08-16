@@ -8,7 +8,6 @@ import type { McpToolDef, McpContext } from "@internal/types";
 import { ErrorContext, formatError } from "./utils/errorHandler.ts";
 import { errorLog } from "./utils/debugLog.ts";
 import { createLSPTools } from "./tools/lsp/createLspTools.ts";
-import { createGetDiagnosticsTool } from "./tools/highlevel/getDiagnostics.ts";
 import {
   filterUnsupportedTools,
   createCapabilityFilter,
@@ -129,9 +128,6 @@ export async function runLanguageServerWithConfig(
     // Create LSP tools with the adapter
     const lspTools = createLSPTools(lspClient);
 
-    // Create high-level diagnostics tool
-    const highLevelDiagnosticsTool = createGetDiagnosticsTool(lspClient);
-
     // Register all tools (filtered by unsupported list AND capabilities)
     let filteredLspTools = filterUnsupportedTools(lspTools, config.unsupported);
 
@@ -158,7 +154,6 @@ export async function runLanguageServerWithConfig(
     const allTools: McpToolDef<any>[] = [
       ...filteredLspTools,
       ...highLevelTools, // Analysis tools are always available
-      highLevelDiagnosticsTool, // High-level diagnostics tool
       ...serenityTools, // Serenity tools for symbol editing and memory (config-based)
       ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];
@@ -318,9 +313,6 @@ export async function runLanguageServer(
     // Create LSP tools with the adapter
     const lspTools = createLSPTools(lspClient);
 
-    // Create high-level diagnostics tool
-    const highLevelDiagnosticsTool = createGetDiagnosticsTool(lspClient);
-
     // Register all tools (filtered by unsupported list AND capabilities)
     let filteredLspTools = filterUnsupportedTools(lspTools, adapter?.disable);
 
@@ -339,7 +331,6 @@ export async function runLanguageServer(
     const allTools: McpToolDef<any>[] = [
       ...filteredLspTools,
       ...highLevelTools, // Analysis tools are always available
-      highLevelDiagnosticsTool, // High-level diagnostics tool
       ...serenityTools, // Serenity tools for symbol editing and memory (config-based)
       ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];
@@ -440,9 +431,6 @@ export async function runCustomLspServer(
     // Create LSP tools with the adapter
     const lspTools = createLSPTools(lspClient);
 
-    // Create high-level diagnostics tool
-    const highLevelDiagnosticsTool = createGetDiagnosticsTool(lspClient);
-
     // Register all LSP tools (filtered by capabilities) and analysis tools
     const filteredLspTools = capabilityFilter.filterTools(lspTools);
     // Get Serenity tools based on config
@@ -452,7 +440,6 @@ export async function runCustomLspServer(
     const allTools: McpToolDef<any>[] = [
       ...filteredLspTools,
       ...highLevelTools, // Analysis tools are always available
-      highLevelDiagnosticsTool, // High-level diagnostics tool
       ...serenityTools, // Serenity tools for symbol editing and memory (config-based)
       ...onboardingToolsList, // Onboarding tools for symbol indexing
     ];

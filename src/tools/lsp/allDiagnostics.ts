@@ -3,17 +3,12 @@ import { z } from "zod";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { minimatch } from "minimatch";
-import type { McpToolDef } from "@internal/types";
 import { debug } from "@internal/lsp-client";
 import { pathToFileURL } from "url";
 import { Diagnostic } from "@internal/types";
 import { glob as gitawareGlob } from "gitaware-glob";
 import { glob as standardGlob } from "glob";
-import {
-  DIAGNOSTICS_BATCH_SIZE,
-  MAX_FILES_TO_SHOW,
-  MAX_DIAGNOSTICS_PER_FILE,
-} from "../../constants/diagnostics.ts";
+import { DIAGNOSTICS_BATCH_SIZE } from "../../constants/diagnostics.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for the project"),
@@ -305,72 +300,5 @@ export async function getAllDiagnostics(
   };
 }
 
-/**
- * Create all diagnostics tool with injected LSP client
- */
-export function createAllDiagnosticsTool(
-  client: LSPClient,
-): McpToolDef<typeof schema> {
-  return {
-    name: "lsp_get_all_diagnostics",
-    description:
-      "Get diagnostics (errors, warnings) for all files matching a pattern using LSP. Requires a glob pattern (e.g., '**/*.ts', 'src/**/*.py').",
-    schema,
-    execute: async (args: z.infer<typeof schema>) => {
-      const result = await getAllDiagnostics(args, client);
-
-      const messages = [result.message];
-
-      if (result.files.length > 0) {
-        messages.push("");
-
-        // If there are too many files with diagnostics, show a summary
-        if (result.files.length > MAX_FILES_TO_SHOW) {
-          messages.push(
-            `Showing first ${MAX_FILES_TO_SHOW} files with diagnostics (${result.files.length} total):`,
-          );
-          messages.push("");
-        }
-
-        const filesToShow = result.files.slice(0, MAX_FILES_TO_SHOW);
-
-        for (const file of filesToShow) {
-          messages.push(`${file.filePath}:`);
-
-          // Limit diagnostics per file to avoid extremely long output
-          const diagsToShow = file.diagnostics.slice(
-            0,
-            MAX_DIAGNOSTICS_PER_FILE,
-          );
-
-          for (const diag of diagsToShow) {
-            const prefix = diag.severity === "error" ? "  ❌" : "  ⚠️";
-            messages.push(
-              `${prefix} [${diag.severity}] Line ${diag.line}:${diag.column} - ${diag.message}`,
-            );
-          }
-
-          if (file.diagnostics.length > MAX_DIAGNOSTICS_PER_FILE) {
-            messages.push(
-              `  ... and ${
-                file.diagnostics.length - MAX_DIAGNOSTICS_PER_FILE
-              } more diagnostics`,
-            );
-          }
-
-          messages.push("");
-        }
-
-        if (result.files.length > MAX_FILES_TO_SHOW) {
-          messages.push(
-            `... and ${
-              result.files.length - MAX_FILES_TO_SHOW
-            } more files with diagnostics`,
-          );
-        }
-      }
-
-      return messages.join("\n");
-    },
-  };
-}
+// Note: createAllDiagnosticsTool has been removed
+// getAllDiagnostics is now only used internally by getProjectDiagnostics
