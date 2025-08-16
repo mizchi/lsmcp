@@ -47,7 +47,7 @@ const searchSymbolSchema = z.object({
   kind: z
     .any()
     .describe(
-      `Symbol kind(s) to filter by. Accepts: string (e.g., 'Class'), array (e.g., ['Class', 'Interface']), or JSON string (e.g., '["Class", "Interface"]'). Case-insensitive. Valid kinds: ${SYMBOL_KIND_NAMES.join(", ")}. If not specified, searches all symbol kinds.`,
+      `OPTIONAL - Symbol kind(s) to filter by. If not specified, searches ALL symbol types. Accepts: string (e.g., 'Class'), array (e.g., ['Class', 'Interface']), or JSON string (e.g., '["Class", "Interface"]'). Case-insensitive. Valid kinds: ${SYMBOL_KIND_NAMES.join(", ")}`,
     )
     .optional(),
   file: z
@@ -87,7 +87,8 @@ export const searchSymbolsTool: McpToolDef<typeof searchSymbolSchema> = {
     "Search for symbols (functions, classes, variables, etc.) in the codebase using an indexed search. " +
     "Automatically creates and updates the symbol index as needed for fast searching across many files. " +
     "Provides fuzzy name matching and guides you to use specific LSP tools for detailed operations. " +
-    "Use 'kind' parameter with case-insensitive values like: File, Module, Namespace, Package, Class, Method, Property, Field, " +
+    "The 'kind' parameter is OPTIONAL - if not specified, searches ALL symbol types. " +
+    "When provided, use case-insensitive values like: File, Module, Namespace, Package, Class, Method, Property, Field, " +
     "Constructor, Enum, Interface, Function, Variable, Constant, String, Number, Boolean, Array, Object, Key, " +
     "Null, EnumMember, Struct, Event, Operator, TypeParameter.",
   schema: searchSymbolSchema,

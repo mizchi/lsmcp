@@ -513,6 +513,99 @@ describe("searchSymbolsTool", () => {
       );
     });
 
+    it("should search all kinds by default (minimal parameters)", async () => {
+      // Mock some symbols of different types
+      vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([
+        {
+          name: "TestClass",
+          kind: SymbolKind.Class,
+          location: {
+            uri: "file:///test/file1.ts",
+            range: {
+              start: { line: 0, character: 0 },
+              end: { line: 10, character: 0 },
+            },
+          },
+        },
+        {
+          name: "testFunction",
+          kind: SymbolKind.Function,
+          location: {
+            uri: "file:///test/file1.ts",
+            range: {
+              start: { line: 12, character: 0 },
+              end: { line: 15, character: 0 },
+            },
+          },
+        },
+        {
+          name: "TestInterface",
+          kind: SymbolKind.Interface,
+          location: {
+            uri: "file:///test/file2.ts",
+            range: {
+              start: { line: 0, character: 0 },
+              end: { line: 5, character: 0 },
+            },
+          },
+        },
+      ]);
+
+      // Call with minimal parameters - no kind specified
+      const result = await searchSymbolsTool.execute({
+        query: "test",
+        root: "/test",
+        includeChildren: true,
+        includeExternal: false,
+        onlyExternal: false,
+      });
+
+      // Should find all types of symbols
+      expect(result).toContain("TestClass");
+      expect(result).toContain("[Class]");
+      expect(result).toContain("testFunction");
+      expect(result).toContain("[Function]");
+      expect(result).toContain("TestInterface");
+      expect(result).toContain("[Interface]");
+
+      // Verify that no kind filter was applied
+      expect(IndexerAdapter.querySymbols).toHaveBeenCalledWith(
+        "/test",
+        expect.not.objectContaining({
+          kind: expect.anything(),
+        }),
+      );
+    });
+
+    it("should clearly indicate when searching all symbol types", async () => {
+      vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([
+        {
+          name: "ExampleSymbol",
+          kind: SymbolKind.Class,
+          location: {
+            uri: "file:///test/file.ts",
+            range: {
+              start: { line: 0, character: 0 },
+              end: { line: 1, character: 0 },
+            },
+          },
+        },
+      ]);
+
+      const result = await searchSymbolsTool.execute({
+        query: "example",
+        root: "/test",
+        includeChildren: true,
+        includeExternal: false,
+        onlyExternal: false,
+        // kind not specified - should search all types
+      });
+
+      // The result should indicate that we found symbols (without filtering by kind)
+      expect(result).toContain("Found 1 symbol(s) matching your search");
+      expect(result).toContain("ExampleSymbol");
+    });
+
     it("should auto-create index when empty", async () => {
       // Mock empty index
       vi.mocked(IndexerAdapter.getIndexStats).mockReturnValue({
