@@ -196,10 +196,14 @@ export function findBinary(
       }
 
       case "path": {
-        // Use direct path
-        if (existsSync(item.path)) {
-          mcpDebugWithPrefix("BinFinder", `Found at path: ${item.path}`);
-          return { command: item.path, args: defaultArgs };
+        // Use direct path (expand ~ for home directory)
+        const expandedPath = item.path.replace(
+          /^~/,
+          process.env.HOME || process.env.USERPROFILE || "",
+        );
+        if (existsSync(expandedPath)) {
+          mcpDebugWithPrefix("BinFinder", `Found at path: ${expandedPath}`);
+          return { command: expandedPath, args: defaultArgs };
         }
         break;
       }
