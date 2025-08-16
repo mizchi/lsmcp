@@ -1,4 +1,3 @@
-export * from "./editor/symbolEditTools.ts";
 export * from "./editor/regexEditTools.ts";
 export * from "./editor/rangeEditTools.ts";
 export * from "./memory/memoryTools.ts";
@@ -11,11 +10,6 @@ export * from "./highlevel/symbolResolverTools.ts";
 
 // Re-export all tools as a collection
 import type { McpToolDef } from "@internal/types";
-import {
-  replaceSymbolBodyTool,
-  insertBeforeSymbolTool,
-  insertAfterSymbolTool,
-} from "./editor/symbolEditTools.ts";
 import { replaceRegexTool } from "./editor/regexEditTools.ts";
 import { replaceRangeTool } from "./editor/rangeEditTools.ts";
 import {
@@ -45,15 +39,8 @@ import {
 
 // Core tools that are always available
 const coreTools = {
-  // Range editing tool (recommended)
+  // Range and regex editing tools
   replaceRange: replaceRangeTool,
-
-  // Symbol editing tools (deprecated - use replaceRange instead)
-  replaceSymbolBody: replaceSymbolBodyTool,
-  insertBeforeSymbol: insertBeforeSymbolTool,
-  insertAfterSymbol: insertAfterSymbolTool,
-
-  // Regex editing tool
   replaceRegex: replaceRegexTool,
 
   // Memory tools

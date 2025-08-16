@@ -7,9 +7,7 @@ describe("Configurable Language Features", () => {
       const tools = getSerenityTools();
 
       // Core tools should be present
-      expect(tools.replaceSymbolBody).toBeDefined();
-      expect(tools.insertBeforeSymbol).toBeDefined();
-      expect(tools.insertAfterSymbol).toBeDefined();
+      expect(tools.replaceRange).toBeDefined();
       expect(tools.replaceRegex).toBeDefined();
       expect(tools.listMemories).toBeDefined();
       expect(tools.readMemory).toBeDefined();
@@ -38,7 +36,7 @@ describe("Configurable Language Features", () => {
       });
 
       // Core tools should still be present
-      expect(tools.replaceSymbolBody).toBeDefined();
+      expect(tools.replaceRange).toBeDefined();
       expect(tools.listMemories).toBeDefined();
 
       // TypeScript tools should be present
@@ -78,7 +76,7 @@ describe("Configurable Language Features", () => {
 
       // Count total tools
       const toolCount = Object.keys(tools).length;
-      const coreToolCount = 13; // Number of core tools (added replaceRange)
+      const coreToolCount = 10; // Number of core tools (removed 3 symbol tools, added replaceRange)
       const typescriptToolCount = 6; // Number of TypeScript-specific tools
 
       expect(toolCount).toBe(coreToolCount + typescriptToolCount);
@@ -94,7 +92,7 @@ describe("Configurable Language Features", () => {
 
       // Should contain only core tools
       const toolNames = tools.map((t) => t.name);
-      expect(toolNames).toContain("replace_symbol_body");
+      expect(toolNames).toContain("replace_range");
       expect(toolNames).toContain("list_memories");
       expect(toolNames).toContain("list_dir");
 
@@ -113,7 +111,7 @@ describe("Configurable Language Features", () => {
       const toolNames = tools.map((t) => t.name);
 
       // Should contain both core and TypeScript tools
-      expect(toolNames).toContain("replace_symbol_body");
+      expect(toolNames).toContain("replace_range");
       expect(toolNames).toContain("index_external_libraries");
       expect(toolNames).toContain("search_external_library_symbols");
       expect(toolNames).toContain("resolve_symbol");
