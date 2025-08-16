@@ -126,7 +126,7 @@ export function anotherFunction() {
 
     // Search for the function
     const searchResult = await mcpClient.callTool({
-      name: "search_symbol_from_index",
+      name: "search_symbols",
       arguments: {
         root: tempDir,
         name: "myFunction",
@@ -163,7 +163,7 @@ export function anotherFunction() {
 
     // Search for the interface
     const searchResult = await mcpClient.callTool({
-      name: "search_symbol_from_index",
+      name: "search_symbols",
       arguments: {
         root: tempDir,
         name: "MyInterface",
@@ -186,7 +186,7 @@ export function anotherFunction() {
 
     // Search for the method
     const searchResult = await mcpClient.callTool({
-      name: "search_symbol_from_index",
+      name: "search_symbols",
       arguments: {
         root: tempDir,
         name: "getValue",
@@ -209,7 +209,7 @@ export function anotherFunction() {
 
     // Search for the function declared after multi-line comment
     const searchResult = await mcpClient.callTool({
-      name: "search_symbol_from_index",
+      name: "search_symbols",
       arguments: {
         root: tempDir,
         name: "anotherFunction",

@@ -5,7 +5,7 @@ import { SymbolKind } from "vscode-languageserver-types";
 import { loadIndexConfig } from "@internal/code-indexer";
 import { getAdapterDefaultPattern } from "@internal/code-indexer";
 import { glob } from "gitaware-glob";
-import { searchSymbolFromIndexTool } from "./indexTools";
+import { searchSymbolsTool } from "./indexTools";
 
 // Mock the IndexerAdapter module
 vi.mock("@internal/code-indexer", () => {
@@ -92,7 +92,7 @@ vi.mock("gitaware-glob", () => ({
   glob: vi.fn(),
 }));
 
-describe("searchSymbolFromIndexTool", () => {
+describe("searchSymbolsTool", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -129,7 +129,7 @@ describe("searchSymbolFromIndexTool", () => {
         },
       ]);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: "Class",
         root: "/test",
       } as any);
@@ -161,7 +161,7 @@ describe("searchSymbolFromIndexTool", () => {
         },
       ]);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: "class",
         root: "/test",
       } as any);
@@ -190,7 +190,7 @@ describe("searchSymbolFromIndexTool", () => {
         },
       ]);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: "CLASS",
         root: "/test",
       } as any);
@@ -219,7 +219,7 @@ describe("searchSymbolFromIndexTool", () => {
         },
       ]);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: "InTeRfAcE",
         root: "/test",
       } as any);
@@ -273,7 +273,7 @@ describe("searchSymbolFromIndexTool", () => {
           },
         ]);
 
-        const result = await searchSymbolFromIndexTool.execute({
+        const result = await searchSymbolsTool.execute({
           kind: kindCase,
           root: "/test",
         } as any);
@@ -316,7 +316,7 @@ describe("searchSymbolFromIndexTool", () => {
         },
       ]);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: ["Class", "Interface"],
         root: "/test",
       } as any);
@@ -368,7 +368,7 @@ describe("searchSymbolFromIndexTool", () => {
         },
       ]);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: ["class", "INTERFACE", "Function"],
         root: "/test",
       } as any);
@@ -387,7 +387,7 @@ describe("searchSymbolFromIndexTool", () => {
 
   describe("Error handling", () => {
     it("should return helpful error for invalid kind string", async () => {
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: "InvalidKind",
         root: "/test",
       } as any);
@@ -399,7 +399,7 @@ describe("searchSymbolFromIndexTool", () => {
     });
 
     it("should return error for numeric kind", async () => {
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         // @ts-expect-error - Testing invalid type
         kind: 5,
         root: "/test",
@@ -411,7 +411,7 @@ describe("searchSymbolFromIndexTool", () => {
     });
 
     it("should return error for mixed string and number array", async () => {
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         // @ts-expect-error - Testing invalid type
         kind: ["Class", 11],
         root: "/test",
@@ -477,7 +477,7 @@ describe("searchSymbolFromIndexTool", () => {
         },
       ]);
 
-      const result = await searchSymbolFromIndexTool.execute(
+      const result = await searchSymbolsTool.execute(
         {
           kind: "Class",
           root: "/test",
@@ -527,7 +527,7 @@ describe("searchSymbolFromIndexTool", () => {
       // Mock index creation failure
       vi.mocked(IndexerAdapter.getOrCreateIndex).mockReturnValue(null as any);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: "Class",
         root: "/test",
       } as any);
@@ -573,7 +573,7 @@ describe("searchSymbolFromIndexTool", () => {
 
       vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([]);
 
-      await searchSymbolFromIndexTool.execute({
+      await searchSymbolsTool.execute({
         kind: "Class",
         root: "/test",
       } as any);
@@ -599,7 +599,7 @@ describe("searchSymbolFromIndexTool", () => {
     it("should handle no results", async () => {
       vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([]);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: "Class",
         root: "/test",
       } as any);
@@ -625,7 +625,7 @@ describe("searchSymbolFromIndexTool", () => {
         },
       ]);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: "Method",
         name: "Test",
         file: "file.ts",
@@ -675,7 +675,7 @@ describe("searchSymbolFromIndexTool", () => {
         },
       ]);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: "Class",
         root: "/test",
       } as any);
@@ -711,7 +711,7 @@ describe("searchSymbolFromIndexTool", () => {
         },
       ]);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: "Class",
         root: "/test",
       } as any);
@@ -737,7 +737,7 @@ describe("searchSymbolFromIndexTool", () => {
 
       vi.mocked(IndexerAdapter.querySymbols).mockReturnValue([]);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: "Class",
         root: "/test",
       } as any);
@@ -769,7 +769,7 @@ describe("searchSymbolFromIndexTool", () => {
         },
       ]);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: "Method",
         root: "/test",
       } as any);
@@ -797,16 +797,17 @@ describe("searchSymbolFromIndexTool", () => {
 
       vi.mocked(IndexerAdapter.querySymbols).mockReturnValue(symbols);
 
-      const result = await searchSymbolFromIndexTool.execute({
+      const result = await searchSymbolsTool.execute({
         kind: "Class",
         root: "/test",
       } as any);
 
       expect(result).toContain("Found 60 symbol(s)");
-      expect(result).toContain("Symbol0");
-      expect(result).toContain("Symbol49");
-      expect(result).not.toContain("Symbol50");
-      expect(result).toContain("... and 10 more results");
+      expect(result).toContain("1. Symbol0");
+      expect(result).toContain("9. Symbol8");
+      expect(result).toContain("10. Symbol9");
+      expect(result).not.toContain("Symbol10");
+      expect(result).toContain("... and 50 more results");
     });
   });
 });

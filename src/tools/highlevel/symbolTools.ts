@@ -1,6 +1,5 @@
 import {
   createGetSymbolsOverviewTool,
-  createQuerySymbolsTool,
   getFilesRecursively,
 } from "./symbolToolsFactory.ts";
 
@@ -9,4 +8,4 @@ export { getFilesRecursively };
 
 // Create default instances with node filesystem
 export const getSymbolsOverviewTool = createGetSymbolsOverviewTool();
-export const querySymbolsTool = createQuerySymbolsTool();
+// querySymbolsTool removed - functionality now in search_symbols tool

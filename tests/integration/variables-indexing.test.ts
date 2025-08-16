@@ -122,7 +122,7 @@ interface MyInterface {
 
     // Search for all symbols
     const searchResult = await mcpClient.callTool({
-      name: "search_symbol_from_index",
+      name: "search_symbols",
       arguments: {},
     });
 
@@ -142,7 +142,7 @@ interface MyInterface {
 
     // Search for all symbols
     const searchResult = await mcpClient.callTool({
-      name: "search_symbol_from_index",
+      name: "search_symbols",
       arguments: {},
     });
 

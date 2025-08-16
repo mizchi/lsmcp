@@ -303,10 +303,10 @@ export enum UserRole {
     }, 30000);
   });
 
-  describe("search_symbol_from_index", () => {
+  describe("search_symbols", () => {
     it("should search for classes by name", async () => {
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           name: "Calculator",
@@ -323,7 +323,7 @@ export enum UserRole {
 
     it("should search for methods within a class", async () => {
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           name: "add",
@@ -341,7 +341,7 @@ export enum UserRole {
 
     it("should search for interfaces", async () => {
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           kind: "Interface",
@@ -358,7 +358,7 @@ export enum UserRole {
 
     it("should search for functions", async () => {
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           kind: "Function",
@@ -375,7 +375,7 @@ export enum UserRole {
 
     it("should search within specific file", async () => {
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           file: "src/utils.ts",
@@ -392,7 +392,7 @@ export enum UserRole {
 
     it("should support partial name matching", async () => {
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           name: "User",
@@ -408,7 +408,7 @@ export enum UserRole {
 
     it("should handle multiple kind filters", async () => {
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           kind: ["Class", "Interface"],
@@ -555,7 +555,7 @@ export enum UserRole {
 
       // Search without creating index first
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           kind: "Class",
@@ -583,7 +583,7 @@ export enum UserRole {
   describe("Symbol kind case-insensitivity", () => {
     it("should handle lowercase kind names", async () => {
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           kind: "class",
@@ -598,7 +598,7 @@ export enum UserRole {
 
     it("should handle uppercase kind names", async () => {
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           kind: "INTERFACE",
@@ -613,7 +613,7 @@ export enum UserRole {
 
     it("should handle mixed case kind names", async () => {
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           kind: "mEtHoD",

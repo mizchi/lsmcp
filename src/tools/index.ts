@@ -28,10 +28,7 @@ import {
   findFileTool,
   searchForPatternTool,
 } from "./highlevel/fileSystemTools.ts";
-import {
-  getSymbolsOverviewTool,
-  querySymbolsTool,
-} from "./highlevel/symbolTools.ts";
+import { getSymbolsOverviewTool } from "./highlevel/symbolTools.ts";
 // indexFilesTool removed - using internal indexing functions
 import {
   indexExternalLibrariesToolDef,
@@ -65,7 +62,7 @@ const coreTools = {
 
   // Symbol overview tools
   getSymbolsOverview: getSymbolsOverviewTool,
-  querySymbols: querySymbolsTool,
+  // querySymbols removed - functionality now in search_symbols tool
 
   // Index tools removed - indexing is now automatic
 };

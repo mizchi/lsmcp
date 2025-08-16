@@ -343,7 +343,7 @@ export function newFunction() {
     });
   });
 
-  describe("search_symbol_from_index", () => {
+  describe("search_symbols", () => {
     beforeAll(async () => {
       // Ensure index is created with explicit tsx pattern
       const result = await mcpClient.callTool({
@@ -364,7 +364,7 @@ export function newFunction() {
 
     it("should search for classes with exact match", async () => {
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           name: "Calculator",
@@ -394,7 +394,7 @@ export function newFunction() {
 
     it("should search for functions with partial match", async () => {
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           name: "format",
@@ -449,9 +449,9 @@ export function newFunction() {
           .join("\n"),
       );
 
-      // Now search with search_symbol_from_index
+      // Now search with search_symbols
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           kind: "Interface",
@@ -467,7 +467,7 @@ export function newFunction() {
       console.log("Search result:", content);
 
       // Should find both Config and ButtonProps interfaces
-      // Note: ButtonProps may not be found by search_symbol_from_index
+      // Note: ButtonProps may not be found by search_symbols
       // if TSX files are not included in the search
       expect(content).toContain("Config");
 
@@ -493,7 +493,7 @@ export class AutoUpdateClass {
 
       // Search should trigger auto-update
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           root: tempDir,
           name: "AutoUpdateClass",

@@ -159,9 +159,9 @@ export const DEFAULT_USER = createUser("Default", "default@example.com");
   });
 
   describe("High-Level Symbol Search", () => {
-    it("should search symbols with find_symbols and provide LSP guidance", async () => {
+    it("should search symbols and provide LSP guidance", async () => {
       const result = await mcpClient.callTool({
-        name: "find_symbols",
+        name: "search_symbols",
         arguments: {
           query: "User",
         },
@@ -182,9 +182,9 @@ export const DEFAULT_USER = createUser("Default", "default@example.com");
       expect(content).toContain("lsp_rename_symbol");
     });
 
-    it("should search functions with find_symbols", async () => {
+    it("should search functions with search_symbols", async () => {
       const result = await mcpClient.callTool({
-        name: "find_symbols",
+        name: "search_symbols",
         arguments: {
           kind: "Function",
         },
@@ -248,7 +248,7 @@ export const DEFAULT_USER = createUser("Default", "default@example.com");
     it("should automatically create index when searching symbols", async () => {
       // First search will automatically create the index
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           name: "User",
         },
@@ -266,7 +266,7 @@ export const DEFAULT_USER = createUser("Default", "default@example.com");
 
     it("should search with specific symbol kind", async () => {
       const result = await mcpClient.callTool({
-        name: "search_symbol_from_index",
+        name: "search_symbols",
         arguments: {
           kind: "Function",
         },
@@ -601,10 +601,10 @@ export const DEFAULT_USER = createUser("Default", "default@example.com");
   // Index management is now automatic - no direct access to index_symbols or clear_index
 
   describe("Integration Between High and Low Level APIs", () => {
-    it("should use find_symbols first, then use LSP tools for details", async () => {
+    it("should use search_symbols first, then use LSP tools for details", async () => {
       // Step 1: Find symbols with high-level API
       const searchResult = await mcpClient.callTool({
-        name: "find_symbols",
+        name: "search_symbols",
         arguments: {
           query: "createUser",
         },
