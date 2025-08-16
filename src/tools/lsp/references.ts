@@ -22,19 +22,23 @@ function readFileWithMetadata(root: string, filePath: string) {
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
-  filePath: z
+  relativePath: z
     .string()
     .describe("File path containing the symbol (relative to root)"),
   line: z
     .union([z.number(), z.string()])
     .describe("Line number (1-based) or string to match in the line"),
+  column: z
+    .number()
+    .optional()
+    .describe("Character position in the line (0-based)"),
   symbolName: z.string().describe("Name of the symbol to find references for"),
 });
 
 type FindReferencesRequest = z.infer<typeof schema>;
 
 interface Reference {
-  filePath: string;
+  relativePath: string;
   line: number;
   column: number;
   text: string;
@@ -62,13 +66,13 @@ async function findReferencesWithLSP(
     let fileContent: string;
     let fileUri: string;
     try {
-      const result = readFileWithMetadata(request.root, request.filePath);
+      const result = readFileWithMetadata(request.root, request.relativePath);
       fileContent = result.fileContent;
       fileUri = result.fileUri;
     } catch (error) {
       const context: ErrorContext = {
         operation: "find references",
-        filePath: request.filePath,
+        filePath: request.relativePath,
         language: "lsp",
       };
       return err(formatError(error, context));
@@ -82,14 +86,14 @@ async function findReferencesWithLSP(
         fileContent,
         request.line,
         request.symbolName,
-        request.filePath,
+        request.relativePath,
       );
       targetLine = result.lineIndex;
       symbolPosition = result.symbolIndex;
     } catch (error) {
       const context: ErrorContext = {
         operation: "symbol validation",
-        filePath: request.filePath,
+        filePath: request.relativePath,
         symbolName: request.symbolName,
         details: { line: request.line },
       };
@@ -141,7 +145,7 @@ async function findReferencesWithLSP(
         .join("\n");
 
       references.push({
-        filePath: path.relative(request.root, refPath),
+        relativePath: path.relative(request.root, refPath),
         line: startLine + 1, // Convert to 1-based
         column: startCol + 1, // Convert to 1-based
         text,
@@ -158,7 +162,7 @@ async function findReferencesWithLSP(
   } catch (error) {
     const context: ErrorContext = {
       operation: "find references",
-      filePath: request.filePath,
+      filePath: request.relativePath,
       symbolName: request.symbolName,
       language: "lsp",
     };
@@ -193,7 +197,7 @@ export function createReferencesTool(
             result.value.references
               .map(
                 (ref) =>
-                  `\n${ref.filePath}:${ref.line}:${ref.column}\n${ref.preview}`,
+                  `\n${ref.relativePath}:${ref.line}:${ref.column}\n${ref.preview}`,
               )
               .join("\n"),
           );
@@ -234,7 +238,7 @@ if (false && import.meta.vitest) {
       expect(lspFindReferencesTool.description).toContain("references");
       expect(lspFindReferencesTool.schema.shape).toBeDefined();
       expect(lspFindReferencesTool.schema.shape.root).toBeDefined();
-      expect(lspFindReferencesTool.schema.shape.filePath).toBeDefined();
+      expect(lspFindReferencesTool.schema.shape.relativePath).toBeDefined();
       expect(lspFindReferencesTool.schema.shape.line).toBeDefined();
       expect(lspFindReferencesTool.schema.shape.symbolName).toBeDefined();
     });
@@ -242,7 +246,7 @@ if (false && import.meta.vitest) {
     it("should find references to a type", async () => {
       const result = await lspFindReferencesTool.execute({
         root,
-        filePath: "examples/typescript/types.ts",
+        relativePath: "examples/typescript/types.ts",
         line: 1,
         symbolName: "Value",
       });
@@ -254,7 +258,7 @@ if (false && import.meta.vitest) {
     it("should find references to a function", async () => {
       const result = await lspFindReferencesTool.execute({
         root,
-        filePath: "examples/typescript/types.ts",
+        relativePath: "examples/typescript/types.ts",
         line: 10,
         symbolName: "getValue",
       });
@@ -266,7 +270,7 @@ if (false && import.meta.vitest) {
     it("should handle string line matching", async () => {
       const result = await lspFindReferencesTool.execute({
         root,
-        filePath: "examples/typescript/types.ts",
+        relativePath: "examples/typescript/types.ts",
         line: "ValueWithOptional",
         symbolName: "ValueWithOptional",
       });
@@ -278,7 +282,7 @@ if (false && import.meta.vitest) {
       await expect(
         lspFindReferencesTool.execute({
           root,
-          filePath: "examples/typescript/types.ts",
+          relativePath: "examples/typescript/types.ts",
           line: 1,
           symbolName: "nonexistent",
         }),
@@ -289,7 +293,7 @@ if (false && import.meta.vitest) {
       await expect(
         lspFindReferencesTool.execute({
           root,
-          filePath: "examples/typescript/types.ts",
+          relativePath: "examples/typescript/types.ts",
           line: "nonexistent line",
           symbolName: "Value",
         }),
@@ -300,7 +304,7 @@ if (false && import.meta.vitest) {
       await expect(
         lspFindReferencesTool.execute({
           root,
-          filePath: "nonexistent.ts",
+          relativePath: "nonexistent.ts",
           line: 1,
           symbolName: "test",
         }),
@@ -310,7 +314,7 @@ if (false && import.meta.vitest) {
     it("should include preview context in results", async () => {
       const result = await lspFindReferencesTool.execute({
         root,
-        filePath: "examples/typescript/types.ts",
+        relativePath: "examples/typescript/types.ts",
         line: 11,
         symbolName: "v",
       });
@@ -323,7 +327,7 @@ if (false && import.meta.vitest) {
       // The Value type is defined and used in types.ts
       const result = await lspFindReferencesTool.execute({
         root,
-        filePath: "examples/typescript/types.ts",
+        relativePath: "examples/typescript/types.ts",
         line: 1,
         symbolName: "Value",
       });

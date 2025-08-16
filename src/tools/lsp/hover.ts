@@ -7,7 +7,7 @@ import { resolveFileAndSymbol } from "./common.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
-  filePath: z
+  relativePath: z
     .string()
     .describe("File path containing the symbol (relative to root)"),
   line: z
@@ -18,7 +18,11 @@ const schema = z.object({
     .number()
     .describe("Character position in the line (0-based)")
     .optional(),
-  target: z
+  column: z
+    .number()
+    .describe("Column position in the line (0-based)")
+    .optional(),
+  textTarget: z
     .string()
     .describe("Text to find and get hover information for")
     .optional(),
@@ -67,8 +71,8 @@ function formatHoverResult(
   if (!result) {
     return ok({
       message: `No hover information available${
-        request.target ? ` for "${request.target}"` : ""
-      } at ${request.filePath}:${targetLine + 1}:${symbolPosition + 1}`,
+        request.textTarget ? ` for "${request.textTarget}"` : ""
+      } at ${request.relativePath}:${targetLine + 1}:${symbolPosition + 1}`,
       hover: null,
     });
   }
@@ -93,7 +97,7 @@ function formatHoverResult(
     // If range is null, specify all lines
     const resolution = resolveFileAndSymbol({
       root: request.root,
-      filePath: request.filePath,
+      relativePath: request.relativePath,
     });
     const lines = resolution.lines;
     range = {
@@ -110,8 +114,8 @@ function formatHoverResult(
 
   return ok({
     message: `Hover information for ${
-      request.target ? `"${request.target}" at ` : ""
-    }${request.filePath}:${targetLine + 1}:${symbolPosition + 1}`,
+      request.textTarget ? `"${request.textTarget}" at ` : ""
+    }${request.relativePath}:${targetLine + 1}:${symbolPosition + 1}`,
     hover: {
       contents: formattedContents,
       range,
@@ -132,12 +136,12 @@ async function getHover(
     let targetLine: number;
     let symbolPosition: number;
 
-    if (request.line === undefined && request.target) {
-      // Find target without line
+    if (request.line === undefined && request.textTarget) {
+      // Find textTarget without line
       resolution = resolveFileAndSymbol({
         root: request.root,
-        filePath: request.filePath,
-        target: request.target,
+        relativePath: request.relativePath,
+        textTarget: request.textTarget,
       });
       targetLine = resolution.lineIndex;
       symbolPosition = resolution.symbolIndex;
@@ -146,18 +150,18 @@ async function getHover(
         // Use provided character position
         resolution = resolveFileAndSymbol({
           root: request.root,
-          filePath: request.filePath,
+          relativePath: request.relativePath,
           line: request.line,
         });
         targetLine = resolution.lineIndex;
         symbolPosition = request.character;
-      } else if (request.target) {
+      } else if (request.textTarget) {
         // Find symbol in line
         resolution = resolveFileAndSymbol({
           root: request.root,
-          filePath: request.filePath,
+          relativePath: request.relativePath,
           line: request.line,
-          symbolName: request.target,
+          symbolName: request.textTarget,
         });
         targetLine = resolution.lineIndex;
         symbolPosition = resolution.symbolIndex;
@@ -165,21 +169,21 @@ async function getHover(
         // Default to beginning of line
         resolution = resolveFileAndSymbol({
           root: request.root,
-          filePath: request.filePath,
+          relativePath: request.relativePath,
           line: request.line,
         });
         targetLine = resolution.lineIndex;
         symbolPosition = 0;
       }
     } else {
-      // No line or target provided
-      return err("Either line or target must be provided");
+      // No line or textTarget provided
+      return err("Either line or textTarget must be provided");
     }
 
     const { fileUri, fileContent } = resolution;
 
     // Get language ID from file extension
-    const languageId = getLanguageIdFromPath(request.filePath);
+    const languageId = getLanguageIdFromPath(request.relativePath);
 
     if (!client) {
       return err("LSP client not available");
@@ -200,8 +204,8 @@ async function getHover(
       },
       errorContext: {
         operation: "get_hover",
-        filePath: request.filePath,
-        symbolName: request.target,
+        relativePath: request.relativePath,
+        symbolName: request.textTarget,
         line: request.line,
       },
     });

@@ -12,9 +12,10 @@ import {
 
 const schema = z.object({
   root: commonSchemas.root,
-  filePath: commonSchemas.filePath,
+  relativePath: commonSchemas.relativePath,
   line: commonSchemas.line,
-  target: z
+  column: commonSchemas.column.optional(),
+  textTarget: z
     .string()
     .describe("Text at the position to get completions for")
     .optional(),
@@ -119,9 +120,10 @@ function formatCompletionItem(
 async function handleGetCompletion(
   {
     root,
-    filePath,
+    relativePath,
     line,
-    target,
+    column,
+    textTarget,
     resolve,
     includeAutoImport,
   }: z.infer<typeof schema>,
@@ -132,21 +134,23 @@ async function handleGetCompletion(
   }
   const { fileUri, content } = await loadFileContext(
     root,
-    filePath,
+    relativePath,
     client.fileSystemApi,
   );
-  const lineIndex = resolveLineIndexOrThrow(content, line, filePath);
+  const lineIndex = resolveLineIndexOrThrow(content, line, relativePath);
 
   // Determine character position
   const lines = content.split("\n");
   const lineText = lines[lineIndex];
   let character = lineText.length; // Default to end of line
 
-  if (target) {
-    // Find the position after the target text
-    const targetIndex = lineText.indexOf(target);
+  if (column !== undefined) {
+    character = column;
+  } else if (textTarget) {
+    // Find the position after the textTarget text
+    const targetIndex = lineText.indexOf(textTarget);
     if (targetIndex !== -1) {
-      character = targetIndex + target.length;
+      character = targetIndex + textTarget.length;
     }
   }
 
@@ -171,17 +175,17 @@ async function handleGetCompletion(
 
     if (completions.length === 0) {
       const message = includeAutoImport
-        ? `No auto-import completions available at ${filePath}:${
+        ? `No auto-import completions available at ${relativePath}:${
             lineIndex + 1
           }:${character + 1}`
-        : `No completions available at ${filePath}:${lineIndex + 1}:${
+        : `No completions available at ${relativePath}:${lineIndex + 1}:${
             character + 1
           }`;
       return message;
     }
 
     // Format the completions
-    let result = `Completions at ${filePath}:${lineIndex + 1}:${
+    let result = `Completions at ${relativePath}:${lineIndex + 1}:${
       character + 1
     }:\n\n`;
 

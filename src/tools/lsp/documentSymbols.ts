@@ -100,7 +100,7 @@ function formatSymbolInformation(symbol: SymbolInformation): string {
 }
 
 async function handleGetDocumentSymbols(
-  { root, filePath }: z.infer<typeof schema>,
+  { root, relativePath }: z.infer<typeof schema>,
   client: LSPClient,
 ): Promise<string> {
   if (!client) {
@@ -108,7 +108,7 @@ async function handleGetDocumentSymbols(
   }
   const { fileUri, content } = await loadFileContext(
     root,
-    filePath,
+    relativePath,
     client.fileSystemApi,
   );
 
@@ -118,13 +118,13 @@ async function handleGetDocumentSymbols(
     try {
       symbols = await client.getDocumentSymbols(fileUri);
       console.log(
-        `[DEBUG] Document symbols for ${filePath}:`,
+        `[DEBUG] Document symbols for ${relativePath}:`,
         JSON.stringify(symbols, null, 2),
       );
     } catch (error) {
       debugLogWithPrefix(
         "DEBUG",
-        `Error getting document symbols for ${filePath}:`,
+        `Error getting document symbols for ${relativePath}:`,
         error,
       );
 
@@ -135,7 +135,7 @@ async function handleGetDocumentSymbols(
           errorMessage.includes("InvalidRequest") ||
           errorMessage.includes("method not found")
         ) {
-          return `Document symbols not supported by this language server for ${filePath}`;
+          return `Document symbols not supported by this language server for ${relativePath}`;
         }
       }
 
@@ -143,11 +143,11 @@ async function handleGetDocumentSymbols(
     }
 
     if (!symbols || symbols.length === 0) {
-      return `No symbols found in ${filePath}`;
+      return `No symbols found in ${relativePath}`;
     }
 
     // Format the symbols
-    let result = `Document symbols in ${filePath}:\n\n`;
+    let result = `Document symbols in ${relativePath}:\n\n`;
 
     // Check if we have DocumentSymbol[] or SymbolInformation[]
     // Some language servers may return DocumentSymbol without optional properties

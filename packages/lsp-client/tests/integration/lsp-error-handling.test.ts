@@ -91,7 +91,7 @@ describe.skip("LSP error handling tests", { timeout: 30000 }, () => {
       await expect(
         lspGetHoverTool.execute({
           root: tmpDir,
-          filePath: "non-existent.ts",
+          relativePath: "non-existent.ts",
           line: 1,
           character: 0,
         }),
@@ -100,7 +100,7 @@ describe.skip("LSP error handling tests", { timeout: 30000 }, () => {
       await expect(
         lspFindReferencesTool.execute({
           root: tmpDir,
-          filePath: "non-existent.ts",
+          relativePath: "non-existent.ts",
           line: 1,
           symbolName: "foo",
         }),
@@ -109,7 +109,7 @@ describe.skip("LSP error handling tests", { timeout: 30000 }, () => {
       await expect(
         lspGetDefinitionsTool.execute({
           root: tmpDir,
-          filePath: "non-existent.ts",
+          relativePath: "non-existent.ts",
           line: 1,
           symbolName: "foo",
         }),
@@ -118,9 +118,9 @@ describe.skip("LSP error handling tests", { timeout: 30000 }, () => {
       await expect(
         lspRenameSymbolTool.execute({
           root: tmpDir,
-          filePath: "non-existent.ts",
+          relativePath: "non-existent.ts",
           line: 1,
-          target: "foo",
+          textTarget: "foo",
           newName: "bar",
         }),
       ).rejects.toThrow(/File not found/);
@@ -128,7 +128,7 @@ describe.skip("LSP error handling tests", { timeout: 30000 }, () => {
       await expect(
         lspGetDocumentSymbolsTool.execute({
           root: tmpDir,
-          filePath: "non-existent.ts",
+          relativePath: "non-existent.ts",
         }),
       ).rejects.toThrow(/File not found/);
     });
@@ -146,7 +146,7 @@ describe.skip("LSP error handling tests", { timeout: 30000 }, () => {
         await expect(
           lspGetHoverTool.execute({
             root: tmpDir,
-            filePath: "restricted.ts",
+            relativePath: "restricted.ts",
             line: 1,
             character: 6,
           }),
@@ -167,9 +167,9 @@ describe.skip("LSP error handling tests", { timeout: 30000 }, () => {
       await expect(
         lspRenameSymbolTool.execute({
           root: tmpDir,
-          filePath: "test.ts",
+          relativePath: "test.ts",
           line: 999,
-          target: "x",
+          textTarget: "x",
           newName: "y",
         }),
       ).rejects.toThrow(/Symbol.*not found/i);
@@ -178,7 +178,7 @@ describe.skip("LSP error handling tests", { timeout: 30000 }, () => {
       await expect(
         lspGetHoverTool.execute({
           root: tmpDir,
-          filePath: "test.ts",
+          relativePath: "test.ts",
           line: -1,
           character: 0,
         }),
@@ -192,7 +192,7 @@ describe.skip("LSP error handling tests", { timeout: 30000 }, () => {
       // Character position out of range - should return no hover info
       const result = await lspGetHoverTool.execute({
         root: tmpDir,
-        filePath: "test.ts",
+        relativePath: "test.ts",
         line: 1,
         character: 999,
       });
@@ -207,7 +207,7 @@ describe.skip("LSP error handling tests", { timeout: 30000 }, () => {
       await expect(
         lspFindReferencesTool.execute({
           root: tmpDir,
-          filePath: "test.ts",
+          relativePath: "test.ts",
           line: 1,
           symbolName: "",
         }),
@@ -223,9 +223,9 @@ console.log(message);`;
       await expect(
         lspRenameSymbolTool.execute({
           root: tmpDir,
-          filePath: "test.ts",
+          relativePath: "test.ts",
           line: 1,
-          target: '"hello"',
+          textTarget: '"hello"',
           newName: '"goodbye"',
         }),
       ).rejects.toThrow(/not found/i);
@@ -234,9 +234,9 @@ console.log(message);`;
       await expect(
         lspRenameSymbolTool.execute({
           root: tmpDir,
-          filePath: "test.ts",
+          relativePath: "test.ts",
           line: 1,
-          target: "message",
+          textTarget: "message",
           newName: "123invalid", // Invalid identifier
         }),
       ).rejects.toThrow(/not a valid|invalid/i);
@@ -252,7 +252,7 @@ console.log(message);`;
       await expect(
         lspGetHoverTool.execute({
           root: tmpDir,
-          filePath: "test.ts",
+          relativePath: "test.ts",
           line: 1,
           character: 0,
         }),
@@ -284,7 +284,7 @@ const y = process();
       await expect(
         lspFindReferencesTool.execute({
           root: tmpDir,
-          filePath: "ambiguous.ts",
+          relativePath: "ambiguous.ts",
           line: "process()",
           symbolName: "process",
         }),
@@ -301,9 +301,9 @@ const z = 3;`;
       await expect(
         lspRenameSymbolTool.execute({
           root: tmpDir,
-          filePath: "symbols.ts",
+          relativePath: "symbols.ts",
           line: 2,
-          target: "x",
+          textTarget: "x",
           newName: "a",
         }),
       ).rejects.toThrow(/Symbol "x" not found on line 2/);
@@ -318,14 +318,14 @@ const z = 3;`;
       // Document symbols on empty file
       const symbolsResult = await lspGetDocumentSymbolsTool.execute({
         root: tmpDir,
-        filePath: "empty.ts",
+        relativePath: "empty.ts",
       });
       expect(symbolsResult).toContain("No symbols found");
 
       // Hover on empty file
       const hoverResult = await lspGetHoverTool.execute({
         root: tmpDir,
-        filePath: "empty.ts",
+        relativePath: "empty.ts",
         line: 1,
         character: 0,
       });
@@ -341,7 +341,7 @@ const z = 3;`;
 
       const symbolsResult = await lspGetDocumentSymbolsTool.execute({
         root: tmpDir,
-        filePath: "comments.ts",
+        relativePath: "comments.ts",
       });
       expect(symbolsResult).toContain("No symbols found");
     });
@@ -355,7 +355,7 @@ const z = 3;`;
       // Most operations should handle binary gracefully or throw
       const symbolsResult = await lspGetDocumentSymbolsTool.execute({
         root: tmpDir,
-        filePath: "binary.ts",
+        relativePath: "binary.ts",
       });
       // Should either return no symbols or handle gracefully
       expect(symbolsResult).toBeTruthy();

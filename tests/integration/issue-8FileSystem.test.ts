@@ -67,7 +67,7 @@ console.log(undefinedVariable);
         name: "get_diagnostics",
         arguments: {
           root: tmpDir,
-          filePath: testFile,
+          relativePath: testFile,
         },
       })) as any;
 
@@ -97,7 +97,7 @@ console.log(undefinedVariable);
         name: "get_diagnostics",
         arguments: {
           root: tmpDir,
-          filePath: testFile,
+          relativePath: testFile,
         },
       })) as any;
 
@@ -123,7 +123,7 @@ const num: number = "not a number";
         name: "get_diagnostics",
         arguments: {
           root: tmpDir,
-          filePath: testFile,
+          relativePath: testFile,
         },
       })) as any;
 

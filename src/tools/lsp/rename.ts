@@ -52,14 +52,14 @@ import { debug } from "@internal/lsp-client";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
-  filePath: z
+  relativePath: z
     .string()
     .describe("File path containing the symbol (relative to root)"),
   line: z
     .union([z.number(), z.string()])
     .describe("Line number (1-based) or string to match in the line")
     .optional(),
-  target: z.string().describe("Symbol to rename"),
+  textTarget: z.string().describe("Symbol to rename"),
   newName: z.string().describe("New name for the symbol"),
 });
 
@@ -87,13 +87,13 @@ async function performRenameWithoutLine(
 ): Promise<Result<RenameSymbolSuccess, string>> {
   try {
     // Read file content
-    const absolutePath = path.resolve(request.root, request.filePath);
+    const absolutePath = path.resolve(request.root, request.relativePath);
     const fileContent = readFileSync(absolutePath, "utf-8");
     const fileUri = `file://${absolutePath}`;
     // const lines = fileContent.split("\n");  // Currently unused
 
     // Find target text in file
-    const targetResult = findTargetInFile(fileContent, request.target);
+    const targetResult = findTargetInFile(fileContent, request.textTarget);
     const targetLine = targetResult.line;
     const symbolPosition = targetResult.character;
 
@@ -119,7 +119,7 @@ async function performRenameWithLine(
 ): Promise<Result<RenameSymbolSuccess, string>> {
   try {
     // Read file content
-    const absolutePath = path.resolve(request.root, request.filePath);
+    const absolutePath = path.resolve(request.root, request.relativePath);
     const fileContent = readFileSync(absolutePath, "utf-8");
     const fileUri = `file://${absolutePath}`;
 
@@ -129,7 +129,7 @@ async function performRenameWithLine(
     const lineText = lines[targetLine] || "";
 
     // Find symbol position in line
-    const symbolPosition = findSymbolInLine(lineText, request.target);
+    const symbolPosition = findSymbolInLine(lineText, request.textTarget);
 
     return performRenameAtPosition(
       request,
@@ -163,7 +163,7 @@ async function performRenameAtPosition(
     // Open all TypeScript/JavaScript files in the project to ensure LSP knows about them
     const projectFiles = await findProjectFiles(request.root);
     for (const file of projectFiles) {
-      if (file !== path.resolve(request.root, request.filePath)) {
+      if (file !== path.resolve(request.root, request.relativePath)) {
         try {
           const content = readFileSync(file, "utf-8");
           client.openDocument(`file://${file}`, content);
@@ -233,7 +233,7 @@ async function performRenameAtPosition(
     // Close all opened documents
     client.closeDocument(fileUri);
     for (const file of projectFiles) {
-      if (file !== path.resolve(request.root, request.filePath)) {
+      if (file !== path.resolve(request.root, request.relativePath)) {
         try {
           client.closeDocument(`file://${file}`);
         } catch (e) {

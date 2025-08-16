@@ -50,7 +50,7 @@ describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
       JSON.stringify(
         {
           compilerOptions: {
-            target: "es2020",
+            textTarget: "es2020",
             module: "commonjs",
             strict: true,
             esModuleInterop: true,
@@ -151,9 +151,9 @@ console.log(person.name);
       name: "get_hover",
       arguments: {
         root: tmpDir,
-        filePath: "test.ts",
+        relativePath: "test.ts",
         line: 7,
-        target: "person",
+        textTarget: "person",
       },
     });
 
@@ -183,9 +183,9 @@ console.log(message.);
       name: "get_completion",
       arguments: {
         root: tmpDir,
-        filePath: "completion.ts",
+        relativePath: "completion.ts",
         line: 3,
-        target: "message.",
+        textTarget: "message.",
       },
     });
 
@@ -221,9 +221,9 @@ greet("Alice", );
       name: "get_signature_help",
       arguments: {
         root: tmpDir,
-        filePath: "signature.ts",
+        relativePath: "signature.ts",
         line: 6,
-        target: ",",
+        textTarget: ",",
       },
     });
 
@@ -256,7 +256,7 @@ console.log("Hello"  )  ;
       name: "format_document",
       arguments: {
         root: tmpDir,
-        filePath: "format.ts",
+        relativePath: "format.ts",
         applyChanges: true,
       },
     });
@@ -299,9 +299,9 @@ const total = calculateSum(10, 20);
       name: "rename_symbol",
       arguments: {
         root: tmpDir,
-        filePath: "math.ts",
+        relativePath: "math.ts",
         line: 2,
-        target: "calculateSum",
+        textTarget: "calculateSum",
         newName: "addNumbers",
       },
     });
@@ -357,7 +357,7 @@ instance.myProperty = "value"; // Error: private property
       name: "get_code_actions",
       arguments: {
         root: tmpDir,
-        filePath: "codeaction.ts",
+        relativePath: "codeaction.ts",
         startLine: 7,
         endLine: 7,
       },
@@ -400,7 +400,7 @@ describe("TypeScript MCP with custom LSP via lsmcp", { timeout: 30000 }, () => {
       JSON.stringify(
         {
           compilerOptions: {
-            target: "es2020",
+            textTarget: "es2020",
             module: "commonjs",
             strict: true,
           },
@@ -466,9 +466,9 @@ console.log(greeting);
         name: "get_hover",
         arguments: {
           root: tmpDir,
-          filePath: "test.ts",
+          relativePath: "test.ts",
           line: 2,
-          target: "greeting",
+          textTarget: "greeting",
         },
       });
 
@@ -517,7 +517,7 @@ console.log(content);
         name: "get_diagnostics",
         arguments: {
           root: tmpDir,
-          filePath: "deno_test.ts",
+          relativePath: "deno_test.ts",
         },
       });
 

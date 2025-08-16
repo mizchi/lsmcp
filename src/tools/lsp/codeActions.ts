@@ -10,7 +10,7 @@ import { withLSPDocument } from "./common.ts";
 
 const schemaShape = {
   root: z.string().describe("Root directory for resolving relative paths"),
-  filePath: z
+  relativePath: z
     .string()
     .describe("File path to get code actions for (relative to root)"),
   startLine: z
@@ -93,7 +93,13 @@ function formatCodeAction(action: Command | CodeAction): string {
 }
 
 async function handleGetCodeActions(
-  { root, filePath, startLine, endLine, includeKinds }: z.infer<typeof schema>,
+  {
+    root,
+    relativePath,
+    startLine,
+    endLine,
+    includeKinds,
+  }: z.infer<typeof schema>,
   client: LSPClient,
 ): Promise<string> {
   if (!client) {
@@ -101,9 +107,9 @@ async function handleGetCodeActions(
   }
 
   // Convert to absolute path
-  const absolutePath = path.isAbsolute(filePath)
-    ? filePath
-    : path.join(root, filePath);
+  const absolutePath = path.isAbsolute(relativePath)
+    ? relativePath
+    : path.join(root, relativePath);
 
   // Check if file exists
   await fs.access(absolutePath);
@@ -147,7 +153,7 @@ async function handleGetCodeActions(
     });
 
     if (actions.length === 0) {
-      return `No code actions available for ${filePath}:${startLineIndex + 1}-${
+      return `No code actions available for ${relativePath}:${startLineIndex + 1}-${
         endLineIndex + 1
       }`;
     }
@@ -167,7 +173,7 @@ async function handleGetCodeActions(
     }
 
     if (filteredActions.length === 0) {
-      return `No code actions matching the specified kinds found for ${filePath}:${
+      return `No code actions matching the specified kinds found for ${relativePath}:${
         startLineIndex + 1
       }-${endLineIndex + 1}`;
     }
@@ -183,7 +189,7 @@ async function handleGetCodeActions(
     }
 
     // Format the code actions
-    let result = `Code actions for ${filePath}:${startLineIndex + 1}-${
+    let result = `Code actions for ${relativePath}:${startLineIndex + 1}-${
       endLineIndex + 1
     }:\n\n`;
 

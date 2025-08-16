@@ -56,9 +56,9 @@ export { foo };`;
     // Execute delete
     const result = await lspDeleteSymbolTool.execute({
       root: tmpDir,
-      filePath: "delete-variable.ts",
+      relativePath: "delete-variable.ts",
       line: 1, // const foo = 1;
-      target: "foo",
+      textTarget: "foo",
       removeReferences: true,
     });
 
@@ -93,9 +93,9 @@ console.log(processData("world"));`;
     // Execute delete without references
     const result = await lspDeleteSymbolTool.execute({
       root: tmpDir,
-      filePath: "delete-function-only.ts",
+      relativePath: "delete-function-only.ts",
       line: 1, // function processData
-      target: "processData",
+      textTarget: "processData",
       removeReferences: false,
     });
 
@@ -115,9 +115,9 @@ console.log(processData("world"));`;
     await expect(
       lspDeleteSymbolTool.execute({
         root: tmpDir,
-        filePath: "nonexistent.ts",
+        relativePath: "nonexistent.ts",
         line: 1,
-        target: "foo",
+        textTarget: "foo",
         removeReferences: true,
       }),
     ).rejects.toThrow();
@@ -134,9 +134,9 @@ const baz = 2;`;
     await expect(
       lspDeleteSymbolTool.execute({
         root: tmpDir,
-        filePath: "wrong-symbol.ts",
+        relativePath: "wrong-symbol.ts",
         line: 1,
-        target: "foo", // foo doesn't exist on line 1
+        textTarget: "foo", // foo doesn't exist on line 1
         removeReferences: true,
       }),
     ).rejects.toThrow('Symbol "foo" not found on line 1');

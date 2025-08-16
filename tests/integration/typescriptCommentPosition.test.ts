@@ -154,7 +154,7 @@ export function anotherFunction() {
       name: "get_definitions",
       arguments: {
         root: tempDir,
-        filePath: "test.ts",
+        relativePath: "test.ts",
         line: 5, // The actual function line, not the comment
         symbolName: "myFunction",
       },

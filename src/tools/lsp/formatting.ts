@@ -9,7 +9,7 @@ import { applyTextEdits } from "../../utils/applyTextEdits.ts";
 
 const schemaShape = {
   root: z.string().describe("Root directory for resolving relative paths"),
-  filePath: z.string().describe("File path to format (relative to root)"),
+  relativePath: z.string().describe("File path to format (relative to root)"),
   tabSize: z.number().default(2).describe("Number of spaces for indentation"),
   insertSpaces: z
     .boolean()
@@ -83,7 +83,7 @@ function formatTextEdit(edit: TextEdit, content: string): string {
 async function handleFormatDocument(
   {
     root,
-    filePath,
+    relativePath,
     tabSize,
     insertSpaces,
     trimTrailingWhitespace,
@@ -98,9 +98,9 @@ async function handleFormatDocument(
   }
 
   // Convert to absolute path
-  const absolutePath = path.isAbsolute(filePath)
-    ? filePath
-    : path.join(root, filePath);
+  const absolutePath = path.isAbsolute(relativePath)
+    ? relativePath
+    : path.join(root, relativePath);
 
   // Check if file exists
   await fs.access(absolutePath);
@@ -131,7 +131,7 @@ async function handleFormatDocument(
     const edits = await client.formatDocument(fileUri, options);
 
     if (edits.length === 0) {
-      return `No formatting changes needed for ${filePath}`;
+      return `No formatting changes needed for ${relativePath}`;
     }
 
     // Sort edits by position (reverse order for applying)
@@ -142,7 +142,7 @@ async function handleFormatDocument(
     });
 
     // Format the result
-    let result = `Formatting changes for ${filePath}:\n\n`;
+    let result = `Formatting changes for ${relativePath}:\n\n`;
 
     // Show each edit
     for (const edit of sortedEdits) {

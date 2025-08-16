@@ -118,9 +118,9 @@ export function testAdd() {
     // Rename 'add' to 'sum' in math.ts
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
-      filePath: "math.ts",
+      relativePath: "math.ts",
       line: 1,
-      target: "add",
+      textTarget: "add",
       newName: "sum",
     });
 
@@ -233,9 +233,9 @@ describe('User tests', () => {
     // Rename 'User' to 'Person' in user.ts
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
-      filePath: "user.ts",
+      relativePath: "user.ts",
       line: 1,
-      target: "User",
+      textTarget: "User",
       newName: "Person",
     });
 
@@ -350,9 +350,9 @@ export class Component {
     // Rename 'Config' to 'Configuration' in types.ts
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
-      filePath: "types.ts",
+      relativePath: "types.ts",
       line: 1,
-      target: "Config",
+      textTarget: "Config",
       newName: "Configuration",
     });
 
@@ -432,8 +432,8 @@ main();
     // Rename 'processData' without specifying line
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
-      filePath: "lib.ts",
-      target: "processData",
+      relativePath: "lib.ts",
+      textTarget: "processData",
       newName: "transformData",
     });
 
@@ -469,9 +469,9 @@ main();
     await expect(
       lspRenameSymbolTool.execute({
         root: tmpDir,
-        filePath: "dummy.ts",
+        relativePath: "dummy.ts",
         line: 1,
-        target: "nonExistentSymbol",
+        textTarget: "nonExistentSymbol",
         newName: "newName",
       }),
     ).rejects.toThrow(/Symbol "nonExistentSymbol" not found/);
@@ -480,8 +480,8 @@ main();
     await expect(
       lspRenameSymbolTool.execute({
         root: tmpDir,
-        filePath: "nonexistent.ts",
-        target: "x",
+        relativePath: "nonexistent.ts",
+        textTarget: "x",
         newName: "y",
       }),
     ).rejects.toThrow();

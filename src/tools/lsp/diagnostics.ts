@@ -12,7 +12,7 @@ import { DiagnosticResultBuilder } from "@internal/types";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
-  filePath: z
+  relativePath: z
     .string()
     .describe("File path to check for diagnostics (relative to root)"),
   timeout: z
@@ -62,7 +62,7 @@ async function getDiagnosticsWithLSPV2(
     // Resolve file
     const fs = await import("fs/promises");
     const path = await import("path");
-    const absolutePath = path.resolve(request.root, request.filePath);
+    const absolutePath = path.resolve(request.root, request.relativePath);
     const fileContent = await fs.readFile(absolutePath, "utf-8");
     const fileUri = `file://${absolutePath}`;
 
@@ -72,7 +72,7 @@ async function getDiagnosticsWithLSPV2(
     if (!client) {
       throw new Error("LSP client not provided");
     }
-    const languageId = getLanguageIdFromPath(request.filePath);
+    const languageId = getLanguageIdFromPath(request.relativePath);
 
     // Check if document is already open
     const documentWasOpen = client.isDocumentOpen(fileUri);
@@ -106,7 +106,10 @@ async function getDiagnosticsWithLSPV2(
     attempts = Math.max(3, Math.floor((Date.now() - startTime) / 100));
 
     // Build result
-    const builder = new DiagnosticResultBuilder(request.root, request.filePath);
+    const builder = new DiagnosticResultBuilder(
+      request.root,
+      request.relativePath,
+    );
     builder.addLSPDiagnostics(diagnostics);
 
     const totalTime = Date.now() - startTime;

@@ -7,16 +7,20 @@ import * as fs from "fs";
  */
 export function resolveFileAndSymbol(params: {
   root: string;
-  filePath: string;
+  relativePath: string;
   line?: number | string;
   symbolName?: string;
-  target?: string;
+  textTarget?: string;
 }) {
+  const pathToUse = params.relativePath;
+  if (!pathToUse) {
+    throw new Error("relativePath must be provided");
+  }
   const {
     content: fileContent,
     uri: fileUri,
     absolutePath,
-  } = readFileWithUri(params.root, params.filePath);
+  } = readFileWithUri(params.root, pathToUse);
   const lines = fileContent.split("\n");
 
   let lineIndex = 0;
@@ -31,7 +35,7 @@ export function resolveFileAndSymbol(params: {
       );
       if (lineIndex === -1) {
         throw new Error(
-          `Line containing "${params.line}" not found in ${params.filePath}`,
+          `Line containing "${params.line}" not found in ${pathToUse}`,
         );
       }
     }
@@ -42,14 +46,15 @@ export function resolveFileAndSymbol(params: {
     symbolIndex = lineContent.indexOf(params.symbolName);
     if (symbolIndex === -1) {
       throw new Error(
-        `Symbol "${params.symbolName}" not found on line ${lineIndex + 1} in ${params.filePath}`,
+        `Symbol "${params.symbolName}" not found on line ${lineIndex + 1} in ${pathToUse}`,
       );
     }
-  } else if (params.target) {
+  } else if (params.textTarget) {
+    const targetText = params.textTarget;
     // If no line specified, search for target in entire file
     if (params.line === undefined) {
       for (let i = 0; i < lines.length; i++) {
-        const idx = lines[i].indexOf(params.target);
+        const idx = lines[i].indexOf(targetText!);
         if (idx !== -1) {
           lineIndex = i;
           symbolIndex = idx;
@@ -57,17 +62,15 @@ export function resolveFileAndSymbol(params: {
         }
       }
       if (symbolIndex === -1) {
-        throw new Error(
-          `Target "${params.target}" not found in ${params.filePath}`,
-        );
+        throw new Error(`Target "${targetText}" not found in ${pathToUse}`);
       }
     } else {
       // Search for target on specified line
       const lineContent = lines[lineIndex];
-      symbolIndex = lineContent.indexOf(params.target);
+      symbolIndex = lineContent.indexOf(targetText!);
       if (symbolIndex === -1) {
         throw new Error(
-          `Target "${params.target}" not found on line ${lineIndex + 1} in ${params.filePath}`,
+          `Target "${targetText}" not found on line ${lineIndex + 1} in ${pathToUse}`,
         );
       }
     }
@@ -91,29 +94,29 @@ export function resolveFileAndSymbol(params: {
  */
 function readFileWithUri(
   root: string,
-  filePath: string,
+  relativePath: string,
 ): {
   content: string;
   uri: string;
   absolutePath: string;
 } {
-  const absolutePath = resolve(root, filePath);
+  const absolutePath = resolve(root, relativePath);
 
   try {
     const content = fs.readFileSync(absolutePath, "utf-8");
     const uri = pathToFileURL(absolutePath).toString();
     return { content, uri, absolutePath };
   } catch (error) {
-    throw new Error(`File not found: ${filePath}`);
+    throw new Error(`File not found: ${relativePath}`);
   }
 }
 
-export function readFileWithMetadata(root: string, filePath: string) {
+export function readFileWithMetadata(root: string, relativePath: string) {
   const {
     content: fileContent,
     uri: fileUri,
     absolutePath,
-  } = readFileWithUri(root, filePath);
+  } = readFileWithUri(root, relativePath);
   return { fileContent, fileUri, absolutePath };
 }
 

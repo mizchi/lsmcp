@@ -10,15 +10,19 @@ import { withLSPDocument } from "./common.ts";
 
 const schemaShape = {
   root: z.string().describe("Root directory for resolving relative paths"),
-  filePath: z
+  relativePath: z
     .string()
     .describe("File path to get signature help for (relative to root)"),
   line: z
     .union([z.number(), z.string()])
     .describe("Line number (1-based) or string to match in the line"),
-  target: z
+  textTarget: z
     .string()
     .describe("Function call or text at the position to get signature help for")
+    .optional(),
+  column: z
+    .number()
+    .describe("Column position in the line (0-based)")
     .optional(),
 };
 
@@ -97,7 +101,7 @@ function formatSignatureHelp(help: SignatureHelp): string {
 }
 
 async function handleGetSignatureHelp(
-  { root, filePath, line, target }: z.infer<typeof schema>,
+  { root, relativePath, line, column, textTarget }: z.infer<typeof schema>,
   client: LSPClient,
 ): Promise<string> {
   if (!client) {
@@ -105,9 +109,9 @@ async function handleGetSignatureHelp(
   }
 
   // Convert to absolute path
-  const absolutePath = path.isAbsolute(filePath)
-    ? filePath
-    : path.join(root, filePath);
+  const absolutePath = path.isAbsolute(relativePath)
+    ? relativePath
+    : path.join(root, relativePath);
 
   // Check if file exists
   await fs.access(absolutePath);
@@ -126,13 +130,15 @@ async function handleGetSignatureHelp(
   const lineText = lines[lineIndex];
   let character = 0;
 
-  if (target) {
-    // Find the position within or after the target text
-    const targetIndex = lineText.indexOf(target);
+  if (column !== undefined) {
+    character = column;
+  } else if (textTarget) {
+    // Find the position within or after the textTarget text
+    const targetIndex = lineText.indexOf(textTarget);
     if (targetIndex !== -1) {
       // Position cursor inside the function call (usually after the opening parenthesis)
-      character = targetIndex + target.length;
-      // Look for opening parenthesis after the target
+      character = targetIndex + textTarget.length;
+      // Look for opening parenthesis after the textTarget
       const afterTarget = lineText.substring(character);
       const parenIndex = afterTarget.indexOf("(");
       if (parenIndex !== -1) {
@@ -156,14 +162,14 @@ async function handleGetSignatureHelp(
     });
 
     if (!help) {
-      return `No signature help available at ${filePath}:${lineIndex + 1}:${
+      return `No signature help available at ${relativePath}:${lineIndex + 1}:${
         character + 1
       }`;
     }
 
     // Format the signature help
     const formatted = formatSignatureHelp(help);
-    return `Signature help at ${filePath}:${lineIndex + 1}:${
+    return `Signature help at ${relativePath}:${lineIndex + 1}:${
       character + 1
     }:\n\n${formatted}`;
   });

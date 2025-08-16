@@ -121,7 +121,7 @@ pythonVersion = "3.9"
         name: "get_diagnostics",
         arguments: {
           root: tmpDir,
-          filePath: "test_errors.py",
+          relativePath: "test_errors.py",
           forceRefresh: true,
           timeout: 10000,
         },
@@ -151,7 +151,7 @@ pythonVersion = "3.9"
         name: "get_diagnostics",
         arguments: {
           root: tmpDir,
-          filePath: "test_clean.py",
+          relativePath: "test_clean.py",
           forceRefresh: true,
           timeout: 10000,
         },
@@ -196,9 +196,9 @@ pythonVersion = "3.9"
         name: "get_hover",
         arguments: {
           root: tmpDir,
-          filePath: "test_clean.py",
+          relativePath: "test_clean.py",
           line: 2,
-          target: "greet",
+          textTarget: "greet",
         },
       });
 
@@ -219,7 +219,7 @@ pythonVersion = "3.9"
         name: "get_definitions",
         arguments: {
           root: tmpDir,
-          filePath: "test_clean.py",
+          relativePath: "test_clean.py",
           line: 5,
           symbolName: "greet",
         },
@@ -242,7 +242,7 @@ pythonVersion = "3.9"
         name: "get_document_symbols",
         arguments: {
           root: tmpDir,
-          filePath: "test_errors.py",
+          relativePath: "test_errors.py",
         },
       });
 
@@ -278,9 +278,9 @@ test_`,
         name: "get_completion",
         arguments: {
           root: tmpDir,
-          filePath: "test_completion.py",
+          relativePath: "test_completion.py",
           line: 6,
-          target: "test_",
+          textTarget: "test_",
         },
       });
 

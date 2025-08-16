@@ -53,7 +53,7 @@ describe("LSP Diagnostics - Stale Content Issue #8", () => {
       name: "get_diagnostics",
       arguments: {
         root: tmpDir,
-        filePath: "warmup.ts",
+        relativePath: "warmup.ts",
       },
     });
 
@@ -99,7 +99,7 @@ function foo(): string {
         name: "get_diagnostics",
         arguments: {
           root: tmpDir,
-          filePath: testFile,
+          relativePath: testFile,
           forceRefresh: true, // Force refresh to ensure latest diagnostics
         },
       })) as any;
@@ -150,7 +150,7 @@ function foo(): string {
       name: "get_diagnostics",
       arguments: {
         root: tmpDir,
-        filePath: testFile,
+        relativePath: testFile,
       },
     })) as any;
 
@@ -172,7 +172,7 @@ function foo(): string {
       name: "get_diagnostics",
       arguments: {
         root: tmpDir,
-        filePath: testFile,
+        relativePath: testFile,
       },
     })) as any;
 
@@ -205,7 +205,7 @@ function foo(): string {
         name: "get_diagnostics",
         arguments: {
           root: tmpDir,
-          filePath: testFile,
+          relativePath: testFile,
           forceRefresh: true, // Force fresh read of file content
         },
       })) as any;
@@ -244,7 +244,7 @@ function foo(): string {
           name: "get_diagnostics",
           arguments: {
             root: tmpDir,
-            filePath: file.name,
+            relativePath: file.name,
           },
         }),
       ),
@@ -283,7 +283,7 @@ function foo(): string {
       name: "get_diagnostics",
       arguments: {
         root: tmpDir,
-        filePath: tsFile,
+        relativePath: tsFile,
       },
     })) as any;
 
@@ -294,7 +294,7 @@ function foo(): string {
       name: "get_diagnostics",
       arguments: {
         root: tmpDir,
-        filePath: jsFile,
+        relativePath: jsFile,
       },
     })) as any;
 

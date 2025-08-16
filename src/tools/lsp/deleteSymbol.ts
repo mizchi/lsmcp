@@ -15,13 +15,13 @@ import { resolveLineParameter } from "@internal/lsp-client";
 
 const schemaShape = {
   root: z.string().describe("Root directory for resolving relative paths"),
-  filePath: z
+  relativePath: z
     .string()
     .describe("File path containing the symbol (relative to root)"),
   line: z
     .union([z.number(), z.string()])
     .describe("Line number (1-based) or string to match in the line"),
-  target: z.string().describe("Name of the symbol to delete"),
+  textTarget: z.string().describe("Name of the symbol to delete"),
   removeReferences: z
     .boolean()
     .optional()
@@ -41,9 +41,9 @@ interface DeleteSymbolResult {
 async function handleDeleteSymbol(
   {
     root,
-    filePath,
+    relativePath,
     line,
-    target,
+    textTarget,
     removeReferences = true,
   }: z.infer<typeof schema>,
   client: LSPClient,
@@ -53,9 +53,9 @@ async function handleDeleteSymbol(
   }
 
   // Convert to absolute path
-  const absolutePath = path.isAbsolute(filePath)
-    ? filePath
-    : path.join(root, filePath);
+  const absolutePath = path.isAbsolute(relativePath)
+    ? relativePath
+    : path.join(root, relativePath);
 
   // Convert to file URI
   const fileUri = pathToFileURL(absolutePath).toString();
@@ -76,11 +76,11 @@ async function handleDeleteSymbol(
 
     // Find the symbol position on the line
     const lineContent = lines[lineIndex];
-    const symbolIndex = lineContent.indexOf(target);
+    const symbolIndex = lineContent.indexOf(textTarget);
 
     if (symbolIndex === -1) {
       throw new Error(
-        `Symbol "${target}" not found on line ${resolvedLine}: "${lineContent.trim()}"`,
+        `Symbol "${textTarget}" not found on line ${resolvedLine}: "${lineContent.trim()}"`,
       );
     }
 
@@ -136,8 +136,8 @@ async function handleDeleteSymbol(
         fileContent = content;
         fileLines = lines;
       } else {
-        const filePath = fileURLToPath(uri);
-        fileContent = await fs.readFile(filePath, "utf-8");
+        const absoluteFilePath = fileURLToPath(uri);
+        fileContent = await fs.readFile(absoluteFilePath, "utf-8");
         fileLines = fileContent.split("\n");
         // Open document for editing
         client.openDocument(uri, fileContent);
@@ -177,7 +177,7 @@ async function handleDeleteSymbol(
     // Apply the workspace edit
     const result = await client.applyEdit(
       workspaceEdit,
-      `Delete symbol "${target}"`,
+      `Delete symbol "${textTarget}"`,
     );
 
     if (!result.applied) {

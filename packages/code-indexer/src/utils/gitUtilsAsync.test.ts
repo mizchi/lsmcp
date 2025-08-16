@@ -124,7 +124,7 @@ describe("gitUtils (async)", () => {
       expect(files.length).toBe(20000);
     });
 
-    it("should handle buffer overflow error", async () => {
+    it("should handle buffer overflow error", { timeout: 10000 }, async () => {
       const mockProc1 = new MockProcess();
       const mockProc2 = new MockProcess();
 

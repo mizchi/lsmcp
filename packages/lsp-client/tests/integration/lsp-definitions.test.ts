@@ -83,10 +83,10 @@ describe("LSP get_definitions with include_body tests", () => {
       const result = await lspGetDefinitionsTool.execute(
         {
           root: tmpDir,
-          filePath: "main.ts",
+          relativePath: "main.ts",
           line: "formatResult",
           symbolName: "formatResult",
-          include_body: false,
+          includeBody: false,
         },
         30000,
       );
@@ -103,10 +103,10 @@ describe("LSP get_definitions with include_body tests", () => {
       const result = await lspGetDefinitionsTool.execute(
         {
           root: tmpDir,
-          filePath: "main.ts",
+          relativePath: "main.ts",
           line: "Calculator",
           symbolName: "Calculator",
-          include_body: false,
+          includeBody: false,
         },
         30000,
       );
@@ -123,10 +123,10 @@ describe("LSP get_definitions with include_body tests", () => {
       const result = await lspGetDefinitionsTool.execute(
         {
           root: tmpDir,
-          filePath: "main.ts",
+          relativePath: "main.ts",
           line: "User",
           symbolName: "User",
-          include_body: false,
+          includeBody: false,
         },
         30000,
       );
@@ -142,10 +142,10 @@ describe("LSP get_definitions with include_body tests", () => {
       const result = await lspGetDefinitionsTool.execute(
         {
           root: tmpDir,
-          filePath: "main.ts",
+          relativePath: "main.ts",
           line: "UserAction",
           symbolName: "UserAction",
-          include_body: false,
+          includeBody: false,
         },
         30000,
       );
@@ -162,10 +162,10 @@ describe("LSP get_definitions with include_body tests", () => {
       const result = await lspGetDefinitionsTool.execute(
         {
           root: tmpDir,
-          filePath: "main.ts",
+          relativePath: "main.ts",
           line: "formatResult",
           symbolName: "formatResult",
-          include_body: true,
+          includeBody: true,
         },
         30000,
       );
@@ -182,10 +182,10 @@ describe("LSP get_definitions with include_body tests", () => {
       const result = await lspGetDefinitionsTool.execute(
         {
           root: tmpDir,
-          filePath: "main.ts",
+          relativePath: "main.ts",
           line: "Calculator",
           symbolName: "Calculator",
-          include_body: true,
+          includeBody: true,
         },
         30000,
       );
@@ -204,10 +204,10 @@ describe("LSP get_definitions with include_body tests", () => {
       const result = await lspGetDefinitionsTool.execute(
         {
           root: tmpDir,
-          filePath: "calculator.ts",
+          relativePath: "calculator.ts",
           line: "add(a: number",
           symbolName: "add",
-          include_body: true,
+          includeBody: true,
         },
         30000,
       );
@@ -226,10 +226,10 @@ describe("LSP get_definitions with include_body tests", () => {
       const result = await lspGetDefinitionsTool.execute(
         {
           root: tmpDir,
-          filePath: "main.ts",
+          relativePath: "main.ts",
           line: "User",
           symbolName: "User",
-          include_body: true,
+          includeBody: true,
         },
         30000,
       );
@@ -247,10 +247,10 @@ describe("LSP get_definitions with include_body tests", () => {
       const result = await lspGetDefinitionsTool.execute(
         {
           root: tmpDir,
-          filePath: "utils.ts",
+          relativePath: "utils.ts",
           line: "CONSTANTS",
           symbolName: "CONSTANTS",
-          include_body: true,
+          includeBody: true,
         },
         30000,
       );
@@ -270,10 +270,10 @@ describe("LSP get_definitions with include_body tests", () => {
       const result = await lspGetDefinitionsTool.execute(
         {
           root: tmpDir,
-          filePath: "main.ts",
+          relativePath: "main.ts",
           line: "formatResult",
           symbolName: "formatResult",
-          include_body: true,
+          includeBody: true,
           before: 2,
           after: 2,
         },
@@ -292,10 +292,10 @@ describe("LSP get_definitions with include_body tests", () => {
       const result = await lspGetDefinitionsTool.execute(
         {
           root: tmpDir,
-          filePath: "main.ts",
+          relativePath: "main.ts",
           line: "formatResult",
           symbolName: "formatResult",
-          include_body: false,
+          includeBody: false,
           before: 2,
           after: 2,
         },
@@ -315,10 +315,10 @@ describe("LSP get_definitions with include_body tests", () => {
       await expect(
         lspGetDefinitionsTool.execute({
           root: tmpDir,
-          filePath: "main.ts",
+          relativePath: "main.ts",
           line: "nonExistentSymbol",
           symbolName: "nonExistentSymbol",
-          include_body: true,
+          includeBody: true,
         }),
       ).rejects.toThrow();
     }, 30000);
@@ -327,10 +327,10 @@ describe("LSP get_definitions with include_body tests", () => {
       await expect(
         lspGetDefinitionsTool.execute({
           root: tmpDir,
-          filePath: "non-existent.ts",
+          relativePath: "non-existent.ts",
           line: "symbol",
           symbolName: "symbol",
-          include_body: true,
+          includeBody: true,
         }),
       ).rejects.toThrow();
     }, 30000);

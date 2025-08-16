@@ -146,7 +146,7 @@ export function roundTo(value: number, decimals: number): number {
       const hoverResult = await lspGetHoverTool.execute(
         {
           root: tmpDir,
-          filePath: "main.ts",
+          relativePath: "main.ts",
           line: 5,
           character: 6, // hover over 'calc'
         },
@@ -159,7 +159,7 @@ export function roundTo(value: number, decimals: number): number {
       const referencesResult = await lspFindReferencesTool.execute(
         {
           root: tmpDir,
-          filePath: "calculator.ts",
+          relativePath: "calculator.ts",
           line: "add(a: number",
           symbolName: "add",
         },
@@ -175,7 +175,7 @@ export function roundTo(value: number, decimals: number): number {
       const definitionsResult = await lspGetDefinitionsTool.execute(
         {
           root: tmpDir,
-          filePath: "main.ts",
+          relativePath: "main.ts",
           line: "formatResult",
           symbolName: "formatResult",
         },
@@ -188,7 +188,7 @@ export function roundTo(value: number, decimals: number): number {
       const symbolsResult = await lspGetDocumentSymbolsTool.execute(
         {
           root: tmpDir,
-          filePath: "calculator.ts",
+          relativePath: "calculator.ts",
         },
         30000,
       );
@@ -202,9 +202,9 @@ export function roundTo(value: number, decimals: number): number {
       const renameResult = await lspRenameSymbolTool.execute(
         {
           root: tmpDir,
-          filePath: "utils.ts",
+          relativePath: "utils.ts",
           line: "formatResult",
-          target: "formatResult",
+          textTarget: "formatResult",
           newName: "formatOutput",
         },
         30000,
@@ -234,7 +234,7 @@ console.log(unknownVariable); // Unknown variable
       const diagnosticsResult = await lspGetDiagnosticsTool.execute(
         {
           root: tmpDir,
-          filePath: "error.ts",
+          relativePath: "error.ts",
         },
         30000,
       );
@@ -251,7 +251,7 @@ console.log(unknownVariable); // Unknown variable
       await expect(
         lspGetHoverTool.execute({
           root: tmpDir,
-          filePath: "non-existent.ts",
+          relativePath: "non-existent.ts",
           line: 1,
           character: 0,
         }),
@@ -261,7 +261,7 @@ console.log(unknownVariable); // Unknown variable
       await expect(
         lspFindReferencesTool.execute({
           root: tmpDir,
-          filePath: "non-existent.ts",
+          relativePath: "non-existent.ts",
           line: 1,
           symbolName: "foo",
         }),
@@ -276,7 +276,7 @@ console.log(unknownVariable); // Unknown variable
       const hoverResult = await lspGetHoverTool.execute(
         {
           root: tmpDir,
-          filePath: "test.ts",
+          relativePath: "test.ts",
           line: 2, // Valid line but beyond content
           character: 0,
         },
@@ -288,9 +288,9 @@ console.log(unknownVariable); // Unknown variable
       await expect(
         lspRenameSymbolTool.execute({
           root: tmpDir,
-          filePath: "test.ts",
+          relativePath: "test.ts",
           line: 1,
-          target: "nonExistentSymbol",
+          textTarget: "nonExistentSymbol",
           newName: "newName",
         }),
       ).rejects.toThrow();
@@ -309,7 +309,7 @@ console.log(unknownVariable); // Unknown variable
       const hover1 = await lspGetHoverTool.execute(
         {
           root: tmpDir,
-          filePath: "constants.ts",
+          relativePath: "constants.ts",
           line: 1,
           character: 13, // VERSION
         },
@@ -320,7 +320,7 @@ console.log(unknownVariable); // Unknown variable
       const hover2 = await lspGetHoverTool.execute(
         {
           root: tmpDir,
-          filePath: "constants.ts",
+          relativePath: "constants.ts",
           line: 2,
           character: 13, // NAME
         },
@@ -373,7 +373,7 @@ const updatedConfig = updateConfig(config);
       const configRefs = await lspFindReferencesTool.execute(
         {
           root: tmpDir,
-          filePath: "lib.ts",
+          relativePath: "lib.ts",
           line: 2, // interface Config line
           symbolName: "Config",
         },
@@ -389,7 +389,7 @@ const updatedConfig = updateConfig(config);
       const configDef = await lspGetDefinitionsTool.execute(
         {
           root: tmpDir,
-          filePath: "app.ts",
+          relativePath: "app.ts",
           line: "const config: Config",
           symbolName: "Config",
         },

@@ -57,7 +57,7 @@ describe("lsp document symbols", { timeout: 30000 }, () => {
   it("should get document symbols from a TypeScript file", async () => {
     const result = await lspGetDocumentSymbolsTool.execute({
       root: FIXTURES_DIR,
-      filePath: "document-symbols-test.ts",
+      relativePath: "document-symbols-test.ts",
     });
 
     // Verify result contains expected symbols
@@ -90,7 +90,7 @@ describe("lsp document symbols", { timeout: 30000 }, () => {
     try {
       const result = await lspGetDocumentSymbolsTool.execute({
         root: FIXTURES_DIR,
-        filePath: "empty.ts",
+        relativePath: "empty.ts",
       });
 
       expect(result).toBe("No symbols found in empty.ts");
@@ -106,7 +106,7 @@ describe("lsp document symbols", { timeout: 30000 }, () => {
     await expect(
       lspGetDocumentSymbolsTool.execute({
         root: FIXTURES_DIR,
-        filePath: "non-existent.ts",
+        relativePath: "non-existent.ts",
       }),
     ).rejects.toThrow();
   });

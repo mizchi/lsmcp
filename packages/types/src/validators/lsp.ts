@@ -8,7 +8,7 @@ import { z } from "zod";
 export const lspSchemas = {
   root: z.string().describe("Root directory for resolving relative paths"),
 
-  filePath: z.string().describe("File path (relative to root)"),
+  relativePath: z.string().describe("File path (relative to root)"),
 
   line: z
     .union([z.number(), z.string()])
@@ -35,7 +35,12 @@ export const lspSchemas = {
     .default(0)
     .describe("Number of lines to show after the definition"),
 
-  target: z.string().optional().describe("Text to find in the file"),
+  textTarget: z.string().optional().describe("Text to find in the file"),
+
+  column: z
+    .number()
+    .optional()
+    .describe("Column position in the line (0-based)"),
 
   includeBody: z
     .boolean()
@@ -53,12 +58,12 @@ export const lspSchemas = {
 // Common schema combinations
 export const fileLocationSchema = z.object({
   root: lspSchemas.root,
-  filePath: lspSchemas.filePath,
+  relativePath: lspSchemas.relativePath,
 });
 
 export const symbolLocationSchema = z.object({
   root: lspSchemas.root,
-  filePath: lspSchemas.filePath,
+  relativePath: lspSchemas.relativePath,
   line: lspSchemas.line,
   symbolName: lspSchemas.symbolName,
 });
@@ -71,15 +76,16 @@ export const definitionSchema = symbolLocationSchema.extend({
 
 export const hoverSchema = z.object({
   root: lspSchemas.root,
-  filePath: lspSchemas.filePath,
+  relativePath: lspSchemas.relativePath,
   line: lspSchemas.line.optional(),
   character: lspSchemas.character.optional(),
-  target: lspSchemas.target.optional(),
+  column: lspSchemas.column.optional(),
+  textTarget: lspSchemas.textTarget.optional(),
 });
 
 export const diagnosticsSchema = z.object({
   root: lspSchemas.root,
-  filePath: lspSchemas.filePath,
+  relativePath: lspSchemas.relativePath,
   forceRefresh: lspSchemas.forceRefresh.optional(),
   timeout: lspSchemas.timeout.optional(),
 });

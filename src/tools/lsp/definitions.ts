@@ -22,16 +22,19 @@ function readFileWithMetadata(root: string, filePath: string) {
 
 const schema = z.object({
   root: commonSchemas.root,
-  filePath: commonSchemas.filePath.describe(
+  relativePath: commonSchemas.relativePath.describe(
     "File path containing the symbol (relative to root)",
   ),
   line: commonSchemas.line,
+  column: commonSchemas.character
+    .optional()
+    .describe("Character position in the line (0-based)"),
   symbolName: commonSchemas.symbolName.describe(
     "Name of the symbol to get definitions for",
   ),
   before: commonSchemas.before.optional(),
   after: commonSchemas.after.optional(),
-  include_body: commonSchemas.includeBody
+  includeBody: commonSchemas.includeBody
     .optional()
     .describe(
       "Include the full body of the symbol (for classes, functions, interfaces)",
@@ -41,7 +44,7 @@ const schema = z.object({
 type GetDefinitionsRequest = z.infer<typeof schema>;
 
 interface Definition {
-  filePath: string;
+  relativePath: string;
   line: number;
   column: number;
   symbolName: string;
@@ -126,7 +129,7 @@ async function getDefinitionsWithLSP(
     // Read file content with metadata
     const { fileContent, fileUri } = readFileWithMetadata(
       request.root,
-      request.filePath,
+      request.relativePath,
     );
 
     // Validate line and symbol
@@ -135,7 +138,7 @@ async function getDefinitionsWithLSP(
         fileContent,
         request.line,
         request.symbolName,
-        request.filePath,
+        request.relativePath,
       );
 
     // Open document in LSP
@@ -253,7 +256,7 @@ async function getDefinitionsWithLSP(
       // Create preview with context or full body
       let preview: string;
 
-      if (request.include_body) {
+      if (request.includeBody) {
         // Try to get the full body of the symbol using document symbols
         try {
           // Get document symbols for the definition file
@@ -322,7 +325,7 @@ async function getDefinitionsWithLSP(
       }
 
       definitions.push({
-        filePath: path.relative(request.root, defPath),
+        relativePath: path.relative(request.root, defPath),
         line: startLine + 1, // Convert to 1-based
         column: startCol + 1, // Convert to 1-based
         symbolName,
@@ -366,7 +369,7 @@ export function createDefinitionsTool(
         if (result.value.definitions.length > 0) {
           for (const def of result.value.definitions) {
             messages.push(
-              `\n${def.filePath}:${def.line}:${def.column} - ${def.symbolName}\n${def.preview}`,
+              `\n${def.relativePath}:${def.line}:${def.column} - ${def.symbolName}\n${def.preview}`,
             );
           }
         }
@@ -411,7 +414,7 @@ if (false && import.meta.vitest) {
       // Using the example connected.ts file which imports from "./scratch"
       const result = await lspGetDefinitionsTool.execute({
         root,
-        filePath: "examples/typescript/connected.ts",
+        relativePath: "examples/typescript/connected.ts",
         line: 1, // export line
         symbolName: "x",
       });
@@ -424,7 +427,7 @@ if (false && import.meta.vitest) {
       // The types.ts file has Value type used in getValue function
       const result = await lspGetDefinitionsTool.execute({
         root,
-        filePath: "examples/typescript/types.ts",
+        relativePath: "examples/typescript/types.ts",
         line: 10, // getValue function that returns Value type
         symbolName: "Value",
       });
@@ -435,7 +438,7 @@ if (false && import.meta.vitest) {
     it.skip("should handle string line matching", async () => {
       const result = await lspGetDefinitionsTool.execute({
         root,
-        filePath: "examples/typescript/types.ts",
+        relativePath: "examples/typescript/types.ts",
         line: "ValueWithOptional",
         symbolName: "ValueWithOptional",
       });
@@ -447,7 +450,7 @@ if (false && import.meta.vitest) {
       await expect(
         lspGetDefinitionsTool.execute({
           root,
-          filePath: "examples/typescript/types.ts",
+          relativePath: "examples/typescript/types.ts",
           line: 1,
           symbolName: "nonexistent",
         }),
@@ -458,7 +461,7 @@ if (false && import.meta.vitest) {
       await expect(
         lspGetDefinitionsTool.execute({
           root,
-          filePath: "examples/typescript/types.ts",
+          relativePath: "examples/typescript/types.ts",
           line: "nonexistent line",
           symbolName: "Value",
         }),
@@ -469,7 +472,7 @@ if (false && import.meta.vitest) {
       await expect(
         lspGetDefinitionsTool.execute({
           root,
-          filePath: "nonexistent.ts",
+          relativePath: "nonexistent.ts",
           line: 1,
           symbolName: "test",
         }),
@@ -479,7 +482,7 @@ if (false && import.meta.vitest) {
     it.skip("should handle no definition found for built-in symbols", async () => {
       const result = await lspGetDefinitionsTool.execute({
         root,
-        filePath: "examples/typescript/types.ts",
+        relativePath: "examples/typescript/types.ts",
         line: 11, // The return statement line
         symbolName: "v",
         before: 2,
@@ -494,10 +497,10 @@ if (false && import.meta.vitest) {
     it.skip("should get full body with include_body option for class", async () => {
       const result = await lspGetDefinitionsTool.execute({
         root,
-        filePath: "examples/typescript/line_matching_demo.ts",
+        relativePath: "examples/typescript/line_matching_demo.ts",
         line: "UserService",
         symbolName: "UserService",
-        include_body: true,
+        includeBody: true,
       });
 
       expect(result).toContain("class UserService");
@@ -511,10 +514,10 @@ if (false && import.meta.vitest) {
     it.skip("should get full body with include_body option for interface", async () => {
       const result = await lspGetDefinitionsTool.execute({
         root,
-        filePath: "examples/typescript/line_matching_demo.ts",
+        relativePath: "examples/typescript/line_matching_demo.ts",
         line: "User",
         symbolName: "User",
-        include_body: true,
+        includeBody: true,
       });
 
       expect(result).toContain("interface User");
@@ -527,10 +530,10 @@ if (false && import.meta.vitest) {
     it.skip("should get full body with include_body option for function", async () => {
       const result = await lspGetDefinitionsTool.execute({
         root,
-        filePath: "examples/typescript/types.ts",
+        relativePath: "examples/typescript/types.ts",
         line: "getValue",
         symbolName: "getValue",
-        include_body: true,
+        includeBody: true,
       });
 
       expect(result).toContain("function getValue");
@@ -541,10 +544,10 @@ if (false && import.meta.vitest) {
     it.skip("should fallback to context when include_body fails", async () => {
       const result = await lspGetDefinitionsTool.execute({
         root,
-        filePath: "examples/typescript/types.ts",
+        relativePath: "examples/typescript/types.ts",
         line: 1,
         symbolName: "Value",
-        include_body: true,
+        includeBody: true,
         before: 1,
         after: 1,
       });

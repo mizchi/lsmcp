@@ -80,9 +80,9 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     // Execute rename
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
-      filePath: "simple-variable.ts",
+      relativePath: "simple-variable.ts",
       line: 1, // const foo = 1;
-      target: "foo",
+      textTarget: "foo",
       newName: "bar",
     });
 
@@ -108,9 +108,9 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     // Execute rename
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
-      filePath: "function.ts",
+      relativePath: "function.ts",
       line: 1, // function foo(x: number): number {
-      target: "foo",
+      textTarget: "foo",
       newName: "bar",
     });
 
@@ -136,9 +136,9 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     // Execute rename
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
-      filePath: "class.ts",
+      relativePath: "class.ts",
       line: 1, // class Foo {
-      target: "Foo",
+      textTarget: "Foo",
       newName: "Bar",
     });
 
@@ -164,8 +164,8 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     // Execute rename without line parameter
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
-      filePath: "simple-variable-no-line.ts",
-      target: "foo",
+      relativePath: "simple-variable-no-line.ts",
+      textTarget: "foo",
       newName: "bar",
     });
 
@@ -187,9 +187,9 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     await expect(
       lspRenameSymbolTool.execute({
         root: tmpDir,
-        filePath: "nonexistent.ts",
+        relativePath: "nonexistent.ts",
         line: 1,
-        target: "foo",
+        textTarget: "foo",
         newName: "bar",
       }),
     ).rejects.toThrow();
@@ -208,9 +208,9 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     // Execute rename on exported function
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
-      filePath: "cross-file-export.input.ts",
+      relativePath: "cross-file-export.input.ts",
       line: 2, // export function processData
-      target: "processData",
+      textTarget: "processData",
       newName: "transformData",
     });
 
@@ -246,9 +246,9 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     // Execute rename on type alias
     const result = await lspRenameSymbolTool.execute({
       root: tmpDir,
-      filePath: "type-alias.ts",
+      relativePath: "type-alias.ts",
       line: 2, // type UserData = {
-      target: "UserData",
+      textTarget: "UserData",
       newName: "PersonData",
     });
 
@@ -275,9 +275,9 @@ describe("lsp rename symbol", { timeout: 30000 }, () => {
     await expect(
       lspRenameSymbolTool.execute({
         root: tmpDir,
-        filePath: "invalid-rename-test.ts",
+        relativePath: "invalid-rename-test.ts",
         line: 1,
-        target: "nonExistentSymbol",
+        textTarget: "nonExistentSymbol",
         newName: "newName",
       }),
     ).rejects.toThrow();
