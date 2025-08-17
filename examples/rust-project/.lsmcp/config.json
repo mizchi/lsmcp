@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "indexFiles": ["**/*.rs"],
+  "files": ["**/*.rs"],
   "settings": {
     "autoIndex": false,
     "indexConcurrency": 5,

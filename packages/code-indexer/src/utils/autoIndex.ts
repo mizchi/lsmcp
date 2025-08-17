@@ -24,7 +24,7 @@ export function markFileModified(rootPath: string, filePath: string): void {
 
   // Schedule update after a short delay to batch multiple changes
   updateTimer = setTimeout(() => {
-    performAutoIndex(rootPath);
+    void performAutoIndex(rootPath);
   }, 500); // 500ms delay
 }
 

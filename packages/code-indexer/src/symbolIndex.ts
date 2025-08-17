@@ -307,7 +307,7 @@ function queueReindex(state: SymbolIndexState, filePath: string): void {
   }
 
   if (!state.isIndexing) {
-    processIndexingQueue(state);
+    void processIndexingQueue(state);
   }
 }
 

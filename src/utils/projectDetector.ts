@@ -140,8 +140,7 @@ export async function detectProjectType(
  */
 export function generateManualConfigBoilerplate(): string {
   return `{
-  "version": "1.0",
-  "indexFiles": [
+  "files": [
     "**/*.ts",
     "**/*.tsx",
     "**/*.js",

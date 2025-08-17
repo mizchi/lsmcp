@@ -666,7 +666,6 @@ describe("searchSymbolsTool", () => {
           kind: "Class",
           root: "/test",
         } as any,
-        // Pass context with preset config
         {
           config: {
             preset: "typescript-language-server",

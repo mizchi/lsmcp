@@ -142,9 +142,9 @@ export function anotherFunction() {
     // Check that it's pointing to line 5 where the function declaration is
     expect(resultText).toMatch(/test\.ts:5:\d+/);
 
-    // Now test get_definitions to ensure it works correctly
+    // Now test lsp_get_definitions to ensure it works correctly
     const definitionResult = await mcpClient.callTool({
-      name: "get_definitions",
+      name: "lsp_get_definitions",
       arguments: {
         root: tempDir,
         relativePath: "test.ts",

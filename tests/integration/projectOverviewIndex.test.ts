@@ -345,20 +345,20 @@ export function newFunction() {
 
   describe("search_symbols", () => {
     beforeAll(async () => {
-      // Ensure index is created with explicit tsx pattern
+      // Index will be created automatically by search_symbols or get_project_overview
+      // Just ensure the project overview exists to trigger indexing
       const result = await mcpClient.callTool({
-        name: "index_symbols",
+        name: "get_project_overview",
         arguments: {
           root: tempDir,
-          pattern: "**/*.{ts,tsx}",
         },
       });
 
       console.log(
-        "Index creation result:",
+        "Project overview (triggers indexing):",
         Array.isArray(result.content) && result.content[0]?.text
-          ? result.content[0].text
-          : JSON.stringify(result.content),
+          ? result.content[0].text.substring(0, 200) + "..."
+          : JSON.stringify(result.content).substring(0, 200) + "...",
       );
     });
 

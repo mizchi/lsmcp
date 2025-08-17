@@ -32,14 +32,14 @@ schema.examples = [
   },
   {
     preset: "pyright",
-    indexFiles: ["**/*.py", "**/*.pyi"],
+    files: ["**/*.py", "**/*.pyi"],
   },
   {
     lsp: {
       bin: "deno",
       args: ["lsp"],
     },
-    indexFiles: ["**/*.ts", "**/*.tsx"],
+    files: ["**/*.ts", "**/*.tsx"],
   },
   {
     preset: "tsgo",

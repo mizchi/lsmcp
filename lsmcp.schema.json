@@ -214,7 +214,7 @@
     },
     {
       "preset": "pyright",
-      "indexFiles": [
+      "files": [
         "**/*.py",
         "**/*.pyi"
       ]
@@ -226,7 +226,7 @@
           "lsp"
         ]
       },
-      "indexFiles": [
+      "files": [
         "**/*.ts",
         "**/*.tsx"
       ]
