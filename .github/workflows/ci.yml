@@ -57,8 +57,18 @@ jobs:
         with:
           components: rust-analyzer
       
+      - name: Setup .NET (for F# examples test)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Install fsautocomplete
+        run: dotnet tool install -g fsautocomplete
+      
       - name: Check examples
-        run: pnpm test:examples
+        run: |
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          pnpm test:examples
 
   build-and-publish:
     needs: test
