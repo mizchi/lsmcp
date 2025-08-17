@@ -15,4 +15,7 @@ export default defineConfig({
     "vscode-languageserver-types",
     "vscode-languageserver-protocol",
   ],
+  loader:{
+    '.md': 'text',
+  }
 });
