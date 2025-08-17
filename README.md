@@ -179,6 +179,19 @@ lsmcp includes built-in presets for popular language servers:
 
 For a comprehensive configuration example, see [examples/full-lsmcp-config.json](examples/full-lsmcp-config.json).
 
+## MCP Prompts Support
+
+lsmcp now includes MCP prompts that can be used as slash commands in Claude Code. These prompts provide guided workflows for common development tasks:
+
+### Available Prompts
+
+- **`/mcp__lsmcp__lsmcp_onboarding`** - Interactive guide for setting up LSMCP symbol indexing
+- **`/mcp__lsmcp__analyze_code`** - Systematic code analysis workflow using LSP integration  
+- **`/mcp__lsmcp__symbol_search_guide`** - Comprehensive guide for symbol search and navigation
+- **`/mcp__lsmcp__compression_analysis`** - Guide for analyzing token compression effectiveness
+
+These prompts can be discovered by typing `/` in Claude Code and provide structured guidance for using lsmcp's capabilities effectively.
+
 ## Tools
 
 lsmcp provides comprehensive MCP tools for code analysis and manipulation:

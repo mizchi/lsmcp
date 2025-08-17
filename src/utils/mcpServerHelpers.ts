@@ -4,6 +4,8 @@ import { createCompatibleTransport } from "./compatibleTransport.ts";
 import type { McpToolDef, McpContext } from "@internal/types";
 import type { FileSystemApi } from "@internal/types";
 import { debugLogWithPrefix } from "./debugLog.ts";
+import type { McpPromptDef } from "../mcp/prompts/promptDefinitions.ts";
+import { toMcpPromptHandler } from "../mcp/prompts/promptDefinitions.ts";
 
 /**
  * MCP Server configuration options
@@ -26,6 +28,7 @@ export interface McpServerOptions {
 export interface McpServerState {
   server: McpServer;
   tools: Map<string, McpToolDef<ZodType>>;
+  prompts: Map<string, McpPromptDef<ZodType>>;
   defaultRoot?: string;
   fileSystemApi?: FileSystemApi;
   context?: McpContext;
@@ -85,6 +88,7 @@ export function createMcpServer(options: McpServerOptions): McpServerState {
   return {
     server,
     tools: new Map(),
+    prompts: new Map(),
     defaultRoot: undefined,
     fileSystemApi: options.fileSystemApi,
   };
@@ -117,6 +121,29 @@ export function registerTools(
 ): void {
   for (const tool of tools) {
     registerTool(state, tool);
+  }
+}
+
+/**
+ * Register a prompt with the server
+ */
+export function registerPrompt<S extends ZodType>(
+  state: McpServerState,
+  prompt: McpPromptDef<S>,
+): void {
+  state.prompts.set(prompt.name, prompt as unknown as McpPromptDef<ZodType>);
+  _registerPromptWithServer(state, prompt);
+}
+
+/**
+ * Register multiple prompts at once
+ */
+export function registerPrompts(
+  state: McpServerState,
+  prompts: McpPromptDef<ZodType>[],
+): void {
+  for (const prompt of prompts) {
+    registerPrompt(state, prompt);
   }
 }
 
@@ -193,6 +220,51 @@ function _registerToolWithServer<S extends ZodType>(
 }
 
 /**
+ * Internal method to register prompt with MCP server
+ */
+function _registerPromptWithServer<S extends ZodType>(
+  state: McpServerState,
+  prompt: McpPromptDef<S>,
+): void {
+  // Check if the schema is a ZodObject to extract shape
+  if (prompt.schema && prompt.schema instanceof ZodObject) {
+    const schemaShape = prompt.schema.shape;
+
+    // Create a wrapper handler that adds default root if not provided
+    const wrappedHandler =
+      state.defaultRoot && "root" in schemaShape
+        ? (args: z.infer<S>) => {
+            // If root is not provided in args, use the default
+            const argsWithRoot = {
+              ...args,
+              root:
+                (typeof args === "object" && args !== null && "root" in args
+                  ? (args as Record<string, unknown>).root
+                  : undefined) || state.defaultRoot,
+            } as z.infer<S>;
+            return prompt.execute(argsWithRoot, state.context);
+          }
+        : (args: z.infer<S>) => prompt.execute(args, state.context);
+
+    // Register prompt with McpServer using the args schema
+    state.server.prompt(
+      prompt.name,
+      schemaShape,
+      toMcpPromptHandler(wrappedHandler, prompt.description, state.context),
+    );
+  } else {
+    // For prompts without schema
+    const handler = (args: z.infer<S>) => prompt.execute(args, state.context);
+
+    state.server.prompt(
+      prompt.name,
+      {},
+      toMcpPromptHandler(handler, prompt.description, state.context),
+    );
+  }
+}
+
+/**
  * Create an MCP server manager for convenience
  */
 export interface McpServerManager {
@@ -201,6 +273,8 @@ export interface McpServerManager {
   setContext: (context: McpContext) => void;
   registerTool: <S extends ZodType>(tool: McpToolDef<S>) => void;
   registerTools: (tools: McpToolDef<ZodType>[]) => void;
+  registerPrompt: <S extends ZodType>(prompt: McpPromptDef<S>) => void;
+  registerPrompts: (prompts: McpPromptDef<ZodType>[]) => void;
   start: () => Promise<void>;
   getServer: () => McpServer;
 }
@@ -223,6 +297,10 @@ export function createMcpServerManager(
       registerTool(state, tool),
     registerTools: (tools: McpToolDef<ZodType>[]) =>
       registerTools(state, tools),
+    registerPrompt: <S extends ZodType>(prompt: McpPromptDef<S>) =>
+      registerPrompt(state, prompt),
+    registerPrompts: (prompts: McpPromptDef<ZodType>[]) =>
+      registerPrompts(state, prompts),
     start: () => startServer(state),
     getServer: () => getServer(state),
   };
