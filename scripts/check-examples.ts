@@ -80,7 +80,7 @@ async function testProjectDiagnostics(
 
   const transport = new StdioClientTransport({
     command: "node",
-    args: [join(__dirname, "../dist/lsmcp.js"), "--language", config.language],
+    args: [join(__dirname, "../dist/lsmcp.js"), "--preset", config.language],
     cwd: projectPath,
     env: {
       ...process.env,
