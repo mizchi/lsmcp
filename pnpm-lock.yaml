@@ -40,8 +40,8 @@ importers:
         specifier: ^1.12.1
         version: 1.12.1
       '@moonbit/moonbit-lsp':
-        specifier: ^0.1.202506241
-        version: 0.1.202506241
+        specifier: ^0.1.202508072
+        version: 0.1.202508072
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
@@ -493,8 +493,8 @@ packages:
     resolution: {integrity: sha512-KG1CZhZfWg+u8pxeM/mByJDScJSrjjxLc8fwQqbsS8xCjBmQfMNEBTotYdNanKekepnfRI85GtgQlctLFpcYPw==}
     engines: {node: '>=18'}
 
-  '@moonbit/moonbit-lsp@0.1.202506241':
-    resolution: {integrity: sha512-/aYw31vfLzjEkfhpOqQhVI/47nB5N0BdEUKrlw3LAJc+DbLoGNZdN/VQ7q0b/VtGsITSE+v8a2RXEHw+LlpQJg==}
+  '@moonbit/moonbit-lsp@0.1.202508072':
+    resolution: {integrity: sha512-DmPQIyELfMi954azuMggYt5LcrdYlqi0idIqB1rnzCuMr6SKYVAeEs+YvWcAdwBQZxF/kRy8dLiChSUD+IyCsA==}
     hasBin: true
 
   '@napi-rs/wasm-runtime@0.2.10':
@@ -2347,7 +2347,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@moonbit/moonbit-lsp@0.1.202506241': {}
+  '@moonbit/moonbit-lsp@0.1.202508072': {}
 
   '@napi-rs/wasm-runtime@0.2.10':
     dependencies:
