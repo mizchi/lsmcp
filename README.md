@@ -13,6 +13,10 @@ A unified MCP (Model Context Protocol) server that provides advanced code manipu
 
 See [examples/](examples/) for working examples of each supported language configuration.
 
+## Requirements
+
+- Node.js 22.0.0 or higher (required for built-in SQLite support)
+
 ## Quick Start
 
 ```bash

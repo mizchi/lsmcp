@@ -3,6 +3,9 @@
   "version": "0.10.0-rc.5",
   "type": "module",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "exports": {
     ".": "./dist/lsmcp.js",
     "./package.json": "./package.json"
