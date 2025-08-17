@@ -62,7 +62,7 @@ jobs:
           # Install Moon CLI and MoonBit LSP
           curl -sSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> $GITHUB_PATH
-          pnpm add -D @moonbit/moonbit-lsp
+          pnpm add -wD @moonbit/moonbit-lsp
       
       - name: Setup .NET (for F# examples test)
         uses: actions/setup-dotnet@v4
