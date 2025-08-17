@@ -111,7 +111,7 @@ async function testProjectDiagnostics(
 
       try {
         const result = (await client.callTool({
-          name: "get_diagnostics",
+          name: "lsp_get_diagnostics",
           arguments: {
             root: projectPath,
             filePath: testFile,
