@@ -8,12 +8,12 @@ import {
   getOrCreateIndex,
   getIndexStats,
   querySymbols,
+  updateIndexIncremental,
+  indexFiles,
 } from "@internal/code-indexer";
 // Remove getLSPClient - no longer needed
 import { loadIndexConfig } from "@internal/code-indexer";
-import { getAdapterDefaultPattern } from "@internal/code-indexer";
 import { debugLogWithPrefix } from "../../utils/debugLog.ts";
-import { glob } from "gitaware-glob";
 import { SymbolKind } from "vscode-languageserver-types";
 import * as fs from "fs/promises";
 import * as path from "path";
@@ -125,100 +125,12 @@ function getDirectoryStructure(
 }
 
 /**
- * Auto-index if needed (similar to search_symbol_from_index)
+ * Ensure index exists but don't create it if missing (lightweight check)
+ * Returns true if index exists, false otherwise
  */
-async function ensureIndexExists(
-  rootPath: string,
-  context?: McpContext,
-): Promise<void> {
+function checkIndexExists(rootPath: string): boolean {
   const stats = getIndexStats(rootPath);
-
-  if (stats.totalFiles === 0) {
-    debugLogWithPrefix(
-      "get_project_overview",
-      "No index found. Creating initial index...",
-    );
-
-    // Pass context which includes fs (FileSystemApi) and lspClient
-    const index = getOrCreateIndex(rootPath, context);
-    if (!index) {
-      throw new Error("Failed to create symbol index");
-    }
-
-    // Determine pattern for initial indexing
-    let pattern: string;
-    const config = loadIndexConfig(rootPath);
-
-    // Priority: 1. files from config, 2. preset from context, 3. empty (no auto-indexing)
-    if (config?.files && config.files.length > 0) {
-      pattern = config.files.join(",");
-    } else {
-      // Try preset from context
-      const presetId = context?.languageId;
-      if (presetId) {
-        // Use preset-specific patterns
-        pattern = getAdapterDefaultPattern(presetId);
-        if (!pattern) {
-          // Preset not found or has no default patterns
-          debugLogWithPrefix(
-            "get_project_overview",
-            `Unknown preset '${presetId}' or preset has no default patterns. Please specify 'files' in config.`,
-          );
-          return;
-        }
-      } else {
-        // No preset or files configured - don't auto-index
-        debugLogWithPrefix(
-          "get_project_overview",
-          "No file patterns configured. Skipping auto-indexing.",
-        );
-        return;
-      }
-    }
-
-    const concurrency = config?.settings?.indexConcurrency || 5;
-
-    // Find files to index
-    const files: string[] = [];
-    // Handle patterns with braces properly (e.g., **/*.{ts,tsx})
-    const patterns =
-      pattern.includes("{") && pattern.includes("}")
-        ? [pattern]
-        : pattern.split(",").map((p) => p.trim());
-
-    for (const p of patterns) {
-      for await (const file of glob(p, { cwd: rootPath })) {
-        if (typeof file === "string") {
-          files.push(file);
-        } else if (file && typeof file === "object" && "name" in file) {
-          files.push((file as any).name);
-        }
-      }
-    }
-
-    if (files.length === 0) {
-      debugLogWithPrefix(
-        "get_project_overview",
-        `No files found matching pattern: ${pattern}`,
-      );
-      return;
-    }
-
-    debugLogWithPrefix(
-      "get_project_overview",
-      `Indexing ${files.length} files...`,
-    );
-
-    const startTime = Date.now();
-    await index.indexFiles(files, concurrency);
-
-    const duration = Date.now() - startTime;
-    const newStats = index.getStats();
-    debugLogWithPrefix(
-      "get_project_overview",
-      `Initial indexing completed: ${newStats.totalFiles} files, ${newStats.totalSymbols} symbols in ${duration}ms`,
-    );
-  }
+  return stats.totalFiles > 0;
 }
 
 export const getProjectOverviewTool: McpToolDef<
@@ -232,8 +144,79 @@ export const getProjectOverviewTool: McpToolDef<
   execute: async ({ root }, context?: McpContext) => {
     const rootPath = root || process.cwd();
 
-    // Ensure index exists
-    await ensureIndexExists(rootPath, context);
+    // Check if index exists
+    const indexExists = checkIndexExists(rootPath);
+
+    if (!indexExists) {
+      // First time: create index and do full indexing
+      debugLogWithPrefix(
+        "get_project_overview",
+        "No index found, creating and performing initial full index",
+      );
+
+      // Create index instance
+      const index = getOrCreateIndex(rootPath, context);
+      if (index) {
+        try {
+          // Perform full indexing on first run
+          const startTime = Date.now();
+          await indexFiles(
+            rootPath,
+            [
+              "**/*.ts",
+              "**/*.tsx",
+              "**/*.js",
+              "**/*.jsx",
+              "**/*.mjs",
+              "**/*.mts",
+            ],
+            {
+              concurrency: 5,
+              context,
+            },
+          );
+          const elapsed = Date.now() - startTime;
+          debugLogWithPrefix(
+            "get_project_overview",
+            `Initial indexing completed in ${elapsed}ms`,
+          );
+        } catch (error) {
+          debugLogWithPrefix(
+            "get_project_overview",
+            `Initial indexing failed: ${error}`,
+          );
+        }
+      }
+    } else {
+      // Index exists, run incremental update for fast refresh
+      try {
+        debugLogWithPrefix(
+          "get_project_overview",
+          "Index exists, running fast incremental update",
+        );
+        const startTime = Date.now();
+        const updateResult = await updateIndexIncremental(rootPath, context);
+        const elapsed = Date.now() - startTime;
+
+        if (updateResult.success) {
+          debugLogWithPrefix(
+            "get_project_overview",
+            `Incremental update completed in ${elapsed}ms: ${updateResult.updated.length} files updated, ${updateResult.removed.length} files removed`,
+          );
+        } else if (updateResult.errors.length > 0) {
+          debugLogWithPrefix(
+            "get_project_overview",
+            `Incremental update errors: ${updateResult.errors.join(", ")}`,
+          );
+        }
+      } catch (error) {
+        // Silently continue if incremental update fails
+        debugLogWithPrefix(
+          "get_project_overview",
+          `Incremental update failed: ${error}`,
+        );
+      }
+    }
 
     // Get project info
     const projectInfo = await getProjectInfo(rootPath);
@@ -264,7 +247,7 @@ export const getProjectOverviewTool: McpToolDef<
       }
     }
 
-    // Get all symbols for analysis
+    // Get all symbols once and filter in memory (much faster than multiple queries)
     const allSymbols = querySymbols(rootPath, {});
 
     // Check if Variables/Constants are filtered out by configuration
@@ -274,15 +257,17 @@ export const getProjectOverviewTool: McpToolDef<
     const isConstantFiltered =
       config?.symbolFilter?.excludeKinds?.includes("Constant");
 
-    // Get symbols by kind
-    const functions = querySymbols(rootPath, { kind: SymbolKind.Function });
-    const methods = querySymbols(rootPath, { kind: SymbolKind.Method });
-    const classes = querySymbols(rootPath, { kind: SymbolKind.Class });
-    const interfaces = querySymbols(rootPath, { kind: SymbolKind.Interface });
-    const enums = querySymbols(rootPath, { kind: SymbolKind.Enum });
-    const constants = querySymbols(rootPath, { kind: SymbolKind.Constant });
-    const variables = querySymbols(rootPath, { kind: SymbolKind.Variable });
-    const properties = querySymbols(rootPath, { kind: SymbolKind.Property });
+    // Filter symbols by kind in memory (avoid multiple DB queries)
+    const functions = allSymbols.filter((s) => s.kind === SymbolKind.Function);
+    const methods = allSymbols.filter((s) => s.kind === SymbolKind.Method);
+    const classes = allSymbols.filter((s) => s.kind === SymbolKind.Class);
+    const interfaces = allSymbols.filter(
+      (s) => s.kind === SymbolKind.Interface,
+    );
+    const enums = allSymbols.filter((s) => s.kind === SymbolKind.Enum);
+    const constants = allSymbols.filter((s) => s.kind === SymbolKind.Constant);
+    const variables = allSymbols.filter((s) => s.kind === SymbolKind.Variable);
+    const properties = allSymbols.filter((s) => s.kind === SymbolKind.Property);
 
     // Get directory structure with file counts
     const directories = getDirectoryStructure(rootPath, allSymbols);

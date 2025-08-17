@@ -88,6 +88,124 @@ describe("getProjectOverviewTool", () => {
 
     // Mock symbols for overview
     vi.mocked(IndexerAdapter.querySymbols).mockImplementation((_, query) => {
+      // If no query parameters, return all symbols (for the optimized implementation)
+      if (!query || Object.keys(query).length === 0) {
+        return [
+          // Classes
+          {
+            name: "UserController",
+            kind: SymbolKind.Class,
+            location: {
+              uri: "file:///test/file.ts",
+              range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 0 },
+              },
+            },
+          },
+          {
+            name: "AuthService",
+            kind: SymbolKind.Class,
+            location: {
+              uri: "file:///test/file.ts",
+              range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 0 },
+              },
+            },
+          },
+          {
+            name: "DatabaseConnection",
+            kind: SymbolKind.Class,
+            location: {
+              uri: "file:///test/file.ts",
+              range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 0 },
+              },
+            },
+          },
+          // Interfaces
+          {
+            name: "IUser",
+            kind: SymbolKind.Interface,
+            location: {
+              uri: "file:///test/file.ts",
+              range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 0 },
+              },
+            },
+          },
+          {
+            name: "IAuthToken",
+            kind: SymbolKind.Interface,
+            location: {
+              uri: "file:///test/file.ts",
+              range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 0 },
+              },
+            },
+          },
+          // Functions
+          {
+            name: "main",
+            kind: SymbolKind.Function,
+            location: {
+              uri: "file:///test/file.ts",
+              range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 0 },
+              },
+            },
+          },
+          {
+            name: "initializeApp",
+            kind: SymbolKind.Function,
+            location: {
+              uri: "file:///test/file.ts",
+              range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 0 },
+              },
+            },
+          },
+          {
+            name: "connectDatabase",
+            kind: SymbolKind.Function,
+            location: {
+              uri: "file:///test/file.ts",
+              range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 0 },
+              },
+            },
+          },
+          {
+            name: "startServer",
+            kind: SymbolKind.Function,
+            location: {
+              uri: "file:///test/file.ts",
+              range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 0 },
+              },
+            },
+          },
+          {
+            name: "handleRequest",
+            kind: SymbolKind.Function,
+            location: {
+              uri: "file:///test/file.ts",
+              range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 0 },
+              },
+            },
+          },
+        ];
+      }
       if (query.kind === SymbolKind.Class) {
         return [
           {
@@ -334,9 +452,44 @@ describe("getProjectOverviewTool", () => {
     const manyClasses = Array.from({ length: 50 }, (_, i) => ({
       name: `Class${i}`,
       kind: SymbolKind.Class,
+      location: {
+        uri: "file:///test/file.ts",
+        range: {
+          start: { line: 0, character: 0 },
+          end: { line: 0, character: 0 },
+        },
+      },
+    }));
+
+    const manyFunctions = Array.from({ length: 100 }, (_, i) => ({
+      name: `function${i}`,
+      kind: SymbolKind.Function,
+      location: {
+        uri: "file:///test/file.ts",
+        range: {
+          start: { line: 0, character: 0 },
+          end: { line: 0, character: 0 },
+        },
+      },
+    }));
+
+    const manyInterfaces = Array.from({ length: 30 }, (_, i) => ({
+      name: `Interface${i}`,
+      kind: SymbolKind.Interface,
+      location: {
+        uri: "file:///test/file.ts",
+        range: {
+          start: { line: 0, character: 0 },
+          end: { line: 0, character: 0 },
+        },
+      },
     }));
 
     vi.mocked(IndexerAdapter.querySymbols).mockImplementation((_, query) => {
+      // If no query parameters, return all symbols (for the optimized implementation)
+      if (!query || Object.keys(query).length === 0) {
+        return [...manyClasses, ...manyFunctions, ...manyInterfaces];
+      }
       if (query.kind === SymbolKind.Class) {
         return manyClasses.map((c) => ({
           ...c,
