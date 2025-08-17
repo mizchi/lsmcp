@@ -11,7 +11,7 @@ const projectRoot = join(import.meta.dirname, "../../fixtures", "haskell");
 describe("Haskell Language Server Adapter", () => {
   // CI environment needs more time for HLS initialization
   const isCI = process.env.CI === "true";
-  const testTimeout = isCI ? 60000 : 30000;
+  const testTimeout = isCI ? 90000 : 30000;
 
   it(
     "should connect to HLS",

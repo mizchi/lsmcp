@@ -31,5 +31,5 @@ describe("Haskell Language Server Basic Tests", () => {
       expect(result.error).toBeDefined();
       console.warn("HLS not available, skipping test");
     }
-  }, 60000);
+  }, 90000);
 });
