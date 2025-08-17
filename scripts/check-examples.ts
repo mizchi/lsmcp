@@ -38,7 +38,7 @@ const LANGUAGE_CONFIGS: Record<string, LanguageConfig> = {
     // TypeScript LSP is bundled with the project, no external dependency
   },
   "rust-project": {
-    language: "rust",
+    language: "rust-analyzer",
     testFiles: ["src/test_diagnostics.rs"],
     lspCommand: "rust-analyzer",
     checkCommand: "rust-analyzer --version",
@@ -52,7 +52,7 @@ const LANGUAGE_CONFIGS: Record<string, LanguageConfig> = {
   },
   "fsharp-project": {
     language: "fsharp",
-    testFiles: ["TestDiagnostics.fs"],
+    testFiles: ["Calculator.fs"],
     lspCommand: "fsautocomplete",
     checkCommand: "fsautocomplete --version",
     installHint: "Install with: dotnet tool install -g fsautocomplete",
