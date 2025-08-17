@@ -52,6 +52,11 @@ jobs:
         env:
           CI: true
       
+      - name: Setup Rust (for examples test)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rust-analyzer
+      
       - name: Check examples
         run: pnpm test:examples
 
