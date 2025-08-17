@@ -90,7 +90,7 @@
     "vitest": "^3.2.4",
     "vscode-languageserver-protocol": "^3.17.5",
     "vscode-languageserver-types": "^3.17.5",
-    "ws": "^8.18.2",
+    "ws": "^8.18.3",
     "zod-to-json-schema": "^3.24.6",
     "zx": "^8.6.1"
   },
