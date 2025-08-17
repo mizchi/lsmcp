@@ -13,49 +13,69 @@ describe("Haskell Language Server Adapter", () => {
   const isCI = process.env.CI === "true";
   const testTimeout = isCI ? 60000 : 30000;
 
-  it("should connect to HLS", async () => {
-    const checkFiles = ["Main.hs"];
-    const result = await testLspConnection(hlsAdapter, projectRoot, checkFiles);
-
-    // HLS might not be installed in CI
-    expect(result.connected).toBeDefined();
-    if (result.connected) {
-      expect(result.diagnostics).toBeDefined();
-    } else {
-      expect(result.error).toBeDefined();
-      console.warn("HLS not available, skipping test");
-    }
-  });
-
-  it("should detect type errors in Haskell files", async () => {
-    const checkFiles = ["Main.hs"];
-    const result = await testLspConnection(hlsAdapter, projectRoot, checkFiles);
-
-    if (!result.connected) {
-      console.warn("HLS not available, skipping diagnostics test");
-      return;
-    }
-
-    expect(result.diagnostics).toBeDefined();
-    const mainDiagnostics = (result.diagnostics as any)?.["Main.hs"];
-
-    if (mainDiagnostics && mainDiagnostics.length > 0) {
-      // Should have at least 2 type errors
-      expect(mainDiagnostics.length).toBeGreaterThanOrEqual(2);
-
-      // Check for type errors
-      const hasTypeErrors = mainDiagnostics.some(
-        (d: any) =>
-          d.severity === 1 && d.message.toLowerCase().includes("type"),
+  it(
+    "should connect to HLS",
+    async () => {
+      const checkFiles = ["Main.hs"];
+      const result = await testLspConnection(
+        hlsAdapter,
+        projectRoot,
+        checkFiles,
       );
-      expect(hasTypeErrors).toBe(true);
-    }
-  });
+
+      // HLS might not be installed in CI
+      expect(result.connected).toBeDefined();
+      if (result.connected) {
+        expect(result.diagnostics).toBeDefined();
+      } else {
+        expect(result.error).toBeDefined();
+        console.warn("HLS not available, skipping test");
+      }
+    },
+    testTimeout,
+  );
+
+  it(
+    "should detect type errors in Haskell files",
+    async () => {
+      const checkFiles = ["Main.hs"];
+      const result = await testLspConnection(
+        hlsAdapter,
+        projectRoot,
+        checkFiles,
+      );
+
+      if (!result.connected) {
+        console.warn("HLS not available, skipping diagnostics test");
+        return;
+      }
+
+      expect(result.diagnostics).toBeDefined();
+      const mainDiagnostics = (result.diagnostics as any)?.["Main.hs"];
+
+      if (mainDiagnostics && mainDiagnostics.length > 0) {
+        // Should have at least 2 type errors
+        expect(mainDiagnostics.length).toBeGreaterThanOrEqual(2);
+
+        // Check for type errors
+        const hasTypeErrors = mainDiagnostics.some(
+          (d: any) =>
+            d.severity === 1 && d.message.toLowerCase().includes("type"),
+        );
+        expect(hasTypeErrors).toBe(true);
+      }
+    },
+    testTimeout,
+  );
 
   it(
     "should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, and get_hover",
     async () => {
-      const result = await testMcpConnection(hlsAdapter, projectRoot);
+      const result = await testMcpConnection(
+        hlsAdapter,
+        projectRoot,
+        "Main.hs",
+      );
 
       expect(result.connected).toBe(true);
       expect(result.hasGetProjectOverview).toBe(true);
@@ -111,10 +131,10 @@ describe("Haskell Language Server Adapter", () => {
       try {
         // Try to get definition from where User is referenced
         const userDefResult = await client.callTool({
-          name: "get_definitions",
+          name: "lsp_get_definitions",
           arguments: {
             root: projectRoot,
-            filePath: "Main.hs",
+            relativePath: "Main.hs",
             line: 'User "Alice"', // Find line with User constructor usage
             symbolName: "User",
             include_body: true,
@@ -131,10 +151,10 @@ describe("Haskell Language Server Adapter", () => {
       } catch (error) {
         // If the first approach fails, try with the type definition line
         const userDefResult = await client.callTool({
-          name: "get_definitions",
+          name: "lsp_get_definitions",
           arguments: {
             root: projectRoot,
-            filePath: "Main.hs",
+            relativePath: "Main.hs",
             line: 4, // Line where User is defined
             symbolName: "User",
             include_body: true,
@@ -186,12 +206,12 @@ describe("Haskell Language Server Adapter", () => {
 
       try {
         const hoverResult = await client.callTool({
-          name: "get_hover",
+          name: "lsp_get_hover",
           arguments: {
             root: projectRoot,
-            filePath: "Main.hs",
+            relativePath: "Main.hs",
             line: "show (processUsers users)", // Find line with processUsers call
-            target: "processUsers",
+            textTarget: "processUsers",
           },
         });
 
@@ -207,12 +227,12 @@ describe("Haskell Language Server Adapter", () => {
       } catch (error) {
         // If the first approach fails, try with the definition line
         const hoverResult = await client.callTool({
-          name: "get_hover",
+          name: "lsp_get_hover",
           arguments: {
             root: projectRoot,
-            filePath: "Main.hs",
+            relativePath: "Main.hs",
             line: 14, // Line where processUsers is defined
-            target: "processUsers",
+            textTarget: "processUsers",
           },
         });
         const hoverContent = hoverResult.content as any;

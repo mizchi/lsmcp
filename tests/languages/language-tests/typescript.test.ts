@@ -24,7 +24,11 @@ describe("TypeScript Adapter", () => {
   });
 
   it("should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, search_symbols, and get_symbol_details with expected symbol counts", async () => {
-    const result = await testMcpConnection(typescriptAdapter, projectRoot);
+    const result = await testMcpConnection(
+      typescriptAdapter,
+      projectRoot,
+      "index.ts",
+    );
 
     expect(result.connected).toBe(true);
     expect(result.hasGetProjectOverview).toBe(true);

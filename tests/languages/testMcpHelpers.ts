@@ -10,6 +10,7 @@ import type { LspClientConfig } from "../../src/config/schema.ts";
 export async function testMcpConnection(
   adapter: LspClientConfig,
   projectPath: string,
+  testFile?: string, // Optional: specify the test file to use
 ): Promise<{
   connected: boolean;
   hasGetProjectOverview: boolean;
@@ -113,32 +114,59 @@ export async function testMcpConnection(
     let diagnosticsResult;
     if (hasGetDiagnostics) {
       try {
-        // Call get_diagnostics tool - try with a sample file
-        // Use a common file name that exists in test fixtures
-        const testFile =
-          adapter.baseLanguage === "python"
-            ? "main.py"
-            : adapter.baseLanguage === "rust"
-              ? "src/main.rs"
-              : adapter.baseLanguage === "fsharp"
-                ? "Program.fs"
-                : adapter.baseLanguage === "moonbit"
-                  ? "main.mbt"
-                  : adapter.baseLanguage === "ocaml"
-                    ? "main.ml"
-                    : adapter.baseLanguage === "haskell"
-                      ? "Main.hs"
-                      : "index.ts"; // Default for TypeScript/JavaScript
+        // Use provided test file or find first matching file in project
+        const { readdirSync, statSync } = await import("fs");
+        const { join, relative } = await import("path");
 
-        const result = await client.callTool({
-          name: "lsp_get_diagnostics",
-          arguments: {
-            root: projectPath,
-            relativePath: testFile,
-          },
-        });
+        let fileToTest = testFile;
+        if (!fileToTest) {
+          // Find first file that matches adapter's file patterns
+          const findFirstFile = (dir: string): string | null => {
+            const entries = readdirSync(dir);
+            for (const entry of entries) {
+              const fullPath = join(dir, entry);
+              const stat = statSync(fullPath);
+              if (
+                stat.isDirectory() &&
+                !entry.startsWith(".") &&
+                entry !== "node_modules" &&
+                entry !== "target"
+              ) {
+                const found = findFirstFile(fullPath);
+                if (found) return found;
+              } else if (stat.isFile()) {
+                const relativePath = relative(projectPath, fullPath);
+                // Check if this file matches any of the adapter's file patterns
+                if (
+                  adapter.files?.some((pattern) => {
+                    // Simple check for common extensions
+                    return relativePath.endsWith(
+                      pattern.replace("**/*", "").replace("**/", ""),
+                    );
+                  })
+                ) {
+                  return relativePath;
+                }
+              }
+            }
+            return null;
+          };
+          fileToTest = findFirstFile(projectPath) || undefined;
+        }
 
-        diagnosticsResult = result.content;
+        if (!fileToTest) {
+          console.log("Could not find a suitable test file");
+        } else {
+          const result = await client.callTool({
+            name: "lsp_get_diagnostics",
+            arguments: {
+              root: projectPath,
+              relativePath: fileToTest,
+            },
+          });
+
+          diagnosticsResult = result.content;
+        }
       } catch (e) {
         console.log(`Could not get diagnostics: ${e}`);
       }
@@ -147,25 +175,14 @@ export async function testMcpConnection(
     let definitionsResult;
     if (hasGetDefinitions) {
       try {
-        // Call get_definitions tool - try to find a common symbol
-        const testFile =
-          adapter.baseLanguage === "python"
-            ? "main.py"
-            : adapter.baseLanguage === "rust"
-              ? "src/main.rs"
-              : adapter.baseLanguage === "fsharp"
-                ? "Program.fs"
-                : adapter.baseLanguage === "moonbit"
-                  ? "main.mbt"
-                  : adapter.baseLanguage === "ocaml"
-                    ? "main.ml"
-                    : "index.ts";
+        // Use the same test file as diagnostics
+        const fileToTest = testFile || "main.mbt"; // Fallback for get_definitions
 
         const result = await client.callTool({
           name: "lsp_get_definitions",
           arguments: {
             root: projectPath,
-            relativePath: testFile,
+            relativePath: fileToTest,
             line: 1,
             symbolName: "main", // Common symbol name
           },
@@ -180,25 +197,14 @@ export async function testMcpConnection(
     let hoverResult;
     if (hasGetHover) {
       try {
-        // Call get_hover tool - try to get hover info for a common symbol
-        const testFile =
-          adapter.baseLanguage === "python"
-            ? "main.py"
-            : adapter.baseLanguage === "rust"
-              ? "src/main.rs"
-              : adapter.baseLanguage === "fsharp"
-                ? "Program.fs"
-                : adapter.baseLanguage === "moonbit"
-                  ? "main.mbt"
-                  : adapter.baseLanguage === "ocaml"
-                    ? "main.ml"
-                    : "index.ts";
+        // Use the same test file
+        const fileToTest = testFile || "main.mbt"; // Fallback for get_hover
 
         const result = await client.callTool({
           name: "lsp_get_hover",
           arguments: {
             root: projectPath,
-            relativePath: testFile,
+            relativePath: fileToTest,
             line: 1,
             character: 0,
           },
@@ -233,9 +239,11 @@ export async function testMcpConnection(
       try {
         // First, try to find a symbol using search_symbols
         // Use different query based on language
+        const presetId = (adapter as any).presetId;
         const symbolQuery =
-          adapter.baseLanguage === "typescript" ||
-          adapter.baseLanguage === "javascript"
+          presetId === "typescript" ||
+          presetId === "tsgo" ||
+          presetId === "deno"
             ? "User" // TypeScript/JavaScript has User interface
             : "main"; // Other languages typically have main function
 

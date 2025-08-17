@@ -101,7 +101,11 @@ describe("tsgo Adapter", () => {
   }, 30000);
 
   it("should provide MCP tools including get_project_overview, get_diagnostics, and get_definitions", async () => {
-    const result = await testMcpConnection(tsgoAdapter, projectRoot);
+    const result = await testMcpConnection(
+      tsgoAdapter,
+      projectRoot,
+      "index.ts",
+    );
 
     expect(result.connected).toBe(true);
     expect(result.hasGetProjectOverview).toBe(true);

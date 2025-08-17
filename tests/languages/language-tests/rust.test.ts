@@ -23,7 +23,11 @@ describe("Rust Analyzer Adapter", () => {
   }, 30000); // Rust analyzer can be slow to initialize
 
   it("should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, search_symbols, and get_symbol_details", async () => {
-    const result = await testMcpConnection(rustAnalyzerAdapter, projectRoot);
+    const result = await testMcpConnection(
+      rustAnalyzerAdapter,
+      projectRoot,
+      "src/main.rs",
+    );
 
     if (!result.connected) {
       console.warn("MCP connection failed, skipping test");

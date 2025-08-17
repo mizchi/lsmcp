@@ -105,7 +105,11 @@ describe("MoonBit Adapter", () => {
 
   it("should provide MCP tools including get_project_overview, get_diagnostics, and get_definitions", async () => {
     const projectRoot = join(import.meta.dirname, "../../fixtures", "moonbit");
-    const result = await testMcpConnection(moonbitAdapter, projectRoot);
+    const result = await testMcpConnection(
+      moonbitAdapter,
+      projectRoot,
+      "main.mbt",
+    );
 
     if (!result.connected) {
       console.warn("MCP connection failed, skipping test");

@@ -169,7 +169,11 @@ describe("F# Adapter", () => {
 
   it("should provide MCP tools including get_project_overview, get_diagnostics, and get_definitions", async () => {
     const projectRoot = join(import.meta.dirname, "../../fixtures", "fsharp");
-    const result = await testMcpConnection(fsharpAdapter, projectRoot);
+    const result = await testMcpConnection(
+      fsharpAdapter,
+      projectRoot,
+      "Program.fs",
+    );
 
     if (!result.connected) {
       console.warn("MCP connection failed, skipping test");

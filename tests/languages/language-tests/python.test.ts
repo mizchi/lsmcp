@@ -97,7 +97,11 @@ describe.skip("Pyright Adapter", () => {
   it(
     "should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, and get_hover with expected symbol counts",
     async () => {
-      const result = await testMcpConnection(pyrightAdapter, projectRoot);
+      const result = await testMcpConnection(
+        pyrightAdapter,
+        projectRoot,
+        "main.py",
+      );
 
       expect(result.connected).toBe(true);
       expect(result.hasGetProjectOverview).toBe(true);
@@ -192,10 +196,10 @@ describe.skip("Pyright Adapter", () => {
       try {
         // Find definition of User class at line 25 (where it's used)
         const userDefResult = await client.callTool({
-          name: "get_definitions",
+          name: "lsp_get_definitions",
           arguments: {
             root: projectRoot,
-            filePath: "main.py",
+            relativePath: "main.py",
             line: 25, // Line where User is instantiated
             symbolName: "User",
           },
@@ -253,12 +257,12 @@ describe.skip("Pyright Adapter", () => {
       try {
         // Get hover info for process_users function at line 30 (where it's called)
         const hoverResult = await client.callTool({
-          name: "get_hover",
+          name: "lsp_get_hover",
           arguments: {
             root: projectRoot,
-            filePath: "main.py",
+            relativePath: "main.py",
             line: 30, // Line where process_users is called
-            target: "process_users",
+            textTarget: "process_users",
           },
         });
 

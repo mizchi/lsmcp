@@ -34,7 +34,7 @@ describe("Deno Adapter", () => {
   });
 
   it("should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, search_symbols, and get_symbol_details", async () => {
-    const result = await testMcpConnection(denoAdapter, projectRoot);
+    const result = await testMcpConnection(denoAdapter, projectRoot, "main.ts");
 
     expect(result.connected).toBe(true);
     expect(result.hasGetProjectOverview).toBe(true);

@@ -63,7 +63,11 @@ describe("OCaml Language Server Adapter", () => {
   it(
     "should provide MCP tools including get_project_overview, get_diagnostics, get_definitions, and get_hover with expected symbol counts",
     async () => {
-      const result = await testMcpConnection(ocamlAdapter, projectRoot);
+      const result = await testMcpConnection(
+        ocamlAdapter,
+        projectRoot,
+        "main.ml",
+      );
 
       expect(result.connected).toBe(true);
       expect(result.hasGetProjectOverview).toBe(true);
@@ -140,10 +144,10 @@ describe("OCaml Language Server Adapter", () => {
 
       try {
         const userDefResult = await client.callTool({
-          name: "get_definitions",
+          name: "lsp_get_definitions",
           arguments: {
             root: projectRoot,
-            filePath: "main.ml",
+            relativePath: "main.ml",
             line: 10, // Line where user.name is accessed
             symbolName: "name",
           },
@@ -198,12 +202,12 @@ describe("OCaml Language Server Adapter", () => {
 
       try {
         const hoverResult = await client.callTool({
-          name: "get_hover",
+          name: "lsp_get_hover",
           arguments: {
             root: projectRoot,
-            filePath: "main.ml",
+            relativePath: "main.ml",
             line: 29, // Line where process_users is called
-            target: "process_users",
+            textTarget: "process_users",
           },
         });
 
