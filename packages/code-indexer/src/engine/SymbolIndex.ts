@@ -6,7 +6,6 @@
 import { EventEmitter } from "events";
 import { pathToFileURL } from "url";
 import { resolve } from "path";
-import { getContentHash } from "./contentHash.ts";
 import type {
   IndexedSymbol,
   FileSymbols,
@@ -24,6 +23,7 @@ import {
   getFileGitHash,
   getUntrackedFilesAsync,
 } from "../utils/gitUtils.ts";
+import { ContentHashDiffChecker, type FileDiffChecker } from "./fileDiffDetector.ts";
 import { shouldExcludeSymbol, type IndexConfig } from "../config/config.ts";
 import { debugLogWithPrefix } from "../../../../src/utils/debugLog.ts";
 
@@ -39,14 +39,17 @@ export class SymbolIndex extends EventEmitter {
     lastUpdated: new Date(),
   };
   private config?: IndexConfig;
+  private diffChecker: FileDiffChecker;
 
   constructor(
     private rootPath: string,
     private symbolProvider: SymbolProvider,
     private fileSystem: FileSystem,
     private cache?: SymbolCache,
+    diffChecker?: FileDiffChecker,
   ) {
     super();
+    this.diffChecker = diffChecker || new ContentHashDiffChecker();
   }
 
   /**
@@ -60,20 +63,23 @@ export class SymbolIndex extends EventEmitter {
     try {
       // Read file content first (we need it for content hash)
       const content = await this.fileSystem.readFile(absolutePath);
-      const contentHash = getContentHash(content);
-
-      // Check if we have this exact content already indexed
+      
+      // Use diff checker to determine if file needs reindexing
       const existingFile = this.fileIndex.get(uri);
-      if (existingFile && existingFile.contentHash === contentHash) {
+      const diffResult = this.diffChecker.checkFile(content, existingFile);
+      
+      if (!diffResult.hasChanged) {
         // Content hasn't changed, skip reindexing
         this.emit("fileIndexed", {
           type: "fileIndexed",
           uri,
-          symbolCount: existingFile.symbols.length,
+          symbolCount: existingFile!.symbols.length,
           fromCache: true,
         } as IndexEvent);
         return;
       }
+      
+      const contentHash = diffResult.contentHash;
 
       // Try cache
       if (this.cache) {
@@ -148,6 +154,54 @@ export class SymbolIndex extends EventEmitter {
       "Loaded config:",
       this.config?.symbolFilter,
     );
+    
+    // Try to load existing index from cache
+    await this.loadIndexFromCache();
+  }
+  
+  /**
+   * Load existing index from cache
+   */
+  async loadIndexFromCache(): Promise<void> {
+    if (!this.cache) {
+      return;
+    }
+    
+    try {
+      // Get all cached files
+      const cachedFiles = await (this.cache as any).getAllFiles?.();
+      
+      if (!cachedFiles || cachedFiles.length === 0) {
+        debugLogWithPrefix("SymbolIndex", "No cached files found");
+        return;
+      }
+      
+      debugLogWithPrefix(
+        "SymbolIndex", 
+        `Loading ${cachedFiles.length} files from cache`
+      );
+      
+      // Load symbols for each cached file
+      for (const filePath of cachedFiles) {
+        const cachedSymbols = await this.cache.get(filePath);
+        if (cachedSymbols && cachedSymbols.length > 0) {
+          const uri = pathToFileURL(filePath).toString();
+          // Store without re-caching
+          this.storeSymbols(uri, cachedSymbols, undefined, undefined);
+        }
+      }
+      
+      this.updateStats();
+      debugLogWithPrefix(
+        "SymbolIndex",
+        `Loaded ${this.stats.totalFiles} files, ${this.stats.totalSymbols} symbols from cache`
+      );
+    } catch (error) {
+      debugLogWithPrefix(
+        "SymbolIndex",
+        `Failed to load from cache: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 
   /**

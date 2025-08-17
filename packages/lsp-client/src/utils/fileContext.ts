@@ -42,7 +42,7 @@ export async function loadFileContext(
     throw new Error(formatError(new Error("File not found"), context));
   }
 
-  // Convert to file URI
+  // Convert to file URI (pathToFileURL handles Windows paths correctly)
   const fileUri = pathToFileURL(absolutePath).toString();
 
   // Read the file content

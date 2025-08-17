@@ -245,12 +245,18 @@ export async function initCommand(
 
 /**
  * Index files based on config
+ * @param projectRoot - Root directory of the project
+ * @param isFromInit - Whether this is called from init command
+ * @param configLoader - Config loader instance
+ * @param adapterRegistry - Adapter registry instance
+ * @param forceFullIndex - Force full re-index instead of incremental
  */
 export async function indexCommand(
   projectRoot: string,
   isFromInit: boolean = false,
   configLoader?: MainConfigLoader,
   adapterRegistry?: PresetRegistry,
+  forceFullIndex: boolean = false,
 ): Promise<void> {
   const configPath = join(projectRoot, ".lsmcp", "config.json");
 
@@ -397,6 +403,9 @@ export async function indexCommand(
       // Create symbol index with all components
       if (symbolProvider) {
         index = new SymbolIndex(projectRoot, symbolProvider, fileSystem, cache);
+
+        // Load existing index from cache if available
+        await index.initialize();
       }
     } catch (error) {
       errorLog(
@@ -460,21 +469,165 @@ export async function indexCommand(
     totalFiles: number;
     totalSymbols: number;
     errors: Array<{ file: string; error: string }>;
+    updated?: string[];
+    removed?: string[];
+    mode?: string;
   };
 
   try {
-    // Index files directly using the index instance
-    await index.indexFiles(uniqueFiles, config.settings?.indexConcurrency || 5);
+    // Load cache first to get accurate stats
+    await index.loadIndexFromCache();
 
-    // Get stats
+    // Check if we should do incremental update
     const stats = index.getStats();
+    const hasExistingIndex = stats.totalFiles > 0;
 
-    result = {
-      success: true,
-      totalFiles: stats.totalFiles,
-      totalSymbols: stats.totalSymbols,
-      errors: [],
-    };
+    if (!forceFullIndex && hasExistingIndex) {
+      // Try incremental update
+      console.log("Performing incremental update...");
+
+      const incrementalResult = await index.updateIncremental({
+        batchSize: config.settings?.indexConcurrency || 5,
+      });
+
+      // Get updated stats
+      const updatedStats = index.getStats();
+
+      result = {
+        success: true,
+        totalFiles: updatedStats.totalFiles,
+        totalSymbols: updatedStats.totalSymbols,
+        errors: incrementalResult.errors.map((err) => ({
+          file: "incremental",
+          error: err,
+        })),
+        updated: incrementalResult.updated,
+        removed: incrementalResult.removed,
+        mode: "incremental",
+      };
+    } else if (!forceFullIndex) {
+      // Check for cached data before full index
+      const cache = new SQLiteCache(projectRoot);
+      const cachedFiles = await cache.getAllFiles();
+
+      if (cachedFiles.length > 0) {
+        console.log(
+          `Found ${cachedFiles.length} files in cache. Checking for changes...`,
+        );
+
+        // Perform early diff detection
+        const filesToUpdate: string[] = [];
+        const { statSync } = await import("fs");
+
+        for (const file of uniqueFiles) {
+          try {
+            const absolutePath = join(projectRoot, file);
+            const stats = statSync(absolutePath);
+            const cacheInfo = await cache.getFileInfo(absolutePath);
+
+            if (!cacheInfo || stats.mtimeMs > cacheInfo.lastModified) {
+              filesToUpdate.push(file);
+            }
+          } catch {
+            // File doesn't exist or can't be read, add to update list
+            filesToUpdate.push(file);
+          }
+        }
+
+        // Find removed files
+        const currentFileSet = new Set(
+          uniqueFiles.map((f) => join(projectRoot, f)),
+        );
+        const removedFiles = cachedFiles.filter((f) => !currentFileSet.has(f));
+
+        if (filesToUpdate.length > 0 || removedFiles.length > 0) {
+          console.log(
+            `Detected ${filesToUpdate.length} files to update, ${removedFiles.length} files to remove`,
+          );
+
+          // Update only changed files
+          if (filesToUpdate.length > 0) {
+            await index.indexFiles(
+              filesToUpdate,
+              config.settings?.indexConcurrency || 5,
+            );
+          }
+
+          // Remove deleted files from index
+          for (const removedFile of removedFiles) {
+            const relativePath = removedFile.startsWith(projectRoot)
+              ? removedFile.slice(projectRoot.length + 1)
+              : removedFile;
+            index.removeFile(relativePath);
+          }
+
+          const updatedStats = index.getStats();
+
+          result = {
+            success: true,
+            totalFiles: updatedStats.totalFiles,
+            totalSymbols: updatedStats.totalSymbols,
+            errors: [],
+            updated: filesToUpdate,
+            removed: removedFiles.map((f) =>
+              f.startsWith(projectRoot) ? f.slice(projectRoot.length + 1) : f,
+            ),
+            mode: "smart-incremental",
+          };
+        } else {
+          console.log("No changes detected. Index is up to date.");
+          const updatedStats = index.getStats();
+
+          result = {
+            success: true,
+            totalFiles: updatedStats.totalFiles,
+            totalSymbols: updatedStats.totalSymbols,
+            errors: [],
+            updated: [],
+            removed: [],
+            mode: "no-changes",
+          };
+        }
+      } else {
+        // No cache, perform full index
+        console.log("No existing cache found. Performing full index...");
+
+        await index.indexFiles(
+          uniqueFiles,
+          config.settings?.indexConcurrency || 5,
+        );
+
+        // Get stats
+        const stats = index.getStats();
+
+        result = {
+          success: true,
+          totalFiles: stats.totalFiles,
+          totalSymbols: stats.totalSymbols,
+          errors: [],
+          mode: "full",
+        };
+      }
+    } else {
+      // Full index with --full flag
+      console.log("Performing full re-index (--full flag)...");
+
+      await index.indexFiles(
+        uniqueFiles,
+        config.settings?.indexConcurrency || 5,
+      );
+
+      // Get stats
+      const stats = index.getStats();
+
+      result = {
+        success: true,
+        totalFiles: stats.totalFiles,
+        totalSymbols: stats.totalSymbols,
+        errors: [],
+        mode: "full",
+      };
+    }
   } catch (error) {
     result = {
       success: false,
@@ -492,7 +645,27 @@ export async function indexCommand(
   const duration = Date.now() - startTime;
 
   if (result.success) {
-    console.log(`\n✅ Indexing complete in ${duration}ms`);
+    if (result.mode === "incremental") {
+      console.log(`\n✅ Incremental update complete in ${duration}ms`);
+      if (result.updated && result.updated.length > 0) {
+        console.log(`   Updated files: ${result.updated.length}`);
+      }
+      if (result.removed && result.removed.length > 0) {
+        console.log(`   Removed files: ${result.removed.length}`);
+      }
+    } else if (result.mode === "smart-incremental") {
+      console.log(`\n✅ Smart incremental update complete in ${duration}ms`);
+      if (result.updated && result.updated.length > 0) {
+        console.log(`   Updated files: ${result.updated.length}`);
+      }
+      if (result.removed && result.removed.length > 0) {
+        console.log(`   Removed files: ${result.removed.length}`);
+      }
+    } else if (result.mode === "no-changes") {
+      console.log(`\n✅ Index is up to date (checked in ${duration}ms)`);
+    } else {
+      console.log(`\n✅ Full indexing complete in ${duration}ms`);
+    }
     console.log(`   Total files: ${result.totalFiles}`);
     console.log(`   Total symbols: ${result.totalSymbols}`);
 

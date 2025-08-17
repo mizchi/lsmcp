@@ -1,5 +1,10 @@
 # lsmcp - Language Service Protocol MCP
 
+[![CI](https://github.com/mizchi/lsmcp/actions/workflows/ci.yml/badge.svg)](https://github.com/mizchi/lsmcp/actions/workflows/ci.yml)
+[![Language Server Tests](https://github.com/mizchi/lsmcp/actions/workflows/language-tests.yml/badge.svg)](https://github.com/mizchi/lsmcp/actions/workflows/language-tests.yml)
+[![npm version](https://badge.fury.io/js/@mizchi%2Flsmcp.svg)](https://www.npmjs.com/package/@mizchi/lsmcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A unified MCP (Model Context Protocol) server that provides advanced code manipulation and analysis capabilities for multiple programming languages through Language Server Protocol integration.
 
 - 🌍 **Multi-Language Support**

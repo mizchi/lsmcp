@@ -278,6 +278,14 @@ export class SymbolCacheManager {
       totalFiles: fileCount.count,
     };
   }
+  
+  getAllFiles(): string[] {
+    const rows = this.db
+      .prepare("SELECT DISTINCT filePath FROM symbols WHERE projectRoot = ?")
+      .all(this.rootPath) as { filePath: string }[];
+    
+    return rows.map(row => row.filePath);
+  }
 
   close(): void {
     this.db.close();

@@ -91,6 +91,11 @@ const { values, positionals } = parseArgs({
       type: "boolean",
       description: "Automatically build symbol index after init",
     },
+    full: {
+      type: "boolean",
+      description:
+        "Force full re-index instead of incremental update (for 'index' command)",
+    },
   },
   allowPositionals: true,
 });
@@ -117,7 +122,13 @@ async function main() {
   }
 
   if (subcommand === "index") {
-    await indexCommand(process.cwd(), false, lspConfigLoader, adapterRegistry);
+    await indexCommand(
+      process.cwd(),
+      false,
+      lspConfigLoader,
+      adapterRegistry,
+      values.full,
+    );
     process.exit(0);
   }
 

@@ -5,7 +5,7 @@
 import type { SymbolCache, IndexedSymbol } from "../engine/types.ts";
 import { SymbolCacheManager } from "./SymbolCacheManager.ts";
 import type { SymbolEntry } from "../symbolIndex.ts";
-import { relative } from "path";
+import { relative, join } from "path";
 import { statSync } from "fs";
 import { pathToFileURL } from "url";
 import { debugLogWithPrefix } from "../../../../src/utils/debugLog.ts";
@@ -173,5 +173,50 @@ export class SQLiteCache implements SymbolCache {
    */
   markReindexingComplete(): void {
     this.needsReindexing = false;
+  }
+  
+  /**
+   * Get all cached file paths
+   */
+  async getAllFiles(): Promise<string[]> {
+    try {
+      const relativeFiles = this.manager.getAllFiles();
+      
+      // Convert relative paths to absolute paths
+      const absoluteFiles = relativeFiles.map(relativePath => {
+        if (relativePath.startsWith("/")) {
+          return relativePath;
+        }
+        return join(this.rootPath, relativePath);
+      });
+      
+      return absoluteFiles;
+    } catch (error) {
+      debugLogWithPrefix(
+        "SQLiteCache",
+        `Failed to get all files: ${error instanceof Error ? error.message : String(error)}`
+      );
+      return [];
+    }
+  }
+  
+  /**
+   * Get cached file info with last modified time
+   */
+  async getFileInfo(filePath: string): Promise<{ lastModified: number } | null> {
+    try {
+      const relativePath = relative(this.rootPath, filePath);
+      const cachedSymbols = this.manager.getSymbolsByFile(relativePath);
+      
+      if (cachedSymbols.length === 0) {
+        return null;
+      }
+      
+      return {
+        lastModified: cachedSymbols[0].lastModified
+      };
+    } catch {
+      return null;
+    }
   }
 }

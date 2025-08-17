@@ -6,22 +6,24 @@ import { createHash } from "crypto";
 import { readFile } from "fs/promises";
 
 /**
- * Calculate SHA256 hash of file content
+ * Calculate SHA1 hash of file content
+ * SHA1 is faster than SHA256 and sufficient for content comparison
  */
 export async function getFileContentHash(filePath: string): Promise<string> {
   try {
     const content = await readFile(filePath, "utf-8");
-    return createHash("sha256").update(content).digest("hex");
+    return createHash("sha1").update(content).digest("hex");
   } catch (error) {
     throw new Error(`Failed to calculate hash for ${filePath}: ${error}`);
   }
 }
 
 /**
- * Calculate SHA256 hash of string content
+ * Calculate SHA1 hash of string content
+ * SHA1 is faster than SHA256 and sufficient for content comparison
  */
 export function getContentHash(content: string): string {
-  return createHash("sha256").update(content).digest("hex");
+  return createHash("sha1").update(content).digest("hex");
 }
 
 /**

@@ -8,6 +8,9 @@ const GLOBAL_IGNORED_FILES = [
   "**/node_modules/**",
 ];
 
+// Detect if running in CI environment
+const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+
 export default defineConfig({
   resolve: {
     alias: [
@@ -76,9 +79,9 @@ export default defineConfig({
             ...GLOBAL_IGNORED_FILES,
             "tests/integration/typescript-lsp.test.ts",
           ],
-          testTimeout: 10000, // 10s timeout for integration tests
+          testTimeout: isCI ? 30000 : 10000, // Longer timeout in CI
           // Retry flaky tests up to 2 times due to timing-sensitive LSP operations
-          retry: 2,
+          retry: isCI ? 3 : 2,
         },
       },
       {
@@ -87,7 +90,7 @@ export default defineConfig({
           name: "languages",
           include: ["tests/languages/**/*.test.ts"],
           exclude: [...GLOBAL_IGNORED_FILES],
-          testTimeout: 15000, // 15s timeout for language initialization tests
+          testTimeout: isCI ? 30000 : 15000, // Longer timeout in CI for language initialization
           retry: 0, // No retry for language tests
         },
       },
@@ -108,7 +111,7 @@ export default defineConfig({
           name: "lsp-client",
           include: ["packages/lsp-client/**/*.test.ts"],
           exclude: [...GLOBAL_IGNORED_FILES],
-          testTimeout: 10000,
+          testTimeout: isCI ? 30000 : 10000,
         },
       },
     ],

@@ -16,6 +16,14 @@ export type {
   IndexEvent,
 } from "./engine/types.ts";
 
+// Diff detection utilities
+export {
+  ContentHashDiffChecker,
+  OptimizedDiffChecker,
+  type FileDiffChecker,
+  type FileDiffCheckResult,
+} from "./engine/fileDiffDetector.ts";
+
 // Filesystem adapter
 export { NodeFileSystem } from "./engine/NodeFileSystem.ts";
 

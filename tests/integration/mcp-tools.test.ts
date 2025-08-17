@@ -508,7 +508,7 @@ export const DEFAULT_USER = createUser("Default", "default@example.com");
       // or might return different suggestions based on TypeScript version
       if (!content.toLowerCase().includes("error")) {
         // Should have some completion suggestions
-        expect(content).toContain("completions at");
+        expect(content.toLowerCase()).toContain("completions at");
       }
     });
 

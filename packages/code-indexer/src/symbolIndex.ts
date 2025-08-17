@@ -494,14 +494,14 @@ export function removeFileFromIndex(
   state: SymbolIndexState,
   filePath: string,
 ): void {
-  const uri = pathToFileURL(resolve(state.rootPath, filePath)).toString();
+  const absolutePath = resolve(state.rootPath, filePath);
+  const uri = pathToFileURL(absolutePath).toString();
 
   // Remove from indices
   clearFileFromIndices(state, uri);
   state.fileIndex.delete(uri);
 
   // Stop watching
-  const absolutePath = resolve(state.rootPath, filePath);
   const watcher = state.fileWatchers.get(absolutePath);
   if (watcher) {
     watcher.close();
@@ -586,9 +586,8 @@ export function querySymbols(
 
   // Apply additional filters
   if (query.file) {
-    const fileUri = pathToFileURL(
-      resolve(state.rootPath, query.file),
-    ).toString();
+    const absolutePath = resolve(state.rootPath, query.file);
+    const fileUri = pathToFileURL(absolutePath).toString();
     results = results.filter((s) => s.location.uri === fileUri);
   }
 
@@ -646,7 +645,8 @@ export function getFileSymbols(
   state: SymbolIndexState,
   filePath: string,
 ): SymbolEntry[] {
-  const uri = pathToFileURL(resolve(state.rootPath, filePath)).toString();
+  const absolutePath = resolve(state.rootPath, filePath);
+  const uri = pathToFileURL(absolutePath).toString();
   const fileSymbols = state.fileIndex.get(uri);
   return fileSymbols ? fileSymbols.symbols : [];
 }
@@ -827,9 +827,11 @@ export async function indexExternalLibrariesForState(
  * Extract library name from file URI
  */
 function extractLibraryName(uri: string): string {
-  const match = uri.match(/node_modules[\/\\](@[^/\\]+[\/\\][^/\\]+|[^/\\]+)/);
+  // Use cross-platform regex pattern for node_modules path
+  const match = uri.match(/node_modules[\/\\](@[^\/\\]+[\/\\][^\/\\]+|[^\/\\]+)/);
   if (match) {
-    return match[1];
+    // Normalize the library name to use forward slashes
+    return match[1].replace(/\\/g, '/');
   }
   return "unknown";
 }

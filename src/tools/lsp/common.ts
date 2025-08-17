@@ -104,6 +104,7 @@ function readFileWithUri(
 
   try {
     const content = fs.readFileSync(absolutePath, "utf-8");
+    // pathToFileURL handles Windows paths correctly when given absolute paths
     const uri = pathToFileURL(absolutePath).toString();
     return { content, uri, absolutePath };
   } catch (error) {
