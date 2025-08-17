@@ -47,8 +47,9 @@ const LANGUAGE_CONFIGS: Record<string, LanguageConfig> = {
   "moonbit-project": {
     language: "moonbit",
     testFiles: ["src/test/test_diagnostics.mbt"],
-    lspCommand: "npx moonbit-lsp",
-    // No checkCommand needed - npx will handle installation automatically
+    lspCommand: "moonbit lsp",
+    checkCommand: "moonbit --version",
+    installHint: "Install from: https://www.moonbitlang.com/download",
   },
   "fsharp-project": {
     language: "fsharp",
