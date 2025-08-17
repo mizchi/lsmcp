@@ -13,6 +13,7 @@ import {
 } from "@internal/code-indexer";
 // Remove getLSPClient - no longer needed
 import { loadIndexConfig } from "@internal/code-indexer";
+import { glob } from "gitaware-glob";
 import { debugLogWithPrefix } from "../../utils/debugLog.ts";
 import { SymbolKind } from "vscode-languageserver-types";
 import * as fs from "fs/promises";
@@ -160,21 +161,40 @@ export const getProjectOverviewTool: McpToolDef<
         try {
           // Perform full indexing on first run
           const startTime = Date.now();
-          await indexFiles(
-            rootPath,
-            [
-              "**/*.ts",
-              "**/*.tsx",
-              "**/*.js",
-              "**/*.jsx",
-              "**/*.mjs",
-              "**/*.mts",
-            ],
-            {
+
+          // Find all TypeScript/JavaScript files
+          const patterns = [
+            "**/*.ts",
+            "**/*.tsx",
+            "**/*.js",
+            "**/*.jsx",
+            "**/*.mjs",
+            "**/*.mts",
+          ];
+
+          const files: string[] = [];
+          for (const pattern of patterns) {
+            for await (const file of glob(pattern, { cwd: rootPath })) {
+              if (typeof file === "string") {
+                files.push(file);
+              } else if (file && typeof file === "object" && "name" in file) {
+                files.push((file as any).name);
+              }
+            }
+          }
+
+          debugLogWithPrefix(
+            "get_project_overview",
+            `Found ${files.length} files to index`,
+          );
+
+          if (files.length > 0) {
+            await indexFiles(rootPath, files, {
               concurrency: 5,
               context,
-            },
-          );
+            });
+          }
+
           const elapsed = Date.now() - startTime;
           debugLogWithPrefix(
             "get_project_overview",
