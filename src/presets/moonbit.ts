@@ -9,11 +9,14 @@ import type { Preset } from "../config/schema.ts";
  */
 export const moonbitAdapter: Preset = {
   presetId: "moonbit",
-  bin: "moonbit",
-  args: ["lsp"],
+  bin: "moonbit-lsp",
+  args: [],
   files: ["**/*.mbt", "**/*.mbti"],
   binFindStrategy: {
-    strategies: [{ type: "global", names: ["moonbit"] }],
+    strategies: [
+      { type: "node_modules", names: ["@moonbit/moonbit-lsp"] },
+      { type: "global", names: ["moonbit-lsp"] },
+    ],
   },
   disable: [
     // "get_hover", // May be slow/timeout on some files
