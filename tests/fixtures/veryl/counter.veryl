@@ -1,0 +1,14 @@
+module Counter (
+    clk: input clock,
+    rst: input reset,
+    en:  input logic,
+    cnt: output logic<8>
+) {
+    always_ff (clk, rst) {
+        if_reset {
+            cnt = 0;
+        } else if en {
+            cnt = cnt + 1;
+        }
+    }
+}

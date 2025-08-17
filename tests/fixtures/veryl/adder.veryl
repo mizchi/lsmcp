@@ -1,0 +1,9 @@
+module Adder #(
+    parameter WIDTH: u32 = 8
+) (
+    a:   input  logic<WIDTH>,
+    b:   input  logic<WIDTH>,
+    sum: output logic<WIDTH>
+) {
+    assign sum = a + b;
+}
