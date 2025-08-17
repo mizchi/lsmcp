@@ -29,6 +29,7 @@ interface LanguageConfig {
   lspCommand?: string;
   checkCommand?: string; // Command to check if dependency is installed
   installHint?: string; // How to install the dependency
+  preTestCommand?: string; // Command to run before testing (e.g., to initialize project)
 }
 
 const LANGUAGE_CONFIGS: Record<string, LanguageConfig> = {
@@ -48,8 +49,9 @@ const LANGUAGE_CONFIGS: Record<string, LanguageConfig> = {
     language: "moonbit",
     testFiles: ["src/test/test_diagnostics.mbt"],
     lspCommand: "npx @moonbit/moonbit-lsp",
-    checkCommand: "npx @moonbit/moonbit-lsp -v",
+    checkCommand: "npx @moonbit/moonbit-lsp --version",
     installHint: "MoonBit LSP is installed via npm",
+    preTestCommand: "moon check --deny-warn || true", // Initialize project before testing
     // Note: MoonBit LSP might fail with exit code 7 if project is not properly initialized
   },
   "fsharp-project": {
@@ -96,6 +98,15 @@ async function testProjectDiagnostics(
   );
 
   try {
+    // Run pre-test command if specified
+    if (config.preTestCommand) {
+      try {
+        execSync(config.preTestCommand, { cwd: projectPath, stdio: "ignore" });
+      } catch (e) {
+        // Ignore errors from pre-test command (might be expected to fail)
+      }
+    }
+
     await client.connect(transport);
 
     let totalErrors = 0;
