@@ -114,7 +114,7 @@ async function testProjectDiagnostics(
           name: "lsp_get_diagnostics",
           arguments: {
             root: projectPath,
-            filePath: testFile,
+            relativePath: testFile,
           },
         })) as { content: Array<{ type: string; text: string }> };
 
