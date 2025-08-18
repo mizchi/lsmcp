@@ -53,7 +53,7 @@
   "dependencies": {
     "gitaware-glob": "^0.2.0",
     "glob": "^10.4.5",
-    "minimatch": "^9.0.5",
+    "minimatch": "^10.0.3",
     "uuid": "^11.1.0",
     "zod": "^3.25.56"
   },
