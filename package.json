@@ -62,7 +62,7 @@
     "@internal/code-indexer": "workspace:*",
     "@internal/lsp-client": "workspace:*",
     "@internal/types": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@modelcontextprotocol/sdk": "^1.17.3",
     "@moonbit/moonbit-lsp": "^0.1.202506241",
     "@types/better-sqlite3": "^7.6.13",
     "@types/braces": "^3.0.5",
