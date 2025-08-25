@@ -2,6 +2,7 @@ import type { LSPClient } from "@internal/lsp-client";
 import { z } from "zod";
 import { err, ok, type Result } from "neverthrow";
 import { applyTextEdits } from "../../utils/applyTextEdits.ts";
+import { uriToPath } from "../../utils/uriHelpers.ts";
 // Helper functions
 function parseLineNumber(content: string, line: number | string): number {
   if (typeof line === "number") {
@@ -262,7 +263,7 @@ async function applyWorkspaceEdit(
   if (workspaceEdit.changes) {
     for (const [uri, _edits] of Object.entries(workspaceEdit.changes)) {
       if (!uri) continue;
-      const filePath = uri.replace("file://", "");
+      const filePath = uriToPath(uri);
       const content = readFileSync(filePath, "utf-8");
       allFileContents.set(filePath, content.split("\n"));
     }
@@ -271,7 +272,7 @@ async function applyWorkspaceEdit(
   if (workspaceEdit.documentChanges) {
     for (const change of workspaceEdit.documentChanges) {
       if ("textDocument" in change && change.textDocument?.uri) {
-        const filePath = change.textDocument.uri.replace("file://", "");
+        const filePath = uriToPath(change.textDocument.uri);
         if (!allFileContents.has(filePath)) {
           const content = readFileSync(filePath, "utf-8");
           allFileContents.set(filePath, content.split("\n"));
@@ -284,7 +285,7 @@ async function applyWorkspaceEdit(
   if (workspaceEdit.changes) {
     for (const [uri, edits] of Object.entries(workspaceEdit.changes)) {
       if (!uri) continue;
-      const filePath = uri.replace("file://", "");
+      const filePath = uriToPath(uri);
       const lines = allFileContents.get(filePath);
       if (!lines) continue;
       const fileChanges = processTextEdits(filePath, lines, edits);
@@ -307,7 +308,7 @@ async function applyWorkspaceEdit(
         "edits" in change &&
         change.textDocument?.uri
       ) {
-        const filePath = change.textDocument.uri.replace("file://", "");
+        const filePath = uriToPath(change.textDocument.uri);
         const lines = allFileContents.get(filePath);
         if (!lines) continue;
         const fileChanges = processTextEdits(filePath, lines, change.edits);

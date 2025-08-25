@@ -3,6 +3,7 @@ import type {
   Location,
 } from "@internal/types/lsp";
 import { relative } from "path";
+import { fileURLToPath } from "url";
 
 // Define SimpleDiagnostic type
 export interface SimpleDiagnostic {
@@ -183,7 +184,7 @@ export class ReferenceResultBuilder {
    * Add an LSP location as reference
    */
   addLocation(location: Location, text: string): this {
-    const filePath = location.uri.replace("file://", "");
+    const filePath = location.uri.startsWith("file://") ? fileURLToPath(location.uri) : location.uri;
     const relativePath = this.root ? relative(this.root, filePath) : filePath;
 
     this.references.push({

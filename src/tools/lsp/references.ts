@@ -7,6 +7,7 @@ import path from "path";
 import type { ErrorContext } from "@internal/lsp-client";
 import { formatError, validateLineAndSymbol } from "@internal/lsp-client";
 import { pathToFileURL } from "url";
+import { uriToPath } from "../../utils/uriHelpers.ts";
 
 // Helper functions
 function readFileWithMetadata(root: string, filePath: string) {
@@ -115,7 +116,7 @@ async function findReferencesWithLSP(
     const references: Reference[] = [];
 
     for (const location of locations) {
-      const refPath = location.uri?.replace("file://", "") || "";
+      const refPath = location.uri ? uriToPath(location.uri) : "";
       let refContent: string;
       try {
         refContent = readFileSync(refPath, "utf-8");

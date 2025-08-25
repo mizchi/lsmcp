@@ -6,6 +6,7 @@ import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import type { McpToolDef } from "@internal/types";
 import { z } from "zod";
 import { resolve } from "path";
+import { uriToPath } from "../../utils/uriHelpers.ts";
 import {
   getSymbolIndex,
   indexExternalLibrariesForState,
@@ -270,7 +271,7 @@ export async function handleSearchExternalLibrarySymbols(args: any) {
         name: s.name,
         kind: getSymbolKindName(s.kind),
         container: s.containerName,
-        file: s.location.uri.replace("file://", ""),
+        file: uriToPath(s.location.uri),
         detail: s.detail,
       })),
     },

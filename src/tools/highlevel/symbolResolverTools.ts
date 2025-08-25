@@ -6,6 +6,7 @@ import type { McpToolDef } from "@internal/types";
 import { z } from "zod";
 import { resolve } from "path";
 import { readFile } from "fs/promises";
+import { uriToPath } from "../../utils/uriHelpers.ts";
 import {
   getAvailableExternalSymbols,
   parseImports,
@@ -101,7 +102,7 @@ async function handleResolveSymbol(args: any) {
       symbol: {
         name: resolution.symbol.name,
         kind: getSymbolKindName(resolution.symbol.kind),
-        location: resolution.symbol.location.uri.replace("file://", ""),
+        location: uriToPath(resolution.symbol.location.uri),
         detail: resolution.symbol.detail,
       },
     },

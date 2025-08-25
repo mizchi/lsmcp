@@ -8,6 +8,7 @@ import type { McpToolDef, McpContext } from "@internal/types";
 import type { LSPClient } from "@internal/lsp-client";
 import { pathToFileURL } from "url";
 import { join } from "path";
+import { uriToPath } from "../../utils/uriHelpers.ts";
 import { readFile } from "fs/promises";
 import { existsSync } from "fs";
 import { withLSPOperation, resolveLineParameter } from "@internal/lsp-client";
@@ -235,7 +236,7 @@ async function getSymbolDetailsImpl(
           const uri = "targetUri" in def ? def.targetUri : def.uri;
           const range = "targetRange" in def ? def.targetRange : def.range;
 
-          const defPath = uri.replace("file://", "");
+          const defPath = uriToPath(uri);
           const defRelativePath = defPath.replace(rootPath + "/", "");
 
           result.definition = {
@@ -280,7 +281,7 @@ async function getSymbolDetailsImpl(
         const refsToShow = referencesResult.slice(0, 20);
 
         for (const ref of refsToShow) {
-          const refPath = ref.uri.replace("file://", "");
+          const refPath = uriToPath(ref.uri);
           const refRelativePath = refPath.replace(rootPath + "/", "");
 
           const refEntry: any = {

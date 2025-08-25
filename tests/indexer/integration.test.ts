@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { SymbolIndex, MemoryCache } from "@internal/code-indexer";
 import { createLSPSymbolProvider, type LSPClient } from "@internal/lsp-client";
 import { SymbolKind } from "vscode-languageserver-types";
+import { fileURLToPath } from "url";
 
 describe("Indexer Integration", () => {
   let symbolIndex: SymbolIndex;
@@ -52,7 +53,7 @@ describe("Indexer Integration", () => {
     const symbolProvider = createLSPSymbolProvider(
       mockLSPClient,
       async (uri: string) => {
-        const path = uri.replace("file://", "");
+        const path = fileURLToPath(uri);
         return await mockFileSystem.readFile(path);
       },
     );
