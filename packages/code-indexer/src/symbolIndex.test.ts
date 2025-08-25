@@ -17,6 +17,8 @@ import {
 } from "./symbolIndex.ts";
 import { SymbolKind } from "vscode-languageserver-types";
 import { EventEmitter } from "events";
+import { resolve } from "path";
+import { pathToFileURL } from "url";
 
 // Mock LSP client
 const mockGetDocumentSymbols = vi.fn();
@@ -73,6 +75,9 @@ vi.mock("glob", () => ({
 
 describe("SymbolIndex", () => {
   let state: SymbolIndexState;
+  // Use platform-appropriate test path
+  const testRootPath = process.platform === 'win32' ? 'C:\\test\\project' : '/test/project';
+  const testFileUri = pathToFileURL(resolve(testRootPath, 'test.ts')).toString();
 
   beforeEach(() => {
     // Reset mock before each test
@@ -131,7 +136,7 @@ describe("SymbolIndex", () => {
     ]);
 
     state = {
-      rootPath: "/test/project",
+      rootPath: testRootPath,
       client: null,
       fileIndex: new Map(),
       symbolIndex: new Map(),
@@ -181,7 +186,7 @@ describe("SymbolIndex", () => {
       await indexFile(state, "test.ts");
 
       expect(fileIndexedHandler).toHaveBeenCalledWith({
-        uri: "file:///test/project/test.ts",
+        uri: testFileUri,
         symbolCount: 2, // Top-level symbols only (TestClass, testFunction)
         fromCache: false,
       });

@@ -330,9 +330,10 @@ export async function getAvailableTypescriptDependencies(
       const depPath = join(rootPath, "node_modules", dep);
       if (existsSync(depPath)) {
         // Check if it has TypeScript declarations
+        // Note: glob requires forward slashes even on Windows
         const patterns = [
-          join(depPath, "**/*.d.ts"),
-          join(rootPath, "node_modules", "@types", dep, "**/*.d.ts"),
+          join(depPath, "**/*.d.ts").replace(/\\/g, '/'),
+          join(rootPath, "node_modules", "@types", dep, "**/*.d.ts").replace(/\\/g, '/'),
         ];
 
         for (const pattern of patterns) {

@@ -122,6 +122,7 @@ export { add };
       const lspProcess = spawn(command, args, {
         cwd: tmpDir,
         stdio: ["pipe", "pipe", "pipe"],
+        shell: process.platform === "win32", // Use shell on Windows
       });
 
       // Handle spawn errors

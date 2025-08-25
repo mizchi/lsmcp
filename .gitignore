@@ -154,6 +154,7 @@ tmp/
 bin/
 obj/
 tests/integration/tmp-*
+packages/lsp-client/tests/integration/tmp-*
 
 # Language-specific build artifacts in test fixtures
 tests/adapters/fixtures/rust/target/

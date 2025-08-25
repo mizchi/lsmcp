@@ -31,6 +31,7 @@ export async function testLspConnection(
     const lspProcess = spawn(command, args, {
       cwd: projectPath,
       stdio: ["pipe", "pipe", "pipe"],
+      shell: process.platform === "win32", // Use shell on Windows
     });
 
     // Create LSP client
@@ -133,6 +134,7 @@ export async function setupLSPForTest(root: string): Promise<any> {
   const lspProcess = spawn(command, args, {
     cwd: root,
     stdio: ["pipe", "pipe", "pipe"],
+    shell: process.platform === "win32", // Use shell on Windows
   });
 
   testClient = createLSPClient({

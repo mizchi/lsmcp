@@ -51,6 +51,7 @@ describe("LSP get_definitions with include_body tests", () => {
     lspProcess = spawn(tsLspPath, ["--stdio"], {
       cwd: tmpDir,
       stdio: ["pipe", "pipe", "pipe"],
+      shell: process.platform === 'win32', // Use shell on Windows
     });
 
     // Initialize LSP client
