@@ -92,7 +92,7 @@
     "vscode-languageserver-types": "^3.17.5",
     "ws": "^8.18.2",
     "zod-to-json-schema": "^3.24.6",
-    "zx": "^8.6.1"
+    "zx": "^8.8.1"
   },
   "packageManager": "pnpm@9.15.0"
 }

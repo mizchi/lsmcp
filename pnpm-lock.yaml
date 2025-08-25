@@ -127,8 +127,8 @@ importers:
         specifier: ^3.24.6
         version: 3.24.6(zod@3.25.56)
       zx:
-        specifier: ^8.6.1
-        version: 8.6.1
+        specifier: ^8.8.1
+        version: 8.8.1
 
   packages/code-indexer:
     dependencies:
@@ -2104,8 +2104,8 @@ packages:
   zod@3.25.56:
     resolution: {integrity: sha512-rd6eEF3BTNvQnR2e2wwolfTmUTnp70aUTqr0oaGbHifzC3BKJsoV+Gat8vxUMR1hwOKBs6El+qWehrHbCpW6SQ==}
 
-  zx@8.6.1:
-    resolution: {integrity: sha512-ig4Gn2e3L9QaQq3OsyDyGKvXFiq7wYvLCPmFJgcneHsr5vTeJefe0SXtDE7qaur9ysv7giAc0CmEtQcS71UA5Q==}
+  zx@8.8.1:
+    resolution: {integrity: sha512-qvsKBnvWHstHKCluKPlEgI/D3+mdiQyMoSSeFR8IX/aXzWIas5A297KxKgPJhuPXdrR6ma0Jzx43+GQ/8sqbrw==}
     engines: {node: '>= 12.17.0'}
     hasBin: true
 
@@ -3916,4 +3916,4 @@ snapshots:
 
   zod@3.25.56: {}
 
-  zx@8.6.1: {}
+  zx@8.8.1: {}
