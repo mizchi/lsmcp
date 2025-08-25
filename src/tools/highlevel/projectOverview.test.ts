@@ -3,6 +3,7 @@ import * as IndexerAdapter from "@internal/code-indexer";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { SymbolKind } from "vscode-languageserver-types";
+import { pathToFileURL } from "url";
 
 // Mock the dependencies
 vi.mock("@internal/code-indexer", () => ({
@@ -39,6 +40,12 @@ import {
 import { getProjectOverviewTool } from "./projectOverview";
 
 describe("getProjectOverviewTool", () => {
+  // Use platform-appropriate test paths
+  const testRoot =
+    process.platform === "win32" ? "C:\\test\\project" : "/test/project";
+  const makeTestUri = (relativePath: string) =>
+    pathToFileURL(path.join(testRoot, relativePath)).toString();
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -60,7 +67,7 @@ describe("getProjectOverviewTool", () => {
   });
 
   it("should return project overview with basic structure", async () => {
-    const mockRoot = "/test/project";
+    const mockRoot = testRoot;
 
     // Mock package.json
     vi.mocked(fs.readFile).mockImplementation(async (filePath) => {
@@ -96,7 +103,7 @@ describe("getProjectOverviewTool", () => {
             name: "UserController",
             kind: SymbolKind.Class,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -107,7 +114,7 @@ describe("getProjectOverviewTool", () => {
             name: "AuthService",
             kind: SymbolKind.Class,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -118,7 +125,7 @@ describe("getProjectOverviewTool", () => {
             name: "DatabaseConnection",
             kind: SymbolKind.Class,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -130,7 +137,7 @@ describe("getProjectOverviewTool", () => {
             name: "IUser",
             kind: SymbolKind.Interface,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -141,7 +148,7 @@ describe("getProjectOverviewTool", () => {
             name: "IAuthToken",
             kind: SymbolKind.Interface,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -153,7 +160,7 @@ describe("getProjectOverviewTool", () => {
             name: "main",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -164,7 +171,7 @@ describe("getProjectOverviewTool", () => {
             name: "initializeApp",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -175,7 +182,7 @@ describe("getProjectOverviewTool", () => {
             name: "connectDatabase",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -186,7 +193,7 @@ describe("getProjectOverviewTool", () => {
             name: "startServer",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -197,7 +204,7 @@ describe("getProjectOverviewTool", () => {
             name: "handleRequest",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -212,7 +219,7 @@ describe("getProjectOverviewTool", () => {
             name: "UserController",
             kind: SymbolKind.Class,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -223,7 +230,7 @@ describe("getProjectOverviewTool", () => {
             name: "AuthService",
             kind: SymbolKind.Class,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -234,7 +241,7 @@ describe("getProjectOverviewTool", () => {
             name: "DatabaseConnection",
             kind: SymbolKind.Class,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -249,7 +256,7 @@ describe("getProjectOverviewTool", () => {
             name: "IUser",
             kind: SymbolKind.Interface,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -260,7 +267,7 @@ describe("getProjectOverviewTool", () => {
             name: "IAuthToken",
             kind: SymbolKind.Interface,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -275,7 +282,7 @@ describe("getProjectOverviewTool", () => {
             name: "main",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -286,7 +293,7 @@ describe("getProjectOverviewTool", () => {
             name: "initializeApp",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -297,7 +304,7 @@ describe("getProjectOverviewTool", () => {
             name: "connectDatabase",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -308,7 +315,7 @@ describe("getProjectOverviewTool", () => {
             name: "startServer",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -319,7 +326,7 @@ describe("getProjectOverviewTool", () => {
             name: "handleRequest",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -453,7 +460,7 @@ describe("getProjectOverviewTool", () => {
       name: `Class${i}`,
       kind: SymbolKind.Class,
       location: {
-        uri: "file:///test/file.ts",
+        uri: makeTestUri("file.ts"),
         range: {
           start: { line: 0, character: 0 },
           end: { line: 0, character: 0 },
@@ -465,7 +472,7 @@ describe("getProjectOverviewTool", () => {
       name: `function${i}`,
       kind: SymbolKind.Function,
       location: {
-        uri: "file:///test/file.ts",
+        uri: makeTestUri("file.ts"),
         range: {
           start: { line: 0, character: 0 },
           end: { line: 0, character: 0 },
@@ -477,7 +484,7 @@ describe("getProjectOverviewTool", () => {
       name: `Interface${i}`,
       kind: SymbolKind.Interface,
       location: {
-        uri: "file:///test/file.ts",
+        uri: makeTestUri("file.ts"),
         range: {
           start: { line: 0, character: 0 },
           end: { line: 0, character: 0 },
@@ -494,7 +501,7 @@ describe("getProjectOverviewTool", () => {
         return manyClasses.map((c) => ({
           ...c,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 0, character: 0 },
@@ -568,7 +575,7 @@ describe("getProjectOverviewTool", () => {
             name: "func1",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/project/src/index.ts",
+              uri: makeTestUri("src/index.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -579,7 +586,7 @@ describe("getProjectOverviewTool", () => {
             name: "func2",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/project/src/utils/helper.ts",
+              uri: makeTestUri("src/utils/helper.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -590,7 +597,7 @@ describe("getProjectOverviewTool", () => {
             name: "func3",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/project/tests/index.test.ts",
+              uri: makeTestUri("tests/index.test.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -601,7 +608,7 @@ describe("getProjectOverviewTool", () => {
             name: "func4",
             kind: SymbolKind.Function,
             location: {
-              uri: "file:///test/project/src/components/Button.tsx",
+              uri: makeTestUri("src/components/Button.tsx"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },
@@ -654,7 +661,7 @@ describe("getProjectOverviewTool", () => {
             name: "TestClass",
             kind: SymbolKind.Class,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 0 },

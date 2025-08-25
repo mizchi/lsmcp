@@ -116,8 +116,9 @@ describe("ExternalLibraryProvider", () => {
       const files = await getNodeModulesDeclarations(tempDir);
 
       expect(files.length).toBeGreaterThan(0);
-      expect(files.some((f) => f.includes("@types/node"))).toBe(true);
-      expect(files.some((f) => f.includes("mock-lib"))).toBe(true);
+      // Normalize paths for cross-platform compatibility
+      expect(files.some((f) => f.replace(/\\/g, '/').includes("@types/node"))).toBe(true);
+      expect(files.some((f) => f.replace(/\\/g, '/').includes("mock-lib"))).toBe(true);
       expect(files.every((f) => f.endsWith(".d.ts"))).toBe(true);
     });
 
@@ -140,10 +141,13 @@ describe("ExternalLibraryProvider", () => {
       const libraries = await groupFilesByLibrary(files, tempDir);
 
       expect(libraries.size).toBeGreaterThan(0);
-      expect(libraries.has("@types/node")).toBe(true);
-      expect(libraries.has("mock-lib")).toBe(true);
+      // On Windows, the keys might use backslashes
+      const hasTypesNode = libraries.has("@types/node") || libraries.has("@types\\node");
+      const hasMockLib = libraries.has("mock-lib");
+      expect(hasTypesNode).toBe(true);
+      expect(hasMockLib).toBe(true);
 
-      const typesNode = libraries.get("@types/node");
+      const typesNode = libraries.get("@types/node") || libraries.get("@types\\node");
       expect(typesNode).toBeDefined();
       expect(typesNode?.name).toBe("@types/node");
       expect(typesNode?.version).toBe("20.0.0");

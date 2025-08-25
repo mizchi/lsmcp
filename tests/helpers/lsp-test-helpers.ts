@@ -42,6 +42,7 @@ export async function setupLSPForTesting(
   const lspProcess = spawn(tsLspPath, ["--stdio"], {
     cwd: workingDir,
     stdio: ["pipe", "pipe", "pipe"],
+    shell: process.platform === "win32", // Use shell on Windows
   });
 
   // Monitor process startup for debugging

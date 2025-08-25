@@ -22,6 +22,7 @@ export async function createTypescriptLSPClient(
   const lspProcess = spawn("typescript-language-server", ["--stdio"], {
     cwd: root,
     stdio: ["pipe", "pipe", "pipe"],
+    shell: process.platform === 'win32', // Use shell on Windows
   });
 
   // Create LSP client

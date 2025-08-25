@@ -68,6 +68,7 @@ export async function runLanguageServerWithConfig(
         ...process.env,
         ...customEnv,
       },
+      shell: process.platform === "win32", // Use shell on Windows
     });
 
     // Create and initialize LSP client with the spawned process
@@ -255,6 +256,7 @@ export async function runLanguageServer(
         ...process.env,
         ...customEnv,
       },
+      shell: process.platform === "win32", // Use shell on Windows
     });
 
     // Initialize LSP client with the spawned process
@@ -391,6 +393,7 @@ export async function runCustomLspServer(
         ...process.env,
         ...customEnv,
       },
+      shell: process.platform === "win32", // Use shell on Windows
     });
 
     // Create and initialize LSP client

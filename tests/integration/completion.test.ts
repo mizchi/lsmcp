@@ -228,6 +228,7 @@ describe("Completion Integration Tests", () => {
         // Spawn tsgo process
         const lspProcess = spawn("npx", ["tsgo", "--lsp", "--stdio"], {
           cwd: process.cwd(),
+          shell: process.platform === "win32", // Use shell on Windows
         });
 
         // Create and initialize LSP client

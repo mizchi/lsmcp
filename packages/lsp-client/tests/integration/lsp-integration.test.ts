@@ -57,6 +57,7 @@ describe("LSP integration tests", () => {
     lspProcess = spawn(tsLspPath, ["--stdio"], {
       cwd: tmpDir, // Use tmpDir as working directory
       stdio: ["pipe", "pipe", "pipe"],
+      shell: process.platform === 'win32', // Use shell on Windows
     });
 
     // Initialize LSP client with tmpDir

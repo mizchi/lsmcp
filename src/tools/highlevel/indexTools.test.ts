@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { pathToFileURL } from "url";
+import { resolve } from "path";
 import * as IndexerAdapter from "@internal/code-indexer";
 import { SymbolKind } from "vscode-languageserver-types";
 // Remove getLSPClient - no longer needed
@@ -93,6 +95,11 @@ vi.mock("gitaware-glob", () => ({
 }));
 
 describe("searchSymbolsTool", () => {
+  // Use platform-appropriate test paths
+  const testRoot = process.platform === "win32" ? "C:\\test" : "/test";
+  const makeTestUri = (filePath: string) =>
+    pathToFileURL(resolve(testRoot, filePath)).toString();
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -120,7 +127,7 @@ describe("searchSymbolsTool", () => {
           name: "TestClass",
           kind: SymbolKind.Class,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 10, character: 0 },
@@ -152,7 +159,7 @@ describe("searchSymbolsTool", () => {
           name: "TestClass",
           kind: SymbolKind.Class,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 10, character: 0 },
@@ -181,7 +188,7 @@ describe("searchSymbolsTool", () => {
           name: "TestClass",
           kind: SymbolKind.Class,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 10, character: 0 },
@@ -210,7 +217,7 @@ describe("searchSymbolsTool", () => {
           name: "TestInterface",
           kind: SymbolKind.Interface,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 5, character: 0 },
@@ -239,7 +246,7 @@ describe("searchSymbolsTool", () => {
           name: "Active",
           kind: SymbolKind.EnumMember,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 0, character: 10 },
@@ -264,7 +271,7 @@ describe("searchSymbolsTool", () => {
             name: "Active",
             kind: SymbolKind.EnumMember,
             location: {
-              uri: "file:///test/file.ts",
+              uri: makeTestUri("file.ts"),
               range: {
                 start: { line: 0, character: 0 },
                 end: { line: 0, character: 10 },
@@ -296,7 +303,7 @@ describe("searchSymbolsTool", () => {
           name: "TestClass",
           kind: SymbolKind.Class,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 10, character: 0 },
@@ -307,7 +314,7 @@ describe("searchSymbolsTool", () => {
           name: "TestInterface",
           kind: SymbolKind.Interface,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 12, character: 0 },
               end: { line: 15, character: 0 },
@@ -337,7 +344,7 @@ describe("searchSymbolsTool", () => {
           name: "TestClass",
           kind: SymbolKind.Class,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 10, character: 0 },
@@ -348,7 +355,7 @@ describe("searchSymbolsTool", () => {
           name: "TestInterface",
           kind: SymbolKind.Interface,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 12, character: 0 },
               end: { line: 15, character: 0 },
@@ -359,7 +366,7 @@ describe("searchSymbolsTool", () => {
           name: "testFunction",
           kind: SymbolKind.Function,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 17, character: 0 },
               end: { line: 20, character: 0 },
@@ -520,7 +527,7 @@ describe("searchSymbolsTool", () => {
           name: "TestClass",
           kind: SymbolKind.Class,
           location: {
-            uri: "file:///test/file1.ts",
+            uri: makeTestUri("file1.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 10, character: 0 },
@@ -531,7 +538,7 @@ describe("searchSymbolsTool", () => {
           name: "testFunction",
           kind: SymbolKind.Function,
           location: {
-            uri: "file:///test/file1.ts",
+            uri: makeTestUri("file1.ts"),
             range: {
               start: { line: 12, character: 0 },
               end: { line: 15, character: 0 },
@@ -542,7 +549,7 @@ describe("searchSymbolsTool", () => {
           name: "TestInterface",
           kind: SymbolKind.Interface,
           location: {
-            uri: "file:///test/file2.ts",
+            uri: makeTestUri("file2.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 5, character: 0 },
@@ -583,7 +590,7 @@ describe("searchSymbolsTool", () => {
           name: "ExampleSymbol",
           kind: SymbolKind.Class,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 1, character: 0 },
@@ -652,7 +659,7 @@ describe("searchSymbolsTool", () => {
           name: "TestClass",
           kind: SymbolKind.Class,
           location: {
-            uri: "file:///test/file1.ts",
+            uri: makeTestUri("file1.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 10, character: 0 },
@@ -799,7 +806,7 @@ describe("searchSymbolsTool", () => {
           kind: SymbolKind.Method,
           containerName: "TestClass",
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 5, character: 2 },
               end: { line: 7, character: 3 },
@@ -849,7 +856,7 @@ describe("searchSymbolsTool", () => {
           name: "TestClass",
           kind: SymbolKind.Class,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 10, character: 0 },
@@ -885,7 +892,7 @@ describe("searchSymbolsTool", () => {
           name: "TestClass",
           kind: SymbolKind.Class,
           location: {
-            uri: "file:///test/file.ts",
+            uri: makeTestUri("file.ts"),
             range: {
               start: { line: 0, character: 0 },
               end: { line: 10, character: 0 },
@@ -943,7 +950,7 @@ describe("searchSymbolsTool", () => {
           deprecated: true,
           detail: "() => void",
           location: {
-            uri: "file:///test/src/old.ts",
+            uri: makeTestUri("src/old.ts"),
             range: {
               start: { line: 10, character: 4 },
               end: { line: 12, character: 5 },
@@ -970,7 +977,7 @@ describe("searchSymbolsTool", () => {
         name: `Symbol${i}`,
         kind: SymbolKind.Class,
         location: {
-          uri: `file:///test/file${i}.ts`,
+          uri: makeTestUri(`file${i}.ts`),
           range: {
             start: { line: 0, character: 0 },
             end: { line: 10, character: 0 },

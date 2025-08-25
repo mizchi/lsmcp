@@ -49,6 +49,7 @@ describe.skip("LSP error handling tests", { timeout: 30000 }, () => {
     lspProcess = spawn(tsLspPath, ["--stdio"], {
       cwd: __dirname,
       stdio: ["pipe", "pipe", "pipe"],
+      shell: process.platform === 'win32', // Use shell on Windows
     });
 
     // Initialize LSP client
