@@ -1,6 +1,10 @@
 import { getNodeModulesCommand } from "../utils/nodeModulesUtils.ts";
 import type { LspClientConfig } from "../config/schema.ts";
-import { resolveAdapterCommand as resolveWithBinFinder } from "../utils/binFinder.ts";
+import {
+  adapterCandidates as candidatesWithBinFinder,
+  type Found,
+  resolveAdapterCommand as resolveWithBinFinder,
+} from "../utils/binFinder.ts";
 import { debugLogWithPrefix } from "../utils/debugLog.ts";
 
 /**
@@ -102,4 +106,12 @@ export function resolveAdapterCommand(
 
   // No binary specified
   throw new Error("No LSP server binary specified or found");
+}
+
+/** Every command an adapter may run, in order */
+export function adapterCandidates(
+  adapter: LspClientConfig,
+  projectRoot?: string,
+): Generator<Found, void, boolean | undefined> {
+  return candidatesWithBinFinder(adapter, projectRoot);
 }

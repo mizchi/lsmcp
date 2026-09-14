@@ -153,7 +153,7 @@ Memories contain important project context, conventions, and guidelines that hel
 lsmcp includes built-in presets for popular language servers:
 
 - **`tsgo`** - TypeScript (Recommended)
-- **`typescript`** - typescript-language-server
+- **`typescript`** - `tsc --lsp` for TypeScript 7+ or typescript-language-server for older
 - **`rust-analyzer`** - Rust Analyser
 - **`moonbit`** - MoonBit
 - **`fsharp`** - F# (fsautocomplete)

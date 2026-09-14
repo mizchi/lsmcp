@@ -15,7 +15,8 @@ import {
 import { highLevelTools, onboardingToolsList } from "./tools/toolLists.ts";
 import { getSerenityToolsList } from "./tools/index.ts";
 import { createGetSymbolDetailsTool } from "./tools/highlevel/indexTools.ts";
-import { resolveAdapterCommand } from "./presets/utils.ts";
+import { adapterCandidates } from "./presets/utils.ts";
+import { spawnFirstWorking } from "./utils/binFinder.ts";
 import { PresetRegistry, type ExtendedLSMCPConfig } from "./config/loader.ts";
 import type { LspClientConfig } from "./config/schema.ts";
 
@@ -49,28 +50,6 @@ export async function runLanguageServerWithConfig(
       );
     }
 
-    // Resolve the command for node_modules binaries
-    const resolved = resolveAdapterCommand(
-      {
-        id: config.id || config.preset || "custom",
-        name: config.name || config.preset || "Custom LSP",
-        bin: config.bin,
-        args: config.args || [],
-        files: config.files || [],
-        binFindStrategy: config.binFindStrategy,
-      } as LspClientConfig,
-      projectRoot,
-    );
-
-    const lspProcess = spawn(resolved.command, resolved.args, {
-      cwd: projectRoot,
-      env: {
-        ...process.env,
-        ...customEnv,
-      },
-    });
-
-    // Create and initialize LSP client with the spawned process
     // Convert ServerCharacteristics to IServerCharacteristics (with required fields)
     const serverChars = config.serverCharacteristics
       ? {
@@ -85,16 +64,30 @@ export async function runLanguageServerWithConfig(
         }
       : undefined;
 
-    // Create and initialize LSP client
     const { createAndInitializeLSPClient } = await import(
       "@internal/lsp-client"
     );
-    const lspClient = await createAndInitializeLSPClient(
-      projectRoot,
-      lspProcess,
-      config.id || config.preset || "custom",
-      config.initializationOptions,
-      serverChars,
+    const { lspProcess, lspClient, found } = await spawnFirstWorking(
+      adapterCandidates(
+        {
+          id: config.id || config.preset || "custom",
+          name: config.name || config.preset || "Custom LSP",
+          bin: config.bin,
+          args: config.args || [],
+          files: config.files || [],
+          binFindStrategy: config.binFindStrategy,
+        } as LspClientConfig,
+        projectRoot,
+      ),
+      { cwd: projectRoot, env: { ...process.env, ...customEnv } },
+      (lspProcess) =>
+        createAndInitializeLSPClient(
+          projectRoot,
+          lspProcess,
+          config.id || config.preset || "custom",
+          config.initializationOptions,
+          serverChars,
+        ),
     );
 
     // Create file system API using Node.js implementation
@@ -172,9 +165,9 @@ export async function runLanguageServerWithConfig(
 
     // Handle LSP process errors
     const fullCommand =
-      resolved.args.length > 0
-        ? `${resolved.command} ${resolved.args.join(" ")}`
-        : resolved.command;
+      found.args.length > 0
+        ? `${found.command} ${found.args.join(" ")}`
+        : found.command;
 
     lspProcess.on("error", (error) => {
       const context: ErrorContext = {
@@ -230,34 +223,11 @@ export async function runLanguageServer(
   // Convert preset to adapter-like structure for compatibility
   const adapter = preset as any;
 
-  // Use the adapter resolution for node_modules binaries
-  const resolved = resolveAdapterCommand(adapter, process.cwd());
-  const lspBin = resolved.command;
-  const lspArgs = resolved.args;
-
-  if (!lspBin) {
-    errorLog(`Error: No LSP command configured for language '${language}'.`);
-    errorLog("Please use --bin option to specify a custom LSP server.");
-    process.exit(1);
-  }
-
-  // Start MCP server directly
-  debugLog(`[lsmcp] Using LSP command '${lspBin}' for language '${language}'`);
-  const fullCommand =
-    lspArgs.length > 0 ? `${lspBin} ${lspArgs.join(" ")}` : lspBin;
+  const candidates = adapterCandidates(adapter, process.cwd());
+  let fullCommand = "";
 
   try {
-    // Spawn LSP server process
     const projectRoot = process.cwd();
-    const lspProcess = spawn(lspBin, lspArgs, {
-      cwd: projectRoot,
-      env: {
-        ...process.env,
-        ...customEnv,
-      },
-    });
-
-    // Initialize LSP client with the spawned process
     const initOptions = adapter?.initializationOptions as
       | Record<string, unknown>
       | undefined;
@@ -275,16 +245,26 @@ export async function runLanguageServer(
         }
       : undefined;
 
-    // Create and initialize LSP client
     const { createAndInitializeLSPClient } = await import(
       "@internal/lsp-client"
     );
-    const lspClient = await createAndInitializeLSPClient(
-      projectRoot,
-      lspProcess,
-      language,
-      initOptions,
-      serverChars,
+    const { lspProcess, lspClient } = await spawnFirstWorking(
+      candidates,
+      { cwd: projectRoot, env: { ...process.env, ...customEnv } },
+      (lspProcess, { command, args }) => {
+        debugLog(
+          `[lsmcp] Using LSP command '${command}' for language '${language}'`,
+        );
+        fullCommand =
+          args.length > 0 ? `${command} ${args.join(" ")}` : command;
+        return createAndInitializeLSPClient(
+          projectRoot,
+          lspProcess,
+          language,
+          initOptions,
+          serverChars,
+        );
+      },
     );
 
     // Create file system API using Node.js implementation

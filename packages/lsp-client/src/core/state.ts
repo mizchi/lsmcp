@@ -20,10 +20,12 @@ export interface LSPProcessState {
     {
       resolve: (value: any) => void;
       reject: (error: Error) => void;
-      timer?: NodeJS.Timeout;
+      timer: NodeJS.Timeout;
     }
   >;
-  buffer: string;
+  /** Unparsed stdout bytes; written only by ConnectionHandler.receive/processBuffer */
+  chunks: Buffer[];
+  bufferedBytes: number;
   contentLength: number;
   diagnostics: Map<DocumentUri, Diagnostic[]>;
   eventEmitter: EventEmitter;
@@ -50,7 +52,8 @@ export function createInitialState(config: LSPClientConfig): LSPProcessState {
     process: config.process,
     messageId: 0,
     responseHandlers: new Map(),
-    buffer: "",
+    chunks: [],
+    bufferedBytes: 0,
     contentLength: -1,
     diagnostics: new Map(),
     eventEmitter: new EventEmitter(),

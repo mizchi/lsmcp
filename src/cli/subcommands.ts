@@ -11,7 +11,8 @@ import {
   ConfigLoader as MainConfigLoader,
   PresetRegistry,
 } from "../config/loader.ts";
-import { resolveAdapterCommand } from "../presets/utils.ts";
+import { adapterCandidates } from "../presets/utils.ts";
+import { spawnFirstWorking } from "../utils/binFinder.ts";
 import {
   getOrCreateIndex,
   SymbolIndex,
@@ -28,7 +29,6 @@ import {
   createLSPSymbolProvider,
   type LSPClient,
 } from "@internal/lsp-client";
-import { spawn } from "child_process";
 import { fileURLToPath } from "url";
 
 /**
@@ -332,58 +332,44 @@ export async function indexCommand(
         `Starting ${adapterConfig.name || adapterConfig.presetId} for indexing...`,
       );
 
-      // Resolve the command using binFinder if needed
-      const { command, args } = resolveAdapterCommand(
-        adapterConfig,
-        projectRoot,
-      );
-
-      // Check if command exists before spawning
-      const { execSync } = await import("child_process");
-      try {
-        execSync(`which ${command}`, { stdio: "ignore" });
-      } catch {
-        throw new Error(`Command not found: ${command}`);
-      }
-
-      // Spawn LSP process
-      const lspProcess = spawn(command, args, {
-        stdio: ["pipe", "pipe", "pipe"],
-        cwd: projectRoot,
-      });
-
-      // Handle spawn errors
-      lspProcess.on("error", (error: Error) => {
-        errorLog(`Failed to start ${command}: ${error.message}`);
-        if (error.message.includes("ENOENT")) {
-          errorLog(`Make sure ${adapterConfig.bin} is installed and in PATH`);
-          if (adapterConfig.presetId === "tsgo") {
-            errorLog("Install with: npm install -g @typescript/native-preview");
-          } else if (adapterConfig.presetId === "typescript") {
-            errorLog(
-              "Install with: npm install -g typescript typescript-language-server",
-            );
-          } else if (adapterConfig.presetId === "rust-analyzer") {
-            errorLog(
-              "Install rust-analyzer from: https://rust-analyzer.github.io/",
-            );
-          }
-        }
-      });
-
-      // Create LSP client
-      lspClient = createLSPClient({
-        process: lspProcess,
-        rootPath: projectRoot,
-        languageId: adapterConfig.baseLanguage || adapterConfig.presetId,
-        initializationOptions: adapterConfig.initializationOptions as
-          | Record<string, unknown>
-          | undefined,
-        serverCharacteristics: (adapterConfig as any).serverCharacteristics,
-      });
-
-      // Start LSP server
-      await lspClient?.start();
+      ({ lspClient } = await spawnFirstWorking(
+        adapterCandidates(adapterConfig, projectRoot),
+        { stdio: ["pipe", "pipe", "pipe"], cwd: projectRoot },
+        async (lspProcess, { command }) => {
+          lspProcess.on("error", (error: Error) => {
+            errorLog(`Failed to start ${command}: ${error.message}`);
+            if (error.message.includes("ENOENT")) {
+              errorLog(
+                `Make sure ${adapterConfig.bin} is installed and in PATH`,
+              );
+              if (adapterConfig.presetId === "tsgo") {
+                errorLog(
+                  "Install with: npm install -g @typescript/native-preview",
+                );
+              } else if (adapterConfig.presetId === "typescript") {
+                errorLog(
+                  "Install with: npm install -g typescript typescript-language-server",
+                );
+              } else if (adapterConfig.presetId === "rust-analyzer") {
+                errorLog(
+                  "Install rust-analyzer from: https://rust-analyzer.github.io/",
+                );
+              }
+            }
+          });
+          const client = createLSPClient({
+            process: lspProcess,
+            rootPath: projectRoot,
+            languageId: adapterConfig.baseLanguage || adapterConfig.presetId,
+            initializationOptions: adapterConfig.initializationOptions as
+              | Record<string, unknown>
+              | undefined,
+            serverCharacteristics: (adapterConfig as any).serverCharacteristics,
+          });
+          await client.start();
+          return client;
+        },
+      ));
 
       // Create file content provider
       const fileContentProvider = async (uri: string): Promise<string> => {
@@ -415,7 +401,8 @@ export async function indexCommand(
       // Provide installation instructions based on the adapter
       if (
         error instanceof Error &&
-        error.message.includes("Command not found")
+        (error.message.includes("ENOENT") ||
+          error.message.includes("No LSP server binary"))
       ) {
         if (config.preset === "tsgo") {
           errorLog("\nTo install tsgo:");

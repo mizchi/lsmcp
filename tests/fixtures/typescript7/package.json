@@ -1,0 +1,7 @@
+{
+  "name": "lsmcp-fixture-typescript7",
+  "private": true,
+  "devDependencies": {
+    "typescript": "^7.0.0"
+  }
+}

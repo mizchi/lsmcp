@@ -175,10 +175,7 @@ async function handleDeleteSymbol(
     }
 
     // Apply the workspace edit
-    const result = await client.applyEdit(
-      workspaceEdit,
-      `Delete symbol "${textTarget}"`,
-    );
+    const result = await client.applyEdit(workspaceEdit);
 
     if (!result.applied) {
       return {

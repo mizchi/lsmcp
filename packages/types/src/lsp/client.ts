@@ -387,10 +387,7 @@ export type LSPClient = {
     position: Position,
     newName: string,
   ) => Promise<WorkspaceEdit | null>;
-  applyEdit: (
-    edit: WorkspaceEdit,
-    label?: string,
-  ) => Promise<ApplyWorkspaceEditResponse>;
+  applyEdit: (edit: WorkspaceEdit) => Promise<ApplyWorkspaceEditResponse>;
   sendRequest: <T = unknown>(
     method: string,
     params?: Record<string, unknown>,

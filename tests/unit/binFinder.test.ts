@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
+  candidateCommands,
   findBinary,
   resolveAdapterCommand,
+  startFirstWorking,
 } from "../../src/utils/binFinder.ts";
 import type { BinFindStrategy } from "../../src/config/schema.ts";
 import * as fs from "fs";
@@ -24,7 +26,7 @@ describe("binFinder", () => {
   });
 
   describe("findBinary", () => {
-    it("should find binary in local node_modules/.bin", () => {
+    it("should find binary in local node_modules/.bin", async () => {
       const strategy: BinFindStrategy = {
         strategies: [{ type: "node_modules", names: ["tsgo"] }],
         defaultArgs: ["--lsp", "--stdio"],
@@ -45,7 +47,7 @@ describe("binFinder", () => {
       });
     });
 
-    it("should find binary in parent node_modules/.bin", () => {
+    it("should find binary in parent node_modules/.bin", async () => {
       const strategy: BinFindStrategy = {
         strategies: [
           { type: "node_modules", names: ["typescript-language-server"] },
@@ -69,7 +71,197 @@ describe("binFinder", () => {
       });
     });
 
-    it("should find globally installed binary", () => {
+    describe("ifFail, driven by start failures (typescript preset shape)", () => {
+      const tls = {
+        type: "node_modules" as const,
+        names: ["typescript-language-server"],
+      };
+      const globalTls = {
+        type: "global" as const,
+        names: ["typescript-language-server"],
+      };
+      const npxTls = {
+        type: "npx" as const,
+        package: "typescript-language-server",
+      };
+      const strategy: BinFindStrategy = {
+        strategies: [
+          {
+            type: "node_modules",
+            names: ["tsc"],
+            args: ["--lsp", "--stdio"],
+            ifFail: [tls, globalTls, npxTls],
+          },
+          {
+            type: "global",
+            names: ["tsc"],
+            args: ["--lsp", "--stdio"],
+            ifFail: [tls, globalTls, npxTls],
+          },
+          tls,
+          globalTls,
+          npxTls,
+        ],
+        defaultArgs: ["--stdio"],
+      };
+      const projectRoot = "/test/project";
+      const local = {
+        tsc: join(projectRoot, "node_modules", ".bin", "tsc"),
+        tls: join(
+          projectRoot,
+          "node_modules",
+          ".bin",
+          "typescript-language-server",
+        ),
+      };
+      const parentTsc = "/test/node_modules/.bin/tsc";
+      const globalBins: Record<string, string> = {
+        tsc: "/usr/local/bin/tsc",
+        "typescript-language-server":
+          "/usr/local/bin/typescript-language-server",
+      };
+
+      /** files that exist and which global binaries `which` finds */
+      function layout(existing: string[], global: string[]) {
+        vi.mocked(fs.existsSync).mockImplementation((path) =>
+          existing.includes(String(path)),
+        );
+        vi.mocked(child_process.execSync).mockImplementation((cmd) => {
+          const name = String(cmd).replace("which ", "");
+          if (global.includes(name)) return globalBins[name] + "\n";
+          throw new Error("not found");
+        });
+      }
+
+      /** start candidates in order; commands in `failing` reject */
+      async function startWith(failing: string[]) {
+        const attempted: string[] = [];
+        const started = await startFirstWorking(
+          candidateCommands(strategy, projectRoot),
+          async (found) => {
+            attempted.push(found.command);
+            if (failing.includes(found.command)) {
+              throw new Error(`${found.command} exited with code 1`);
+            }
+            return found;
+          },
+        );
+        return { started, attempted };
+      }
+
+      it("uses the local tsc when it starts", async () => {
+        layout([local.tsc, local.tls], []);
+
+        const { started, attempted } = await startWith([]);
+        expect(started).toEqual({
+          command: local.tsc,
+          args: ["--lsp", "--stdio"],
+        });
+        expect(attempted).toEqual([local.tsc]);
+      });
+
+      it("falls back to the local language server when the local tsc does not", async () => {
+        layout([local.tsc, local.tls], []);
+
+        const { started, attempted } = await startWith([local.tsc]);
+        expect(started).toEqual({ command: local.tls, args: ["--stdio"] });
+        expect(attempted).toEqual([local.tsc, local.tls]);
+      });
+
+      it("never tries an ancestor tsc once the nearest one failed", async () => {
+        // local TypeScript 5, hoisted TypeScript 7, global language server
+        layout([local.tsc, parentTsc], ["typescript-language-server"]);
+
+        const { started, attempted } = await startWith([local.tsc]);
+        expect(started).toEqual({
+          command: globalBins["typescript-language-server"],
+          args: ["--stdio"],
+        });
+        expect(attempted).not.toContain(parentTsc);
+      });
+
+      it("uses a global tsc when there is none in node_modules", async () => {
+        layout([], ["tsc"]);
+
+        const { started } = await startWith([]);
+        expect(started).toEqual({
+          command: globalBins.tsc,
+          args: ["--lsp", "--stdio"],
+        });
+      });
+
+      it("falls back to the global language server when the global tsc does not start", async () => {
+        layout([], ["tsc", "typescript-language-server"]);
+
+        const { started } = await startWith([globalBins.tsc]);
+        expect(started).toEqual({
+          command: globalBins["typescript-language-server"],
+          args: ["--stdio"],
+        });
+      });
+
+      it("uses a local language server when only a global tsc exists and fails", async () => {
+        layout([local.tls], ["tsc"]);
+
+        const { started } = await startWith([globalBins.tsc]);
+        expect(started).toEqual({ command: local.tls, args: ["--stdio"] });
+      });
+
+      it("ends at npx when nothing is installed", async () => {
+        layout([], []);
+
+        const { started } = await startWith([]);
+        expect(started).toEqual({
+          command: "npx",
+          args: ["-y", "typescript-language-server", "--stdio"],
+        });
+      });
+
+      it("throws the last start error when every candidate fails, trying each once", async () => {
+        layout([local.tsc], []);
+        const attempted: string[] = [];
+
+        await expect(
+          startFirstWorking(
+            candidateCommands(strategy, projectRoot),
+            async (found) => {
+              attempted.push(found.command);
+              throw new Error(`${found.command} exited with code 1`);
+            },
+          ),
+        ).rejects.toThrow("npx exited with code 1");
+        expect(attempted).toEqual([local.tsc, "npx"]);
+      });
+
+      it("findBinary is the first candidate", () => {
+        layout([local.tsc, local.tls], []);
+
+        expect(findBinary(strategy, projectRoot)).toEqual({
+          command: local.tsc,
+          args: ["--lsp", "--stdio"],
+        });
+      });
+    });
+
+    it("prefers an earlier name in a parent over a later name in the project", () => {
+      const strategy: BinFindStrategy = {
+        strategies: [{ type: "node_modules", names: ["first", "second"] }],
+        defaultArgs: [],
+      };
+      const projectRoot = "/test/project";
+      const parentFirst = "/test/node_modules/.bin/first";
+      const localSecond = join(projectRoot, "node_modules", ".bin", "second");
+      vi.mocked(fs.existsSync).mockImplementation((path) =>
+        [parentFirst, localSecond].includes(String(path)),
+      );
+
+      expect(findBinary(strategy, projectRoot)).toEqual({
+        command: parentFirst,
+        args: [],
+      });
+    });
+
+    it("should find globally installed binary", async () => {
       const strategy: BinFindStrategy = {
         strategies: [{ type: "global", names: ["tsgo"] }],
         defaultArgs: ["--lsp"],
@@ -95,7 +287,7 @@ describe("binFinder", () => {
       });
     });
 
-    it("should fallback to npx when binary not found", () => {
+    it("should fallback to npx when binary not found", async () => {
       const strategy: BinFindStrategy = {
         strategies: [
           { type: "node_modules", names: ["tsgo"] },
@@ -117,7 +309,7 @@ describe("binFinder", () => {
       });
     });
 
-    it("should return null when no binary found and no npx fallback", () => {
+    it("should return null when no binary found and no npx fallback", async () => {
       const strategy: BinFindStrategy = {
         strategies: [{ type: "node_modules", names: ["nonexistent"] }],
         defaultArgs: [],
@@ -133,7 +325,7 @@ describe("binFinder", () => {
       expect(result).toBeNull();
     });
 
-    it("should try multiple search paths", () => {
+    it("should try multiple search paths", async () => {
       const strategy: BinFindStrategy = {
         strategies: [
           {
@@ -169,7 +361,7 @@ describe("binFinder", () => {
   });
 
   describe("resolveAdapterCommand", () => {
-    it("should use explicit bin and args when provided", () => {
+    it("should use explicit bin and args when provided", async () => {
       const adapter = {
         bin: "/usr/bin/custom-lsp",
         args: ["--custom", "--flags"],
@@ -183,7 +375,7 @@ describe("binFinder", () => {
       });
     });
 
-    it("should use binFindStrategy when bin not provided", () => {
+    it("should use binFindStrategy when bin not provided", async () => {
       const adapter = {
         binFindStrategy: {
           strategies: [
@@ -209,7 +401,7 @@ describe("binFinder", () => {
       });
     });
 
-    it("should prefer explicit bin/args over binFindStrategy", () => {
+    it("should prefer explicit bin/args over binFindStrategy", async () => {
       const adapter = {
         bin: "/explicit/path",
         args: ["--explicit"],
@@ -230,7 +422,7 @@ describe("binFinder", () => {
       expect(fs.existsSync).not.toHaveBeenCalled();
     });
 
-    it("should use bin as-is when no args or strategy provided", () => {
+    it("should use bin as-is when no args or strategy provided", async () => {
       const adapter = {
         bin: "simple-lsp",
       };
@@ -243,7 +435,7 @@ describe("binFinder", () => {
       });
     });
 
-    it("should throw error when no binary specified or found", () => {
+    it("should throw error when no binary specified or found", async () => {
       const adapter = {
         binFindStrategy: {
           strategies: [
@@ -262,7 +454,7 @@ describe("binFinder", () => {
       );
     });
 
-    it("should use default args from strategy when using binFindStrategy", () => {
+    it("should use default args from strategy when using binFindStrategy", async () => {
       const adapter = {
         binFindStrategy: {
           strategies: [{ type: "global" as const, names: ["lsp-server"] }],

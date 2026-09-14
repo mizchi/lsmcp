@@ -28,7 +28,7 @@ import { LifecycleManager } from "./lifecycle.ts";
 import { DocumentManager } from "../managers/document-manager.ts";
 import { DiagnosticsManager } from "../managers/diagnostics.ts";
 import { createFeatureCommands } from "../utils/features.ts";
-import { applyWorkspaceEditManually } from "../managers/workspace.ts";
+import { applyWorkspaceEdit } from "../managers/workspace.ts";
 import { getLanguageIdFromPath } from "../utils/language.ts";
 import { debug } from "../utils/debug.ts";
 import type { IFileSystem, IServerCharacteristics } from "../interfaces.ts";
@@ -90,7 +90,6 @@ export interface InternalLSPClient {
   ): Promise<WorkspaceEdit | null>;
   applyEdit(
     edit: WorkspaceEdit,
-    label?: string,
   ): Promise<{ applied: boolean; failureReason?: string }>;
 
   // Advanced features
@@ -111,9 +110,13 @@ export interface InternalLSPClient {
 
 export function createLSPClient(config: LSPClientConfig): InternalLSPClient {
   const state = createInitialState(config);
-  const connection = new ConnectionHandler(state);
-  const lifecycle = new LifecycleManager(state, connection, config);
   const documentManager = new DocumentManager();
+  const applyEdit = (edit: WorkspaceEdit) =>
+    applyWorkspaceEdit(edit, state.fileSystemApi, documentManager, (m, p) =>
+      connection.sendNotification(m, p),
+    );
+  const connection = new ConnectionHandler(state, { applyEdit });
+  const lifecycle = new LifecycleManager(state, connection, config);
   const diagnosticsManager = new DiagnosticsManager(state.eventEmitter);
   const commands = createFeatureCommands();
 
@@ -404,42 +407,7 @@ export function createLSPClient(config: LSPClientConfig): InternalLSPClient {
       }
     },
 
-    async applyEdit(
-      edit: WorkspaceEdit,
-      label?: string,
-    ): Promise<{ applied: boolean; failureReason?: string }> {
-      try {
-        const params = { edit, label };
-        const result = await connection.sendRequest<{
-          applied: boolean;
-          failureReason?: string;
-        }>("workspace/applyEdit", params);
-        return (
-          result ?? { applied: false, failureReason: "No response from server" }
-        );
-      } catch (error: unknown) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        if (
-          errorMessage.includes("Unhandled method") ||
-          errorMessage.includes("Method not found")
-        ) {
-          debug(
-            "LSP server doesn't support workspace/applyEdit, applying edits manually",
-          );
-          try {
-            await applyWorkspaceEditManually(edit, state.fileSystemApi);
-            return { applied: true };
-          } catch (err) {
-            return {
-              applied: false,
-              failureReason: `Failed to apply edits manually: ${err instanceof Error ? err.message : String(err)}`,
-            };
-          }
-        }
-        throw error;
-      }
-    },
+    applyEdit,
 
     // Advanced features
     sendRequest: connection.sendRequest.bind(connection),

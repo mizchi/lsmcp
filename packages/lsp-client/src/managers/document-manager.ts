@@ -9,9 +9,14 @@ import type {
   VersionedTextDocumentIdentifier,
 } from "../protocol/types/index.ts";
 
+interface OpenDocument {
+  version: number;
+  /** The text the server was last given */
+  text: string;
+}
+
 export class DocumentManager {
-  private openDocuments = new Set<string>();
-  private documentVersions = new Map<string, number>();
+  private openDocuments = new Map<string, OpenDocument>();
 
   /**
    * Open a document in the LSP server
@@ -36,8 +41,7 @@ export class DocumentManager {
     };
 
     sendNotification("textDocument/didOpen", params);
-    this.openDocuments.add(uri);
-    this.documentVersions.set(uri, 1);
+    this.openDocuments.set(uri, { version: 1, text: content });
   }
 
   /**
@@ -57,7 +61,6 @@ export class DocumentManager {
 
     sendNotification("textDocument/didClose", params);
     this.openDocuments.delete(uri);
-    this.documentVersions.delete(uri);
   }
 
   /**
@@ -69,12 +72,12 @@ export class DocumentManager {
     sendNotification: (method: string, params: unknown) => void,
     version?: number,
   ): void {
-    if (!this.openDocuments.has(uri)) {
+    const document = this.openDocuments.get(uri);
+    if (!document) {
       throw new Error(`Document ${uri} is not open`);
     }
 
-    const currentVersion = this.documentVersions.get(uri) || 1;
-    const newVersion = version ?? currentVersion + 1;
+    const newVersion = version ?? document.version + 1;
 
     const params: DidChangeTextDocumentParams = {
       textDocument: {
@@ -85,7 +88,7 @@ export class DocumentManager {
     };
 
     sendNotification("textDocument/didChange", params);
-    this.documentVersions.set(uri, newVersion);
+    this.openDocuments.set(uri, { version: newVersion, text: content });
   }
 
   /**
@@ -95,11 +98,15 @@ export class DocumentManager {
     return this.openDocuments.has(uri);
   }
 
+  getDocumentText(uri: string): string | undefined {
+    return this.openDocuments.get(uri)?.text;
+  }
+
   /**
    * Get all open documents
    */
   getOpenDocuments(): string[] {
-    return Array.from(this.openDocuments);
+    return Array.from(this.openDocuments.keys());
   }
 
   /**
@@ -108,15 +115,8 @@ export class DocumentManager {
   closeAllDocuments(
     sendNotification: (method: string, params: unknown) => void,
   ): void {
-    for (const uri of this.openDocuments) {
+    for (const uri of this.openDocuments.keys()) {
       this.closeDocument(uri, sendNotification);
     }
-  }
-
-  /**
-   * Get document version
-   */
-  getDocumentVersion(uri: string): number | undefined {
-    return this.documentVersions.get(uri);
   }
 }

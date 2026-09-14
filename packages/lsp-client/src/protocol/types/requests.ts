@@ -78,6 +78,7 @@ export interface ClientCapabilities {
   workspace?: {
     workspaceFolders?: boolean;
     configuration?: boolean;
+    applyEdit?: boolean;
   };
 }
 

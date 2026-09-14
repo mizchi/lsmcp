@@ -88,6 +88,7 @@ export class LifecycleManager {
         workspace: {
           workspaceFolders: true,
           configuration: true,
+          applyEdit: true,
         },
       },
       initializationOptions: this.config.initializationOptions,
@@ -110,40 +111,38 @@ export class LifecycleManager {
     if (!this.state.process) {
       throw new Error("No process provided to LSP client");
     }
+    const proc = this.state.process;
 
     let stderrBuffer = "";
-    let processExitPromise: Promise<void> | null = null;
 
-    // Create a promise that rejects if the process exits unexpectedly
-    processExitPromise = new Promise<void>((resolve, reject) => {
-      // If the process exits during initialization, reject the promise
-      this.state.process!.once("exit", (code) => {
+    const processExitPromise = new Promise<never>((_, reject) => {
+      const fail = (error: Error) => {
         this.state.process = null;
+        this.connection.rejectPendingRequests(error);
+        reject(error);
+      };
 
-        if (code !== 0 && code !== null) {
-          const stderr = stderrBuffer.trim();
-          const errorDetails = stderr ? `\nStderr output:\n${stderr}` : "";
-          const error = new Error(
-            `LSP server exited unexpectedly with code ${code}${errorDetails}`,
-          );
-          reject(error);
-        } else {
-          resolve();
-        }
+      proc.once("exit", (code, signal) => {
+        const stderr = stderrBuffer.trim();
+        const errorDetails = stderr ? `\nStderr output:\n${stderr}` : "";
+        const cause = code !== null ? `code ${code}` : `signal ${signal}`;
+        fail(
+          new Error(
+            `LSP server exited (${cause}) before answering initialize${errorDetails}`,
+          ),
+        );
       });
 
-      this.state.process!.once("error", (error) => {
-        this.state.process = null;
-        reject(new Error(`LSP server process error: ${error.message}`));
+      proc.once("error", (error) => {
+        fail(new Error(`LSP server process error: ${error.message}`));
       });
     });
 
-    this.state.process.stdout?.on("data", (data: Buffer) => {
-      this.state.buffer += data.toString();
-      this.connection.processBuffer();
+    proc.stdout?.on("data", (data: Buffer) => {
+      this.connection.receive(data);
     });
 
-    this.state.process.stderr?.on("data", (data: Buffer) => {
+    proc.stderr?.on("data", (data: Buffer) => {
       stderrBuffer += data.toString();
       // Log stderr in real-time for debugging
       const lines = data
@@ -155,23 +154,24 @@ export class LifecycleManager {
       }
     });
 
-    // Initialize the LSP connection with race condition against process exit
     try {
       await Promise.race([this.initialize(), processExitPromise]);
 
-      // If initialization succeeded, remove the exit handlers
-      // and add a new one that just logs the exit
-      this.state.process?.removeAllListeners("exit");
-      this.state.process?.removeAllListeners("error");
+      proc.removeAllListeners("exit");
+      proc.removeAllListeners("error");
 
-      this.state.process?.on("exit", (code) => {
+      proc.on("exit", (code, signal) => {
         this.state.process = null;
+        const cause = code !== null ? `code ${code}` : `signal ${signal}`;
         if (code !== 0 && code !== null) {
           debug(`[LSP] Server exited with code ${code}`);
         }
+        this.connection.rejectPendingRequests(
+          new Error(`LSP server exited (${cause})`),
+        );
       });
 
-      this.state.process?.on("error", (error) => {
+      proc.on("error", (error) => {
         debug(`[LSP] Server error: ${error.message}`);
       });
     } catch (error) {
@@ -182,8 +182,8 @@ export class LifecycleManager {
       };
 
       // Kill the process if it's still running
-      if (this.state.process && !this.state.process.killed) {
-        this.state.process.kill();
+      if (!proc.killed) {
+        proc.kill();
       }
 
       throw new Error(
@@ -193,7 +193,8 @@ export class LifecycleManager {
   }
 
   async stop(): Promise<void> {
-    if (this.state.process) {
+    const proc = this.state.process;
+    if (proc) {
       // Send shutdown request
       try {
         await this.connection.sendRequest("shutdown");
@@ -206,8 +207,8 @@ export class LifecycleManager {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       try {
-        if (!this.state.process.killed) {
-          this.state.process.kill();
+        if (!proc.killed) {
+          proc.kill();
         }
       } catch {
         // Ignore errors during process termination
